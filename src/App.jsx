@@ -3,6 +3,8 @@ import './App.css';
 import Board from './components/Board';
 import Bag from './components/Bag';
 import PawnGhost from './components/PawnGhost';
+import { fetchMap, updateMap, resetMap } from './services/api';
+import { io } from 'socket.io-client';
 
 import vampireIcon from './assets/icons/vampire.svg';
 import werewolfIcon from './assets/icons/werewolf.svg';
@@ -19,6 +21,9 @@ export const PAWN_TYPES = [
 
 const INITIAL_BOARD = Array(25).fill(null).map(() => ({}));
 
+// WebSocket instance (points to backend server)
+const socket = io('http://localhost:3001');
+
 function App() {
   // State for the board: array of 25 objects { [pawnTypeId]: count }
   const [board, setBoard] = useState(INITIAL_BOARD);
@@ -26,6 +31,36 @@ function App() {
   // State for the active drag
   const [activePawn, setActivePawn] = useState(null); // { typeId, x, y }
   
+  // Initial load from server and WebSocket listener
+  useEffect(() => {
+    // Initial fetch
+    fetchMap()
+      .then(serverBoard => {
+        if (serverBoard) setBoard(serverBoard);
+      })
+      .catch(err => console.error('Failed to load board from server:', err));
+
+    // Listen for real-time updates from any client
+    socket.on('boardUpdate', (newBoard) => {
+      setBoard(newBoard);
+    });
+
+    return () => {
+      socket.off('boardUpdate');
+    };
+  }, []);
+
+  // Sync board with server whenever it changes locally
+  const updateBoardWithSync = useCallback(async (newBoard) => {
+    // We update local state immediately for responsiveness
+    setBoard(newBoard);
+    try {
+      await updateMap(newBoard);
+    } catch (err) {
+      console.error('Failed to sync board to server:', err);
+    }
+  }, []);
+
   // Total and breakdown pawn counters
   const counters = useMemo(() => {
     const breakdown = PAWN_TYPES.reduce((acc, pawn) => {
@@ -87,41 +122,42 @@ function App() {
       e.stopPropagation();
       const typeId = activePawn.typeId;
       
-      setBoard(prevBoard => {
-        const newBoard = [...prevBoard];
-        const currentCount = newBoard[index][typeId] || 0;
-        newBoard[index] = {
-          ...newBoard[index],
-          [typeId]: currentCount + 1
-        };
-        return newBoard;
-      });
+      const newBoard = [...board];
+      const currentCount = newBoard[index][typeId] || 0;
+      newBoard[index] = {
+        ...newBoard[index],
+        [typeId]: currentCount + 1
+      };
       
+      updateBoardWithSync(newBoard);
       setActivePawn(null);
     }
-  }, [activePawn]);
+  }, [activePawn, board, updateBoardWithSync]);
 
-  // Handle removing pawn from a region (right click or middle click if needed)
+  // Handle removing pawn from a region
   const handleRegionRemove = useCallback((index, typeId) => {
-    setBoard(prevBoard => {
-      const newBoard = [...prevBoard];
-      const currentCount = newBoard[index][typeId] || 0;
-      if (currentCount > 0) {
-        const newRegion = { ...newBoard[index] };
-        if (currentCount === 1) {
-          delete newRegion[typeId];
-        } else {
-          newRegion[typeId] = currentCount - 1;
-        }
-        newBoard[index] = newRegion;
+    const newBoard = [...board];
+    const currentCount = newBoard[index][typeId] || 0;
+    if (currentCount > 0) {
+      const newRegion = { ...newBoard[index] };
+      if (currentCount === 1) {
+        delete newRegion[typeId];
+      } else {
+        newRegion[typeId] = currentCount - 1;
       }
-      return newBoard;
-    });
-  }, []);
+      newBoard[index] = newRegion;
+      updateBoardWithSync(newBoard);
+    }
+  }, [board, updateBoardWithSync]);
 
-  const handleResetBoard = useCallback(() => {
+  const handleResetBoard = useCallback(async () => {
     if (window.confirm('Are you sure you want to reset the board? All pawns will be removed.')) {
-      setBoard(Array(25).fill(null).map(() => ({})));
+      try {
+        await resetMap();
+        // Board state will be updated via WebSocket broadcast from server
+      } catch (err) {
+        alert('Failed to reset board on server.');
+      }
     }
   }, []);
 
@@ -143,11 +179,11 @@ function App() {
     if (!file) return;
 
     const reader = new FileReader();
-    reader.onload = (e) => {
+    reader.onload = async (e) => {
       try {
         const uploadedBoard = JSON.parse(e.target.result);
         if (Array.isArray(uploadedBoard) && uploadedBoard.length === 25) {
-          setBoard(uploadedBoard);
+          await updateBoardWithSync(uploadedBoard);
         } else {
           alert('Invalid board file format.');
         }
@@ -158,7 +194,7 @@ function App() {
     reader.readAsText(file);
     // Reset file input so same file can be uploaded again
     event.target.value = '';
-  }, []);
+  }, [updateBoardWithSync]);
 
   return (
     <div className="app-container">

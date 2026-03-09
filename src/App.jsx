@@ -119,6 +119,47 @@ function App() {
     });
   }, []);
 
+  const handleResetBoard = useCallback(() => {
+    if (window.confirm('Are you sure you want to reset the board? All pawns will be removed.')) {
+      setBoard(Array(25).fill(null).map(() => ({})));
+    }
+  }, []);
+
+  const handleDownloadBoard = useCallback(() => {
+    const dataStr = JSON.stringify(board, null, 2);
+    const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
+    
+    const exportFileDefaultName = 'wedrowycz_board.json';
+    
+    const linkElement = document.createElement('a');
+    linkElement.setAttribute('href', dataUri);
+    linkElement.setAttribute('download', exportFileDefaultName);
+    linkElement.click();
+    linkElement.remove();
+  }, [board]);
+
+  const handleUploadBoard = useCallback((event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const uploadedBoard = JSON.parse(e.target.result);
+        if (Array.isArray(uploadedBoard) && uploadedBoard.length === 25) {
+          setBoard(uploadedBoard);
+        } else {
+          alert('Invalid board file format.');
+        }
+      } catch (err) {
+        alert('Error parsing JSON file.');
+      }
+    };
+    reader.readAsText(file);
+    // Reset file input so same file can be uploaded again
+    event.target.value = '';
+  }, []);
+
   return (
     <div className="app-container">
       <div className="total-counter">
@@ -149,6 +190,24 @@ function App() {
           onRegionMouseUp={handleRegionMouseUp}
           onRemovePawn={handleRegionRemove}
         />
+      </div>
+
+      <div className="button-bar">
+        <button className="action-button download-btn" onClick={handleDownloadBoard}>
+          Download Board
+        </button>
+        <label className="action-button upload-btn">
+          Upload Board
+          <input 
+            type="file" 
+            accept=".json" 
+            onChange={handleUploadBoard} 
+            style={{ display: 'none' }} 
+          />
+        </label>
+        <button className="action-button reset-btn" onClick={handleResetBoard}>
+          Reset Board
+        </button>
       </div>
 
       {activePawn && (

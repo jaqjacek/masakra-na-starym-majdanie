@@ -1,16 +1,18 @@
 import React from 'react';
 import Region from './Region';
 
-const Board = ({ regions, onRegionMouseUp, onRemovePawn }) => {
+const Board = ({ regions, onRegionMouseUp, onRemovePawn, onPawnMouseDown, setHoveredPawn }) => {
   return (
     <div className="board">
-      {regions.map((pawnCounts, index) => (
+      {regions.map((pawnGroups, index) => (
         <Region 
           key={index}
           index={index}
-          pawnCounts={pawnCounts}
+          pawnGroups={pawnGroups}
           onMouseUp={(e) => onRegionMouseUp(index, e)}
           onRemovePawn={(typeId) => onRemovePawn(index, typeId)}
+          onPawnMouseDown={(typeId, pawnIndex, e) => onPawnMouseDown(typeId, index, pawnIndex, e)}
+          setHoveredPawn={setHoveredPawn}
         />
       ))}
     </div>

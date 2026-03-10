@@ -1,13 +1,13 @@
 const API_BASE = '/api/map';
 
-export const fetchMap = async () => {
-  const response = await fetch(API_BASE);
+export const fetchMap = async (gameId) => {
+  const response = await fetch(`${API_BASE}/${gameId}`);
   if (!response.ok) throw new Error('Failed to fetch map');
   return response.json();
 };
 
-export const updateMap = async (board) => {
-  const response = await fetch(API_BASE, {
+export const updateMap = async (gameId, board) => {
+  const response = await fetch(`${API_BASE}/${gameId}`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(board),
@@ -16,8 +16,8 @@ export const updateMap = async (board) => {
   return response.json();
 };
 
-export const resetMap = async () => {
-  const response = await fetch(API_BASE, {
+export const resetMap = async (gameId) => {
+  const response = await fetch(`${API_BASE}/${gameId}`, {
     method: 'DELETE',
   });
   if (!response.ok) throw new Error('Failed to reset map');

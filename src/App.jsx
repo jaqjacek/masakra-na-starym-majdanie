@@ -3,254 +3,219 @@ import './App.css';
 import Board from './components/Board';
 import Bag from './components/Bag';
 import PawnGhost from './components/PawnGhost';
+import LandingPage from './components/LandingPage';
+import GameHeader from './components/GameHeader';
+import PawnStatusPopup from './components/PawnStatusPopup';
 import { fetchMap, updateMap, resetMap } from './services/api';
 import { io } from 'socket.io-client';
-
-import vampireIcon from './assets/icons/vampire.svg';
-import werewolfIcon from './assets/icons/werewolf.svg';
-import ghostIcon from './assets/icons/ghost.svg';
-import bardakIcon from './assets/icons/bardak.svg';
-
-// Configuration for pawn types
-export const PAWN_TYPES = [
-  { id: 'vampire', icon: vampireIcon, label: 'V', name: 'Vampire', color: '#8B0000' },
-  { id: 'werewolf', icon: werewolfIcon, label: 'W', name: 'Werewolf', color: '#A0522D' },
-  { id: 'ghost', icon: ghostIcon, label: 'G', name: 'Ghost', color: '#F0F8FF' },
-  { id: 'bardak', icon: bardakIcon, label: 'B', name: 'Bardak', color: '#696969' },
-];
+import { PAWN_TYPES, STATUSES } from './constants/pawnTypes';
 
 const INITIAL_BOARD = Array(25).fill(null).map(() => ({}));
 
-// WebSocket instance (points to backend server)
+// WebSocket instance
 const socket = io('http://localhost:3001');
 
 function App() {
-  // State for the board: array of 25 objects { [pawnTypeId]: count }
+  const [gameId, setGameId] = useState(null);
+  const [inputGameId, setInputGameId] = useState('');
   const [board, setBoard] = useState(INITIAL_BOARD);
-  
-  // State for the active drag
-  const [activePawn, setActivePawn] = useState(null); // { typeId, x, y }
-  
-  // Initial load from server and WebSocket listener
+  const [activePawn, setActivePawn] = useState(null); // { typeId, x, y, fromIndex, pawnInstanceIndex }
+  const [hoveredPawn, setHoveredPawn] = useState(null); // { pawn, pawnType, x, y }
+
+  // Parse gameId from URL
   useEffect(() => {
-    // Initial fetch
-    fetchMap()
-      .then(serverBoard => {
-        if (serverBoard) setBoard(serverBoard);
-      })
-      .catch(err => console.error('Failed to load board from server:', err));
-
-    // Listen for real-time updates from any client
-    socket.on('boardUpdate', (newBoard) => {
-      setBoard(newBoard);
-    });
-
-    return () => {
-      socket.off('boardUpdate');
+    const handlePath = () => {
+      const path = window.location.pathname;
+      const match = path.match(/^\/game\/([^/]+)/);
+      setGameId(match ? match[1] : null);
     };
+    handlePath();
+    window.addEventListener('popstate', handlePath);
+    return () => window.removeEventListener('popstate', handlePath);
   }, []);
 
-  // Sync board with server whenever it changes locally
+  // Sync board with server
+  useEffect(() => {
+    if (!gameId) return;
+    socket.emit('joinGame', gameId);
+    fetchMap(gameId)
+      .then(serverBoard => { if (serverBoard) setBoard(serverBoard); })
+      .catch(err => console.error('Failed to load board:', err));
+
+    const handleUpdate = (newBoard) => setBoard(newBoard);
+    socket.on('boardUpdate', handleUpdate);
+    return () => socket.off('boardUpdate', handleUpdate);
+  }, [gameId]);
+
   const updateBoardWithSync = useCallback(async (newBoard) => {
-    // We update local state immediately for responsiveness
+    if (!gameId) return;
     setBoard(newBoard);
     try {
-      await updateMap(newBoard);
+      await updateMap(gameId, newBoard);
     } catch (err) {
-      console.error('Failed to sync board to server:', err);
+      console.error('Sync failed:', err);
     }
-  }, []);
+  }, [gameId]);
 
-  // Total and breakdown pawn counters
   const counters = useMemo(() => {
     const breakdown = PAWN_TYPES.reduce((acc, pawn) => {
       acc[pawn.id] = 0;
       return acc;
     }, {});
-
     let total = 0;
-
     board.forEach(region => {
-      Object.entries(region).forEach(([typeId, count]) => {
-        breakdown[typeId] += count;
-        total += count;
+      Object.entries(region).forEach(([typeId, instances]) => {
+        if (breakdown[typeId] !== undefined && Array.isArray(instances)) {
+          breakdown[typeId] += instances.length;
+          total += instances.length;
+        }
       });
     });
-
     return { total, breakdown };
   }, [board]);
 
-  // Handle pawn pick up from bag
   const handleBagMouseDown = useCallback((typeId, e) => {
-    setActivePawn({
-      typeId,
-      x: e.clientX,
-      y: e.clientY
-    });
+    setActivePawn({ typeId, x: e.clientX, y: e.clientY, fromIndex: null });
   }, []);
 
-  // Handle global mouse move to update pawn ghost position
+  const handlePawnMouseDown = useCallback((typeId, regionIndex, pawnInstanceIndex, e) => {
+    const instances = board[regionIndex][typeId];
+    const pawn = instances[pawnInstanceIndex];
+    if (pawn.statuses.includes(STATUSES.ENABLED)) {
+      setActivePawn({ 
+        typeId, 
+        x: e.clientX, 
+        y: e.clientY, 
+        fromIndex: regionIndex,
+        pawnInstanceIndex 
+      });
+      setHoveredPawn(null); // Hide popup when dragging starts
+    }
+  }, [board]);
+
   useEffect(() => {
     const handleMouseMove = (e) => {
-      if (activePawn) {
-        setActivePawn(prev => ({
-          ...prev,
-          x: e.clientX,
-          y: e.clientY
-        }));
-      }
+      if (activePawn) setActivePawn(prev => ({ ...prev, x: e.clientX, y: e.clientY }));
     };
-
-    const handleGlobalMouseUp = () => {
-      if (activePawn) {
-        setActivePawn(null);
-      }
-    };
-
+    const handleGlobalMouseUp = () => { if (activePawn) setActivePawn(null); };
     window.addEventListener('mousemove', handleMouseMove);
     window.addEventListener('mouseup', handleGlobalMouseUp);
-
     return () => {
       window.removeEventListener('mousemove', handleMouseMove);
       window.removeEventListener('mouseup', handleGlobalMouseUp);
     };
   }, [activePawn]);
 
-  // Handle placing pawn on a region
-  const handleRegionMouseUp = useCallback((index, e) => {
-    if (activePawn) {
+  const handleRegionMouseUp = useCallback((toIndex, e) => {
+    if (activePawn && gameId) {
       e.stopPropagation();
-      const typeId = activePawn.typeId;
-      
-      const newBoard = [...board];
-      const currentCount = newBoard[index][typeId] || 0;
-      newBoard[index] = {
-        ...newBoard[index],
-        [typeId]: currentCount + 1
-      };
-      
+      const { typeId, fromIndex, pawnInstanceIndex } = activePawn;
+      const newBoard = JSON.parse(JSON.stringify(board));
+
+      if (fromIndex !== null) {
+        const [movedPawn] = newBoard[fromIndex][typeId].splice(pawnInstanceIndex, 1);
+        if (newBoard[fromIndex][typeId].length === 0) delete newBoard[fromIndex][typeId];
+        if (!newBoard[toIndex][typeId]) newBoard[toIndex][typeId] = [];
+        newBoard[toIndex][typeId].push(movedPawn);
+      } else {
+        const pawnType = PAWN_TYPES.find(p => p.id === typeId);
+        const newPawn = { statuses: [...pawnType.defaultStatuses] };
+        if (!newBoard[toIndex][typeId]) newBoard[toIndex][typeId] = [];
+        newBoard[toIndex][typeId].push(newPawn);
+      }
+
       updateBoardWithSync(newBoard);
       setActivePawn(null);
     }
-  }, [activePawn, board, updateBoardWithSync]);
+  }, [activePawn, board, gameId, updateBoardWithSync]);
 
-  // Handle removing pawn from a region
   const handleRegionRemove = useCallback((index, typeId) => {
-    const newBoard = [...board];
-    const currentCount = newBoard[index][typeId] || 0;
-    if (currentCount > 0) {
-      const newRegion = { ...newBoard[index] };
-      if (currentCount === 1) {
-        delete newRegion[typeId];
-      } else {
-        newRegion[typeId] = currentCount - 1;
-      }
-      newBoard[index] = newRegion;
+    if (!gameId) return;
+    const newBoard = JSON.parse(JSON.stringify(board));
+    if (newBoard[index][typeId] && newBoard[index][typeId].length > 0) {
+      newBoard[index][typeId].pop();
+      if (newBoard[index][typeId].length === 0) delete newBoard[index][typeId];
       updateBoardWithSync(newBoard);
+      setHoveredPawn(null);
     }
-  }, [board, updateBoardWithSync]);
+  }, [board, gameId, updateBoardWithSync]);
 
   const handleResetBoard = useCallback(async () => {
-    if (window.confirm('Are you sure you want to reset the board? All pawns will be removed.')) {
-      try {
-        await resetMap();
-        // Board state will be updated via WebSocket broadcast from server
-      } catch (err) {
-        alert('Failed to reset board on server.');
-      }
+    if (gameId && window.confirm('Reset board?')) {
+      try { await resetMap(gameId); } catch (err) { alert('Reset failed'); }
     }
-  }, []);
+  }, [gameId]);
 
-  const handleDownloadBoard = useCallback(() => {
-    const dataStr = JSON.stringify(board, null, 2);
-    const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
-    
-    const exportFileDefaultName = 'wedrowycz_board.json';
-    
-    const linkElement = document.createElement('a');
-    linkElement.setAttribute('href', dataUri);
-    linkElement.setAttribute('download', exportFileDefaultName);
-    linkElement.click();
-    linkElement.remove();
-  }, [board]);
+  const goToGame = (e) => {
+    e.preventDefault();
+    if (inputGameId.trim()) {
+      window.history.pushState({}, '', `/game/${inputGameId.trim()}`);
+      setGameId(inputGameId.trim());
+      setInputGameId('');
+    }
+  };
 
-  const handleUploadBoard = useCallback((event) => {
-    const file = event.target.files[0];
-    if (!file) return;
-
-    const reader = new FileReader();
-    reader.onload = async (e) => {
-      try {
-        const uploadedBoard = JSON.parse(e.target.result);
-        if (Array.isArray(uploadedBoard) && uploadedBoard.length === 25) {
-          await updateBoardWithSync(uploadedBoard);
-        } else {
-          alert('Invalid board file format.');
-        }
-      } catch (err) {
-        alert('Error parsing JSON file.');
-      }
-    };
-    reader.readAsText(file);
-    // Reset file input so same file can be uploaded again
-    event.target.value = '';
-  }, [updateBoardWithSync]);
+  if (!gameId) {
+    return <LandingPage inputGameId={inputGameId} setInputGameId={setInputGameId} onGoToGame={goToGame} />;
+  }
 
   return (
     <div className="app-container">
-      <div className="total-counter">
-        <div className="total-sum">Total: {counters.total}</div>
-        <div className="counters-breakdown">
-          {PAWN_TYPES.map(pawn => (
-            <div key={pawn.id} className="breakdown-item">
-              <div className={`breakdown-dot ${pawn.id}`}></div>
-              <span>{counters.breakdown[pawn.id]}</span>
-            </div>
-          ))}
-        </div>
-      </div>
-      
+      <GameHeader gameId={gameId} counters={counters} />
       <div className="game-layout">
         <div className="bags-container">
           {PAWN_TYPES.map(pawn => (
-            <Bag 
-              key={pawn.id}
-              type={pawn}
-              onMouseDown={(e) => handleBagMouseDown(pawn.id, e)}
-            />
+            <Bag key={pawn.id} type={pawn} onMouseDown={(e) => handleBagMouseDown(pawn.id, e)} />
           ))}
         </div>
-        
         <Board 
-          regions={board}
-          onRegionMouseUp={handleRegionMouseUp}
+          regions={board} 
+          onRegionMouseUp={handleRegionMouseUp} 
           onRemovePawn={handleRegionRemove}
+          onPawnMouseDown={handlePawnMouseDown}
+          setHoveredPawn={setHoveredPawn}
         />
       </div>
-
       <div className="button-bar">
-        <button className="action-button download-btn" onClick={handleDownloadBoard}>
-          Download Board
-        </button>
+        <button className="action-button download-btn" onClick={() => {
+           const dataStr = JSON.stringify(board, null, 2);
+           const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
+           const link = document.createElement('a');
+           link.href = dataUri;
+           link.download = `wedrowycz_game_${gameId}.json`;
+           link.click();
+        }}>Download Board</button>
         <label className="action-button upload-btn">
           Upload Board
-          <input 
-            type="file" 
-            accept=".json" 
-            onChange={handleUploadBoard} 
-            style={{ display: 'none' }} 
-          />
+          <input type="file" accept=".json" onChange={(e) => {
+            const file = e.target.files[0];
+            const reader = new FileReader();
+            reader.onload = async (ev) => {
+              try {
+                const uploadedBoard = JSON.parse(ev.target.result);
+                if (Array.isArray(uploadedBoard)) await updateBoardWithSync(uploadedBoard);
+              } catch (err) { alert('Upload failed'); }
+            };
+            reader.readAsText(file);
+          }} style={{ display: 'none' }} />
         </label>
-        <button className="action-button reset-btn" onClick={handleResetBoard}>
-          Reset Board
-        </button>
+        <button className="action-button reset-btn" onClick={handleResetBoard}>Reset Board</button>
+        <button className="action-button" onClick={() => {
+          window.history.pushState({}, '', '/');
+          setGameId(null);
+          setBoard(INITIAL_BOARD);
+        }} style={{ backgroundColor: '#555' }}>Change Game</button>
       </div>
-
+      
       {activePawn && (
-        <PawnGhost 
-          type={PAWN_TYPES.find(p => p.id === activePawn.typeId)}
-          x={activePawn.x}
-          y={activePawn.y}
+        <PawnGhost type={PAWN_TYPES.find(p => p.id === activePawn.typeId)} x={activePawn.x} y={activePawn.y} />
+      )}
+
+      {hoveredPawn && !activePawn && (
+        <PawnStatusPopup 
+          pawn={hoveredPawn.pawn} 
+          pawnType={hoveredPawn.pawnType} 
+          position={{ x: hoveredPawn.x, y: hoveredPawn.y }} 
         />
       )}
     </div>

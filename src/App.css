@@ -122,11 +122,63 @@ body {
   background-color: var(--region-color);
   border: 1px solid var(--region-border);
   display: flex;
-  flex-wrap: wrap;
-  padding: 4px;
-  gap: 4px;
+  flex-direction: column;
+  padding: 2px;
   box-sizing: border-box;
   position: relative;
+  overflow: hidden;
+}
+
+.pawns-area {
+  flex: 1;
+  display: flex;
+  flex-wrap: wrap;
+  align-content: flex-start;
+  gap: 2px;
+  overflow-y: auto;
+}
+
+.region .pawn-indicator {
+  width: 24px;
+  height: 24px;
+  border-radius: 2px;
+  position: relative;
+  cursor: grab;
+}
+
+.region-summary {
+  height: 20px;
+  background-color: rgba(0, 0, 0, 0.3);
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  border-top: 1px solid #555;
+  padding: 0 2px;
+}
+
+.summary-item {
+  display: flex;
+  align-items: center;
+  gap: 1px;
+}
+
+.summary-icon {
+  width: 12px;
+  height: 12px;
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  opacity: 0.6;
+}
+
+.summary-icon.active {
+  opacity: 1;
+}
+
+.summary-count {
+  font-size: 9px;
+  font-weight: bold;
+  color: #ccc;
 }
 
 .region.highlight {
@@ -233,4 +285,130 @@ body {
 
 .reset-btn:hover {
   background-color: #e74c3c;
+}
+
+.landing-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  gap: 1rem;
+}
+
+.game-select-form {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.game-select-form input {
+  padding: 0.6rem 1rem;
+  font-size: 1.1rem;
+  border-radius: 4px;
+  border: 1px solid #666;
+  background: #333;
+  color: white;
+}
+
+.game-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 2rem;
+  width: 100%;
+}
+
+.game-info {
+  font-size: 1.2rem;
+  margin-bottom: 1rem;
+  background: rgba(255, 255, 255, 0.1);
+  padding: 0.4rem 1rem;
+  border-radius: 4px;
+}
+
+/* Portal Status Popup Styles */
+.portal-status-popup {
+  position: fixed;
+  background: rgba(0, 0, 0, 0.95);
+  border: 1px solid #666;
+  border-radius: 6px;
+  padding: 0.5rem;
+  width: 110px;
+  z-index: 9999;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.6);
+  pointer-events: none;
+  transform: translate(-50%, -110%);
+}
+
+.portal-status-popup .popup-title {
+  font-size: 0.75rem;
+  font-weight: bold;
+  margin-bottom: 0.2rem;
+  color: #fff;
+  text-align: center;
+}
+
+.portal-status-popup .pawn-health {
+  font-size: 0.7rem;
+  font-weight: bold;
+  color: #2ecc71;
+  text-align: center;
+  margin-bottom: 0.3rem;
+  padding-bottom: 0.2rem;
+  border-bottom: 1px solid #444;
+}
+
+.portal-status-popup .popup-subtitle {
+  font-size: 0.6rem;
+  color: #aaa;
+  margin-bottom: 0.2rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03rem;
+}
+
+.portal-status-popup .status-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.portal-status-popup .status-item {
+  font-size: 0.65rem;
+  padding: 0.15rem 0.4rem;
+  border-radius: 3px;
+  text-transform: uppercase;
+  font-weight: 600;
+  text-align: center;
+}
+
+.status-item.enabled { background-color: #27ae60; color: white; }
+.status-item.disabled { background-color: #7f8c8d; color: white; }
+.status-item.invincible { background-color: #f1c40f; color: black; }
+.status-item.cursed { background-color: #8e44ad; color: white; }
+.status-item.bleed { background-color: #c0392b; color: white; }
+.status-item.slow { background-color: #34495e; color: white; }
+.status-item.blessed { background-color: #3498db; color: white; }
+.status-item.fast { background-color: #e67e22; color: white; }
+.status-item.none { background-color: #444; color: #888; }
+
+.disabled-pawn {
+  filter: grayscale(100%) brightness(0.7);
+  cursor: not-allowed !important;
+}
+
+.region .pawn-indicator {
+  cursor: grab;
+}
+
+.region .pawn-indicator:active {
+  cursor: grabbing;
+}
+
+/* Ensure popup doesn't get cut off on edges */
+.region:nth-child(-n+5) .pawn-status-popup {
+  bottom: auto;
+  top: 110%;
 }

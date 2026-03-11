@@ -22,7 +22,8 @@ export const PAWN_TYPES = [
     name: 'Vampire', 
     color: '#8B0000',
     health: 10,
-    defaultStatuses: [STATUSES.ENABLED] // Status when placed
+    speed: 999,
+    defaultStatuses: [STATUSES.ENABLED]
   },
   { 
     id: 'werewolf', 
@@ -31,6 +32,7 @@ export const PAWN_TYPES = [
     name: 'Werewolf', 
     color: '#A0522D',
     health: 15,
+    speed: 2,
     defaultStatuses: [STATUSES.ENABLED]
   },
   { 
@@ -40,6 +42,7 @@ export const PAWN_TYPES = [
     name: 'Ghost', 
     color: '#F0F8FF',
     health: 5,
+    speed: 1,
     defaultStatuses: [STATUSES.ENABLED]
   },
   { 
@@ -49,6 +52,7 @@ export const PAWN_TYPES = [
     name: 'Bardak', 
     color: '#696969',
     health: 20,
+    speed: 1,
     defaultStatuses: [STATUSES.ENABLED]
   },
 ];

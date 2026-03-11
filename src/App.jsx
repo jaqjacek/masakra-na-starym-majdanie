@@ -10,19 +10,54 @@ import { fetchMap, updateMap, resetMap } from './services/api';
 import { io } from 'socket.io-client';
 import { PAWN_TYPES, STATUSES } from './constants/pawnTypes';
 
-const INITIAL_BOARD = Array(25).fill(null).map(() => ({}));
+// Initial board helper
+const createEmptyBoard = () => {
+  const size = 5;
+  const regions = [];
+  for (let i = 0; i < size * size; i++) {
+    regions.push({ id: i, x: i % size, y: Math.floor(i / size), neighbors: [], pawns: {} });
+  }
+  regions.forEach(region => {
+    const { x, y } = region;
+    if (y > 0) region.neighbors.push((y - 1) * size + x);
+    if (y < size - 1) region.neighbors.push((y + 1) * size + x);
+    if (x > 0) region.neighbors.push(y * size + (x - 1));
+    if (x < size - 1) region.neighbors.push(y * size + (x + 1));
+  });
+  return regions;
+};
 
-// WebSocket instance
+const INITIAL_BOARD = createEmptyBoard();
+
+const getReachableRegions = (board, startIndex, range) => {
+  const reachable = new Set();
+  const queue = [{ index: startIndex, dist: 0 }];
+  const visited = new Set([startIndex]);
+  while (queue.length > 0) {
+    const { index, dist } = queue.shift();
+    if (dist > 0) reachable.add(index);
+    if (dist < range) {
+      board[index].neighbors.forEach(neighborIndex => {
+        if (!visited.has(neighborIndex)) {
+          visited.add(neighborIndex);
+          queue.push({ index: neighborIndex, dist: dist + 1 });
+        }
+      });
+    }
+  }
+  return Array.from(reachable);
+};
+
 const socket = io('http://localhost:3001');
 
 function App() {
   const [gameId, setGameId] = useState(null);
   const [inputGameId, setInputGameId] = useState('');
   const [board, setBoard] = useState(INITIAL_BOARD);
-  const [activePawn, setActivePawn] = useState(null); // { typeId, x, y, fromIndex, pawnInstanceIndex }
-  const [hoveredPawn, setHoveredPawn] = useState(null); // { pawn, pawnType, x, y }
+  const [activePawn, setActivePawn] = useState(null); 
+  const [hoveredPawn, setHoveredPawn] = useState(null);
+  const [validMoveTargets, setValidMoveTargets] = useState([]);
 
-  // Parse gameId from URL
   useEffect(() => {
     const handlePath = () => {
       const path = window.location.pathname;
@@ -34,14 +69,12 @@ function App() {
     return () => window.removeEventListener('popstate', handlePath);
   }, []);
 
-  // Sync board with server
   useEffect(() => {
     if (!gameId) return;
     socket.emit('joinGame', gameId);
     fetchMap(gameId)
       .then(serverBoard => { if (serverBoard) setBoard(serverBoard); })
       .catch(err => console.error('Failed to load board:', err));
-
     const handleUpdate = (newBoard) => setBoard(newBoard);
     socket.on('boardUpdate', handleUpdate);
     return () => socket.off('boardUpdate', handleUpdate);
@@ -58,13 +91,10 @@ function App() {
   }, [gameId]);
 
   const counters = useMemo(() => {
-    const breakdown = PAWN_TYPES.reduce((acc, pawn) => {
-      acc[pawn.id] = 0;
-      return acc;
-    }, {});
+    const breakdown = PAWN_TYPES.reduce((acc, pawn) => { acc[pawn.id] = 0; return acc; }, {});
     let total = 0;
     board.forEach(region => {
-      Object.entries(region).forEach(([typeId, instances]) => {
+      Object.entries(region.pawns).forEach(([typeId, instances]) => {
         if (breakdown[typeId] !== undefined && Array.isArray(instances)) {
           breakdown[typeId] += instances.length;
           total += instances.length;
@@ -76,20 +106,18 @@ function App() {
 
   const handleBagMouseDown = useCallback((typeId, e) => {
     setActivePawn({ typeId, x: e.clientX, y: e.clientY, fromIndex: null });
-  }, []);
+    setValidMoveTargets(board.map(r => r.id));
+  }, [board]);
 
   const handlePawnMouseDown = useCallback((typeId, regionIndex, pawnInstanceIndex, e) => {
-    const instances = board[regionIndex][typeId];
+    const instances = board[regionIndex].pawns[typeId];
     const pawn = instances[pawnInstanceIndex];
+    const pawnType = PAWN_TYPES.find(p => p.id === typeId);
     if (pawn.statuses.includes(STATUSES.ENABLED)) {
-      setActivePawn({ 
-        typeId, 
-        x: e.clientX, 
-        y: e.clientY, 
-        fromIndex: regionIndex,
-        pawnInstanceIndex 
-      });
-      setHoveredPawn(null); // Hide popup when dragging starts
+      setActivePawn({ typeId, x: e.clientX, y: e.clientY, fromIndex: regionIndex, pawnInstanceIndex });
+      setHoveredPawn(null);
+      const reachable = getReachableRegions(board, regionIndex, pawnType.speed);
+      setValidMoveTargets(reachable);
     }
   }, [board]);
 
@@ -97,7 +125,12 @@ function App() {
     const handleMouseMove = (e) => {
       if (activePawn) setActivePawn(prev => ({ ...prev, x: e.clientX, y: e.clientY }));
     };
-    const handleGlobalMouseUp = () => { if (activePawn) setActivePawn(null); };
+    const handleGlobalMouseUp = () => { 
+      if (activePawn) {
+        setActivePawn(null);
+        setValidMoveTargets([]);
+      }
+    };
     window.addEventListener('mousemove', handleMouseMove);
     window.addEventListener('mouseup', handleGlobalMouseUp);
     return () => {
@@ -110,34 +143,49 @@ function App() {
     if (activePawn && gameId) {
       e.stopPropagation();
       const { typeId, fromIndex, pawnInstanceIndex } = activePawn;
+      if (!validMoveTargets.includes(toIndex)) {
+        setActivePawn(null);
+        setValidMoveTargets([]);
+        return;
+      }
       const newBoard = JSON.parse(JSON.stringify(board));
-
       if (fromIndex !== null) {
-        const [movedPawn] = newBoard[fromIndex][typeId].splice(pawnInstanceIndex, 1);
-        if (newBoard[fromIndex][typeId].length === 0) delete newBoard[fromIndex][typeId];
-        if (!newBoard[toIndex][typeId]) newBoard[toIndex][typeId] = [];
-        newBoard[toIndex][typeId].push(movedPawn);
+        const [movedPawn] = newBoard[fromIndex].pawns[typeId].splice(pawnInstanceIndex, 1);
+        if (newBoard[fromIndex].pawns[typeId].length === 0) delete newBoard[fromIndex].pawns[typeId];
+        if (!newBoard[toIndex].pawns[typeId]) newBoard[toIndex].pawns[typeId] = [];
+        newBoard[toIndex].pawns[typeId].push(movedPawn);
       } else {
         const pawnType = PAWN_TYPES.find(p => p.id === typeId);
         const newPawn = { statuses: [...pawnType.defaultStatuses] };
-        if (!newBoard[toIndex][typeId]) newBoard[toIndex][typeId] = [];
-        newBoard[toIndex][typeId].push(newPawn);
+        if (!newBoard[toIndex].pawns[typeId]) newBoard[toIndex].pawns[typeId] = [];
+        newBoard[toIndex].pawns[typeId].push(newPawn);
       }
-
       updateBoardWithSync(newBoard);
       setActivePawn(null);
+      setValidMoveTargets([]);
     }
-  }, [activePawn, board, gameId, updateBoardWithSync]);
+  }, [activePawn, board, gameId, validMoveTargets, updateBoardWithSync]);
 
   const handleRegionRemove = useCallback((index, typeId) => {
     if (!gameId) return;
     const newBoard = JSON.parse(JSON.stringify(board));
-    if (newBoard[index][typeId] && newBoard[index][typeId].length > 0) {
-      newBoard[index][typeId].pop();
-      if (newBoard[index][typeId].length === 0) delete newBoard[index][typeId];
+    if (newBoard[index].pawns[typeId] && newBoard[index].pawns[typeId].length > 0) {
+      newBoard[index].pawns[typeId].pop();
+      if (newBoard[index].pawns[typeId].length === 0) delete newBoard[index].pawns[typeId];
       updateBoardWithSync(newBoard);
       setHoveredPawn(null);
     }
+  }, [board, gameId, updateBoardWithSync]);
+
+  const handleRegionAdd = useCallback((index, typeId) => {
+    if (!gameId) return;
+    const pawnType = PAWN_TYPES.find(p => p.id === typeId);
+    if (!pawnType) return;
+    const newBoard = JSON.parse(JSON.stringify(board));
+    const newPawn = { statuses: [...pawnType.defaultStatuses] };
+    if (!newBoard[index].pawns[typeId]) newBoard[index].pawns[typeId] = [];
+    newBoard[index].pawns[typeId].push(newPawn);
+    updateBoardWithSync(newBoard);
   }, [board, gameId, updateBoardWithSync]);
 
   const handleResetBoard = useCallback(async () => {
@@ -172,8 +220,10 @@ function App() {
           regions={board} 
           onRegionMouseUp={handleRegionMouseUp} 
           onRemovePawn={handleRegionRemove}
+          onAddPawn={handleRegionAdd}
           onPawnMouseDown={handlePawnMouseDown}
           setHoveredPawn={setHoveredPawn}
+          validMoveTargets={validMoveTargets}
         />
       </div>
       <div className="button-bar">
@@ -206,17 +256,11 @@ function App() {
           setBoard(INITIAL_BOARD);
         }} style={{ backgroundColor: '#555' }}>Change Game</button>
       </div>
-      
       {activePawn && (
         <PawnGhost type={PAWN_TYPES.find(p => p.id === activePawn.typeId)} x={activePawn.x} y={activePawn.y} />
       )}
-
       {hoveredPawn && !activePawn && (
-        <PawnStatusPopup 
-          pawn={hoveredPawn.pawn} 
-          pawnType={hoveredPawn.pawnType} 
-          position={{ x: hoveredPawn.x, y: hoveredPawn.y }} 
-        />
+        <PawnStatusPopup pawn={hoveredPawn.pawn} pawnType={hoveredPawn.pawnType} position={{ x: hoveredPawn.x, y: hoveredPawn.y }} />
       )}
     </div>
   );

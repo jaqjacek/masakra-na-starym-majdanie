@@ -1,8 +1,7 @@
 import React from 'react';
 import { PAWN_TYPES, STATUSES } from '../constants/pawnTypes';
 
-const Region = ({ index, pawnGroups, onMouseUp, onRemovePawn, onPawnMouseDown, setHoveredPawn }) => {
-  // Calculate summary counts for all pawn types
+const Region = ({ index, pawnGroups, onMouseUp, onRemovePawn, onAddPawn, onPawnMouseDown, setHoveredPawn, isValidTarget }) => {
   const summary = PAWN_TYPES.map(type => ({
     ...type,
     count: pawnGroups[type.id] ? pawnGroups[type.id].length : 0
@@ -10,7 +9,7 @@ const Region = ({ index, pawnGroups, onMouseUp, onRemovePawn, onPawnMouseDown, s
 
   return (
     <div 
-      className="region"
+      className={`region ${isValidTarget ? 'valid-target' : ''}`}
       onMouseUp={onMouseUp}
     >
       <div className="pawns-area">
@@ -26,25 +25,19 @@ const Region = ({ index, pawnGroups, onMouseUp, onRemovePawn, onPawnMouseDown, s
                 key={`${typeId}-${pIdx}`} 
                 className={`pawn-indicator ${typeId} ${!isEnabled ? 'disabled-pawn' : ''}`}
                 onMouseDown={(e) => {
-                  e.stopPropagation();
-                  onPawnMouseDown(typeId, pIdx, e);
-                }}
-                onMouseEnter={(e) => {
-                  setHoveredPawn({
-                    pawn,
-                    pawnType,
-                    x: e.clientX,
-                    y: e.clientY
-                  });
-                }}
-                onMouseLeave={() => setHoveredPawn(null)}
-                onClick={(e) => {
                   if (e.shiftKey) {
                     e.stopPropagation();
                     onRemovePawn(typeId);
+                  } else {
+                    e.stopPropagation();
+                    onPawnMouseDown(typeId, pIdx, e);
                   }
                 }}
-                title={isEnabled ? "Drag to move, Shift+Click to remove" : "Disabled - Cannot move"}
+                onMouseEnter={(e) => {
+                  setHoveredPawn({ pawn, pawnType, x: e.clientX, y: e.clientY });
+                }}
+                onMouseLeave={() => setHoveredPawn(null)}
+                title={isEnabled ? "Drag to move, Shift+Click to remove" : "Disabled - Cannot move, Shift+Click to remove"}
               />
             );
           });
@@ -53,7 +46,17 @@ const Region = ({ index, pawnGroups, onMouseUp, onRemovePawn, onPawnMouseDown, s
 
       <div className="region-summary">
         {summary.map(type => (
-          <div key={type.id} className="summary-item" title={`${type.name}: ${type.count}`}>
+          <div 
+            key={type.id} 
+            className="summary-item" 
+            title={`Shift+Click to add ${type.name}`}
+            onClick={(e) => {
+              if (e.shiftKey) {
+                e.stopPropagation();
+                onAddPawn(type.id);
+              }
+            }}
+          >
             <div className={`summary-icon ${type.id} ${type.count > 0 ? 'active' : ''}`}></div>
             <span className="summary-count">{type.count}</span>
           </div>

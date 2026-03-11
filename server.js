@@ -29,7 +29,40 @@ if (!fs.existsSync(GAMES_DIR)) {
   fs.mkdirSync(GAMES_DIR);
 }
 
-const INITIAL_BOARD = Array(25).fill(null).map(() => ({}));
+// Helper to generate 5x5 board with neighbors
+const createInitialBoard = () => {
+  const size = 5;
+  const regions = [];
+
+  for (let i = 0; i < size * size; i++) {
+    const x = i % size;
+    const y = Math.floor(i / size);
+    regions.push({
+      id: i,
+      x,
+      y,
+      neighbors: [],
+      pawns: {} // container for pawn types: { typeId: [instances] }
+    });
+  }
+
+  // Calculate neighbors for each region (orthogonal only: up, down, left, right)
+  regions.forEach(region => {
+    const { x, y } = region;
+    // Top
+    if (y > 0) region.neighbors.push((y - 1) * size + x);
+    // Bottom
+    if (y < size - 1) region.neighbors.push((y + 1) * size + x);
+    // Left
+    if (x > 0) region.neighbors.push(y * size + (x - 1));
+    // Right
+    if (x < size - 1) region.neighbors.push(y * size + (x + 1));
+  });
+
+  return regions;
+};
+
+const INITIAL_BOARD = createInitialBoard();
 
 // Helper to get game file path and initialize if needed
 const getGameData = (gameId) => {
@@ -61,8 +94,11 @@ app.get('/api/map/:gameId/add', (req, res) => {
 
   try {
     const { filePath, board } = getGameData(gameId);
-    const currentCount = board[regionIndex][pawn] || 0;
-    board[regionIndex][pawn] = currentCount + 1;
+    if (!board[regionIndex].pawns[pawn]) board[regionIndex].pawns[pawn] = [];
+    
+    // In actual game logic we'd need to know which status to add, 
+    // but for simple REST GET we use a default mock pawn
+    board[regionIndex].pawns[pawn].push({ statuses: ['ENABLED'] });
     
     fs.writeFileSync(filePath, JSON.stringify(board, null, 2), 'utf8');
     broadcastUpdate(gameId, board);
@@ -84,14 +120,9 @@ app.get('/api/map/:gameId/remove', (req, res) => {
 
   try {
     const { filePath, board } = getGameData(gameId);
-    const currentCount = board[regionIndex][pawn] || 0;
-    
-    if (currentCount > 0) {
-      if (currentCount === 1) {
-        delete board[regionIndex][pawn];
-      } else {
-        board[regionIndex][pawn] = currentCount - 1;
-      }
+    if (board[regionIndex].pawns[pawn] && board[regionIndex].pawns[pawn].length > 0) {
+      board[regionIndex].pawns[pawn].pop();
+      if (board[regionIndex].pawns[pawn].length === 0) delete board[regionIndex].pawns[pawn];
       
       fs.writeFileSync(filePath, JSON.stringify(board, null, 2), 'utf8');
       broadcastUpdate(gameId, board);
@@ -119,9 +150,6 @@ app.get('/api/map/:gameId', (req, res) => {
 app.post('/api/map/:gameId', (req, res) => {
   const { gameId } = req.params;
   const newBoard = req.body;
-  if (!Array.isArray(newBoard) || newBoard.length !== 25) {
-    return res.status(400).json({ error: 'Invalid board format. Expected array of 25 regions.' });
-  }
   
   try {
     const { filePath } = getGameData(gameId);

@@ -13,6 +13,9 @@ const PawnStatusPopup = ({ pawn, pawnType, position }) => {
     <div className="portal-status-popup" style={style}>
       <div className="popup-title">{pawnType.name}</div>
       <div className="pawn-health">HP: {pawnType.health}</div>
+      <div className="pawn-speed" style={{ fontSize: '0.7rem', color: '#3498db', textAlign: 'center', marginBottom: '0.3rem' }}>
+        Speed: {pawnType.speed}
+      </div>
       <div className="popup-subtitle">Statuses:</div>
       <ul className="status-list">
         {pawn.statuses.length > 0 ? pawn.statuses.map(status => (

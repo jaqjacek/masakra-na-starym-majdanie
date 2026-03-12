@@ -6,9 +6,14 @@ const PointsTracker = ({ players, onUpdatePoints, currentPlayerId, onPlayerMouse
     else if (e.ctrlKey) onUpdatePoints(index, -1);
   };
 
-  const handleSelectPlayer = (id) => {
+  const handleSelectPlayer = (e, id) => {
+    e.stopPropagation();
     const url = new URL(window.location.href);
-    url.searchParams.set('player', id);
+    if (currentPlayerId === id) {
+      url.searchParams.delete('player');
+    } else {
+      url.searchParams.set('player', id);
+    }
     window.location.href = url.toString();
   };
 
@@ -33,13 +38,6 @@ const PointsTracker = ({ players, onUpdatePoints, currentPlayerId, onPlayerMouse
                 <span className={`player-name ${isMe ? 'is-me' : ''}`} title={displayName}>
                   {displayName}
                 </span>
-                {!currentPlayerId && (
-                  <div 
-                    className="player-select-dot" 
-                    onClick={() => handleSelectPlayer(player.id)}
-                    title={`Join as ${displayName}`}
-                  ></div>
-                )}
                 {ownedSetsCount > 0 && (
                   <div className="owned-sets-badge" title={`${ownedSetsCount} sets ready`}>
                     S:{ownedSetsCount}
@@ -54,6 +52,16 @@ const PointsTracker = ({ players, onUpdatePoints, currentPlayerId, onPlayerMouse
             >
               {player.points}
             </span>
+
+            <button 
+              className="player-switch-btn" 
+              onClick={(e) => handleSelectPlayer(e, player.id)}
+              title={`Switch to ${displayName}`}
+            >
+              <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M16 3l4 4-4 4M8 21l-4-4 4-4M20 7H4M4 17h16" />
+              </svg>
+            </button>
           </div>
         );
       })}

@@ -8,6 +8,7 @@ import GameHeader from './components/GameHeader';
 import JakubPanel from './components/JakubPanel';
 import SetsPanel from './components/SetsPanel';
 import PointsTracker from './components/PointsTracker';
+import AdminPanel from './components/AdminPanel';
 import PawnStatusPopup from './components/PawnStatusPopup';
 import { fetchMap, updateMap, resetMap } from './services/api';
 import { io } from 'socket.io-client';
@@ -55,9 +56,24 @@ const getReachableRegions = (board, startIndex, range) => {
   return Array.from(reachable);
 };
 
+const getManhattanDistance = (r1, r2) => {
+  return Math.abs(r1.x - r2.x) + Math.abs(r1.y - r2.y);
+};
+
+const calculateSetPlacementPoints = (race, setContent, targetRegion, jakubRegion) => {
+  const dist = jakubRegion ? getManhattanDistance(targetRegion, jakubRegion) : 999;
+  const ownPawnsInSet = setContent[race] || 0;
+  if (race === 'vampire') return ownPawnsInSet + (2 - dist);
+  if (race === 'werewolf') return (dist <= 2) ? (ownPawnsInSet + 1) : 0;
+  if (race === 'bardak') return Object.values(setContent).reduce((a, b) => a + b, 0);
+  if (race === 'ghost') return ownPawnsInSet + (dist <= 2 ? -1 : 1);
+  return 0;
+};
+
 const socket = io('http://localhost:3001');
 
 function App() {
+  const [isAdmin, setIsAdmin] = useState(false);
   const [gameId, setGameId] = useState(null);
   const [playerId, setPlayerId] = useState(null);
   const [inputGameId, setInputGameId] = useState('');
@@ -75,8 +91,14 @@ function App() {
   useEffect(() => {
     const handlePath = () => {
       const path = window.location.pathname;
-      const match = path.match(/^\/game\/([^/]+)/);
-      setGameId(match ? match[1] : null);
+      if (path === '/admin' || path === '/admin/') {
+        setIsAdmin(true);
+        setGameId(null);
+      } else {
+        setIsAdmin(false);
+        const match = path.match(/^\/game\/([^/]+)/);
+        setGameId(match ? match[1] : null);
+      }
       const params = new URLSearchParams(window.location.search);
       const pId = params.get('player');
       setPlayerId(pId ? parseInt(pId) : null);
@@ -87,7 +109,7 @@ function App() {
   }, []);
 
   useEffect(() => {
-    if (!gameId) return;
+    if (!gameId || isAdmin) return;
     socket.emit('joinGame', gameId);
     fetchMap(gameId)
       .then(serverData => { if (serverData && serverData.regions) setGameState(serverData); })
@@ -95,7 +117,7 @@ function App() {
     const handleUpdate = (newData) => { if (newData) setGameState(prev => ({ ...prev, ...newData })); };
     socket.on('boardUpdate', handleUpdate);
     return () => socket.off('boardUpdate', handleUpdate);
-  }, [gameId]);
+  }, [gameId, isAdmin]);
 
   const updateGameWithSync = useCallback(async (newState) => {
     if (!gameId) return;
@@ -123,6 +145,10 @@ function App() {
     return { ...jakubType.defaultParameters, statuses: [], isVirtual: true };
   }, [gameState.regions, jakubType]);
 
+  const jakubRegion = useMemo(() => {
+    return gameState.regions.find(r => r.pawns.jakub && r.pawns.jakub.length > 0);
+  }, [gameState.regions]);
+
   const handleBagMouseDown = useCallback((typeId, e) => {
     const pawnType = PAWN_TYPES.find(p => p.id === typeId);
     if (pawnType.isUnique && counters.breakdown[typeId] > 0) return;
@@ -132,12 +158,12 @@ function App() {
 
   const handleSetMouseDown = useCallback((set, e) => {
     setActiveSet({ set, x: e.clientX, y: e.clientY });
-    setValidMoveTargets(gameState.regions.map(r => r.id));
+    const validIndices = gameState.regions.filter(r => !RACES.some(race => r.pawns[race]?.length > 0)).map(r => r.id);
+    setValidMoveTargets(validIndices);
   }, [gameState.regions]);
 
   const handleGeneralMouseDown = useCallback((race, e) => {
-    if (playerId) return; 
-    setActiveGeneral({ race, x: e.clientX, y: e.clientY });
+    if (playerId) return; setActiveGeneral({ race, x: e.clientX, y: e.clientY });
   }, [playerId]);
 
   const handlePawnMouseDown = useCallback((typeId, regionIndex, pawnInstanceIndex, e) => {
@@ -161,10 +187,7 @@ function App() {
     const handleGlobalMouseUp = () => { setActivePawn(null); setActiveSet(null); setActiveGeneral(null); setValidMoveTargets([]); };
     window.addEventListener('mousemove', handleMouseMove);
     window.addEventListener('mouseup', handleGlobalMouseUp);
-    return () => { 
-      window.removeEventListener('mousemove', handleMouseMove); 
-      window.removeEventListener('mouseup', handleGlobalMouseUp); 
-    };
+    return () => { window.removeEventListener('mousemove', handleMouseMove); window.removeEventListener('mouseup', handleGlobalMouseUp); };
   }, [activePawn, activeSet, activeGeneral]);
 
   const handleRegionMouseUp = useCallback((toIndex, e) => {
@@ -192,9 +215,15 @@ function App() {
     }
     if (activeSet) {
       e.stopPropagation();
+      if (!validMoveTargets.includes(toIndex)) { setActiveSet(null); setValidMoveTargets([]); return; }
       const newState = JSON.parse(JSON.stringify(gameState));
       const targetRegion = newState.regions[toIndex];
       const setOwner = newState.players.find(p => p.id === activeSet.set.ownerId);
+      if (setOwner && setOwner.generalOf) {
+        const points = calculateSetPlacementPoints(setOwner.generalOf, activeSet.set.content, targetRegion, jakubRegion);
+        const playerIdx = newState.players.findIndex(p => p.id === setOwner.id);
+        newState.players[playerIdx].points += points;
+      }
       Object.entries(activeSet.set.content).forEach(([typeId, count]) => {
         if (!targetRegion.pawns[typeId]) targetRegion.pawns[typeId] = [];
         for (let i = 0; i < count; i++) {
@@ -202,20 +231,13 @@ function App() {
           targetRegion.pawns[typeId].push({ statuses: [...pawnType.defaultStatuses], ...(pawnType.defaultParameters ? JSON.parse(JSON.stringify(pawnType.defaultParameters)) : {}) });
         }
       });
-      if (setOwner && setOwner.generalOf) {
-        const pointsToAdd = activeSet.set.content[setOwner.generalOf] || 0;
-        if (pointsToAdd > 0) {
-          const playerIdx = newState.players.findIndex(p => p.id === setOwner.id);
-          newState.players[playerIdx].points += pointsToAdd;
-        }
-      }
       const setIdx = newState.sets.items.findIndex(s => s.id === activeSet.set.id);
-      if (setIdx !== -1) newState.sets.items[setIdx].used = true;
+      if (setIdx !== -1) { newState.sets.items[setIdx].used = true; newState.sets.items[setIdx].ownerId = null; }
       updateGameWithSync(newState);
       setActiveSet(null);
       setValidMoveTargets([]);
     }
-  }, [activePawn, activeSet, gameState, gameId, validMoveTargets, updateGameWithSync]);
+  }, [activePawn, activeSet, gameState, gameId, validMoveTargets, jakubRegion, updateGameWithSync]);
 
   const handlePlayerMouseUp = useCallback((targetPlayerId) => {
     if (activeSet && !playerId) { 
@@ -241,9 +263,7 @@ function App() {
   const handleDistributeGenerals = useCallback(async () => {
     const newState = JSON.parse(JSON.stringify(gameState));
     const shuffledRaces = [...RACES].sort(() => Math.random() - 0.5);
-    newState.players.forEach((player, i) => {
-      player.generalOf = shuffledRaces[i];
-    });
+    newState.players.forEach((player, i) => { player.generalOf = shuffledRaces[i]; });
     newState.availableGenerals = [];
     await updateGameWithSync(newState);
   }, [gameState, updateGameWithSync]);
@@ -251,62 +271,61 @@ function App() {
   const handleDistributeSets = useCallback(async () => {
     const newState = JSON.parse(JSON.stringify(gameState));
     const globalSets = newState.sets.items.filter(s => s.ownerId === null && !s.used);
+    if (globalSets.length < 4) { alert("Not enough global sets."); return; }
+    const setsPerPlayer = Math.min(5, Math.floor(globalSets.length / 4));
     newState.players.forEach(player => {
-      for (let i = 0; i < 5; i++) {
-        if (globalSets.length > 0) {
-          const randomIdx = Math.floor(Math.random() * globalSets.length);
-          const set = globalSets.splice(randomIdx, 1)[0];
-          const originalSetIdx = newState.sets.items.findIndex(s => s.id === set.id);
-          newState.sets.items[originalSetIdx].ownerId = player.id;
-        }
+      for (let i = 0; i < setsPerPlayer; i++) {
+        const randomIdx = Math.floor(Math.random() * globalSets.length);
+        const set = globalSets.splice(randomIdx, 1)[0];
+        const originalSetIdx = newState.sets.items.findIndex(s => s.id === set.id);
+        newState.sets.items[originalSetIdx].ownerId = player.id;
       }
     });
     await updateGameWithSync(newState);
   }, [gameState, updateGameWithSync]);
 
+  const handleSimulatePlacements = useCallback(async () => {
+    const workState = JSON.parse(JSON.stringify(gameState));
+    const passedPlayers = new Set();
+    while (true) {
+      const activePlayers = workState.players.filter(p => !passedPlayers.has(p.id));
+      if (activePlayers.length === 0) break;
+      const sortedActive = [...activePlayers].sort((a, b) => a.points - b.points || a.id - b.id);
+      const currentPlayer = sortedActive[0];
+      const playerIdx = workState.players.findIndex(p => p.id === currentPlayer.id);
+      const mySets = workState.sets.items.filter(s => s.ownerId === currentPlayer.id && !s.used);
+      const emptyRegions = workState.regions.filter(r => !RACES.some(race => r.pawns[race]?.length > 0));
+      if (mySets.length === 0 || emptyRegions.length === 0) { passedPlayers.add(currentPlayer.id); continue; }
+      let bestMove = null;
+      mySets.forEach(set => {
+        emptyRegions.forEach(region => {
+          const pts = calculateSetPlacementPoints(currentPlayer.generalOf, set.content, region, jakubRegion);
+          if (!bestMove || pts > bestMove.pts) { bestMove = { set, region, pts }; }
+        });
+      });
+      if (bestMove && !(bestMove.pts <= 0 && mySets.length <= 2)) {
+        const targetRegion = workState.regions[bestMove.region.id];
+        Object.entries(bestMove.set.content).forEach(([typeId, count]) => {
+          if (!targetRegion.pawns[typeId]) targetRegion.pawns[typeId] = [];
+          for (let i = 0; i < count; i++) {
+            const pawnType = PAWN_TYPES.find(p => p.id === typeId);
+            targetRegion.pawns[typeId].push({ statuses: [...pawnType.defaultStatuses], ...(pawnType.defaultParameters ? JSON.parse(JSON.stringify(pawnType.defaultParameters)) : {}) });
+          }
+        });
+        workState.players[playerIdx].points += bestMove.pts;
+        const setIdx = workState.sets.items.findIndex(s => s.id === bestMove.set.id);
+        workState.sets.items[setIdx].used = true; workState.sets.items[setIdx].ownerId = null;
+        continue;
+      }
+      passedPlayers.add(currentPlayer.id);
+    }
+    await updateGameWithSync(workState);
+  }, [gameState, jakubRegion, updateGameWithSync]);
+
   const handlePhaseTransition = useCallback(async (newPhase) => {
     const newState = JSON.parse(JSON.stringify(gameState));
     newState.phase = newPhase;
     await updateGameWithSync(newState);
-  }, [gameState, updateGameWithSync]);
-
-  const handleRegionRemove = useCallback((index, typeId) => {
-    if (!gameId) return;
-    const newState = JSON.parse(JSON.stringify(gameState));
-    if (newState.regions[index].pawns[typeId] && newState.regions[index].pawns[typeId].length > 0) {
-      newState.regions[index].pawns[typeId].pop();
-      if (newState.regions[index].pawns[typeId].length === 0) delete newState.regions[index].pawns[typeId];
-      updateGameWithSync(newState); setHoveredPawn(null);
-    }
-  }, [gameState, gameId, updateGameWithSync]);
-
-  const handleRegionAdd = useCallback((index, typeId) => {
-    if (!gameId) return;
-    const pawnType = PAWN_TYPES.find(p => p.id === typeId);
-    if (!pawnType || (pawnType.isUnique && counters.breakdown[typeId] > 0)) return;
-    const newState = JSON.parse(JSON.stringify(gameState));
-    const newPawn = { statuses: [...pawnType.defaultStatuses], ...(pawnType.defaultParameters ? JSON.parse(JSON.stringify(pawnType.defaultParameters)) : {}) };
-    if (!newState.regions[index].pawns[typeId]) newState.regions[index].pawns[typeId] = [];
-    newState.regions[index].pawns[typeId].push(newPawn);
-    updateGameWithSync(newState);
-  }, [gameState, gameId, counters.breakdown, updateGameWithSync]);
-
-  const handleJakubCounterUpdate = useCallback((path, delta) => {
-    if (!gameId) return;
-    const newState = JSON.parse(JSON.stringify(gameState));
-    let target = null;
-    for (const region of newState.regions) { if (region.pawns.jakub && region.pawns.jakub.length > 0) { target = region.pawns.jakub[0]; break; } }
-    if (!target) return;
-    let curr = target;
-    for (let i = 0; i < path.length - 1; i++) curr = curr[path[i]];
-    curr[path[path.length - 1]] = Math.max(0, curr[path[path.length - 1]] + delta);
-    updateGameWithSync(newState);
-  }, [gameState, gameId, updateGameWithSync]);
-
-  const handleUpdatePoints = useCallback((playerIndex, delta) => {
-    const newState = JSON.parse(JSON.stringify(gameState));
-    newState.players[playerIndex].points = Math.max(0, newState.players[playerIndex].points + delta);
-    updateGameWithSync(newState);
   }, [gameState, updateGameWithSync]);
 
   const handleResetBoard = useCallback(async () => {
@@ -315,33 +334,32 @@ function App() {
     }
   }, [gameId]);
 
-  const filteredSets = useMemo(() => {
-    if (!gameState.sets) return [];
-    if (playerId) return gameState.sets.items.filter(s => s.ownerId === playerId);
-    return gameState.sets.items.filter(s => s.ownerId === null);
-  }, [gameState.sets, playerId]);
-
+  if (isAdmin) return <AdminPanel />;
   if (!gameId) return <LandingPage inputGameId={inputGameId} setInputGameId={setInputGameId} onGoToGame={(e) => { e.preventDefault(); if (inputGameId.trim()) { window.location.href = `/game/${inputGameId.trim()}`; } }} />;
+
+  const filteredSets = gameState.sets ? (playerId ? gameState.sets.items.filter(s => s.ownerId === playerId) : gameState.sets.items.filter(s => s.ownerId === null)) : [];
+  const allPlayersAssigned = gameState.players && gameState.players.length === 4 && gameState.players.every(p => p.generalOf !== null);
 
   return (
     <div className="app-container">
       <div className="top-header-bar">
         <button className="menu-toggle-btn" onClick={() => setIsMenuOpen(!isMenuOpen)}><div className="hamburger-icon"><span></span><span></span><span></span></div></button>
-        <div className="game-id-info">Game ID: <strong>{gameId}</strong> <span className="phase-indicator">{gameState.phase}</span></div>
+        <div className="game-id-info">
+          Game ID: <strong>{gameId}</strong> 
+          <span className="phase-indicator">{gameState.phase}</span>
+          {gameState.setName && <span className="set-name-indicator">Set: {gameState.setName}</span>}
+        </div>
         <div className="header-actions">
           {gameState.phase === 'setup' && (
             <>
               <button className="action-button download-btn" onClick={handleDistributeGenerals}>Assign Generals</button>
               <button className="action-button upload-btn" onClick={handleDistributeSets}>Distribute Sets</button>
+              <button className="action-button" style={{ backgroundColor: '#d35400' }} onClick={handleSimulatePlacements}>Auto Setup</button>
               <button className="action-button next-btn" onClick={() => handlePhaseTransition('player_phase')}>Go to Player Phase</button>
             </>
           )}
-          {gameState.phase === 'player_phase' && (
-            <button className="action-button next-btn" onClick={() => handlePhaseTransition('jakub_phase')}>Finish Player Phase</button>
-          )}
-          {gameState.phase === 'jakub_phase' && (
-            <button className="action-button reset-btn" onClick={() => handlePhaseTransition('setup')}>Finish Jakub Phase</button>
-          )}
+          {gameState.phase === 'player_phase' && <button className="action-button next-btn" onClick={() => handlePhaseTransition('jakub_phase')}>Finish Player Phase</button>}
+          {gameState.phase === 'jakub_phase' && <button className="action-button reset-btn" onClick={() => handlePhaseTransition('setup')}>Finish Jakub Phase</button>}
           <button className={`sets-toggle-btn ${isSetsPanelOpen ? 'active' : ''}`} onClick={() => setIsSetsPanelOpen(!isSetsPanelOpen)}>SETS</button>
         </div>
         {isMenuOpen && (
@@ -351,7 +369,8 @@ function App() {
               <button className="menu-item" onClick={() => { const dataStr = JSON.stringify(gameState, null, 2); const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr); const link = document.createElement('a'); link.href = dataUri; link.download = `game_${gameId}.json`; link.click(); }}>Download Board</button>
               <label className="menu-item">Upload Board<input type="file" accept=".json" onChange={(e) => { const file = e.target.files[0]; if (!file) return; const reader = new FileReader(); reader.onload = async (ev) => { try { const data = JSON.parse(ev.target.result); if (data && data.regions) await updateGameWithSync(data); } catch (err) { alert('Failed'); } }; reader.readAsText(file); setIsMenuOpen(false); }} style={{ display: 'none' }} /></label>
               <button className="menu-item reset" onClick={handleResetBoard}>Reset Game</button>
-              <button className="menu-item" onClick={() => { window.history.pushState({}, '', '/'); setGameId(null); setGameState(INITIAL_STATE); }}>Change Game</button>
+              <button className="menu-item" onClick={() => { window.history.pushState({}, '', '/'); setGameId(null); setGameState(INITIAL_STATE); setIsAdmin(false); }}>Change Game</button>
+              <button className="menu-item" onClick={() => { window.history.pushState({}, '', '/admin'); setIsAdmin(true); setGameId(null); setIsMenuOpen(false); }}>Admin Panel</button>
             </div>
           </>
         )}

@@ -15,6 +15,9 @@ const LandingPage = ({ inputGameId, setInputGameId, onGoToGame }) => {
         />
         <button type="submit" className="action-button upload-btn">Go to Game</button>
       </form>
+      <div className="landing-footer">
+        <a href="/admin" className="admin-link">Open Admin Control Panel</a>
+      </div>
     </div>
   );
 };

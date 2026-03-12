@@ -1,0 +1,364 @@
+{
+  "pawns": {
+    "bardak": 60,
+    "ghost": 30,
+    "werewolf": 20,
+    "vampire": 10
+  },
+  "power": {
+    "vampire": 4,
+    "werewolf": 3,
+    "ghost": 2,
+    "bardak": 1
+  },
+  "items": [
+    {
+      "id": 1,
+      "content": {
+        "vampire": 1,
+        "werewolf": 1
+      },
+      "used": false,
+      "power": 7,
+      "ownerId": null
+    },
+    {
+      "id": 2,
+      "content": {
+        "bardak": 2,
+        "ghost": 1,
+        "werewolf": 1
+      },
+      "used": false,
+      "power": 7,
+      "ownerId": null
+    },
+    {
+      "id": 3,
+      "content": {
+        "bardak": 2,
+        "ghost": 1,
+        "werewolf": 1
+      },
+      "used": true,
+      "power": 7,
+      "ownerId": null
+    },
+    {
+      "id": 4,
+      "content": {
+        "bardak": 3,
+        "vampire": 1
+      },
+      "used": false,
+      "power": 7,
+      "ownerId": null
+    },
+    {
+      "id": 5,
+      "content": {
+        "ghost": 1,
+        "vampire": 1
+      },
+      "used": false,
+      "power": 6,
+      "ownerId": null
+    },
+    {
+      "id": 6,
+      "content": {
+        "bardak": 2,
+        "ghost": 1,
+        "werewolf": 1
+      },
+      "used": false,
+      "power": 7,
+      "ownerId": null
+    },
+    {
+      "id": 7,
+      "content": {
+        "vampire": 1,
+        "werewolf": 1
+      },
+      "used": true,
+      "power": 7,
+      "ownerId": null
+    },
+    {
+      "id": 8,
+      "content": {
+        "ghost": 1,
+        "bardak": 1,
+        "vampire": 1
+      },
+      "used": true,
+      "power": 7,
+      "ownerId": null
+    },
+    {
+      "id": 9,
+      "content": {
+        "ghost": 1,
+        "werewolf": 1,
+        "bardak": 2
+      },
+      "used": true,
+      "power": 7,
+      "ownerId": null
+    },
+    {
+      "id": 10,
+      "content": {
+        "bardak": 2,
+        "ghost": 1,
+        "werewolf": 1
+      },
+      "used": false,
+      "power": 7,
+      "ownerId": null
+    },
+    {
+      "id": 11,
+      "content": {
+        "ghost": 1,
+        "bardak": 1,
+        "vampire": 1
+      },
+      "used": true,
+      "power": 7,
+      "ownerId": null
+    },
+    {
+      "id": 12,
+      "content": {
+        "ghost": 1,
+        "bardak": 2,
+        "werewolf": 1
+      },
+      "used": true,
+      "power": 7,
+      "ownerId": null
+    },
+    {
+      "id": 13,
+      "content": {
+        "vampire": 1,
+        "werewolf": 1
+      },
+      "used": false,
+      "power": 7,
+      "ownerId": null
+    },
+    {
+      "id": 14,
+      "content": {
+        "bardak": 2,
+        "ghost": 1,
+        "werewolf": 1
+      },
+      "used": false,
+      "power": 7,
+      "ownerId": null
+    },
+    {
+      "id": 15,
+      "content": {
+        "vampire": 1,
+        "ghost": 1,
+        "bardak": 1
+      },
+      "used": true,
+      "power": 7,
+      "ownerId": null
+    },
+    {
+      "id": 16,
+      "content": {
+        "werewolf": 1,
+        "bardak": 2,
+        "ghost": 1
+      },
+      "used": true,
+      "power": 7,
+      "ownerId": null
+    },
+    {
+      "id": 17,
+      "content": {
+        "vampire": 1,
+        "bardak": 1,
+        "ghost": 1
+      },
+      "used": true,
+      "power": 7,
+      "ownerId": null
+    },
+    {
+      "id": 18,
+      "content": {
+        "werewolf": 1,
+        "ghost": 2
+      },
+      "used": false,
+      "power": 7,
+      "ownerId": null
+    },
+    {
+      "id": 19,
+      "content": {
+        "werewolf": 1,
+        "ghost": 2
+      },
+      "used": true,
+      "power": 7,
+      "ownerId": null
+    },
+    {
+      "id": 20,
+      "content": {
+        "vampire": 1,
+        "werewolf": 1
+      },
+      "used": true,
+      "power": 7,
+      "ownerId": null
+    },
+    {
+      "id": 21,
+      "content": {
+        "bardak": 2,
+        "ghost": 1,
+        "werewolf": 1
+      },
+      "used": false,
+      "power": 7,
+      "ownerId": null
+    },
+    {
+      "id": 22,
+      "content": {
+        "bardak": 2,
+        "ghost": 1,
+        "werewolf": 1
+      },
+      "used": true,
+      "power": 7,
+      "ownerId": null
+    },
+    {
+      "id": 23,
+      "content": {
+        "werewolf": 1,
+        "bardak": 2,
+        "ghost": 1
+      },
+      "used": true,
+      "power": 7,
+      "ownerId": null
+    },
+    {
+      "id": 24,
+      "content": {
+        "ghost": 1,
+        "bardak": 2,
+        "werewolf": 1
+      },
+      "used": true,
+      "power": 7,
+      "ownerId": null
+    },
+    {
+      "id": 25,
+      "content": {
+        "bardak": 2,
+        "ghost": 1,
+        "werewolf": 1
+      },
+      "used": true,
+      "power": 7,
+      "ownerId": null
+    },
+    {
+      "id": 26,
+      "content": {
+        "werewolf": 1,
+        "ghost": 1,
+        "bardak": 2
+      },
+      "used": true,
+      "power": 7,
+      "ownerId": null
+    },
+    {
+      "id": 27,
+      "content": {
+        "bardak": 4,
+        "ghost": 1
+      },
+      "used": true,
+      "power": 6,
+      "ownerId": null
+    },
+    {
+      "id": 28,
+      "content": {
+        "ghost": 3,
+        "bardak": 1
+      },
+      "used": true,
+      "power": 7,
+      "ownerId": null
+    },
+    {
+      "id": 29,
+      "content": {
+        "bardak": 4,
+        "ghost": 1
+      },
+      "used": true,
+      "power": 6,
+      "ownerId": null
+    },
+    {
+      "id": 30,
+      "content": {
+        "ghost": 2,
+        "bardak": 3
+      },
+      "used": false,
+      "power": 7,
+      "ownerId": null
+    },
+    {
+      "id": 31,
+      "content": {
+        "bardak": 5
+      },
+      "used": false,
+      "power": 5,
+      "ownerId": null
+    },
+    {
+      "id": 32,
+      "content": {
+        "bardak": 5
+      },
+      "used": true,
+      "power": 5,
+      "ownerId": null
+    },
+    {
+      "id": 33,
+      "content": {
+        "bardak": 3
+      },
+      "used": false,
+      "power": 3,
+      "ownerId": null
+    }
+  ],
+  "maxPower": 7,
+  "displayName": "Max power 7",
+  "description": ""
+}

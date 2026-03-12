@@ -9,6 +9,8 @@ const API_BASE = 'http://localhost:3001/api/map';
 const usage = `
 Usage:
   node cli.js --game <id> --get                           Download current board state to stdout
+  node cli.js --game <id> --status                        Fetch points and generals per player
+  node cli.js --game <id> --init                          Full reset, distribute, and auto-setup
   node cli.js --game <id> --upload <file>                 Upload board state from a JSON file
   node cli.js --game <id> --reset                         Reset board state to empty
   node cli.js --game <id> --add <region> <pawnType>       Add pawn to specific region (0-24)
@@ -25,7 +27,9 @@ async function run() {
   }
   const gameId = args[gameIndex + 1];
   const command = args[gameIndex + 2];
-  const API_URL = `${API_BASE}/${gameId}`;
+  const API_URL = `http://localhost:3001/api/map/${gameId}`;
+  const STATUS_URL = `http://localhost:3001/api/status/${gameId}`;
+  const INIT_URL = `http://localhost:3001/api/init/${gameId}`;
 
   if (command === '--get') {
     try {
@@ -34,6 +38,25 @@ async function run() {
       console.log(JSON.stringify(data, null, 2));
     } catch (err) {
       console.error('Error fetching map:', err.message);
+    }
+  } else if (command === '--init') {
+    try {
+      const res = await fetch(INIT_URL, { method: 'POST' });
+      const data = await res.json();
+      console.log(data.message);
+    } catch (err) {
+      console.error('Error initializing game:', err.message);
+    }
+  } else if (command === '--status') {
+    try {
+      const res = await fetch(STATUS_URL);
+      const data = await res.json();
+      console.log(`Status for Game ${data.gameId}:`);
+      data.players.forEach(p => {
+        console.log(`  Player ${p.id} (${p.name}): ${p.points} pts | General of: ${p.generalOf}`);
+      });
+    } catch (err) {
+      console.error('Error fetching status:', err.message);
     }
   } else if (command === '--upload') {
     const filePath = args[gameIndex + 3];

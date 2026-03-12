@@ -1,0 +1,26 @@
+[
+  {
+    "id": 1,
+    "name": "1",
+    "points": 17,
+    "generalOf": "vampire"
+  },
+  {
+    "id": 2,
+    "name": "2",
+    "points": 15,
+    "generalOf": "werewolf"
+  },
+  {
+    "id": 3,
+    "name": "3",
+    "points": 27,
+    "generalOf": "bardak"
+  },
+  {
+    "id": 4,
+    "name": "4",
+    "points": 18,
+    "generalOf": "ghost"
+  }
+]

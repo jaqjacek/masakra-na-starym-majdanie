@@ -2,25 +2,25 @@
   {
     "id": 1,
     "name": "1",
-    "points": 10,
+    "points": 27,
     "generalOf": "bardak"
   },
   {
     "id": 2,
     "name": "2",
-    "points": 10,
-    "generalOf": "vampire"
+    "points": 18,
+    "generalOf": "ghost"
   },
   {
     "id": 3,
     "name": "3",
-    "points": 10,
+    "points": 17,
     "generalOf": "werewolf"
   },
   {
     "id": 4,
     "name": "4",
-    "points": 10,
-    "generalOf": "ghost"
+    "points": 15,
+    "generalOf": "vampire"
   }
 ]

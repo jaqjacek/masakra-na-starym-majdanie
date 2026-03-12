@@ -25,22 +25,27 @@ const PointsTracker = ({ players, onUpdatePoints, currentPlayerId, onPlayerMouse
             className={`player-point-item ${isMe ? 'me-item' : ''}`}
             onMouseUp={() => onPlayerMouseUp && onPlayerMouseUp(player.id)}
           >
-            <div className="player-name-container">
-              <span className={`player-name ${isMe ? 'is-me' : ''}`} title={displayName}>
-                {displayName}
-              </span>
-              {!currentPlayerId && (
-                <div 
-                  className="player-select-dot" 
-                  onClick={() => handleSelectPlayer(player.id)}
-                  title={`Join as ${displayName}`}
-                ></div>
+            <div className="player-general-info">
+              {player.generalOf && (
+                <div className={`general-icon ${player.generalOf}`} title={`General of ${player.generalOf}s`}></div>
               )}
-              {ownedSetsCount > 0 && (
-                <div className="owned-sets-badge" title={`${ownedSetsCount} sets ready`}>
-                  S:{ownedSetsCount}
-                </div>
-              )}
+              <div className="player-name-container">
+                <span className={`player-name ${isMe ? 'is-me' : ''}`} title={displayName}>
+                  {displayName}
+                </span>
+                {!currentPlayerId && (
+                  <div 
+                    className="player-select-dot" 
+                    onClick={() => handleSelectPlayer(player.id)}
+                    title={`Join as ${displayName}`}
+                  ></div>
+                )}
+                {ownedSetsCount > 0 && (
+                  <div className="owned-sets-badge" title={`${ownedSetsCount} sets ready`}>
+                    S:{ownedSetsCount}
+                  </div>
+                )}
+              </div>
             </div>
             <span 
               className="player-points interactive" 

@@ -29,10 +29,14 @@ const createEmptyBoard = () => {
   return regions;
 };
 
+const RACES = ['vampire', 'werewolf', 'ghost', 'bardak'];
+
 const INITIAL_STATE = {
   regions: createEmptyBoard(),
-  players: [{ id: 1, name: '', points: 10 }, { id: 2, name: '', points: 10 }, { id: 3, name: '', points: 10 }, { id: 4, name: '', points: 10 }],
-  sets: { pawns: { bardak: 80, ghost: 30, werewolf: 20, vampire: 10 }, items: [] }
+  players: [],
+  sets: { pawns: { bardak: 80, ghost: 30, werewolf: 20, vampire: 10 }, items: [] },
+  phase: 'setup',
+  availableGenerals: [...RACES]
 };
 
 const getReachableRegions = (board, startIndex, range) => {
@@ -60,6 +64,7 @@ function App() {
   const [gameState, setGameState] = useState(INITIAL_STATE);
   const [activePawn, setActivePawn] = useState(null); 
   const [activeSet, setActiveSet] = useState(null); 
+  const [activeGeneral, setActiveGeneral] = useState(null); 
   const [hoveredPawn, setHoveredPawn] = useState(null);
   const [validMoveTargets, setValidMoveTargets] = useState([]);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -130,6 +135,11 @@ function App() {
     setValidMoveTargets(gameState.regions.map(r => r.id));
   }, [gameState.regions]);
 
+  const handleGeneralMouseDown = useCallback((race, e) => {
+    if (playerId) return; 
+    setActiveGeneral({ race, x: e.clientX, y: e.clientY });
+  }, [playerId]);
+
   const handlePawnMouseDown = useCallback((typeId, regionIndex, pawnInstanceIndex, e) => {
     const instances = gameState.regions[regionIndex].pawns[typeId];
     const pawn = instances[pawnInstanceIndex];
@@ -146,12 +156,16 @@ function App() {
     const handleMouseMove = (e) => { 
       if (activePawn) setActivePawn(prev => ({ ...prev, x: e.clientX, y: e.clientY }));
       if (activeSet) setActiveSet(prev => ({ ...prev, x: e.clientX, y: e.clientY }));
+      if (activeGeneral) setActiveGeneral(prev => ({ ...prev, x: e.clientX, y: e.clientY }));
     };
-    const handleGlobalMouseUp = () => { setActivePawn(null); setActiveSet(null); setValidMoveTargets([]); };
+    const handleGlobalMouseUp = () => { setActivePawn(null); setActiveSet(null); setActiveGeneral(null); setValidMoveTargets([]); };
     window.addEventListener('mousemove', handleMouseMove);
     window.addEventListener('mouseup', handleGlobalMouseUp);
-    return () => { window.removeEventListener('mousemove', handleMouseMove); window.removeEventListener('mouseup', handleGlobalMouseUp); };
-  }, [activePawn, activeSet]);
+    return () => { 
+      window.removeEventListener('mousemove', handleMouseMove); 
+      window.removeEventListener('mouseup', handleGlobalMouseUp); 
+    };
+  }, [activePawn, activeSet, activeGeneral]);
 
   const handleRegionMouseUp = useCallback((toIndex, e) => {
     if (!gameId) return;
@@ -180,6 +194,7 @@ function App() {
       e.stopPropagation();
       const newState = JSON.parse(JSON.stringify(gameState));
       const targetRegion = newState.regions[toIndex];
+      const setOwner = newState.players.find(p => p.id === activeSet.set.ownerId);
       Object.entries(activeSet.set.content).forEach(([typeId, count]) => {
         if (!targetRegion.pawns[typeId]) targetRegion.pawns[typeId] = [];
         for (let i = 0; i < count; i++) {
@@ -187,6 +202,13 @@ function App() {
           targetRegion.pawns[typeId].push({ statuses: [...pawnType.defaultStatuses], ...(pawnType.defaultParameters ? JSON.parse(JSON.stringify(pawnType.defaultParameters)) : {}) });
         }
       });
+      if (setOwner && setOwner.generalOf) {
+        const pointsToAdd = activeSet.set.content[setOwner.generalOf] || 0;
+        if (pointsToAdd > 0) {
+          const playerIdx = newState.players.findIndex(p => p.id === setOwner.id);
+          newState.players[playerIdx].points += pointsToAdd;
+        }
+      }
       const setIdx = newState.sets.items.findIndex(s => s.id === activeSet.set.id);
       if (setIdx !== -1) newState.sets.items[setIdx].used = true;
       updateGameWithSync(newState);
@@ -196,16 +218,57 @@ function App() {
   }, [activePawn, activeSet, gameState, gameId, validMoveTargets, updateGameWithSync]);
 
   const handlePlayerMouseUp = useCallback((targetPlayerId) => {
-    if (activeSet && !playerId) { // Only spectators (admins) can distribute sets
+    if (activeSet && !playerId) { 
       const newState = JSON.parse(JSON.stringify(gameState));
       const setIdx = newState.sets.items.findIndex(s => s.id === activeSet.set.id);
-      if (setIdx !== -1) {
-        newState.sets.items[setIdx].ownerId = targetPlayerId;
-        updateGameWithSync(newState);
-      }
+      if (setIdx !== -1) { newState.sets.items[setIdx].ownerId = targetPlayerId; updateGameWithSync(newState); }
       setActiveSet(null);
     }
-  }, [activeSet, gameState, playerId, updateGameWithSync]);
+    if (activeGeneral && !playerId) { 
+      const newState = JSON.parse(JSON.stringify(gameState));
+      const playerIdx = newState.players.findIndex(p => p.id === targetPlayerId);
+      if (playerIdx !== -1) {
+        const oldRace = newState.players[playerIdx].generalOf;
+        if (oldRace) newState.availableGenerals.push(oldRace);
+        newState.players[playerIdx].generalOf = activeGeneral.race;
+        newState.availableGenerals = newState.availableGenerals.filter(r => r !== activeGeneral.race);
+        updateGameWithSync(newState);
+      }
+      setActiveGeneral(null);
+    }
+  }, [activeSet, activeGeneral, gameState, playerId, updateGameWithSync]);
+
+  const handleDistributeGenerals = useCallback(async () => {
+    const newState = JSON.parse(JSON.stringify(gameState));
+    const shuffledRaces = [...RACES].sort(() => Math.random() - 0.5);
+    newState.players.forEach((player, i) => {
+      player.generalOf = shuffledRaces[i];
+    });
+    newState.availableGenerals = [];
+    await updateGameWithSync(newState);
+  }, [gameState, updateGameWithSync]);
+
+  const handleDistributeSets = useCallback(async () => {
+    const newState = JSON.parse(JSON.stringify(gameState));
+    const globalSets = newState.sets.items.filter(s => s.ownerId === null && !s.used);
+    newState.players.forEach(player => {
+      for (let i = 0; i < 5; i++) {
+        if (globalSets.length > 0) {
+          const randomIdx = Math.floor(Math.random() * globalSets.length);
+          const set = globalSets.splice(randomIdx, 1)[0];
+          const originalSetIdx = newState.sets.items.findIndex(s => s.id === set.id);
+          newState.sets.items[originalSetIdx].ownerId = player.id;
+        }
+      }
+    });
+    await updateGameWithSync(newState);
+  }, [gameState, updateGameWithSync]);
+
+  const handlePhaseTransition = useCallback(async (newPhase) => {
+    const newState = JSON.parse(JSON.stringify(gameState));
+    newState.phase = newPhase;
+    await updateGameWithSync(newState);
+  }, [gameState, updateGameWithSync]);
 
   const handleRegionRemove = useCallback((index, typeId) => {
     if (!gameId) return;
@@ -213,8 +276,7 @@ function App() {
     if (newState.regions[index].pawns[typeId] && newState.regions[index].pawns[typeId].length > 0) {
       newState.regions[index].pawns[typeId].pop();
       if (newState.regions[index].pawns[typeId].length === 0) delete newState.regions[index].pawns[typeId];
-      updateGameWithSync(newState);
-      setHoveredPawn(null);
+      updateGameWithSync(newState); setHoveredPawn(null);
     }
   }, [gameState, gameId, updateGameWithSync]);
 
@@ -265,8 +327,21 @@ function App() {
     <div className="app-container">
       <div className="top-header-bar">
         <button className="menu-toggle-btn" onClick={() => setIsMenuOpen(!isMenuOpen)}><div className="hamburger-icon"><span></span><span></span><span></span></div></button>
-        <div className="game-id-info">Game ID: <strong>{gameId}</strong></div>
+        <div className="game-id-info">Game ID: <strong>{gameId}</strong> <span className="phase-indicator">{gameState.phase}</span></div>
         <div className="header-actions">
+          {gameState.phase === 'setup' && (
+            <>
+              <button className="action-button download-btn" onClick={handleDistributeGenerals}>Assign Generals</button>
+              <button className="action-button upload-btn" onClick={handleDistributeSets}>Distribute Sets</button>
+              <button className="action-button next-btn" onClick={() => handlePhaseTransition('player_phase')}>Go to Player Phase</button>
+            </>
+          )}
+          {gameState.phase === 'player_phase' && (
+            <button className="action-button next-btn" onClick={() => handlePhaseTransition('jakub_phase')}>Finish Player Phase</button>
+          )}
+          {gameState.phase === 'jakub_phase' && (
+            <button className="action-button reset-btn" onClick={() => handlePhaseTransition('setup')}>Finish Jakub Phase</button>
+          )}
           <button className={`sets-toggle-btn ${isSetsPanelOpen ? 'active' : ''}`} onClick={() => setIsSetsPanelOpen(!isSetsPanelOpen)}>SETS</button>
         </div>
         {isMenuOpen && (
@@ -284,6 +359,16 @@ function App() {
 
       <div className="game-layout-wrapper">
         <div className="left-controls">
+          {gameState.phase === 'setup' && gameState.availableGenerals && (
+            <div className="generals-pool">
+              <h4>General Pool</h4>
+              <div className="generals-list">
+                {gameState.availableGenerals.map(race => (
+                  <div key={race} className={`general-icon large ${race}`} onMouseDown={(e) => handleGeneralMouseDown(race, e)}></div>
+                ))}
+              </div>
+            </div>
+          )}
           <div className="bags-container">
             {PAWN_TYPES.map(pawn => (
               <Bag key={pawn.id} type={pawn} onMouseDown={(e) => handleBagMouseDown(pawn.id, e)} disabled={pawn.isUnique && counters.breakdown[pawn.id] > 0} />
@@ -303,7 +388,8 @@ function App() {
       
       {activePawn && <PawnGhost type={PAWN_TYPES.find(p => p.id === activePawn.typeId)} x={activePawn.x} y={activePawn.y} />}
       {activeSet && <div className="set-ghost" style={{ left: activeSet.x, top: activeSet.y }}><div className="set-ghost-badge">Set {activeSet.set.id}</div></div>}
-      {hoveredPawn && !activePawn && !activeSet && <PawnStatusPopup pawn={hoveredPawn.pawn} pawnType={hoveredPawn.pawnType} position={{ x: hoveredPawn.x, y: hoveredPawn.y }} />}
+      {activeGeneral && <div className="general-ghost" style={{ left: activeGeneral.x, top: activeGeneral.y }}><div className={`general-icon large ${activeGeneral.race}`}></div></div>}
+      {hoveredPawn && !activePawn && !activeSet && !activeGeneral && <PawnStatusPopup pawn={hoveredPawn.pawn} pawnType={hoveredPawn.pawnType} position={{ x: hoveredPawn.x, y: hoveredPawn.y }} />}
     </div>
   );
 }

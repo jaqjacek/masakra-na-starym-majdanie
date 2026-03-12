@@ -1,0 +1,9 @@
+{
+  "phase": "setup",
+  "availableGenerals": [
+    "vampire",
+    "werewolf",
+    "ghost",
+    "bardak"
+  ]
+}

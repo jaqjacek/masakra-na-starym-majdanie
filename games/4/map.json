@@ -143,7 +143,23 @@
       11,
       13
     ],
-    "pawns": {}
+    "pawns": {
+      "jakub": [
+        {
+          "statuses": [
+            "ENABLED"
+          ],
+          "speed": 1,
+          "range": 1,
+          "anger": {
+            "vampire": 0,
+            "werewolf": 0,
+            "ghost": 0,
+            "bardak": 0
+          }
+        }
+      ]
+    }
   },
   {
     "id": 13,

@@ -1,11 +1,15 @@
 import React from 'react';
-import { PAWN_TYPES, STATUSES } from '../constants/pawnTypes';
+import { PAWN_TYPES, STATUSES, SUMMARY_PAWN_IDS } from '../constants/pawnTypes';
 
 const Region = ({ index, pawnGroups, onMouseUp, onRemovePawn, onAddPawn, onPawnMouseDown, setHoveredPawn, isValidTarget }) => {
-  const summary = PAWN_TYPES.map(type => ({
-    ...type,
-    count: pawnGroups[type.id] ? pawnGroups[type.id].length : 0
-  })).sort((a, b) => b.count - a.count);
+  // Calculate summary counts for specific pawn types defined in SUMMARY_PAWN_IDS
+  const summary = SUMMARY_PAWN_IDS.map(id => {
+    const type = PAWN_TYPES.find(t => t.id === id);
+    return {
+      ...type,
+      count: pawnGroups[id] ? pawnGroups[id].length : 0
+    };
+  }).sort((a, b) => b.count - a.count);
 
   return (
     <div 

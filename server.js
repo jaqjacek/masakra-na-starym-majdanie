@@ -24,165 +24,160 @@ const PORT = process.env.PORT || 3001;
 app.use(cors());
 app.use(express.json());
 
-// Ensure games directory exists
 if (!fs.existsSync(GAMES_DIR)) {
   fs.mkdirSync(GAMES_DIR);
 }
 
-// Helper to generate 5x5 board with neighbors
-const createInitialBoard = () => {
+const createEmptyRegions = () => {
   const size = 5;
   const regions = [];
-
   for (let i = 0; i < size * size; i++) {
-    const x = i % size;
-    const y = Math.floor(i / size);
-    regions.push({
-      id: i,
-      x,
-      y,
-      neighbors: [],
-      pawns: {} // container for pawn types: { typeId: [instances] }
-    });
+    regions.push({ id: i, x: i % size, y: Math.floor(i / size), neighbors: [], pawns: {} });
   }
-
-  // Calculate neighbors for each region (orthogonal only: up, down, left, right)
   regions.forEach(region => {
     const { x, y } = region;
-    // Top
     if (y > 0) region.neighbors.push((y - 1) * size + x);
-    // Bottom
     if (y < size - 1) region.neighbors.push((y + 1) * size + x);
-    // Left
     if (x > 0) region.neighbors.push(y * size + (x - 1));
-    // Right
     if (x < size - 1) region.neighbors.push(y * size + (x + 1));
   });
-
   return regions;
 };
 
-const INITIAL_BOARD = createInitialBoard();
+const DEFAULT_PLAYERS = [
+  { id: 1, name: '1', points: 10 },
+  { id: 2, name: '2', points: 10 },
+  { id: 3, name: '3', points: 10 },
+  { id: 4, name: '4', points: 10 }
+];
 
-// Helper to get game file path and initialize if needed
-const getGameData = (gameId) => {
+const ensureGameDir = (gameId) => {
   const gamePath = path.join(GAMES_DIR, gameId);
   if (!fs.existsSync(gamePath)) {
     fs.mkdirSync(gamePath, { recursive: true });
   }
-  const filePath = path.join(gamePath, 'map.json');
-  if (!fs.existsSync(filePath)) {
-    fs.writeFileSync(filePath, JSON.stringify(INITIAL_BOARD, null, 2), 'utf8');
-  }
-  return { filePath, board: JSON.parse(fs.readFileSync(filePath, 'utf8')) };
+  return gamePath;
 };
 
-// Function to broadcast board update to specific game room
-const broadcastUpdate = (gameId, board) => {
-  io.to(`game:${gameId}`).emit('boardUpdate', board);
+const getPlayersConfig = (gameId) => {
+  const gamePath = ensureGameDir(gameId);
+  const playersPath = path.join(gamePath, 'players.json');
+  if (!fs.existsSync(playersPath)) {
+    console.log(`Generating new players.json for game ${gameId}`);
+    fs.writeFileSync(playersPath, JSON.stringify(DEFAULT_PLAYERS, null, 2), 'utf8');
+    return DEFAULT_PLAYERS;
+  }
+  return JSON.parse(fs.readFileSync(playersPath, 'utf8'));
 };
 
-// GET /api/map/:gameId/add?region=0&pawn=vampire
-app.get('/api/map/:gameId/add', (req, res) => {
-  const { gameId } = req.params;
-  const { region, pawn } = req.query;
-  const regionIndex = parseInt(region);
+const getGameData = (gameId) => {
+  const gamePath = ensureGameDir(gameId);
+  const mapPath = path.join(gamePath, 'map.json');
   
-  if (isNaN(regionIndex) || regionIndex < 0 || regionIndex >= 25 || !pawn) {
-    return res.status(400).json({ error: 'Invalid region index or pawn type.' });
+  let regions;
+  if (!fs.existsSync(mapPath)) {
+    regions = createEmptyRegions();
+    fs.writeFileSync(mapPath, JSON.stringify(regions, null, 2), 'utf8');
+  } else {
+    regions = JSON.parse(fs.readFileSync(mapPath, 'utf8'));
   }
 
-  try {
-    const { filePath, board } = getGameData(gameId);
-    if (!board[regionIndex].pawns[pawn]) board[regionIndex].pawns[pawn] = [];
-    
-    // In actual game logic we'd need to know which status to add, 
-    // but for simple REST GET we use a default mock pawn
-    board[regionIndex].pawns[pawn].push({ statuses: ['ENABLED'] });
-    
-    fs.writeFileSync(filePath, JSON.stringify(board, null, 2), 'utf8');
-    broadcastUpdate(gameId, board);
-    res.json({ message: `Added ${pawn} to region ${regionIndex} in game ${gameId}`, board });
-  } catch (err) {
-    res.status(500).json({ error: 'Failed to update map.' });
-  }
-});
+  const players = getPlayersConfig(gameId);
+  return { data: { regions, players } };
+};
 
-// GET /api/map/:gameId/remove?region=0&pawn=vampire
-app.get('/api/map/:gameId/remove', (req, res) => {
-  const { gameId } = req.params;
-  const { region, pawn } = req.query;
-  const regionIndex = parseInt(region);
-  
-  if (isNaN(regionIndex) || regionIndex < 0 || regionIndex >= 25 || !pawn) {
-    return res.status(400).json({ error: 'Invalid region index or pawn type.' });
-  }
+const broadcastUpdate = (gameId, data) => {
+  io.to(`game:${gameId}`).emit('boardUpdate', data);
+};
 
-  try {
-    const { filePath, board } = getGameData(gameId);
-    if (board[regionIndex].pawns[pawn] && board[regionIndex].pawns[pawn].length > 0) {
-      board[regionIndex].pawns[pawn].pop();
-      if (board[regionIndex].pawns[pawn].length === 0) delete board[regionIndex].pawns[pawn];
-      
-      fs.writeFileSync(filePath, JSON.stringify(board, null, 2), 'utf8');
-      broadcastUpdate(gameId, board);
-      res.json({ message: `Removed ${pawn} from region ${regionIndex} in game ${gameId}`, board });
-    } else {
-      res.status(400).json({ error: 'No pawns of this type in the specified region.' });
-    }
-  } catch (err) {
-    res.status(500).json({ error: 'Failed to update map.' });
-  }
-});
-
-// GET /api/map/:gameId - Fetch current board state
+// GET /api/map/:gameId - Fetch current state (merged regions + players)
 app.get('/api/map/:gameId', (req, res) => {
   const { gameId } = req.params;
   try {
-    const { board } = getGameData(gameId);
-    res.json(board);
-  } catch (err) {
-    res.status(500).json({ error: 'Failed to read map data.' });
-  }
+    const { data } = getGameData(gameId);
+    res.json(data);
+  } catch (err) { res.status(500).json({ error: 'Failed to read data' }); }
 });
 
-// POST /api/map/:gameId - Upload/Update board state
+// POST /api/map/:gameId - Update state (regions and/or players)
 app.post('/api/map/:gameId', (req, res) => {
   const { gameId } = req.params;
-  const newBoard = req.body;
-  
   try {
-    const { filePath } = getGameData(gameId);
-    fs.writeFileSync(filePath, JSON.stringify(newBoard, null, 2), 'utf8');
-    broadcastUpdate(gameId, newBoard);
-    res.json({ message: 'Map updated successfully.' });
-  } catch (err) {
-    res.status(500).json({ error: 'Failed to save map data.' });
-  }
+    const gamePath = ensureGameDir(gameId);
+    
+    if (req.body.regions) {
+      fs.writeFileSync(path.join(gamePath, 'map.json'), JSON.stringify(req.body.regions, null, 2), 'utf8');
+    }
+    
+    if (req.body.players) {
+      console.log(`Updating players.json for game ${gameId}`);
+      fs.writeFileSync(path.join(gamePath, 'players.json'), JSON.stringify(req.body.players, null, 2), 'utf8');
+    }
+    
+    broadcastUpdate(gameId, req.body);
+    res.json({ message: 'Saved successfully' });
+  } catch (err) { res.status(500).json({ error: 'Failed to save' }); }
 });
 
-// DELETE /api/map/:gameId - Reset board state
+// DELETE /api/map/:gameId - Reset state
 app.delete('/api/map/:gameId', (req, res) => {
   const { gameId } = req.params;
   try {
-    const { filePath } = getGameData(gameId);
-    fs.writeFileSync(filePath, JSON.stringify(INITIAL_BOARD, null, 2), 'utf8');
-    broadcastUpdate(gameId, INITIAL_BOARD);
-    res.json({ message: 'Map reset successfully.', board: INITIAL_BOARD });
-  } catch (err) {
-    res.status(500).json({ error: 'Failed to reset map data.' });
-  }
+    const gamePath = ensureGameDir(gameId);
+    const emptyRegions = createEmptyRegions();
+    
+    fs.writeFileSync(path.join(gamePath, 'map.json'), JSON.stringify(emptyRegions, null, 2), 'utf8');
+    fs.writeFileSync(path.join(gamePath, 'players.json'), JSON.stringify(DEFAULT_PLAYERS, null, 2), 'utf8');
+    
+    const newState = { regions: emptyRegions, players: DEFAULT_PLAYERS };
+    broadcastUpdate(gameId, newState);
+    res.json({ message: 'Reset successfully', data: newState });
+  } catch (err) { res.status(500).json({ error: 'Failed to reset' }); }
+});
+
+// Helper REST endpoints for simple add/remove
+app.get('/api/map/:gameId/add', (req, res) => {
+  const { gameId } = req.params;
+  const { region, pawn } = req.query;
+  try {
+    const { data } = getGameData(gameId);
+    const idx = parseInt(region);
+    if (!data.regions[idx].pawns[pawn]) data.regions[idx].pawns[pawn] = [];
+    data.regions[idx].pawns[pawn].push({ statuses: ['ENABLED'] });
+    
+    const gamePath = ensureGameDir(gameId);
+    fs.writeFileSync(path.join(gamePath, 'map.json'), JSON.stringify(data.regions, null, 2), 'utf8');
+    
+    broadcastUpdate(gameId, data);
+    res.json(data);
+  } catch (err) { res.status(500).json({ error: 'Update failed' }); }
+});
+
+app.get('/api/map/:gameId/remove', (req, res) => {
+  const { gameId } = req.params;
+  const { region, pawn } = req.query;
+  try {
+    const { data } = getGameData(gameId);
+    const idx = parseInt(region);
+    if (data.regions[idx].pawns[pawn] && data.regions[idx].pawns[pawn].length > 0) {
+      data.regions[idx].pawns[idx].pop();
+      if (data.regions[idx].pawns[idx].length === 0) delete data.regions[idx].pawns[pawn];
+      
+      const gamePath = ensureGameDir(gameId);
+      fs.writeFileSync(path.join(gamePath, 'map.json'), JSON.stringify(data.regions, null, 2), 'utf8');
+      
+      broadcastUpdate(gameId, data);
+      res.json(data);
+    } else { res.status(400).json({ error: 'Not found' }); }
+  } catch (err) { res.status(500).json({ error: 'Update failed' }); }
 });
 
 io.on('connection', (socket) => {
-  console.log('Client connected:', socket.id);
-  
   socket.on('joinGame', (gameId) => {
     socket.join(`game:${gameId}`);
-    console.log(`Socket ${socket.id} joined game: ${gameId}`);
   });
 });
 
 server.listen(PORT, () => {
-  console.log(`Multi-game Backend server running on http://localhost:${PORT}`);
+  console.log(`Server running on http://localhost:${PORT}`);
 });

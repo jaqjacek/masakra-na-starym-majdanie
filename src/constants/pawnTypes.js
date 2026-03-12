@@ -2,6 +2,7 @@ import vampireIcon from '../assets/icons/vampire.svg';
 import werewolfIcon from '../assets/icons/werewolf.svg';
 import ghostIcon from '../assets/icons/ghost.svg';
 import bardakIcon from '../assets/icons/bardak.svg';
+import jakubIcon from '../assets/icons/jakub.svg';
 
 export const STATUSES = {
   DISABLED: 'DISABLED',
@@ -55,4 +56,27 @@ export const PAWN_TYPES = [
     speed: 1,
     defaultStatuses: [STATUSES.ENABLED]
   },
+  { 
+    id: 'jakub', 
+    icon: jakubIcon, 
+    label: 'J', 
+    name: 'Jakub', 
+    color: '#f1c40f',
+    health: 100,
+    isUnique: true,
+    defaultStatuses: [STATUSES.ENABLED],
+    // New defaults for special Jakub logic
+    defaultParameters: {
+      speed: 1,
+      range: 1,
+      anger: {
+        vampire: 0,
+        werewolf: 0,
+        ghost: 0,
+        bardak: 0
+      }
+    }
+  }
 ];
+
+export const SUMMARY_PAWN_IDS = ['vampire', 'werewolf', 'ghost', 'bardak'];

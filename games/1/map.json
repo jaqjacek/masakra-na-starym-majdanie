@@ -18,15 +18,7 @@
       0,
       2
     ],
-    "pawns": {
-      "werewolf": [
-        {
-          "statuses": [
-            "ENABLED"
-          ]
-        }
-      ]
-    }
+    "pawns": {}
   },
   {
     "id": 2,
@@ -93,167 +85,7 @@
       6,
       8
     ],
-    "pawns": {
-      "werewolf": [
-        {
-          "statuses": [
-            "ENABLED"
-          ]
-        },
-        {
-          "statuses": [
-            "ENABLED"
-          ]
-        },
-        {
-          "statuses": [
-            "ENABLED"
-          ]
-        },
-        {
-          "statuses": [
-            "ENABLED"
-          ]
-        },
-        {
-          "statuses": [
-            "ENABLED"
-          ]
-        },
-        {
-          "statuses": [
-            "ENABLED"
-          ]
-        },
-        {
-          "statuses": [
-            "ENABLED"
-          ]
-        },
-        {
-          "statuses": [
-            "ENABLED"
-          ]
-        },
-        {
-          "statuses": [
-            "ENABLED"
-          ]
-        },
-        {
-          "statuses": [
-            "ENABLED"
-          ]
-        },
-        {
-          "statuses": [
-            "ENABLED"
-          ]
-        },
-        {
-          "statuses": [
-            "ENABLED"
-          ]
-        },
-        {
-          "statuses": [
-            "ENABLED"
-          ]
-        },
-        {
-          "statuses": [
-            "ENABLED"
-          ]
-        },
-        {
-          "statuses": [
-            "ENABLED"
-          ]
-        },
-        {
-          "statuses": [
-            "ENABLED"
-          ]
-        }
-      ],
-      "vampire": [
-        {
-          "statuses": [
-            "ENABLED"
-          ]
-        },
-        {
-          "statuses": [
-            "ENABLED"
-          ]
-        },
-        {
-          "statuses": [
-            "ENABLED"
-          ]
-        },
-        {
-          "statuses": [
-            "ENABLED"
-          ]
-        },
-        {
-          "statuses": [
-            "ENABLED"
-          ]
-        },
-        {
-          "statuses": [
-            "ENABLED"
-          ]
-        },
-        {
-          "statuses": [
-            "ENABLED"
-          ]
-        },
-        {
-          "statuses": [
-            "ENABLED"
-          ]
-        },
-        {
-          "statuses": [
-            "ENABLED"
-          ]
-        },
-        {
-          "statuses": [
-            "ENABLED"
-          ]
-        },
-        {
-          "statuses": [
-            "ENABLED"
-          ]
-        },
-        {
-          "statuses": [
-            "ENABLED"
-          ]
-        },
-        {
-          "statuses": [
-            "ENABLED"
-          ]
-        },
-        {
-          "statuses": [
-            "ENABLED"
-          ]
-        },
-        {
-          "statuses": [
-            "ENABLED"
-          ]
-        }
-      ]
-    }
+    "pawns": {}
   },
   {
     "id": 8,
@@ -276,15 +108,7 @@
       14,
       8
     ],
-    "pawns": {
-      "werewolf": [
-        {
-          "statuses": [
-            "ENABLED"
-          ]
-        }
-      ]
-    }
+    "pawns": {}
   },
   {
     "id": 10,
@@ -307,15 +131,7 @@
       10,
       12
     ],
-    "pawns": {
-      "werewolf": [
-        {
-          "statuses": [
-            "ENABLED"
-          ]
-        }
-      ]
-    }
+    "pawns": {}
   },
   {
     "id": 12,
@@ -339,15 +155,7 @@
       12,
       14
     ],
-    "pawns": {
-      "vampire": [
-        {
-          "statuses": [
-            "ENABLED"
-          ]
-        }
-      ]
-    }
+    "pawns": {}
   },
   {
     "id": 14,
@@ -381,15 +189,7 @@
       15,
       17
     ],
-    "pawns": {
-      "bardak": [
-        {
-          "statuses": [
-            "ENABLED"
-          ]
-        }
-      ]
-    }
+    "pawns": {}
   },
   {
     "id": 17,
@@ -467,15 +267,7 @@
       22,
       24
     ],
-    "pawns": {
-      "vampire": [
-        {
-          "statuses": [
-            "ENABLED"
-          ]
-        }
-      ]
-    }
+    "pawns": {}
   },
   {
     "id": 24,

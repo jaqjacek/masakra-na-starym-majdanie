@@ -1,0 +1,316 @@
+{
+  "pawns": {
+    "bardak": 80,
+    "ghost": 30,
+    "werewolf": 20,
+    "vampire": 10
+  },
+  "power": {
+    "vampire": 3,
+    "werewolf": 2,
+    "ghost": 1,
+    "bardak": 1
+  },
+  "items": [
+    {
+      "id": 1,
+      "content": {
+        "ghost": 1,
+        "vampire": 1,
+        "bardak": 2
+      },
+      "used": false,
+      "power": 6
+    },
+    {
+      "id": 2,
+      "content": {
+        "bardak": 2,
+        "vampire": 1,
+        "ghost": 1
+      },
+      "used": false,
+      "power": 6
+    },
+    {
+      "id": 3,
+      "content": {
+        "vampire": 1,
+        "werewolf": 1,
+        "bardak": 1
+      },
+      "used": false,
+      "power": 6
+    },
+    {
+      "id": 4,
+      "content": {
+        "bardak": 1,
+        "ghost": 3,
+        "werewolf": 1
+      },
+      "used": false,
+      "power": 6
+    },
+    {
+      "id": 5,
+      "content": {
+        "vampire": 1,
+        "werewolf": 1,
+        "ghost": 1
+      },
+      "used": false,
+      "power": 6
+    },
+    {
+      "id": 6,
+      "content": {
+        "bardak": 1,
+        "ghost": 1,
+        "werewolf": 2
+      },
+      "used": false,
+      "power": 6
+    },
+    {
+      "id": 7,
+      "content": {
+        "bardak": 3,
+        "ghost": 1,
+        "werewolf": 1
+      },
+      "used": false,
+      "power": 6
+    },
+    {
+      "id": 8,
+      "content": {
+        "vampire": 1,
+        "werewolf": 1,
+        "bardak": 1
+      },
+      "used": false,
+      "power": 6
+    },
+    {
+      "id": 9,
+      "content": {
+        "vampire": 1,
+        "bardak": 2,
+        "ghost": 1
+      },
+      "used": false,
+      "power": 6
+    },
+    {
+      "id": 10,
+      "content": {
+        "bardak": 2,
+        "ghost": 2,
+        "werewolf": 1
+      },
+      "used": false,
+      "power": 6
+    },
+    {
+      "id": 11,
+      "content": {
+        "vampire": 1,
+        "bardak": 2,
+        "ghost": 1
+      },
+      "used": false,
+      "power": 6
+    },
+    {
+      "id": 12,
+      "content": {
+        "werewolf": 1,
+        "vampire": 1,
+        "bardak": 1
+      },
+      "used": false,
+      "power": 6
+    },
+    {
+      "id": 13,
+      "content": {
+        "ghost": 1,
+        "bardak": 3,
+        "werewolf": 1
+      },
+      "used": false,
+      "power": 6
+    },
+    {
+      "id": 14,
+      "content": {
+        "werewolf": 1,
+        "bardak": 1,
+        "vampire": 1
+      },
+      "used": false,
+      "power": 6
+    },
+    {
+      "id": 15,
+      "content": {
+        "werewolf": 2,
+        "ghost": 1,
+        "bardak": 1
+      },
+      "used": false,
+      "power": 6
+    },
+    {
+      "id": 16,
+      "content": {
+        "werewolf": 1,
+        "vampire": 1,
+        "bardak": 1
+      },
+      "used": false,
+      "power": 6
+    },
+    {
+      "id": 17,
+      "content": {
+        "ghost": 1,
+        "bardak": 1,
+        "werewolf": 2
+      },
+      "used": false,
+      "power": 6
+    },
+    {
+      "id": 18,
+      "content": {
+        "bardak": 2,
+        "ghost": 2,
+        "werewolf": 1
+      },
+      "used": false,
+      "power": 6
+    },
+    {
+      "id": 19,
+      "content": {
+        "ghost": 1,
+        "bardak": 1,
+        "werewolf": 2
+      },
+      "used": false,
+      "power": 6
+    },
+    {
+      "id": 20,
+      "content": {
+        "werewolf": 1,
+        "ghost": 2,
+        "bardak": 2
+      },
+      "used": false,
+      "power": 6
+    },
+    {
+      "id": 21,
+      "content": {
+        "bardak": 2,
+        "ghost": 3
+      },
+      "used": false,
+      "power": 5
+    },
+    {
+      "id": 22,
+      "content": {
+        "ghost": 2,
+        "bardak": 3
+      },
+      "used": false,
+      "power": 5
+    },
+    {
+      "id": 23,
+      "content": {
+        "bardak": 2,
+        "ghost": 3
+      },
+      "used": false,
+      "power": 5
+    },
+    {
+      "id": 24,
+      "content": {
+        "bardak": 3,
+        "ghost": 2
+      },
+      "used": false,
+      "power": 5
+    },
+    {
+      "id": 25,
+      "content": {
+        "bardak": 5
+      },
+      "used": false,
+      "power": 5
+    },
+    {
+      "id": 26,
+      "content": {
+        "bardak": 5
+      },
+      "used": false,
+      "power": 5
+    },
+    {
+      "id": 27,
+      "content": {
+        "bardak": 5
+      },
+      "used": false,
+      "power": 5
+    },
+    {
+      "id": 28,
+      "content": {
+        "bardak": 5
+      },
+      "used": false,
+      "power": 5
+    },
+    {
+      "id": 29,
+      "content": {
+        "bardak": 5
+      },
+      "used": false,
+      "power": 5
+    },
+    {
+      "id": 30,
+      "content": {
+        "bardak": 5
+      },
+      "used": false,
+      "power": 5
+    },
+    {
+      "id": 31,
+      "content": {
+        "bardak": 5
+      },
+      "used": false,
+      "power": 5
+    },
+    {
+      "id": 32,
+      "content": {
+        "bardak": 5
+      },
+      "used": false,
+      "power": 5
+    }
+  ]
+}

@@ -51,133 +51,133 @@ const DEFAULT_PLAYERS = [
   { id: 4, name: '4', points: 10 }
 ];
 
-const ensureGameDir = (gameId) => {
-  const gamePath = path.join(GAMES_DIR, gameId);
-  if (!fs.existsSync(gamePath)) {
-    fs.mkdirSync(gamePath, { recursive: true });
+const DEFAULT_PAWNS_CONFIG = { bardak: 80, ghost: 30, werewolf: 20, vampire: 10 };
+const DEFAULT_POWER_CONFIG = { vampire: 3, werewolf: 2, ghost: 1, bardak: 1 };
+const MAX_SET_POWER = 6;
+const MAX_SET_COUNT = 5;
+const MAX_SET_TYPES = 3;
+
+const generateSets = (pawnsConfig = DEFAULT_PAWNS_CONFIG, powerConfig = DEFAULT_POWER_CONFIG) => {
+  const totals = { ...pawnsConfig };
+  const items = [];
+  let setId = 1;
+  const getAvailableTypes = () => Object.keys(totals).filter(t => totals[t] > 0);
+  
+  while (getAvailableTypes().length > 0) {
+    const availableTypes = getAvailableTypes();
+    const numTypesToTry = Math.min(availableTypes.length, MAX_SET_TYPES);
+    const selectedTypes = [...availableTypes].sort(() => Math.random() - 0.5).slice(0, numTypesToTry);
+
+    const setContent = {};
+    let currentPower = 0;
+    let currentCount = 0;
+
+    selectedTypes.forEach(type => {
+      const pwr = powerConfig[type];
+      if (totals[type] > 0 && currentPower + pwr <= MAX_SET_POWER && currentCount + 1 <= MAX_SET_COUNT) {
+        setContent[type] = (setContent[type] || 0) + 1;
+        totals[type]--;
+        currentPower += pwr;
+        currentCount++;
+      }
+    });
+
+    let improved = true;
+    while (improved && currentPower < MAX_SET_POWER && currentCount < MAX_SET_COUNT) {
+      improved = false;
+      const shuffledSelected = [...selectedTypes].sort(() => Math.random() - 0.5);
+      for (const type of shuffledSelected) {
+        const pwr = powerConfig[type];
+        if (totals[type] > 0 && currentPower + pwr <= MAX_SET_POWER && currentCount + 1 <= MAX_SET_COUNT) {
+          setContent[type] = (setContent[type] || 0) + 1;
+          totals[type]--;
+          currentPower += pwr;
+          currentCount++;
+          improved = true;
+          break; 
+        }
+      }
+    }
+
+    if (currentCount > 0) {
+      items.push({ id: setId++, content: setContent, used: false, power: currentPower, ownerId: null });
+    } else break;
   }
-  return gamePath;
+  return { pawns: pawnsConfig, power: powerConfig, items };
 };
 
-const getPlayersConfig = (gameId) => {
-  const gamePath = ensureGameDir(gameId);
-  const playersPath = path.join(gamePath, 'players.json');
-  if (!fs.existsSync(playersPath)) {
-    console.log(`Generating new players.json for game ${gameId}`);
-    fs.writeFileSync(playersPath, JSON.stringify(DEFAULT_PLAYERS, null, 2), 'utf8');
-    return DEFAULT_PLAYERS;
-  }
-  return JSON.parse(fs.readFileSync(playersPath, 'utf8'));
+const ensureGameDir = (gameId) => {
+  const gamePath = path.join(GAMES_DIR, gameId);
+  if (!fs.existsSync(gamePath)) fs.mkdirSync(gamePath, { recursive: true });
+  return gamePath;
 };
 
 const getGameData = (gameId) => {
   const gamePath = ensureGameDir(gameId);
   const mapPath = path.join(gamePath, 'map.json');
+  const playersPath = path.join(gamePath, 'players.json');
+  const setsPath = path.join(gamePath, 'sets.json');
   
-  let regions;
-  if (!fs.existsSync(mapPath)) {
-    regions = createEmptyRegions();
-    fs.writeFileSync(mapPath, JSON.stringify(regions, null, 2), 'utf8');
+  let regions = fs.existsSync(mapPath) ? JSON.parse(fs.readFileSync(mapPath, 'utf8')) : createEmptyRegions();
+  let players = fs.existsSync(playersPath) ? JSON.parse(fs.readFileSync(playersPath, 'utf8')) : DEFAULT_PLAYERS;
+  
+  let setsData;
+  if (fs.existsSync(setsPath)) {
+    const raw = JSON.parse(fs.readFileSync(setsPath, 'utf8'));
+    if (Array.isArray(raw) || !raw.power || !raw.items) {
+      setsData = generateSets();
+      fs.writeFileSync(setsPath, JSON.stringify(setsData, null, 2));
+    } else {
+      // Ensure ownerId exists on items
+      raw.items.forEach(item => { if (item.ownerId === undefined) item.ownerId = null; });
+      setsData = raw;
+    }
   } else {
-    regions = JSON.parse(fs.readFileSync(mapPath, 'utf8'));
+    setsData = generateSets();
+    fs.writeFileSync(setsPath, JSON.stringify(setsData, null, 2));
   }
 
-  const players = getPlayersConfig(gameId);
-  return { data: { regions, players } };
+  return { data: { regions, players, sets: setsData } };
 };
 
 const broadcastUpdate = (gameId, data) => {
   io.to(`game:${gameId}`).emit('boardUpdate', data);
 };
 
-// GET /api/map/:gameId - Fetch current state (merged regions + players)
 app.get('/api/map/:gameId', (req, res) => {
   const { gameId } = req.params;
-  try {
-    const { data } = getGameData(gameId);
-    res.json(data);
-  } catch (err) { res.status(500).json({ error: 'Failed to read data' }); }
+  try { res.json(getGameData(gameId).data); } catch (err) { res.status(500).json({ error: 'Failed' }); }
 });
 
-// POST /api/map/:gameId - Update state (regions and/or players)
 app.post('/api/map/:gameId', (req, res) => {
   const { gameId } = req.params;
   try {
     const gamePath = ensureGameDir(gameId);
-    
-    if (req.body.regions) {
-      fs.writeFileSync(path.join(gamePath, 'map.json'), JSON.stringify(req.body.regions, null, 2), 'utf8');
-    }
-    
-    if (req.body.players) {
-      console.log(`Updating players.json for game ${gameId}`);
-      fs.writeFileSync(path.join(gamePath, 'players.json'), JSON.stringify(req.body.players, null, 2), 'utf8');
-    }
-    
+    if (req.body.regions) fs.writeFileSync(path.join(gamePath, 'map.json'), JSON.stringify(req.body.regions, null, 2));
+    if (req.body.players) fs.writeFileSync(path.join(gamePath, 'players.json'), JSON.stringify(req.body.players, null, 2));
+    if (req.body.sets) fs.writeFileSync(path.join(gamePath, 'sets.json'), JSON.stringify(req.body.sets, null, 2));
     broadcastUpdate(gameId, req.body);
-    res.json({ message: 'Saved successfully' });
-  } catch (err) { res.status(500).json({ error: 'Failed to save' }); }
+    res.json({ message: 'Saved' });
+  } catch (err) { res.status(500).json({ error: 'Failed' }); }
 });
 
-// DELETE /api/map/:gameId - Reset state
 app.delete('/api/map/:gameId', (req, res) => {
   const { gameId } = req.params;
   try {
     const gamePath = ensureGameDir(gameId);
     const emptyRegions = createEmptyRegions();
-    
-    fs.writeFileSync(path.join(gamePath, 'map.json'), JSON.stringify(emptyRegions, null, 2), 'utf8');
-    fs.writeFileSync(path.join(gamePath, 'players.json'), JSON.stringify(DEFAULT_PLAYERS, null, 2), 'utf8');
-    
-    const newState = { regions: emptyRegions, players: DEFAULT_PLAYERS };
+    const newSetsData = generateSets();
+    fs.writeFileSync(path.join(gamePath, 'map.json'), JSON.stringify(emptyRegions, null, 2));
+    fs.writeFileSync(path.join(gamePath, 'players.json'), JSON.stringify(DEFAULT_PLAYERS, null, 2));
+    fs.writeFileSync(path.join(gamePath, 'sets.json'), JSON.stringify(newSetsData, null, 2));
+    const newState = { regions: emptyRegions, players: DEFAULT_PLAYERS, sets: newSetsData };
     broadcastUpdate(gameId, newState);
-    res.json({ message: 'Reset successfully', data: newState });
-  } catch (err) { res.status(500).json({ error: 'Failed to reset' }); }
-});
-
-// Helper REST endpoints for simple add/remove
-app.get('/api/map/:gameId/add', (req, res) => {
-  const { gameId } = req.params;
-  const { region, pawn } = req.query;
-  try {
-    const { data } = getGameData(gameId);
-    const idx = parseInt(region);
-    if (!data.regions[idx].pawns[pawn]) data.regions[idx].pawns[pawn] = [];
-    data.regions[idx].pawns[pawn].push({ statuses: ['ENABLED'] });
-    
-    const gamePath = ensureGameDir(gameId);
-    fs.writeFileSync(path.join(gamePath, 'map.json'), JSON.stringify(data.regions, null, 2), 'utf8');
-    
-    broadcastUpdate(gameId, data);
-    res.json(data);
-  } catch (err) { res.status(500).json({ error: 'Update failed' }); }
-});
-
-app.get('/api/map/:gameId/remove', (req, res) => {
-  const { gameId } = req.params;
-  const { region, pawn } = req.query;
-  try {
-    const { data } = getGameData(gameId);
-    const idx = parseInt(region);
-    if (data.regions[idx].pawns[pawn] && data.regions[idx].pawns[pawn].length > 0) {
-      data.regions[idx].pawns[idx].pop();
-      if (data.regions[idx].pawns[idx].length === 0) delete data.regions[idx].pawns[pawn];
-      
-      const gamePath = ensureGameDir(gameId);
-      fs.writeFileSync(path.join(gamePath, 'map.json'), JSON.stringify(data.regions, null, 2), 'utf8');
-      
-      broadcastUpdate(gameId, data);
-      res.json(data);
-    } else { res.status(400).json({ error: 'Not found' }); }
-  } catch (err) { res.status(500).json({ error: 'Update failed' }); }
+    res.json(newState);
+  } catch (err) { res.status(500).json({ error: 'Failed' }); }
 });
 
 io.on('connection', (socket) => {
-  socket.on('joinGame', (gameId) => {
-    socket.join(`game:${gameId}`);
-  });
+  socket.on('joinGame', (gameId) => { socket.join(`game:${gameId}`); });
 });
 
-server.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
-});
+server.listen(PORT, () => { console.log(`Server running on ${PORT}`); });

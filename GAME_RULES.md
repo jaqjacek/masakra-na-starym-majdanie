@@ -57,7 +57,11 @@ Po spasowaniu wszystkich graczy, Jakub rusza do akcji:
 ## 4. Zakończenie Gry i Punktacja Końcowa
 Po zakończeniu 6. rundy następuje ostateczne podsumowanie:
 1.  W aktualnej kolejności (ustalonej po ostatniej fazie Jakuba) gracze po raz ostatni wybierają Generała nacji.
-2.  **Bonus Końcowy:** Gracz otrzymuje **1 punkt za każdy pionek** swojej wybranej nacji, który pozostał na planszy (przetrwał 6 nocy).
+2.  **Bonus Końcowy:**
+    *   **Vampire:** 2 punkty za każdy swój pionek na planszy.
+    *   **Werewolf:** 1 punkt za każdy swój pionek na planszy.
+    *   **Ghost:** 2 punkty za każdy region, w którym są same; 1 punkt za każdy inny region, w którym jest ich więcej niż jakiejkolwiek innej nacji z osobna (Pluralizacja).
+    *   **Bardak:** 2 punkty za każdy region, w którym mają przewagę (więcej własnych pionków niż wszystkich pozostałych nacji razem wziętych).
 3.  Zwycięża gracz z największą łączną sumą punktów.
 
 ---
@@ -65,7 +69,7 @@ Po zakończeniu 6. rundy następuje ostateczne podsumowanie:
 ## 5. Charakterystyka Nacji i Punktacja Setów
 Punkty za wystawienie zestawu zależą od odległości regionu od Jakuba (Manhattan distance):
 
-*   **Vampire (V):** Moc 3. Punkty = `(Liczba V w secie) + (2 - odległość)`. *Najsilniejsze blisko Jakuba.*
+*   **Vampire (V):** Moc 3. Punkty = `(Liczba V w secie) + (3 - odległość)`. *Najsilniejsze blisko Jakuba.*
 *   **Werewolf (W):** Moc 2. Punkty = `(Liczba W w secie) + 1` tylko jeśli `odległość <= 2`. W innym wypadku 0 pkt.
 *   **Ghost (G):** Moc 1. Punkty = `(Liczba G w secie) + (1 jeśli odległość > 2, inaczej -1)`. *Lubią spokój z dala od Jakuba.*
 *   **Bardak (B):** Moc 1. Punkty = `Łączna liczba wszystkich pionków w zestawie`. *Zawsze solidne punkty.*

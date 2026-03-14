@@ -65,7 +65,7 @@ const getManhattanDistance = (r1, r2) => {
 const calculateSetPlacementPoints = (race, setContent, targetRegion, jakubRegion) => {
   const dist = jakubRegion ? getManhattanDistance(targetRegion, jakubRegion) : 999;
   const ownPawnsInSet = setContent[race] || 0;
-  if (race === 'vampire') return ownPawnsInSet + (2 - dist);
+  if (race === 'vampire') return ownPawnsInSet + (3 - dist);
   if (race === 'werewolf') return (dist <= 2) ? (ownPawnsInSet + 1) : 0;
   if (race === 'bardak') return Object.values(setContent).reduce((a, b) => a + b, 0);
   if (race === 'ghost') return ownPawnsInSet + (dist <= 2 ? -1 : 1);
@@ -306,10 +306,46 @@ function App() {
         curPlayer.generalOf = pick;
         workState.availableGenerals = workState.availableGenerals.filter(g => g !== pick);
         
-        let survivors = 0;
-        workState.regions.forEach(r => { survivors += (r.pawns[pick]?.length || 0); });
-        curPlayer.points += survivors;
-        addLog(workState, `Player ${curId} picked ${pick}s and gained ${survivors} survival points.`);
+        let addedPoints = 0;
+        if (pick === 'vampire') {
+          let count = 0;
+          workState.regions.forEach(r => count += (r.pawns[pick]?.length || 0));
+          addedPoints = count * 2;
+          addLog(workState, `Player ${curId} picked Vampires and gained ${addedPoints} points (2 per unit).`);
+        } else if (pick === 'werewolf') {
+          let count = 0;
+          workState.regions.forEach(r => count += (r.pawns[pick]?.length || 0));
+          addedPoints = count;
+          addLog(workState, `Player ${curId} picked Werewolves and gained ${addedPoints} points (1 per unit).`);
+        } else if (pick === 'ghost') {
+          workState.regions.forEach(r => {
+            const myCount = r.pawns[pick]?.length || 0;
+            if (myCount > 0) {
+              let othersCounts = RACES.filter(race => race !== pick).map(race => r.pawns[race]?.length || 0);
+              const othersTotal = othersCounts.reduce((a, b) => a + b, 0);
+              if (othersTotal === 0) {
+                addedPoints += 2;
+              } else {
+                const maxOther = Math.max(...othersCounts);
+                if (myCount > maxOther) addedPoints += 1;
+              }
+            }
+          });
+          addLog(workState, `Player ${curId} picked Ghosts and gained ${addedPoints} points (alone/plurality bonus).`);
+        }
+ else if (pick === 'bardak') {
+          workState.regions.forEach(r => {
+            const myCount = r.pawns[pick]?.length || 0;
+            if (myCount > 0) {
+              let othersTotal = 0;
+              RACES.forEach(race => { if (race !== pick) othersTotal += (r.pawns[race]?.length || 0); });
+              if (myCount > othersTotal) addedPoints += 2;
+            }
+          });
+          addLog(workState, `Player ${curId} picked Bardaks and gained ${addedPoints} dominance points (2 per region).`);
+        }
+        
+        curPlayer.points += addedPoints;
         workState.currentPlayerIndex += 1;
         updateGameWithSync(workState);
       } else {

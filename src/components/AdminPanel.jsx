@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { PAWN_TYPES } from '../constants/pawnTypes';
+import SetsPanel from './SetsPanel';
 
 const AdminPanel = () => {
   const [history, setHistory] = useState([]); // Array of { data, setName, id }
@@ -8,6 +9,8 @@ const AdminPanel = () => {
   const [progress, setProgress] = useState(0);
   const [availableSets, setAvailableSets] = useState([]);
   const [selectedSet, setSelectedSet] = useState('');
+  const [showPreview, setShowPreview] = useState(false);
+  const [loadedSetPreview, setLoadedSetPreview] = useState(null);
   const [globalDefaultSet, setGlobalDefaultSet] = useState(null);
   const [showGenForm, setShowGenForm] = useState(false);
 
@@ -22,6 +25,15 @@ const AdminPanel = () => {
     fetchSets();
     fetchConfig();
   }, []);
+
+  useEffect(() => {
+    if (selectedSet) {
+      fetchSetPreview(selectedSet);
+    } else {
+      setLoadedSetPreview(null);
+      setShowPreview(false);
+    }
+  }, [selectedSet]);
 
   const fetchSets = async () => {
     try {
@@ -40,6 +52,14 @@ const AdminPanel = () => {
     } catch (err) { console.error(err); }
   };
 
+  const fetchSetPreview = async (setName) => {
+    try {
+      const res = await fetch(`http://localhost:3001/api/sets/details/${setName}`);
+      const data = await res.json();
+      setLoadedSetPreview(data);
+    } catch (err) { console.error(err); }
+  };
+
   const setAsDefault = async () => {
     if (!selectedSet) return;
     try {
@@ -54,20 +74,23 @@ const AdminPanel = () => {
   };
 
   const handleLoadSet = async () => {
-    if (!selectedSet) return;
-    try {
-      const res = await fetch(`http://localhost:3001/api/sets/details/${selectedSet}`);
-      const data = await res.json();
-      if (data.error) throw new Error(data.error);
+    if (!loadedSetPreview) return;
+    const data = loadedSetPreview;
+    setGenDisplayName(data.displayName || '');
+    setGenDescription(data.description || '');
+    setGenMaxPower(data.maxPower || 6);
+    setGenPawns(data.pawns || { bardak: 80, ghost: 30, werewolf: 20, vampire: 10 });
+    setGenPower(data.power || { vampire: 3, werewolf: 2, ghost: 1, bardak: 1 });
+    setShowGenForm(true);
+  };
 
-      setGenDisplayName(data.displayName || '');
-      setGenDescription(data.description || '');
-      setGenMaxPower(data.maxPower || 6);
-      setGenPawns(data.pawns || { bardak: 80, ghost: 30, werewolf: 20, vampire: 10 });
-      setGenPower(data.power || { vampire: 3, werewolf: 2, ghost: 1, bardak: 1 });
-      
-      setShowGenForm(true);
-    } catch (err) { alert('Failed to load set details'); }
+  const clearAllGames = async () => {
+    if (!window.confirm('Are you sure you want to delete ALL game sessions? This cannot be undone.')) return;
+    try {
+      const res = await fetch('http://localhost:3001/api/games', { method: 'DELETE' });
+      const data = await res.json();
+      alert(data.message);
+    } catch (err) { alert('Failed to clear games'); }
   };
 
   const handleGenerate = async (e) => {
@@ -96,6 +119,7 @@ const AdminPanel = () => {
   const simulateGames = async () => {
     setIsSimulating(true);
     setProgress(0);
+    setShowPreview(false); // Hide preview when simulating
     const results = [];
     const activeSetName = selectedSet || 'Random';
     
@@ -133,10 +157,7 @@ const AdminPanel = () => {
         { race: 'bardak', pts: game.bardak || 0 }
       ];
       scores.sort((a, b) => b.pts - a.pts);
-      // Winner is the one with the most points
-      if (scores[0].pts > 0) {
-        wins[scores[0].race]++;
-      }
+      if (scores[0].pts > 0) wins[scores[0].race]++;
     });
     return wins;
   };
@@ -151,6 +172,9 @@ const AdminPanel = () => {
           </button>
         </div>
         <div className="admin-actions">
+          <button className="action-button" style={{ backgroundColor: '#c0392b' }} onClick={clearAllGames}>
+            Delete All Game Sessions
+          </button>
           <button className="action-button download-btn" onClick={() => setShowGenForm(!showGenForm)}>
             {showGenForm ? 'Hide Form' : 'Generate New Set'}
           </button>
@@ -160,14 +184,17 @@ const AdminPanel = () => {
               Default: <strong>{globalDefaultSet || 'None'}</strong>
             </div>
             <select value={selectedSet} onChange={(e) => setSelectedSet(e.target.value)}>
-              <option value="">Random Set</option>
+              <option value="">Select Set...</option>
               {availableSets.map(s => <option key={s} value={s}>{s}</option>)}
             </select>
+            <button className="action-button" style={{ backgroundColor: '#9b59b6' }} onClick={() => setShowPreview(!showPreview)} disabled={!selectedSet}>
+              {showPreview ? 'Hide Preview' : 'Show Preview'}
+            </button>
             <button className="action-button" style={{ backgroundColor: '#3498db' }} onClick={handleLoadSet} disabled={!selectedSet}>
               Load Set
             </button>
             <button className="action-button" style={{ backgroundColor: '#27ae60' }} onClick={setAsDefault} disabled={!selectedSet}>
-              Set as Global Default
+              Set as Default
             </button>
             <button className="action-button upload-btn" onClick={simulateGames} disabled={isSimulating}>
               {isSimulating ? `Simulating... (${progress}%)` : 'Simulate 100 Full Games'}
@@ -175,6 +202,17 @@ const AdminPanel = () => {
           </div>
         </div>
       </div>
+
+      {showPreview && loadedSetPreview && !isSimulating && (
+        <div className="set-preview-area">
+          <SetsPanel 
+            sets={loadedSetPreview.items} 
+            title={`Preview: ${selectedSet}`} 
+            setName={selectedSet}
+            onSetMouseDown={() => {}} 
+          />
+        </div>
+      )}
 
       <div className="admin-content">
         {showGenForm && (

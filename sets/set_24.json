@@ -1,9 +1,9 @@
 {
   "pawns": {
-    "bardak": 48,
-    "ghost": 40,
-    "werewolf": 16,
-    "vampire": 8
+    "bardak": 45,
+    "ghost": 30,
+    "werewolf": 26,
+    "vampire": 16
   },
   "power": {
     "vampire": 4,
@@ -15,93 +15,91 @@
     {
       "id": 1,
       "content": {
-        "bardak": 2,
-        "werewolf": 1,
-        "ghost": 1
+        "ghost": 2,
+        "bardak": 2
       },
       "used": false,
-      "power": 7,
+      "power": 6,
       "ownerId": null
     },
     {
       "id": 2,
       "content": {
         "bardak": 2,
-        "werewolf": 1,
-        "ghost": 1
+        "vampire": 1
       },
       "used": false,
-      "power": 7,
+      "power": 6,
       "ownerId": null
     },
     {
       "id": 3,
       "content": {
-        "werewolf": 2,
-        "bardak": 1
+        "bardak": 4,
+        "ghost": 1
       },
       "used": false,
-      "power": 7,
+      "power": 6,
       "ownerId": null
     },
     {
       "id": 4,
       "content": {
-        "vampire": 1,
+        "bardak": 1,
+        "ghost": 1,
         "werewolf": 1
       },
       "used": false,
-      "power": 7,
+      "power": 6,
       "ownerId": null
     },
     {
       "id": 5,
       "content": {
-        "bardak": 3,
-        "vampire": 1
+        "bardak": 1,
+        "ghost": 1,
+        "werewolf": 1
       },
       "used": false,
-      "power": 7,
+      "power": 6,
       "ownerId": null
     },
     {
       "id": 6,
       "content": {
-        "bardak": 2,
-        "ghost": 1,
-        "werewolf": 1
+        "werewolf": 1,
+        "ghost": 1
       },
       "used": false,
-      "power": 7,
+      "power": 5,
       "ownerId": null
     },
     {
       "id": 7,
       "content": {
+        "bardak": 1,
         "ghost": 1,
-        "vampire": 1,
-        "bardak": 1
+        "werewolf": 1
       },
       "used": false,
-      "power": 7,
+      "power": 6,
       "ownerId": null
     },
     {
       "id": 8,
       "content": {
         "vampire": 1,
-        "ghost": 1,
-        "bardak": 1
+        "bardak": 2
       },
       "used": false,
-      "power": 7,
+      "power": 6,
       "ownerId": null
     },
     {
       "id": 9,
       "content": {
-        "vampire": 1,
-        "ghost": 1
+        "bardak": 2,
+        "vampire": 1
       },
       "used": false,
       "power": 6,
@@ -111,136 +109,130 @@
       "id": 10,
       "content": {
         "vampire": 1,
-        "werewolf": 1
+        "ghost": 1
       },
       "used": false,
-      "power": 7,
+      "power": 6,
       "ownerId": null
     },
     {
       "id": 11,
       "content": {
-        "vampire": 1,
-        "werewolf": 1
+        "bardak": 2,
+        "vampire": 1
       },
       "used": false,
-      "power": 7,
+      "power": 6,
       "ownerId": null
     },
     {
       "id": 12,
       "content": {
-        "bardak": 1,
-        "ghost": 1,
-        "vampire": 1
+        "ghost": 2,
+        "bardak": 2
       },
       "used": false,
-      "power": 7,
+      "power": 6,
       "ownerId": null
     },
     {
       "id": 13,
       "content": {
-        "ghost": 1,
-        "bardak": 2,
-        "werewolf": 1
+        "vampire": 1,
+        "bardak": 2
       },
       "used": false,
-      "power": 7,
+      "power": 6,
       "ownerId": null
     },
     {
       "id": 14,
       "content": {
         "bardak": 2,
-        "ghost": 1,
-        "werewolf": 1
+        "vampire": 1
       },
       "used": false,
-      "power": 7,
+      "power": 6,
       "ownerId": null
     },
     {
       "id": 15,
       "content": {
+        "bardak": 1,
         "ghost": 1,
-        "bardak": 2,
         "werewolf": 1
       },
       "used": false,
-      "power": 7,
+      "power": 6,
       "ownerId": null
     },
     {
       "id": 16,
       "content": {
-        "bardak": 2,
-        "ghost": 1,
-        "werewolf": 1
+        "vampire": 1,
+        "bardak": 2
       },
       "used": false,
-      "power": 7,
+      "power": 6,
       "ownerId": null
     },
     {
       "id": 17,
       "content": {
-        "bardak": 2,
-        "ghost": 1,
-        "werewolf": 1
+        "werewolf": 1,
+        "ghost": 1
       },
       "used": false,
-      "power": 7,
+      "power": 5,
       "ownerId": null
     },
     {
       "id": 18,
       "content": {
-        "werewolf": 1,
-        "ghost": 1,
-        "bardak": 2
+        "bardak": 3,
+        "werewolf": 1
       },
       "used": false,
-      "power": 7,
+      "power": 6,
       "ownerId": null
     },
     {
       "id": 19,
       "content": {
-        "werewolf": 1,
-        "ghost": 1,
+        "vampire": 1,
         "bardak": 2
       },
       "used": false,
-      "power": 7,
+      "power": 6,
       "ownerId": null
     },
     {
       "id": 20,
       "content": {
-        "werewolf": 1,
         "ghost": 1,
-        "bardak": 2
+        "werewolf": 1,
+        "bardak": 1
       },
       "used": false,
-      "power": 7,
+      "power": 6,
       "ownerId": null
     },
     {
       "id": 21,
       "content": {
-        "ghost": 3,
-        "bardak": 1
+        "vampire": 1,
+        "bardak": 2
       },
       "used": false,
-      "power": 7,
+      "power": 6,
       "ownerId": null
     },
     {
       "id": 22,
       "content": {
-        "bardak": 4,
-        "ghost": 1
+        "bardak": 1,
+        "ghost": 1,
+        "werewolf": 1
       },
       "used": false,
       "power": 6,
@@ -249,18 +241,19 @@
     {
       "id": 23,
       "content": {
-        "ghost": 3,
-        "bardak": 1
+        "vampire": 1,
+        "ghost": 1
       },
       "used": false,
-      "power": 7,
+      "power": 6,
       "ownerId": null
     },
     {
       "id": 24,
       "content": {
-        "bardak": 4,
-        "ghost": 1
+        "werewolf": 1,
+        "ghost": 1,
+        "bardak": 1
       },
       "used": false,
       "power": 6,
@@ -269,8 +262,8 @@
     {
       "id": 25,
       "content": {
-        "bardak": 4,
-        "ghost": 1
+        "ghost": 1,
+        "vampire": 1
       },
       "used": false,
       "power": 6,
@@ -279,6 +272,27 @@
     {
       "id": 26,
       "content": {
+        "werewolf": 1,
+        "ghost": 1
+      },
+      "used": false,
+      "power": 5,
+      "ownerId": null
+    },
+    {
+      "id": 27,
+      "content": {
+        "bardak": 1,
+        "ghost": 1,
+        "werewolf": 1
+      },
+      "used": false,
+      "power": 6,
+      "ownerId": null
+    },
+    {
+      "id": 28,
+      "content": {
         "bardak": 4,
         "ghost": 1
       },
@@ -287,28 +301,10 @@
       "ownerId": null
     },
     {
-      "id": 27,
-      "content": {
-        "ghost": 3,
-        "bardak": 1
-      },
-      "used": false,
-      "power": 7,
-      "ownerId": null
-    },
-    {
-      "id": 28,
-      "content": {
-        "ghost": 3
-      },
-      "used": false,
-      "power": 6,
-      "ownerId": null
-    },
-    {
       "id": 29,
       "content": {
-        "ghost": 3
+        "bardak": 4,
+        "ghost": 1
       },
       "used": false,
       "power": 6,
@@ -317,23 +313,140 @@
     {
       "id": 30,
       "content": {
-        "ghost": 3
+        "werewolf": 1,
+        "ghost": 1
+      },
+      "used": false,
+      "power": 5,
+      "ownerId": null
+    },
+    {
+      "id": 31,
+      "content": {
+        "vampire": 1,
+        "ghost": 1
       },
       "used": false,
       "power": 6,
       "ownerId": null
     },
     {
-      "id": 31,
+      "id": 32,
       "content": {
-        "ghost": 3
+        "ghost": 1,
+        "vampire": 1
       },
       "used": false,
       "power": 6,
       "ownerId": null
+    },
+    {
+      "id": 33,
+      "content": {
+        "ghost": 1,
+        "werewolf": 1
+      },
+      "used": false,
+      "power": 5,
+      "ownerId": null
+    },
+    {
+      "id": 34,
+      "content": {
+        "vampire": 1,
+        "ghost": 1
+      },
+      "used": false,
+      "power": 6,
+      "ownerId": null
+    },
+    {
+      "id": 35,
+      "content": {
+        "ghost": 1,
+        "werewolf": 1
+      },
+      "used": false,
+      "power": 5,
+      "ownerId": null
+    },
+    {
+      "id": 36,
+      "content": {
+        "vampire": 1,
+        "ghost": 1
+      },
+      "used": false,
+      "power": 6,
+      "ownerId": null
+    },
+    {
+      "id": 37,
+      "content": {
+        "ghost": 1,
+        "werewolf": 1
+      },
+      "used": false,
+      "power": 5,
+      "ownerId": null
+    },
+    {
+      "id": 38,
+      "content": {
+        "werewolf": 1,
+        "ghost": 1
+      },
+      "used": false,
+      "power": 5,
+      "ownerId": null
+    },
+    {
+      "id": 39,
+      "content": {
+        "werewolf": 2
+      },
+      "used": false,
+      "power": 6,
+      "ownerId": null
+    },
+    {
+      "id": 40,
+      "content": {
+        "werewolf": 2
+      },
+      "used": false,
+      "power": 6,
+      "ownerId": null
+    },
+    {
+      "id": 41,
+      "content": {
+        "werewolf": 2
+      },
+      "used": false,
+      "power": 6,
+      "ownerId": null
+    },
+    {
+      "id": 42,
+      "content": {
+        "werewolf": 2
+      },
+      "used": false,
+      "power": 6,
+      "ownerId": null
+    },
+    {
+      "id": 43,
+      "content": {
+        "werewolf": 1
+      },
+      "used": false,
+      "power": 3,
+      "ownerId": null
     }
   ],
-  "maxPower": 7,
-  "displayName": "Dodajemy Duchy",
+  "maxPower": 6,
+  "displayName": "Wyrównujemy szanse",
   "description": "Próba ograniczenia zwycięst bardaków"
 }

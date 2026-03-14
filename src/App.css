@@ -221,15 +221,18 @@ body {
 .active-set-name { font-size: 0.75rem; color: #aaa; }
 .active-set-name strong { color: #2980b9; }
 
-.sets-container { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 0.8rem; }
+.sets-container { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 0.4rem; }
 
-.pawn-set { background: rgba(0,0,0,0.3); border: 1px solid #555; border-radius: 4px; padding: 0.35rem; cursor: grab; transform: scale(0.9); transform-origin: top left; }
-.set-header { font-size: 0.6rem; color: #888; margin-bottom: 2px; display: flex; justify-content: space-between; align-items: center; }
-.power-badge { background: #e67e22; color: white; padding: 0 3px; border-radius: 2px; font-weight: bold; font-size: 0.6rem; }
-.set-content { display: flex; flex-wrap: wrap; gap: 0.3rem; margin-top: 3px; }
+.pawn-set { 
+  background: rgba(0,0,0,0.3); border: 1px solid #555; border-radius: 4px; 
+  padding: 0.25rem; cursor: grab; transform: scale(0.9); transform-origin: top left; 
+}
+.set-header { font-size: 0.55rem; color: #888; margin-bottom: 1px; display: flex; justify-content: space-between; align-items: center; }
+.power-badge { background: #e67e22; color: white; padding: 0 2px; border-radius: 2px; font-weight: bold; font-size: 0.55rem; }
+.set-content { display: flex; flex-wrap: wrap; gap: 0.2rem; margin-top: 2px; }
 .set-item { display: flex; align-items: center; gap: 1px; }
-.set-icon { width: 12px; height: 12px; }
-.set-count { font-size: 0.65rem; font-weight: bold; color: #ddd; }
+.set-icon { width: 10px; height: 10px; }
+.set-count { font-size: 0.6rem; font-weight: bold; color: #ddd; }
 
 .vampire { background-image: url('./assets/icons/vampire.svg'); }
 .werewolf { background-image: url('./assets/icons/werewolf.svg'); }

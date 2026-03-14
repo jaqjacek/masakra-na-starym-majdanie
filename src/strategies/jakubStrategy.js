@@ -22,13 +22,11 @@ export const randomizeJakubAnger = (jakub) => {
 
 /**
  * Executes ONE step of Jakub's turn (either kill or move).
- * Returns { newState, actionTaken: boolean, log: string }
+ * Logic: Target highest anger race first. Kill if in region, move if nearby.
  */
 export const executeJakubStep = (gameState) => {
   let workState = JSON.parse(JSON.stringify(gameState));
-  let log = "";
-  let actionTaken = false;
-
+  
   // 1. Find Jakub
   let jakub = null;
   let currentRegion = null;
@@ -42,56 +40,57 @@ export const executeJakubStep = (gameState) => {
 
   if (!jakub) return { newState: workState, actionTaken: false, log: "Jakub not found." };
 
-  // 2. Try to KILL in current region
-  let killedSomething = false;
-  RACES.forEach(race => {
-    const killedCount = currentRegion.pawns[race]?.length || 0;
-    if (killedCount > 0) {
-      killedSomething = true;
-      actionTaken = true;
-      // Deduct points from General
-      const playerIdx = workState.players.findIndex(p => p.generalOf === race);
+  // Get races sorted by current anger level, then by priority V > W > G > B
+  const sortedAnger = RACES
+    .map(race => ({ race, val: jakub.anger[race] }))
+    .filter(a => a.val > 0)
+    .sort((a, b) => b.val - a.val || RACES.indexOf(a.race) - RACES.indexOf(b.race));
+
+  if (sortedAnger.length === 0) return { newState: workState, actionTaken: false, log: "Jakub's anger is gone." };
+
+  // Iterate through races Jakub is angry at
+  for (const entry of sortedAnger) {
+    const targetRace = entry.race;
+    const unitsInRegion = currentRegion.pawns[targetRace]?.length || 0;
+
+    // A. Kill in current region
+    if (unitsInRegion > 0) {
+      const killCount = Math.min(unitsInRegion, entry.val);
+      const playerIdx = workState.players.findIndex(p => p.generalOf === targetRace);
+      
       if (playerIdx !== -1) {
-        workState.players[playerIdx].points = Math.max(0, workState.players[playerIdx].points - killedCount);
+        workState.players[playerIdx].points = Math.max(0, workState.players[playerIdx].points - killCount);
       }
-      // Deduct anger
-      jakub.anger[race] = Math.max(0, jakub.anger[race] - killedCount);
-      // Remove pawns
-      currentRegion.pawns[race] = [];
-      log = `Jakub killed ${killedCount} ${race}(s) at [${currentRegion.x},${currentRegion.y}].`;
+      
+      jakub.anger[targetRace] -= killCount;
+      currentRegion.pawns[targetRace].splice(0, killCount);
+      if (currentRegion.pawns[targetRace].length === 0) delete currentRegion.pawns[targetRace];
+
+      return { 
+        newState: workState, 
+        actionTaken: true, 
+        log: `Jakub targets ${targetRace} and kills ${killCount} unit(s) at [${currentRegion.x},${currentRegion.y}].` 
+      };
     }
-  });
 
-  if (killedSomething) return { newState: workState, actionTaken, log };
-
-  // 3. Try to MOVE
-  const angerLevels = RACES
-    .map(race => ({ race, value: jakub.anger[race] }))
-    .filter(a => a.value > 0)
-    .sort((a, b) => b.value - a.value || RACES.indexOf(a.race) - RACES.indexOf(b.race));
-
-  if (angerLevels.length === 0) {
-    return { newState: workState, actionTaken: false, log: "Jakub's anger is gone." };
-  }
-
-  for (const target of angerLevels) {
-    const targetRace = target.race;
-    const validNeighborIdx = currentRegion.neighbors.find(nIdx => {
-      const neighbor = workState.regions[nIdx];
-      return neighbor.pawns[targetRace]?.length > 0;
+    // B. Search neighbors for the SAME target race
+    const targetNeighborIdx = currentRegion.neighbors.find(nIdx => {
+      return workState.regions[nIdx].pawns[targetRace]?.length > 0;
     });
 
-    if (validNeighborIdx !== undefined) {
-      const targetRegion = workState.regions[validNeighborIdx];
+    if (targetNeighborIdx !== undefined) {
+      const targetRegion = workState.regions[targetNeighborIdx];
       targetRegion.pawns.jakub = currentRegion.pawns.jakub;
       delete currentRegion.pawns.jakub;
       
       return { 
         newState: workState, 
         actionTaken: true, 
-        log: `Jakub moves to [${targetRegion.x},${targetRegion.y}] hunting ${targetRace}.` 
+        log: `Jakub smells ${targetRace} nearby and moves to [${targetRegion.x},${targetRegion.y}].` 
       };
     }
+    
+    // If no units here and no units in neighbors for THIS race, continue to NEXT angriest race
   }
 
   return { newState: workState, actionTaken: false, log: "No targets in range." };

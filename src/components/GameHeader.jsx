@@ -3,10 +3,10 @@ import { PAWN_TYPES } from '../constants/pawnTypes';
 
 const GameHeader = ({ counters }) => {
   return (
-    <div className="game-status-bar">
-      <div className="counters-breakdown">
+    <div className="game-status-bar sidebar-width">
+      <div className="counters-breakdown sidebar-grid">
         <div className="breakdown-item total">
-          <span className="total-label">TOTAL:</span>
+          <span className="total-label">T:</span>
           <strong>{counters.total}</strong>
         </div>
         {PAWN_TYPES.filter(p => !p.isUnique).map(pawn => (

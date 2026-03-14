@@ -1,5 +1,22 @@
 {
-  "phase": "setup",
+  "phase": "final_scoring",
+  "currentRound": 6,
+  "currentPlayerIndex": 4,
+  "playerOrder": [
+    2,
+    3,
+    4,
+    1
+  ],
+  "passedPlayers": [
+    3,
+    1,
+    2,
+    4
+  ],
   "availableGenerals": [],
-  "setName": "set_4"
+  "setName": "set_4",
+  "gameStatus": "finished",
+  "jakubAngerIncreased": true,
+  "jakubTurnExecuted": false
 }

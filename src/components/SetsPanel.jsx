@@ -1,7 +1,7 @@
 import React from 'react';
 import { PAWN_TYPES, SUMMARY_PAWN_IDS } from '../constants/pawnTypes';
 
-const SetsPanel = ({ sets, onSetMouseDown, title }) => {
+const SetsPanel = ({ sets, onSetMouseDown, title, setName }) => {
   if (!sets) return null;
 
   const totalSets = sets.length;
@@ -23,16 +23,24 @@ const SetsPanel = ({ sets, onSetMouseDown, title }) => {
 
   return (
     <div className="sets-panel">
-      <div className="sets-panel-header">
-        <h3>{title || "Available Sets"} ({totalSets})</h3>
-        <div className="sets-total-breakdown">
-          {SUMMARY_PAWN_IDS.map(id => (
-            <div key={id} className="sets-breakdown-item" title={`${id} total`}>
-              <div className={`breakdown-dot ${id}`}></div>
-              <span>{breakdown[id]}</span>
-            </div>
-          ))}
+      <div className="sets-panel-header compact-row">
+        <div className="header-left-group">
+          <h3>{title || "Sets"} ({totalSets})</h3>
+          <div className="sets-total-breakdown compact">
+            {SUMMARY_PAWN_IDS.map(id => (
+              <div key={id} className="sets-breakdown-item" title={`${id} total`}>
+                <div className={`breakdown-dot ${id}`}></div>
+                <span>{breakdown[id]}</span>
+              </div>
+            ))}
+          </div>
         </div>
+        
+        {setName && (
+          <div className="header-right-group">
+            <span className="active-set-name">Set: <strong>{setName}</strong></span>
+          </div>
+        )}
       </div>
       <div className="sets-container">
         {sortedSets.map((set) => (

@@ -8,6 +8,7 @@ const AdminPanel = () => {
   const [progress, setProgress] = useState(0);
   const [availableSets, setAvailableSets] = useState([]);
   const [selectedSet, setSelectedSet] = useState('');
+  const [globalDefaultSet, setGlobalDefaultSet] = useState(null);
   const [showGenForm, setShowGenForm] = useState(false);
 
   // Generation form state
@@ -19,6 +20,7 @@ const AdminPanel = () => {
 
   useEffect(() => {
     fetchSets();
+    fetchConfig();
   }, []);
 
   const fetchSets = async () => {
@@ -28,6 +30,44 @@ const AdminPanel = () => {
       setAvailableSets(list);
       if (list.length > 0 && !selectedSet) setSelectedSet(list[0]);
     } catch (err) { console.error(err); }
+  };
+
+  const fetchConfig = async () => {
+    try {
+      const res = await fetch('http://localhost:3001/api/config');
+      const config = await res.json();
+      setGlobalDefaultSet(config.defaultSetName);
+    } catch (err) { console.error(err); }
+  };
+
+  const setAsDefault = async () => {
+    if (!selectedSet) return;
+    try {
+      await fetch('http://localhost:3001/api/config', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ defaultSetName: selectedSet })
+      });
+      setGlobalDefaultSet(selectedSet);
+      alert(`${selectedSet} is now the global default for new games.`);
+    } catch (err) { alert('Failed to set global default'); }
+  };
+
+  const handleLoadSet = async () => {
+    if (!selectedSet) return;
+    try {
+      const res = await fetch(`http://localhost:3001/api/sets/details/${selectedSet}`);
+      const data = await res.json();
+      if (data.error) throw new Error(data.error);
+
+      setGenDisplayName(data.displayName || '');
+      setGenDescription(data.description || '');
+      setGenMaxPower(data.maxPower || 6);
+      setGenPawns(data.pawns || { bardak: 80, ghost: 30, werewolf: 20, vampire: 10 });
+      setGenPower(data.power || { vampire: 3, werewolf: 2, ghost: 1, bardak: 1 });
+      
+      setShowGenForm(true);
+    } catch (err) { alert('Failed to load set details'); }
   };
 
   const handleGenerate = async (e) => {
@@ -73,12 +113,7 @@ const AdminPanel = () => {
       setProgress(i);
     }
     
-    const newEntry = {
-      id: Date.now(),
-      setName: activeSetName,
-      data: results
-    };
-
+    const newEntry = { id: Date.now(), setName: activeSetName, data: results };
     setHistory(prev => [newEntry, ...prev].slice(0, 5));
     setIsSimulating(false);
   };
@@ -91,10 +126,7 @@ const AdminPanel = () => {
           const pawn = PAWN_TYPES.find(p => p.id === entry.dataKey);
           return (
             <li key={`item-${index}`} className="legend-item">
-              <div 
-                className={`legend-icon ${pawn.id}`} 
-                style={{ backgroundColor: pawn.color }}
-              ></div>
+              <div className={`legend-icon ${pawn.id}`} style={{ backgroundColor: pawn.color }}></div>
               <span style={{ color: entry.color }}>{entry.value}</span>
             </li>
           );
@@ -106,20 +138,31 @@ const AdminPanel = () => {
   return (
     <div className="admin-panel-container">
       <div className="admin-header">
-        <h1>Admin Control Panel</h1>
+        <div className="admin-title-group">
+          <h1>Admin Control Panel</h1>
+          <button className="action-button" style={{ backgroundColor: '#7f8c8d', marginLeft: '1rem' }} onClick={() => { window.history.pushState({}, '', '/'); window.location.reload(); }}>
+            ← Back to Game Selection
+          </button>
+        </div>
         <div className="admin-actions">
-          <button 
-            className="action-button download-btn" 
-            onClick={() => setShowGenForm(!showGenForm)}
-          >
+          <button className="action-button download-btn" onClick={() => setShowGenForm(!showGenForm)}>
             {showGenForm ? 'Hide Form' : 'Generate New Set'}
           </button>
+          
           <div className="simulation-control">
-            <label>Use Set:</label>
+            <div className="default-status">
+              Default: <strong>{globalDefaultSet || 'None'}</strong>
+            </div>
             <select value={selectedSet} onChange={(e) => setSelectedSet(e.target.value)}>
               <option value="">Random Set</option>
               {availableSets.map(s => <option key={s} value={s}>{s}</option>)}
             </select>
+            <button className="action-button" style={{ backgroundColor: '#3498db' }} onClick={handleLoadSet} disabled={!selectedSet}>
+              Load Set
+            </button>
+            <button className="action-button" style={{ backgroundColor: '#27ae60' }} onClick={setAsDefault} disabled={!selectedSet}>
+              Set as Global Default
+            </button>
             <button className="action-button upload-btn" onClick={simulateGames} disabled={isSimulating}>
               {isSimulating ? `Simulating... (${progress}%)` : 'Simulate 100 Games'}
             </button>
@@ -130,30 +173,21 @@ const AdminPanel = () => {
       <div className="admin-content">
         {showGenForm && (
           <form className="generation-form" onSubmit={handleGenerate}>
-            <h3>Generate New Predefined Set</h3>
-            <p style={{ fontSize: '0.8rem', color: '#888', marginBottom: '1rem' }}>Filename will be generated automatically (e.g. set_1.json)</p>
-            
+            <h3>Generate / Edit Predefined Set</h3>
             <div className="form-row">
               <div className="form-group">
                 <label>Display Name (Optional):</label>
-                <input type="text" value={genDisplayName} onChange={e => setGenDisplayName(e.target.value)} placeholder="Friendly name for the set" />
+                <input type="text" value={genDisplayName} onChange={e => setGenDisplayName(e.target.value)} placeholder="Friendly name" />
               </div>
               <div className="form-group">
                 <label>Max Power per Set:</label>
                 <input type="number" value={genMaxPower} onChange={e => setGenMaxPower(parseInt(e.target.value))} />
               </div>
             </div>
-
             <div className="form-group">
               <label>Description (Optional):</label>
-              <textarea 
-                value={genDescription} 
-                onChange={e => setGenDescription(e.target.value)} 
-                placeholder="What makes this set special?"
-                style={{ background: '#222', border: '1px solid #444', color: 'white', borderRadius: '4px', padding: '0.5rem', minHeight: '60px' }}
-              />
+              <textarea value={genDescription} onChange={e => setGenDescription(e.target.value)} placeholder="Description..." style={{ background: '#222', border: '1px solid #444', color: 'white', borderRadius: '4px', padding: '0.5rem', minHeight: '60px', width: '100%', boxSizing: 'border-box' }} />
             </div>
-
             <div className="form-grid">
               <div>
                 <h4>Pawn Totals</h4>
@@ -174,7 +208,7 @@ const AdminPanel = () => {
                 ))}
               </div>
             </div>
-            <button type="submit" className="action-button download-btn">Generate & Save</button>
+            <button type="submit" className="action-button download-btn">Generate & Save as New</button>
           </form>
         )}
 

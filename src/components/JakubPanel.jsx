@@ -1,7 +1,7 @@
 import React from 'react';
 import { PAWN_TYPES } from '../constants/pawnTypes';
 
-const JakubPanel = ({ jakub, onUpdateCounter }) => {
+const JakubPanel = ({ jakub, onUpdateCounter, onJakubMouseDown, isJakubOnBoard }) => {
   if (!jakub) return null;
 
   const handleClick = (e, path) => {
@@ -15,6 +15,7 @@ const JakubPanel = ({ jakub, onUpdateCounter }) => {
   return (
     <div className="jakub-panel">
       <h3>Jakub Parameters</h3>
+      
       <div className="jakub-stats">
         <div className="jakub-stat-row" onClick={(e) => handleClick(e, ['speed'])}>
           <span>Speed:</span> <strong>{jakub.speed}</strong>
@@ -38,6 +39,14 @@ const JakubPanel = ({ jakub, onUpdateCounter }) => {
         ))}
       </div>
       <div className="jakub-panel-hint">Shift+Click: +1 | Ctrl+Click: -1</div>
+
+      <button 
+        className={`jakub-place-btn ${isJakubOnBoard ? 'disabled' : ''}`}
+        onMouseDown={(e) => !isJakubOnBoard && onJakubMouseDown(e)}
+        title={isJakubOnBoard ? "Jakub is already on the map" : "Drag Jakub to the map"}
+      >
+        J
+      </button>
     </div>
   );
 };

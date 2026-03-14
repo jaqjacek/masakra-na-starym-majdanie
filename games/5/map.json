@@ -8,33 +8,10 @@
       1
     ],
     "pawns": {
-      "bardak": [
-        {
-          "statuses": [
-            "ENABLED"
-          ]
-        },
-        {
-          "statuses": [
-            "ENABLED"
-          ]
-        },
-        {
-          "statuses": [
-            "ENABLED"
-          ]
-        },
-        {
-          "statuses": [
-            "ENABLED"
-          ]
-        },
-        {
-          "statuses": [
-            "ENABLED"
-          ]
-        }
-      ]
+      "ghost": [],
+      "vampire": [],
+      "werewolf": [],
+      "bardak": []
     }
   },
   {
@@ -47,32 +24,9 @@
       2
     ],
     "pawns": {
-      "bardak": [
-        {
-          "statuses": [
-            "ENABLED"
-          ]
-        },
-        {
-          "statuses": [
-            "ENABLED"
-          ]
-        }
-      ],
-      "ghost": [
-        {
-          "statuses": [
-            "ENABLED"
-          ]
-        }
-      ],
-      "werewolf": [
-        {
-          "statuses": [
-            "ENABLED"
-          ]
-        }
-      ]
+      "bardak": [],
+      "ghost": [],
+      "werewolf": []
     }
   },
   {
@@ -85,19 +39,19 @@
       3
     ],
     "pawns": {
-      "bardak": [
-        {
-          "statuses": [
-            "ENABLED"
-          ]
-        },
+      "ghost": [
         {
           "statuses": [
             "ENABLED"
           ]
         }
       ],
-      "ghost": [
+      "bardak": [
+        {
+          "statuses": [
+            "ENABLED"
+          ]
+        },
         {
           "statuses": [
             "ENABLED"
@@ -123,7 +77,7 @@
       4
     ],
     "pawns": {
-      "ghost": [
+      "werewolf": [
         {
           "statuses": [
             "ENABLED"
@@ -135,9 +89,14 @@
           "statuses": [
             "ENABLED"
           ]
+        },
+        {
+          "statuses": [
+            "ENABLED"
+          ]
         }
       ],
-      "vampire": [
+      "ghost": [
         {
           "statuses": [
             "ENABLED"
@@ -155,19 +114,19 @@
       3
     ],
     "pawns": {
-      "ghost": [
-        {
-          "statuses": [
-            "ENABLED"
-          ]
-        }
-      ],
       "bardak": [
         {
           "statuses": [
             "ENABLED"
           ]
         },
+        {
+          "statuses": [
+            "ENABLED"
+          ]
+        }
+      ],
+      "ghost": [
         {
           "statuses": [
             "ENABLED"
@@ -193,32 +152,10 @@
       6
     ],
     "pawns": {
-      "bardak": [
-        {
-          "statuses": [
-            "ENABLED"
-          ]
-        },
-        {
-          "statuses": [
-            "ENABLED"
-          ]
-        }
-      ],
-      "ghost": [
-        {
-          "statuses": [
-            "ENABLED"
-          ]
-        }
-      ],
-      "werewolf": [
-        {
-          "statuses": [
-            "ENABLED"
-          ]
-        }
-      ]
+      "bardak": [],
+      "ghost": [],
+      "werewolf": [],
+      "vampire": []
     }
   },
   {
@@ -232,47 +169,10 @@
       7
     ],
     "pawns": {
-      "jakub": [
-        {
-          "statuses": [
-            "ENABLED"
-          ],
-          "speed": 1,
-          "range": 1,
-          "anger": {
-            "vampire": 0,
-            "werewolf": 0,
-            "ghost": 0,
-            "bardak": 0
-          }
-        }
-      ],
-      "ghost": [
-        {
-          "statuses": [
-            "ENABLED"
-          ]
-        }
-      ],
-      "werewolf": [
-        {
-          "statuses": [
-            "ENABLED"
-          ]
-        }
-      ],
-      "bardak": [
-        {
-          "statuses": [
-            "ENABLED"
-          ]
-        },
-        {
-          "statuses": [
-            "ENABLED"
-          ]
-        }
-      ]
+      "bardak": [],
+      "ghost": [],
+      "werewolf": [],
+      "vampire": []
     }
   },
   {
@@ -286,14 +186,12 @@
       8
     ],
     "pawns": {
-      "werewolf": [
+      "bardak": [
         {
           "statuses": [
             "ENABLED"
           ]
-        }
-      ],
-      "bardak": [
+        },
         {
           "statuses": [
             "ENABLED"
@@ -305,13 +203,20 @@
           ]
         }
       ],
+      "vampire": [],
       "ghost": [
         {
           "statuses": [
             "ENABLED"
           ]
+        },
+        {
+          "statuses": [
+            "ENABLED"
+          ]
         }
-      ]
+      ],
+      "werewolf": []
     }
   },
   {
@@ -325,21 +230,29 @@
       9
     ],
     "pawns": {
-      "ghost": [
-        {
-          "statuses": [
-            "ENABLED"
-          ]
-        }
-      ],
       "bardak": [
         {
           "statuses": [
             "ENABLED"
           ]
+        },
+        {
+          "statuses": [
+            "ENABLED"
+          ]
+        },
+        {
+          "statuses": [
+            "ENABLED"
+          ]
+        },
+        {
+          "statuses": [
+            "ENABLED"
+          ]
         }
       ],
-      "vampire": [
+      "ghost": [
         {
           "statuses": [
             "ENABLED"
@@ -358,22 +271,7 @@
       8
     ],
     "pawns": {
-      "bardak": [
-        {
-          "statuses": [
-            "ENABLED"
-          ]
-        },
-        {
-          "statuses": [
-            "ENABLED"
-          ]
-        },
-        {
-          "statuses": [
-            "ENABLED"
-          ]
-        },
+      "werewolf": [
         {
           "statuses": [
             "ENABLED"
@@ -381,6 +279,11 @@
         }
       ],
       "ghost": [
+        {
+          "statuses": [
+            "ENABLED"
+          ]
+        },
         {
           "statuses": [
             "ENABLED"
@@ -399,19 +302,20 @@
       11
     ],
     "pawns": {
-      "bardak": [
-        {
-          "statuses": [
-            "ENABLED"
-          ]
-        },
+      "vampire": [],
+      "ghost": [
         {
           "statuses": [
             "ENABLED"
           ]
         }
       ],
-      "ghost": [
+      "bardak": [
+        {
+          "statuses": [
+            "ENABLED"
+          ]
+        },
         {
           "statuses": [
             "ENABLED"
@@ -438,7 +342,43 @@
       12
     ],
     "pawns": {
+      "werewolf": [],
+      "ghost": [],
+      "bardak": [],
+      "jakub": [
+        {
+          "statuses": [
+            "ENABLED"
+          ],
+          "speed": 1,
+          "range": 1,
+          "anger": {
+            "vampire": 2,
+            "werewolf": 0,
+            "ghost": 0,
+            "bardak": 0
+          }
+        }
+      ]
+    }
+  },
+  {
+    "id": 12,
+    "x": 2,
+    "y": 2,
+    "neighbors": [
+      7,
+      17,
+      11,
+      13
+    ],
+    "pawns": {
       "ghost": [
+        {
+          "statuses": [
+            "ENABLED"
+          ]
+        },
         {
           "statuses": [
             "ENABLED"
@@ -455,43 +395,7 @@
           "statuses": [
             "ENABLED"
           ]
-        }
-      ],
-      "werewolf": [
-        {
-          "statuses": [
-            "ENABLED"
-          ]
-        }
-      ]
-    }
-  },
-  {
-    "id": 12,
-    "x": 2,
-    "y": 2,
-    "neighbors": [
-      7,
-      17,
-      11,
-      13
-    ],
-    "pawns": {
-      "vampire": [
-        {
-          "statuses": [
-            "ENABLED"
-          ]
-        }
-      ],
-      "ghost": [
-        {
-          "statuses": [
-            "ENABLED"
-          ]
-        }
-      ],
-      "bardak": [
+        },
         {
           "statuses": [
             "ENABLED"
@@ -521,17 +425,16 @@
           "statuses": [
             "ENABLED"
           ]
-        },
+        }
+      ],
+      "ghost": [
         {
           "statuses": [
             "ENABLED"
           ]
-        },
-        {
-          "statuses": [
-            "ENABLED"
-          ]
-        },
+        }
+      ],
+      "werewolf": [
         {
           "statuses": [
             "ENABLED"
@@ -548,35 +451,6 @@
       9,
       19,
       13
-    ],
-    "pawns": {
-      "bardak": [
-        {
-          "statuses": [
-            "ENABLED"
-          ]
-        },
-        {
-          "statuses": [
-            "ENABLED"
-          ]
-        },
-        {
-          "statuses": [
-            "ENABLED"
-          ]
-        }
-      ]
-    }
-  },
-  {
-    "id": 15,
-    "x": 0,
-    "y": 3,
-    "neighbors": [
-      10,
-      20,
-      16
     ],
     "pawns": {
       "bardak": [
@@ -608,14 +482,13 @@
     }
   },
   {
-    "id": 16,
-    "x": 1,
+    "id": 15,
+    "x": 0,
     "y": 3,
     "neighbors": [
-      11,
-      21,
-      15,
-      17
+      10,
+      20,
+      16
     ],
     "pawns": {
       "ghost": [
@@ -623,7 +496,9 @@
           "statuses": [
             "ENABLED"
           ]
-        },
+        }
+      ],
+      "bardak": [
         {
           "statuses": [
             "ENABLED"
@@ -635,7 +510,46 @@
           ]
         }
       ],
+      "werewolf": [
+        {
+          "statuses": [
+            "ENABLED"
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "id": 16,
+    "x": 1,
+    "y": 3,
+    "neighbors": [
+      11,
+      21,
+      15,
+      17
+    ],
+    "pawns": {
       "bardak": [
+        {
+          "statuses": [
+            "ENABLED"
+          ]
+        },
+        {
+          "statuses": [
+            "ENABLED"
+          ]
+        }
+      ],
+      "ghost": [
+        {
+          "statuses": [
+            "ENABLED"
+          ]
+        }
+      ],
+      "werewolf": [
         {
           "statuses": [
             "ENABLED"
@@ -655,14 +569,21 @@
       18
     ],
     "pawns": {
-      "ghost": [
+      "vampire": [
         {
           "statuses": [
             "ENABLED"
           ]
         }
       ],
-      "vampire": [
+      "bardak": [
+        {
+          "statuses": [
+            "ENABLED"
+          ]
+        }
+      ],
+      "ghost": [
         {
           "statuses": [
             "ENABLED"
@@ -707,7 +628,34 @@
       24,
       18
     ],
-    "pawns": {}
+    "pawns": {
+      "bardak": [
+        {
+          "statuses": [
+            "ENABLED"
+          ]
+        },
+        {
+          "statuses": [
+            "ENABLED"
+          ]
+        }
+      ],
+      "ghost": [
+        {
+          "statuses": [
+            "ENABLED"
+          ]
+        }
+      ],
+      "werewolf": [
+        {
+          "statuses": [
+            "ENABLED"
+          ]
+        }
+      ]
+    }
   },
   {
     "id": 20,
@@ -717,7 +665,35 @@
       15,
       21
     ],
-    "pawns": {}
+    "pawns": {
+      "ghost": [
+        {
+          "statuses": [
+            "ENABLED"
+          ]
+        }
+      ],
+      "bardak": [
+        {
+          "statuses": [
+            "ENABLED"
+          ]
+        },
+        {
+          "statuses": [
+            "ENABLED"
+          ]
+        }
+      ],
+      "vampire": [],
+      "werewolf": [
+        {
+          "statuses": [
+            "ENABLED"
+          ]
+        }
+      ]
+    }
   },
   {
     "id": 21,
@@ -728,7 +704,34 @@
       20,
       22
     ],
-    "pawns": {}
+    "pawns": {
+      "werewolf": [],
+      "bardak": [
+        {
+          "statuses": [
+            "ENABLED"
+          ]
+        },
+        {
+          "statuses": [
+            "ENABLED"
+          ]
+        },
+        {
+          "statuses": [
+            "ENABLED"
+          ]
+        }
+      ],
+      "ghost": [],
+      "vampire": [
+        {
+          "statuses": [
+            "ENABLED"
+          ]
+        }
+      ]
+    }
   },
   {
     "id": 22,
@@ -739,7 +742,34 @@
       21,
       23
     ],
-    "pawns": {}
+    "pawns": {
+      "ghost": [
+        {
+          "statuses": [
+            "ENABLED"
+          ]
+        }
+      ],
+      "bardak": [
+        {
+          "statuses": [
+            "ENABLED"
+          ]
+        },
+        {
+          "statuses": [
+            "ENABLED"
+          ]
+        }
+      ],
+      "werewolf": [
+        {
+          "statuses": [
+            "ENABLED"
+          ]
+        }
+      ]
+    }
   },
   {
     "id": 23,
@@ -750,7 +780,34 @@
       22,
       24
     ],
-    "pawns": {}
+    "pawns": {
+      "bardak": [
+        {
+          "statuses": [
+            "ENABLED"
+          ]
+        },
+        {
+          "statuses": [
+            "ENABLED"
+          ]
+        }
+      ],
+      "ghost": [
+        {
+          "statuses": [
+            "ENABLED"
+          ]
+        }
+      ],
+      "werewolf": [
+        {
+          "statuses": [
+            "ENABLED"
+          ]
+        }
+      ]
+    }
   },
   {
     "id": 24,
@@ -760,6 +817,21 @@
       19,
       23
     ],
-    "pawns": {}
+    "pawns": {
+      "vampire": [
+        {
+          "statuses": [
+            "ENABLED"
+          ]
+        }
+      ],
+      "werewolf": [
+        {
+          "statuses": [
+            "ENABLED"
+          ]
+        }
+      ]
+    }
   }
 ]

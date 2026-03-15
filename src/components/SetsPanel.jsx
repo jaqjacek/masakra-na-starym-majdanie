@@ -1,7 +1,7 @@
 import React from 'react';
 import { PAWN_TYPES, SUMMARY_PAWN_IDS } from '../constants/pawnTypes';
 
-const SetsPanel = ({ sets, onSetMouseDown, title, setName }) => {
+const SetsPanel = ({ sets, onSetMouseDown, title, setInfo, discardPileCount = 0 }) => {
   if (!sets) return null;
 
   const totalSets = sets.length;
@@ -21,11 +21,13 @@ const SetsPanel = ({ sets, onSetMouseDown, title, setName }) => {
     return a.used ? 1 : -1;
   });
 
+  const displaySetName = setInfo?.displayName || setInfo?.setName || "Unknown Set";
+
   return (
     <div className="sets-panel">
       <div className="sets-panel-header compact-row">
         <div className="header-left-group">
-          <h3>{title || "Sets"} ({totalSets})</h3>
+          <h3>{title || "Sets"} ({totalSets}) | Discard: {discardPileCount}</h3>
           <div className="sets-total-breakdown compact">
             {SUMMARY_PAWN_IDS.map(id => (
               <div key={id} className="sets-breakdown-item" title={`${id} total`}>
@@ -36,16 +38,18 @@ const SetsPanel = ({ sets, onSetMouseDown, title, setName }) => {
           </div>
         </div>
         
-        {setName && (
+        {displaySetName && (
           <div className="header-right-group">
-            <span className="active-set-name">Set: <strong>{setName}</strong></span>
+            <span className="active-set-name" title={setInfo?.description || ""}>
+              Active: <strong>{displaySetName}</strong>
+            </span>
           </div>
         )}
       </div>
       <div className="sets-container">
-        {sortedSets.map((set) => (
+        {sortedSets.map((set, index) => (
           <div 
-            key={set.id} 
+            key={`${set.id}-${index}`} 
             className={`pawn-set ${set.used ? 'used' : ''}`}
             onMouseDown={(e) => !set.used && onSetMouseDown(set, e)}
             title={set.used ? "Already used" : `Power: ${set.power} | Drag to a region or player`}

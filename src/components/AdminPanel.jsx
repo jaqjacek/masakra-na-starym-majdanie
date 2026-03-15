@@ -206,9 +206,9 @@ const AdminPanel = () => {
       {showPreview && loadedSetPreview && !isSimulating && (
         <div className="set-preview-area">
           <SetsPanel 
-            sets={loadedSetPreview.items} 
+            sets={loadedSetPreview.drawPile || loadedSetPreview.items} 
             title={`Preview: ${selectedSet}`} 
-            setName={selectedSet}
+            setInfo={loadedSetPreview}
             onSetMouseDown={() => {}} 
           />
         </div>

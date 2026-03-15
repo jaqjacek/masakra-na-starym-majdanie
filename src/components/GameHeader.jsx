@@ -1,21 +1,18 @@
 import React from 'react';
 import { PAWN_TYPES } from '../constants/pawnTypes';
 
-const GameHeader = ({ counters }) => {
+const GameHeader = ({ counters, maxPool }) => {
   return (
-    <div className="game-status-bar sidebar-width">
-      <div className="counters-breakdown sidebar-grid">
-        <div className="breakdown-item total">
-          <span className="total-label">T:</span>
-          <strong>{counters.total}</strong>
-        </div>
-        {PAWN_TYPES.filter(p => !p.isUnique).map(pawn => (
-          <div key={pawn.id} className="breakdown-item">
-            <div className={`breakdown-dot ${pawn.id}`}></div>
-            <span>{counters.breakdown[pawn.id]}</span>
-          </div>
-        ))}
+    <div className="game-status-horizontal">
+      <div className="status-item total-summary">
+        T: <strong>{counters.total}</strong>
       </div>
+      {PAWN_TYPES.filter(p => !p.isUnique).map(pawn => (
+        <div key={pawn.id} className="status-item race-summary">
+          <div className={`breakdown-dot ${pawn.id}`}></div>
+          <span>{counters.breakdown[pawn.id]}/{maxPool[pawn.id] || 0}</span>
+        </div>
+      ))}
     </div>
   );
 };

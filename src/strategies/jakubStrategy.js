@@ -1,33 +1,80 @@
 export const RACES = ['vampire', 'werewolf', 'ghost', 'bardak'];
 
-const getTime = () => new Date().toLocaleTimeString();
-
 /**
- * Increases Jakub's anger counters based on specific race ranges.
+ * Updates Jakub's anger based on set contents and handles overflow logic.
  */
-export const randomizeJakubAnger = (jakub) => {
-  const increments = {
-    vampire: Math.floor(Math.random() * 3) + 1, // 1-3
-    werewolf: Math.floor(Math.random() * 2) + 2, // 2-3
-    ghost: Math.floor(Math.random() * 3) + 2, // 2-4
-    bardak: Math.floor(Math.random() * 3) + 3  // 3-5
-  };
-  
+export const applySetToJakubAnger = (jakub, setContent) => {
   const newAnger = { ...jakub.anger };
-  RACES.forEach(race => {
-    newAnger[race] = Math.min(9, (newAnger[race] || 0) + increments[race]);
+  let newRange = jakub.range;
+
+  Object.entries(setContent).forEach(([race, count]) => {
+    if (newAnger[race] !== undefined) {
+      newAnger[race] += count;
+      while (newAnger[race] >= 10) {
+        newAnger[race] = 5;
+        newRange += 1;
+      }
+    }
   });
-  return newAnger;
+
+  return { anger: newAnger, range: newRange };
+};
+
+const getRegionsInRange = (regions, startIndex, range) => {
+  const inRange = new Set();
+  const queue = [{ index: startIndex, dist: 0 }];
+  const visited = new Set([startIndex]);
+
+  while (queue.length > 0) {
+    const { index, dist } = queue.shift();
+    if (index !== startIndex) inRange.add(index);
+    if (dist < range) {
+      regions[index].neighbors.forEach(nIdx => {
+        if (!visited.has(nIdx)) {
+          visited.add(nIdx);
+          queue.push({ index: nIdx, dist: dist + 1 });
+        }
+      });
+    }
+  }
+  return Array.from(inRange);
+};
+
+const getBestTargetRegion = (candidateIndices, priorityRaces, regions) => {
+  if (candidateIndices.length === 0) return null;
+  let tied = candidateIndices;
+
+  for (const race of priorityRaces) {
+    let maxCount = -1;
+    let nextTied = [];
+
+    tied.forEach(rIdx => {
+      const count = regions[rIdx].pawns[race]?.length || 0;
+      if (count > maxCount) {
+        maxCount = count;
+        nextTied = [rIdx];
+      } else if (count === maxCount) {
+        nextTied.push(rIdx);
+      }
+    });
+
+    if (maxCount > 0) {
+      tied = nextTied;
+    }
+    if (tied.length === 1) break;
+  }
+
+  const finalId = tied[0];
+  const hasTarget = priorityRaces.some(race => regions[finalId].pawns[race]?.length > 0);
+  return hasTarget ? finalId : null;
 };
 
 /**
  * Executes ONE step of Jakub's turn (either kill or move).
- * Logic: Target highest anger race first. Kill if in region, move if nearby.
  */
 export const executeJakubStep = (gameState) => {
   let workState = JSON.parse(JSON.stringify(gameState));
   
-  // 1. Find Jakub
   let jakub = null;
   let currentRegion = null;
   for (const r of workState.regions) {
@@ -40,57 +87,50 @@ export const executeJakubStep = (gameState) => {
 
   if (!jakub) return { newState: workState, actionTaken: false, log: "Jakub not found." };
 
-  // Get races sorted by current anger level, then by priority V > W > G > B
-  const sortedAnger = RACES
+  const sortedAngerRaces = RACES
     .map(race => ({ race, val: jakub.anger[race] }))
     .filter(a => a.val > 0)
-    .sort((a, b) => b.val - a.val || RACES.indexOf(a.race) - RACES.indexOf(b.race));
+    .sort((a, b) => b.val - a.val || RACES.indexOf(a.race) - RACES.indexOf(b.race))
+    .map(a => a.race);
 
-  if (sortedAnger.length === 0) return { newState: workState, actionTaken: false, log: "Jakub's anger is gone." };
+  if (sortedAngerRaces.length === 0) return { newState: workState, actionTaken: false, log: "Jakub's anger is gone." };
 
-  // Iterate through races Jakub is angry at
-  for (const entry of sortedAnger) {
-    const targetRace = entry.race;
-    const unitsInRegion = currentRegion.pawns[targetRace]?.length || 0;
-
-    // A. Kill in current region
-    if (unitsInRegion > 0) {
-      const killCount = Math.min(unitsInRegion, entry.val);
-      const playerIdx = workState.players.findIndex(p => p.generalOf === targetRace);
-      
+  // 1. Try to KILL in current region
+  for (const race of sortedAngerRaces) {
+    const units = currentRegion.pawns[race]?.length || 0;
+    if (units > 0) {
+      const killCount = Math.min(units, jakub.anger[race]);
+      const playerIdx = workState.players.findIndex(p => p.generalOf === race);
       if (playerIdx !== -1) {
         workState.players[playerIdx].points = Math.max(0, workState.players[playerIdx].points - killCount);
       }
       
-      jakub.anger[targetRace] -= killCount;
-      currentRegion.pawns[targetRace].splice(0, killCount);
-      if (currentRegion.pawns[targetRace].length === 0) delete currentRegion.pawns[targetRace];
+      jakub.anger[race] -= killCount;
+      currentRegion.pawns[race].splice(0, killCount);
+      if (currentRegion.pawns[race].length === 0) delete currentRegion.pawns[race];
 
       return { 
         newState: workState, 
         actionTaken: true, 
-        log: `Jakub targets ${targetRace} and kills ${killCount} unit(s) at [${currentRegion.x},${currentRegion.y}].` 
+        log: `Jakub targets ${race} and kills ${killCount} unit(s) at [${currentRegion.x},${currentRegion.y}].` 
       };
     }
+  }
 
-    // B. Search neighbors for the SAME target race
-    const targetNeighborIdx = currentRegion.neighbors.find(nIdx => {
-      return workState.regions[nIdx].pawns[targetRace]?.length > 0;
-    });
+  // 2. Search for BEST region within range
+  const candidates = getRegionsInRange(workState.regions, currentRegion.id, jakub.range);
+  const bestRIdx = getBestTargetRegion(candidates, sortedAngerRaces, workState.regions);
 
-    if (targetNeighborIdx !== undefined) {
-      const targetRegion = workState.regions[targetNeighborIdx];
-      targetRegion.pawns.jakub = currentRegion.pawns.jakub;
-      delete currentRegion.pawns.jakub;
-      
-      return { 
-        newState: workState, 
-        actionTaken: true, 
-        log: `Jakub smells ${targetRace} nearby and moves to [${targetRegion.x},${targetRegion.y}].` 
-      };
-    }
+  if (bestRIdx !== null) {
+    const targetRegion = workState.regions[bestRIdx];
+    targetRegion.pawns.jakub = currentRegion.pawns.jakub;
+    delete currentRegion.pawns.jakub;
     
-    // If no units here and no units in neighbors for THIS race, continue to NEXT angriest race
+    return { 
+      newState: workState, 
+      actionTaken: true, 
+      log: `Jakub moves to [${targetRegion.x},${targetRegion.y}] within range ${jakub.range}.` 
+    };
   }
 
   return { newState: workState, actionTaken: false, log: "No targets in range." };

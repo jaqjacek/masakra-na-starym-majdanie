@@ -14,7 +14,7 @@ import PawnStatusPopup from './components/PawnStatusPopup';
 import { fetchMap, updateMap, resetMap } from './services/api';
 import { io } from 'socket.io-client';
 import { PAWN_TYPES, STATUSES } from './constants/pawnTypes';
-import { randomizeJakubAnger, executeJakubStep } from './strategies/jakubStrategy';
+import { applySetToJakubAnger, executeJakubStep } from './strategies/jakubStrategy';
 
 const getTime = () => new Date().toLocaleTimeString();
 
@@ -44,7 +44,7 @@ const INITIAL_STATE = {
     { id: 3, name: '3', points: 30, generalOf: null },
     { id: 4, name: '4', points: 30, generalOf: null }
   ],
-  sets: { pawns: { bardak: 80, ghost: 30, werewolf: 20, vampire: 10 }, items: [] },
+  sets: { drawPile: [], discardPile: [], heldSets: [], pawns: { bardak: 80, ghost: 30, werewolf: 20, vampire: 10 } },
   phase: 'setup',
   currentRound: 1,
   playerOrder: [1, 2, 3, 4],
@@ -55,6 +55,22 @@ const INITIAL_STATE = {
   jakubTurnExecuted: false,
   gameStatus: 'active',
   history: []
+};
+
+const getReachableRegions = (board, startIndex, range) => {
+  const reachable = new Set();
+  const queue = [{ index: startIndex, dist: 0 }];
+  const visited = new Set([startIndex]);
+  while (queue.length > 0) {
+    const { index, dist } = queue.shift();
+    if (dist > 0) reachable.add(index);
+    if (dist < range) {
+      board[index].neighbors.forEach(nIdx => {
+        if (!visited.has(nIdx)) { visited.add(nIdx); queue.push({ index: nIdx, dist: dist + 1 }); }
+      });
+    }
+  }
+  return Array.from(reachable);
 };
 
 const getManhattanDistance = (r1, r2) => {
@@ -68,7 +84,16 @@ const calculateSetPlacementPoints = (race, setContent, targetRegion, jakubRegion
   if (race === 'vampire') return ownPawnsInSet + (3 - dist);
   if (race === 'werewolf') return (dist <= 2) ? (ownPawnsInSet + 1) : 0;
   if (race === 'bardak') return Object.values(setContent).reduce((a, b) => a + b, 0);
-  if (race === 'ghost') return ownPawnsInSet + (dist <= 2 ? -1 : 1);
+  if (race === 'ghost') {
+    const isBorder = targetRegion.x === 0 || targetRegion.x === 4 || targetRegion.y === 0 || targetRegion.y === 4;
+    if (isBorder) {
+      let pts = ownPawnsInSet;
+      const jakub = jakubRegion?.pawns.jakub[0];
+      if (dist <= (jakub ? jakub.range : 0)) pts -= 1;
+      return pts;
+    }
+    return ownPawnsInSet + (dist > 2 ? 1 : -1);
+  }
   return 0;
 };
 
@@ -89,7 +114,7 @@ function App() {
   const [isSetsPanelOpen, setIsSetsPanelOpen] = useState(true);
 
   const [isAutoplay, setIsAutoplay] = useState(false);
-  const [autoplaySpeed, setAutoplaySpeed] = useState(500);
+  const [autoplaySpeed, setAutoplaySpeed] = useState(200);
 
   const jakubType = useMemo(() => PAWN_TYPES.find(p => p.id === 'jakub'), []);
 
@@ -164,26 +189,67 @@ function App() {
 
   const jakubRegion = useMemo(() => gameState.regions?.find(r => r.pawns.jakub && r.pawns.jakub.length > 0), [gameState.regions]);
 
+  const refillSetsIfNeeded = (state) => {
+    if (!state.sets.drawPile) state.sets.drawPile = [];
+    if (!state.sets.discardPile) state.sets.discardPile = [];
+    if (state.sets.drawPile.length === 0 && state.sets.discardPile.length > 0) {
+      state.sets.drawPile = [...state.sets.discardPile];
+      state.sets.discardPile = [];
+      addLog(state, "Reshuffling discard pile into draw pile.");
+    }
+  };
+
+  const drawSet = (state) => {
+    refillSetsIfNeeded(state);
+    if (state.sets.drawPile.length === 0) return null;
+    const randomIdx = Math.floor(Math.random() * state.sets.drawPile.length);
+    return state.sets.drawPile.splice(randomIdx, 1)[0];
+  };
+
+  const findAndRemoveSetById = (state, setId) => {
+    let idx = (state.sets.drawPile || []).findIndex(s => s.id === setId);
+    if (idx !== -1) return state.sets.drawPile.splice(idx, 1)[0];
+    idx = (state.sets.heldSets || []).findIndex(s => s.id === setId);
+    if (idx !== -1) return state.sets.heldSets.splice(idx, 1)[0];
+    idx = (state.sets.discardPile || []).findIndex(s => s.id === setId);
+    if (idx !== -1) return state.sets.discardPile.splice(idx, 1)[0];
+    return null;
+  };
+
   const handleAutoplayTick = useCallback(async () => {
     if (!isAutoplay || !gameId || gameState.gameStatus === 'finished') return;
     let workState = JSON.parse(JSON.stringify(gameState));
     
     // SETUP PHASE
     if (workState.phase === 'setup') {
-      const globalSets = workState.sets.items.filter(s => s.ownerId === null && !s.used);
-      if (globalSets.length >= 4) {
-        const setsPerPlayer = Math.min(5, Math.floor(globalSets.length / 4));
-        workState.players.forEach(player => {
-          for (let i = 0; i < setsPerPlayer; i++) {
-            if (globalSets.length === 0) break;
-            const randomIdx = Math.floor(Math.random() * globalSets.length);
-            const set = globalSets.splice(randomIdx, 1)[0];
-            const originalSetIdx = workState.sets.items.findIndex(s => s.id === set.id);
-            workState.sets.items[originalSetIdx].ownerId = player.id;
-            addLog(workState, `Round ${workState.currentRound}: Distributed Set ${set.id} to Player ${player.id}`);
-          }
-        });
+      const activePlayerCount = workState.players.length;
+      let distributionCount = 0;
+      while (distributionCount < 3) {
+        const poolSize = (workState.sets.drawPile?.length || 0) + (workState.sets.discardPile?.length || 0);
+        if (poolSize >= activePlayerCount) {
+          workState.players.forEach(player => {
+            const set = drawSet(workState);
+            if (set) {
+              set.ownerId = player.id;
+              if (!workState.sets.heldSets) workState.sets.heldSets = [];
+              workState.sets.heldSets.push(set);
+            }
+          });
+          distributionCount++;
+        } else break;
       }
+      if (distributionCount > 0) addLog(workState, `Round ${workState.currentRound}: Distributed ${distributionCount} sets to players.`);
+      
+      for (let i = 0; i < 2; i++) {
+        const set = drawSet(workState);
+        if (set) {
+          set.ownerId = 'jakub';
+          if (!workState.sets.heldSets) workState.sets.heldSets = [];
+          workState.sets.heldSets.push(set);
+          addLog(workState, `Jakub claimed Set ${set.id} from pool.`);
+        }
+      }
+
       workState.phase = 'player_phase';
       workState.currentPlayerIndex = 0;
       workState.passedPlayers = [];
@@ -213,16 +279,16 @@ function App() {
         return;
       }
 
-      const mySets = workState.sets.items.filter(s => s.ownerId === curId && !s.used);
+      const myHeld = (workState.sets.heldSets || []).filter(s => s.ownerId === curId);
       const emptyR = workState.regions.filter(r => !RACES.some(race => r.pawns[race]?.length > 0));
       
       const currentOnBoard = PAWN_TYPES.reduce((acc, p) => ({ ...acc, [p.id]: 0 }), {});
-      workState.regions.forEach(r => Object.entries(r.pawns).forEach(([tId, insts]) => currentOnBoard[tId] += insts.length));
+      workState.regions.forEach(r => Object.entries(r.pawns).forEach(([tId, insts]) => { if (currentOnBoard[tId] !== undefined) currentOnBoard[tId] += insts.length; }));
       const currentPool = { ...workState.sets.pawns };
       Object.keys(currentPool).forEach(r => currentPool[r] -= currentOnBoard[r]);
 
       let best = null;
-      mySets.forEach(set => {
+      myHeld.forEach(set => {
         let isPlaceable = true;
         Object.entries(set.content).forEach(([tId, count]) => { if (currentPool[tId] < count) isPlaceable = false; });
         if (!isPlaceable) return;
@@ -232,19 +298,36 @@ function App() {
         });
       });
 
-      if (best && !(best.pts <= 0 && mySets.length <= 2)) {
+      if (best && best.pts > 1) {
         const targetRegion = workState.regions[best.region.id];
         Object.entries(best.set.content).forEach(([tId, count]) => {
           if (!targetRegion.pawns[tId]) targetRegion.pawns[tId] = [];
-          for (let i = 0; i < count; i++) targetRegion.pawns[tId].push({ statuses: ['ENABLED'] });
+          for (let i = 0; i < count; i++) {
+            const pawnType = PAWN_TYPES.find(p => p.id === tId);
+            targetRegion.pawns[tId].push({ statuses: [...pawnType.defaultStatuses], ...(pawnType.defaultParameters ? JSON.parse(JSON.stringify(pawnType.defaultParameters)) : {}) });
+          }
         });
         curPlayer.points += best.pts;
-        const setIdx = workState.sets.items.findIndex(s => s.id === best.set.id);
-        workState.sets.items[setIdx].used = false; workState.sets.items[setIdx].ownerId = null;
-        addLog(workState, `Player ${curId} placed Set ${best.set.id} (+${best.pts} pts)`);
+        const usedSet = findAndRemoveSetById(workState, best.set.id);
+        if (usedSet) { usedSet.ownerId = null; if (!workState.sets.discardPile) workState.sets.discardPile = []; workState.sets.discardPile.push(usedSet); }
+        const raceCode = curPlayer.generalOf ? curPlayer.generalOf[0].toUpperCase() : '?';
+        addLog(workState, `Player ${curId} (${raceCode}) placed Set ${best.set.id} (+${best.pts} pts)`);
       } else {
         workState.passedPlayers.push(curId);
-        addLog(workState, `Player ${curId} passed.`);
+        const currentHand = (workState.sets.heldSets || []).filter(s => s.ownerId === curId);
+        if (currentHand.length > 2) {
+          const excessCount = currentHand.length - 2;
+          const sorted = [...currentHand].sort((a, b) => (a.content[curPlayer.generalOf] || 0) - (b.content[curPlayer.generalOf] || 0));
+          const toDiscard = sorted.slice(0, excessCount);
+          toDiscard.forEach(s => {
+            const idx = workState.sets.heldSets.findIndex(h => h.id === s.id);
+            if (idx !== -1) workState.sets.heldSets[idx].ownerId = 'jakub';
+          });
+          curPlayer.points += excessCount;
+          addLog(workState, `Player ${curId} passed and sold ${excessCount} excess set(s) for ${excessCount} pts.`);
+        } else {
+          addLog(workState, `Player ${curId} passed.`);
+        }
       }
 
       if (workState.passedPlayers.length === workState.players.length) {
@@ -264,9 +347,15 @@ function App() {
         let jakub = null;
         for (const r of workState.regions) { if (r.pawns.jakub?.length > 0) { jakub = r.pawns.jakub[0]; break; } }
         if (jakub) {
-          jakub.anger = randomizeJakubAnger(jakub);
+          addLog(workState, `Jakub's current anger: V:${jakub.anger.vampire} W:${jakub.anger.werewolf} G:${jakub.anger.ghost} B:${jakub.anger.bardak}`);
+          const jakubSets = (workState.sets.heldSets || []).filter(s => s.ownerId === 'jakub');
+          jakubSets.forEach(s => {
+            const result = applySetToJakubAnger(jakub, s.content);
+            jakub.anger = result.anger;
+            jakub.range = result.range;
+            addLog(workState, `Jakub absorbed Set ${s.id}. New Anger: V:${jakub.anger.vampire} W:${jakub.anger.werewolf} G:${jakub.anger.ghost} B:${jakub.anger.bardak} | Range: ${jakub.range}`);
+          });
           workState.jakubAngerIncreased = true;
-          addLog(workState, `Jakub's anger rises! (V:${jakub.anger.vampire} W:${jakub.anger.werewolf} G:${jakub.anger.ghost} B:${jakub.anger.bardak})`);
           updateGameWithSync(workState);
           return;
         }
@@ -278,6 +367,23 @@ function App() {
         updateGameWithSync(step.newState);
       } else {
         addLog(workState, `Jakub stops his rampage.`);
+        
+        let jakub = null;
+        for (const r of workState.regions) { if (r.pawns.jakub?.length > 0) { jakub = r.pawns.jakub[0]; break; } }
+        if (jakub) {
+          jakub.range = Math.max(1, jakub.range - 1);
+          addLog(workState, `Jakub's range cooled down to ${jakub.range}.`);
+        }
+
+        const toDiscard = (workState.sets.heldSets || []).filter(s => s.ownerId === 'jakub');
+        toDiscard.forEach(s => {
+          s.ownerId = null;
+          s.used = false;
+          if (!workState.sets.discardPile) workState.sets.discardPile = [];
+          workState.sets.discardPile.push(s);
+        });
+        workState.sets.heldSets = (workState.sets.heldSets || []).filter(s => s.ownerId !== 'jakub');
+
         workState.players.forEach(p => p.generalOf = null);
         workState.availableGenerals = [...RACES];
         workState.playerOrder = [...workState.players].sort((a, b) => a.points - b.points).map(p => p.id);
@@ -308,13 +414,11 @@ function App() {
         
         let addedPoints = 0;
         if (pick === 'vampire') {
-          let count = 0;
-          workState.regions.forEach(r => count += (r.pawns[pick]?.length || 0));
+          let count = 0; workState.regions.forEach(r => count += (r.pawns[pick]?.length || 0));
           addedPoints = count * 2;
           addLog(workState, `Player ${curId} picked Vampires and gained ${addedPoints} points (2 per unit).`);
         } else if (pick === 'werewolf') {
-          let count = 0;
-          workState.regions.forEach(r => count += (r.pawns[pick]?.length || 0));
+          let count = 0; workState.regions.forEach(r => count += (r.pawns[pick]?.length || 0));
           addedPoints = count;
           addLog(workState, `Player ${curId} picked Werewolves and gained ${addedPoints} points (1 per unit).`);
         } else if (pick === 'ghost') {
@@ -323,17 +427,15 @@ function App() {
             if (myCount > 0) {
               let othersCounts = RACES.filter(race => race !== pick).map(race => r.pawns[race]?.length || 0);
               const othersTotal = othersCounts.reduce((a, b) => a + b, 0);
-              if (othersTotal === 0) {
-                addedPoints += 2;
-              } else {
+              if (othersTotal === 0) addedPoints += 2;
+              else {
                 const maxOther = Math.max(...othersCounts);
                 if (myCount > maxOther) addedPoints += 1;
               }
             }
           });
           addLog(workState, `Player ${curId} picked Ghosts and gained ${addedPoints} points (alone/plurality bonus).`);
-        }
- else if (pick === 'bardak') {
+        } else if (pick === 'bardak') {
           workState.regions.forEach(r => {
             const myCount = r.pawns[pick]?.length || 0;
             if (myCount > 0) {
@@ -448,6 +550,8 @@ function App() {
         const points = calculateSetPlacementPoints(setOwner.generalOf, activeSet.set.content, targetRegion, jakubRegion);
         const pIdx = newState.players.findIndex(p => p.id === setOwner.id);
         newState.players[pIdx].points += points;
+        const raceCode = setOwner.generalOf[0].toUpperCase();
+        addLog(newState, `Player ${setOwner.id} (${raceCode}) placed Set ${activeSet.set.id} at [${targetRegion.x},${targetRegion.y}] for ${points} pts`);
       }
       Object.entries(activeSet.set.content).forEach(([tId, count]) => {
         if (!targetRegion.pawns[tId]) targetRegion.pawns[tId] = [];
@@ -456,8 +560,9 @@ function App() {
           targetRegion.pawns[tId].push({ statuses: [...pawnType.defaultStatuses], ...(pawnType.defaultParameters ? JSON.parse(JSON.stringify(pawnType.defaultParameters)) : {}) });
         }
       });
-      const setIdx = newState.sets.items.findIndex(s => s.id === activeSet.set.id);
-      if (setIdx !== -1) { newState.sets.items[setIdx].used = false; newState.sets.items[setIdx].ownerId = null; }
+      
+      const usedSet = findAndRemoveSetById(newState, activeSet.set.id);
+      if (usedSet) { usedSet.ownerId = null; usedSet.used = false; if (!newState.sets.discardPile) newState.sets.discardPile = []; newState.sets.discardPile.push(usedSet); }
       updateGameWithSync(newState);
       setActiveSet(null);
       setValidMoveTargets([]);
@@ -467,8 +572,8 @@ function App() {
   const handlePlayerMouseUp = useCallback((targetPlayerId) => {
     if (activeSet && !playerId) { 
       const newState = JSON.parse(JSON.stringify(gameState));
-      const setIdx = newState.sets.items.findIndex(s => s.id === activeSet.set.id);
-      if (setIdx !== -1) { newState.sets.items[setIdx].ownerId = targetPlayerId; updateGameWithSync(newState); }
+      const s = findAndRemoveSetById(newState, activeSet.set.id);
+      if (s) { s.ownerId = targetPlayerId; if (!newState.sets.heldSets) newState.sets.heldSets = []; newState.sets.heldSets.push(s); addLog(newState, `Manual: Distributed Set ${s.id} to Player ${targetPlayerId}`); updateGameWithSync(newState); }
       setActiveSet(null);
     }
     if (activeGeneral && !playerId) { 
@@ -531,10 +636,11 @@ function App() {
     }
   }, [gameId]);
 
-  if (isAdmin) return <AdminPanel />;
-  if (!gameId) return <LandingPage inputGameId={inputGameId} setInputGameId={setInputGameId} onGoToGame={(e) => { e.preventDefault(); if (inputGameId.trim()) window.location.href = `/game/${inputGameId.trim()}`; }} />;
+  const filteredSets = gameState.sets ? (playerId ? (gameState.sets.heldSets || []).filter(s => s.ownerId === playerId) : (gameState.sets.drawPile || [])) : [];
+  const jakubsSets = gameState.sets ? (gameState.sets.heldSets || []).filter(s => s.ownerId === 'jakub') : [];
 
-  const filteredSets = gameState.sets ? (playerId ? gameState.sets.items.filter(s => s.ownerId === playerId) : gameState.sets.items.filter(s => s.ownerId === null)) : [];
+  if (isAdmin) return <AdminPanel />;
+  if (!gameId) return <LandingPage inputGameId={inputGameId} setInputGameId={setInputGameId} onGoToGame={(e) => { e.preventDefault(); if (inputGameId.trim()) { window.location.href = `/game/${inputGameId.trim()}`; } }} />;
 
   return (
     <div className="app-container">
@@ -564,51 +670,57 @@ function App() {
             <button className="menu-item" onClick={() => { const dataStr = JSON.stringify(gameState, null, 2); const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr); const link = document.createElement('a'); link.href = dataUri; link.download = `game_${gameId}.json`; link.click(); }}>Download Board</button>
             <label className="menu-item">Upload Board<input type="file" accept=".json" onChange={(e) => { const file = e.target.files[0]; if (!file) return; const reader = new FileReader(); reader.onload = async (ev) => { try { const data = JSON.parse(ev.target.result); if (data && data.regions) await updateGameWithSync(data); } catch (err) { alert('Failed'); } }; reader.readAsText(file); setIsMenuOpen(false); }} style={{ display: 'none' }} /></label>
             <button className="menu-item reset" onClick={handleResetBoard}>Reset Game</button>
-            <button className="menu-item" onClick={() => { window.history.pushState({}, '', '/'); setGameId(null); setGameState(INITIAL_STATE); setIsAdmin(false); }}>Change Game</button>
-            <button className="menu-item" onClick={() => { window.history.pushState({}, '', '/admin'); setIsAdmin(true); setGameId(null); setIsMenuOpen(false); }}>Admin Panel</button>
+            <button className="menu-item" onClick={() => { window.history.pushState({}, '', '/'); setGameId(null); setGameState(INITIAL_STATE); setIsAdmin(false); window.dispatchEvent(new Event('popstate')); }}>Change Game</button>
+            <button className="menu-item" onClick={() => { window.history.pushState({}, '', '/admin'); setIsAdmin(true); setGameId(null); setIsMenuOpen(false); window.dispatchEvent(new Event('popstate')); }}>Admin Panel</button>
+
           </div></>
         )}
       </div>
 
       <div className="game-layout-wrapper">
         <div className="left-controls">
-          {gameState.phase === 'player_phase' && gameState.availableGenerals.length > 0 && (
-            <div className="generals-pool">
-              <h4>Roles</h4>
-              <div className="generals-list">
-                {gameState.availableGenerals.map(race => (
-                  <div key={race} className={`general-icon large ${race}`} onMouseDown={(e) => handleGeneralMouseDown(race, e)}></div>
-                ))}
-              </div>
-            </div>
-          )}
           <div className="bags-container">
             {PAWN_TYPES.filter(p => !p.isUnique).map(pawn => (
               <Bag key={pawn.id} type={pawn} onMouseDown={(e) => handleBagMouseDown(pawn.id, e)} availableCount={availablePool[pawn.id]} />
             ))}
           </div>
-          <GameHeader counters={counters} />
-          <JakubPanel jakub={jakubInstance} onUpdateCounter={handleJakubCounterUpdate} onJakubMouseDown={handleJakubMouseDownFromPanel} isJakubOnBoard={isJakubOnBoard} />
+          <div className="jakub-management">
+            <JakubPanel jakub={jakubInstance} onUpdateCounter={handleJakubCounterUpdate} onJakubMouseDown={handleJakubMouseDownFromPanel} isJakubOnBoard={isJakubOnBoard} />
+            <div className="jakubs-sets">
+              <SetsPanel sets={jakubsSets} title="SETS" onSetMouseDown={() => {}} />
+            </div>
+          </div>
         </div>
         <div className="main-game-area">
-          <PointsTracker players={gameState.players || []} onUpdatePoints={handleUpdatePoints} currentPlayerId={playerId} onPlayerMouseUp={handlePlayerMouseUp} sets={gameState.sets} />
           {gameState.regions && <Board regions={gameState.regions} onRegionMouseUp={handleRegionMouseUp} onRemovePawn={handleRegionRemove} onAddPawn={handleRegionAdd} onPawnMouseDown={handlePawnMouseDown} setHoveredPawn={setHoveredPawn} validMoveTargets={validMoveTargets} />}
+          <GameHeader counters={counters} maxPool={gameState.sets?.pawns || {}} />
+          <PointsTracker players={gameState.players || []} onUpdatePoints={handleUpdatePoints} currentPlayerId={playerId} onPlayerMouseUp={handlePlayerMouseUp} sets={gameState.sets} />
+          {gameState.phase === 'player_phase' && gameState.availableGenerals.length > 0 && (
+            <div className="generals-pool-horizontal">
+              {gameState.availableGenerals.map(race => (
+                <div key={race} className={`general-icon large ${race}`} onMouseDown={(e) => handleGeneralMouseDown(race, e)}></div>
+              ))}
+            </div>
+          )}
         </div>
         <div className="right-controls">
-          <HistoryPanel logs={gameState.history || []} />
+          {isSetsPanelOpen && (
+            <div className="sidebar-sets-container">
+              <SetsPanel 
+                sets={filteredSets} 
+                onSetMouseDown={handleSetMouseDown} 
+                title={playerId ? "Your Sets" : "Draw Pile"} 
+                setInfo={gameState.sets}
+                discardPileCount={gameState.sets?.discardPile?.length || 0}
+              />
+            </div>
+          )}
         </div>
       </div>
 
-      {isSetsPanelOpen && (
-        <div className="bottom-sets-container">
-          <SetsPanel 
-            sets={filteredSets} 
-            onSetMouseDown={handleSetMouseDown} 
-            title={playerId ? "Your Sets" : "Global Sets"} 
-            setName={gameState.setName}
-          />
-        </div>
-      )}
+      <div className="bottom-history-container">
+        <HistoryPanel logs={gameState.history || []} />
+      </div>
       
       {activePawn && <PawnGhost type={PAWN_TYPES.find(p => p.id === activePawn.typeId)} x={activePawn.x} y={activePawn.y} />}
       {activeSet && <div className="set-ghost" style={{ left: activeSet.x, top: activeSet.y }}><div className="set-ghost-badge">Set {activeSet.set.id}</div></div>}

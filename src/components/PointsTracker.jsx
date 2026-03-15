@@ -22,7 +22,14 @@ const PointsTracker = ({ players, onUpdatePoints, currentPlayerId, onPlayerMouse
       {players.map((player, index) => {
         const isMe = player.id === currentPlayerId;
         const displayName = `${player.id}:${player.name || ''}`;
-        const ownedSetsCount = sets ? sets.items.filter(s => s.ownerId === player.id && !s.used).length : 0;
+        
+        // Calculate sets in player's hand
+        let ownedSetsCount = 0;
+        if (sets) {
+          // Check both migration compatibility and new heldSets structure
+          const hand = sets.heldSets || sets.items || [];
+          ownedSetsCount = hand.filter(s => s.ownerId === player.id && !s.used).length;
+        }
         
         return (
           <div 
@@ -39,7 +46,7 @@ const PointsTracker = ({ players, onUpdatePoints, currentPlayerId, onPlayerMouse
                   {displayName}
                 </span>
                 {ownedSetsCount > 0 && (
-                  <div className="owned-sets-badge" title={`${ownedSetsCount} sets ready`}>
+                  <div className="owned-sets-badge" title={`${ownedSetsCount} sets in hand`}>
                     S:{ownedSetsCount}
                   </div>
                 )}
@@ -58,7 +65,7 @@ const PointsTracker = ({ players, onUpdatePoints, currentPlayerId, onPlayerMouse
               onClick={(e) => handleSelectPlayer(e, player.id)}
               title={`Switch to ${displayName}`}
             >
-              <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M16 3l4 4-4 4M8 21l-4-4 4-4M20 7H4M4 17h16" />
               </svg>
             </button>

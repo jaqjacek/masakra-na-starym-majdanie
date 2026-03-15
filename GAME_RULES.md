@@ -17,8 +17,8 @@ Gracze wcielają się w role Generałów dowodzących armiami potworów (Wampiry
 Gra trwa dokładnie 6 rund. Każda runda składa się z trzech faz:
 
 ### Faza I: Setup (Przygotowanie)
-*   **Rozdawanie Setów:** Jeżeli w puli ogólnej znajdują się co najmniej 4 zestawy, każdy gracz otrzymuje po jednym. Proces powtarza się, dopóki w puli jest wystarczająco dużo zestawów, aby rozdzielić je po równo między graczy.
-*   **Recykling:** Zestawy zagrane lub odrzucone w poprzednich rundach wracają do puli ogólnej przed rozdaniem.
+*   **Rozdawanie Setów:** Jeżeli w puli ogólnej (stos aktywny + odrzucony) znajduje się co najmniej 4 zestawy, każdy gracz otrzymuje po jednym. Proces ten powtarza się w systemie "round-robin", dopóki każdy z graczy nie otrzyma w tej fazie **3 dodatkowych zestawów** lub pula przestanie wystarczać na sprawiedliwy podział.
+*   **Recykling:** Zestawy zagrane lub odrzucone w poprzednich rundach wracają do puli ogólnej jako zestawy odrzucone. Kiedy stos aktywny (Draw Pile) staje się pusty, wszystkie zestawy ze stosu odrzuconego (Discard Pile) zostają wtasowane i stają się aktywne.
 
 ### Faza II: Faza Graczy
 Faza ta dzieli się na wybór roli oraz pętlę akcji.
@@ -35,22 +35,26 @@ Faza ta dzieli się na wybór roli oraz pętlę akcji.
 ### Faza III: Faza Jakuba
 Po spasowaniu wszystkich graczy, Jakub rusza do akcji:
 
-1.  **Wzrost Złości:** Jakub losuje dodatkową agresję dla każdej rasy:
-    *   Vampire: +1 do 3
-    *   Werewolf: +2 do 3
-    *   Ghost: +2 do 4
-    *   Bardak: +3 do 5
-    *   *Limit złości:* Maksymalnie 9 na każdą rasę.
+1.  **Zasilanie Złości (Nowość):**
+    *   Jakub pobiera **2 losowe zestawy** z puli Draw Pile na start fazy.
+    *   Wszystkie zestawy **odrzucone przez graczy** (+1 pkt) w tej rundzie również trafiają do Jakuba.
+    *   Jakub "absorbuje" te zestawy: każdy pionek w nich zawarty zwiększa jego Anger dla danej rasy.
+    *   **Przepełnienie:** Jeżeli Anger rasy osiągnie **10 lub więcej**, zostaje zresetowany do **5**, a **Range (zasięg)** Jakuba rośnie o **1**.
 2.  **Czystka (Killing Spree):**
-    *   Jakub zabija wszystkie pionki graczy w swoim aktualnym regionie.
-    *   Za każdego zabitego pionka, odpowiedni Generał **traci 1 punkt**, a złość Jakuba na tę rasę spada o 1.
-    *   Zabite pionki wracają do puli ogólnej.
-3.  **Ruch:**
-    *   Jeżeli Jakub ma jeszcze złość (>0), szuka celu w sąsiednich regionach (ortogonalnie).
-    *   Priorytet ruchu: region z największą ilością pionków rasy, na którą Jakub jest najbardziej wściekły.
-    *   Jakub przemieszcza się i powtarza czystkę, aż skończy mu się złość lub w zasięgu nie będzie już żadnych pionków.
-4.  **Koniec Fazy:** Generałowie wracają do puli (stają się dostępni do wyboru w kolejnej rundzie).
-5.  **Nowa Kolejność:** Gracze są szeregowani wg punktów: **najmniejsza liczba punktów = pierwsze miejsce w kolejce**. Remisy nie zmieniają obecnej relacji między remisującymi.
+    *   Jakub zabija pionki graczy w swoim aktualnym regionie, zaczynając od rasy, na którą ma największy Anger.
+    *   Za każdego zabitego pionka, gracz który jest **aktualnie Generałem tej nacji**, traci **1 punkt**.
+    *   Każdy zabity pionek zmniejsza Anger Jakuba na tę rasę o 1.
+    *   Zabite pionki wracają do puli ogólnej (Discard Pile).
+3.  **Ruch i Łowy:**
+    *   Jeżeli Jakub ma jeszcze złość na jakąś rasę, a nie ma jej już w jego regionie, skanuje wszystkie regiony w swoim **Range** (zasięgu).
+    *   Zasięg obejmuje ruchy ortogonalne i **diagonalne** (King's Move).
+    *   Jakub przemieszcza się bezpośrednio do regionu z największą liczbą jednostek najbardziej znienawidzonej rasy (tie-break: V>W>G>B).
+    *   Powtarza czystkę, aż skończy mu się złość lub w zasięgu nie będzie celów.
+4.  **Koniec Fazy:**
+    *   Range Jakuba spada o 1 (minimum 1).
+    *   Wszystkie zestawy Jakuba trafiają do Discard Pile.
+    *   Generałowie wracają do puli.
+    *   Kolejność graczy: najmniejsza liczba punktów = pierwszy.
 
 ---
 
@@ -71,7 +75,9 @@ Punkty za wystawienie zestawu zależą od odległości regionu od Jakuba (Manhat
 
 *   **Vampire (V):** Moc 3. Punkty = `(Liczba V w secie) + (3 - odległość)`. *Najsilniejsze blisko Jakuba.*
 *   **Werewolf (W):** Moc 2. Punkty = `(Liczba W w secie) + 1` tylko jeśli `odległość <= 2`. W innym wypadku 0 pkt.
-*   **Ghost (G):** Moc 1. Punkty = `(Liczba G w secie) + (1 jeśli odległość > 2, inaczej -1)`. *Lubią spokój z dala od Jakuba.*
+*   **Ghost (G):** Moc 1. Punkty:
+    *   **Na brzegach planszy (X/Y = 1 lub 5):** Liczba G w secie. Jeżeli region jest w aktualnym zasięgu Jakuba (Range), odejmij **1 punkt** od sumy.
+    *   **Wewnątrz planszy:** Liczba G w secie + (1 jeśli odległość > 2, inaczej -1).
 *   **Bardak (B):** Moc 1. Punkty = `Łączna liczba wszystkich pionków w zestawie`. *Zawsze solidne punkty.*
 
 ---

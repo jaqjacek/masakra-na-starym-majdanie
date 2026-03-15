@@ -238,6 +238,20 @@ app.post('/api/sets/generate', (req, res) => {
   } catch (err) { res.status(500).json({ error: 'Failed' }); }
 });
 
+app.post('/api/sets/save/:setName', (req, res) => {
+  try {
+    const { setsData } = req.body;
+    const { setName } = req.params;
+    const setPath = path.join(SETS_DIR, `${setName}.json`);
+    
+    if (!fs.existsSync(setPath)) return res.status(404).json({ error: 'Set not found' });
+    
+    // Save the updated object
+    fs.writeFileSync(setPath, JSON.stringify(setsData, null, 2));
+    res.json({ message: 'Set saved successfully' });
+  } catch (err) { res.status(500).json({ error: 'Failed to save set' }); }
+});
+
 app.get('/api/map/:gameId', (req, res) => {
   try { res.json(getGameData(req.params.gameId).data); } catch (err) { res.status(500).json({ error: 'Failed' }); }
 });

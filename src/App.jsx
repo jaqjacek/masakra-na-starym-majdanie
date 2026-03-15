@@ -8,7 +8,9 @@ import GameHeader from './components/GameHeader';
 import JakubPanel from './components/JakubPanel';
 import SetsPanel from './components/SetsPanel';
 import PointsTracker from './components/PointsTracker';
-import AdminPanel from './components/AdminPanel';
+import AdminSets from './components/AdminSets';
+import AdminSimulate from './components/AdminSimulate';
+import AdminNav from './components/AdminNav';
 import HistoryPanel from './components/HistoryPanel';
 import PawnStatusPopup from './components/PawnStatusPopup';
 import { fetchMap, updateMap, resetMap } from './services/api';
@@ -26,10 +28,16 @@ const createEmptyBoard = () => {
   }
   regions.forEach(region => {
     const { x, y } = region;
-    if (y > 0) region.neighbors.push((y - 1) * size + x);
-    if (y < size - 1) region.neighbors.push((y + 1) * size + x);
-    if (x > 0) region.neighbors.push(y * size + (x - 1));
-    if (x < size - 1) region.neighbors.push(y * size + (x + 1));
+    for (let dy = -1; dy <= 1; dy++) {
+      for (let dx = -1; dx <= 1; dx++) {
+        if (dx === 0 && dy === 0) continue;
+        const nx = x + dx;
+        const ny = y + dy;
+        if (nx >= 0 && nx < size && ny >= 0 && ny < size) {
+          region.neighbors.push(ny * size + nx);
+        }
+      }
+    }
   });
   return regions;
 };
@@ -75,7 +83,7 @@ const getReachableRegions = (board, startIndex, range) => {
 
 const getManhattanDistance = (r1, r2) => {
   if (!r1 || !r2) return 999;
-  return Math.abs(r1.x - r2.x) + Math.abs(r1.y - r2.y);
+  return Math.max(Math.abs(r1.x - r2.x), Math.abs(r1.y - r2.y));
 };
 
 const calculateSetPlacementPoints = (race, setContent, targetRegion, jakubRegion) => {
@@ -100,7 +108,7 @@ const calculateSetPlacementPoints = (race, setContent, targetRegion, jakubRegion
 const socket = io('http://localhost:3001');
 
 function App() {
-  const [isAdmin, setIsAdmin] = useState(false);
+  const [currentPath, setCurrentPath] = useState(window.location.pathname);
   const [gameId, setGameId] = useState(null);
   const [playerId, setPlayerId] = useState(null);
   const [inputGameId, setInputGameId] = useState('');
@@ -118,15 +126,16 @@ function App() {
 
   const jakubType = useMemo(() => PAWN_TYPES.find(p => p.id === 'jakub'), []);
 
+  const isAdminPath = useMemo(() => currentPath.startsWith('/admin'), [currentPath]);
+
   useEffect(() => {
     const handlePath = () => {
       const path = window.location.pathname;
-      if (path === '/admin' || path === '/admin/') setIsAdmin(true);
-      else {
-        setIsAdmin(false);
-        const match = path.match(/^\/game\/([^/]+)/);
-        setGameId(match ? match[1] : null);
-      }
+      setCurrentPath(path);
+      
+      const match = path.match(/^\/game\/([^/]+)/);
+      setGameId(match ? match[1] : null);
+      
       const params = new URLSearchParams(window.location.search);
       setPlayerId(params.get('player') ? parseInt(params.get('player')) : null);
     };
@@ -136,13 +145,13 @@ function App() {
   }, []);
 
   useEffect(() => {
-    if (!gameId || isAdmin) return;
+    if (!gameId || isAdminPath) return;
     socket.emit('joinGame', gameId);
     fetchMap(gameId).then(d => { if (d && d.regions) setGameState(d); }).catch(console.error);
     const handleUpdate = (newData) => { if (newData && newData.regions) setGameState(prev => ({ ...prev, ...newData })); };
     socket.on('boardUpdate', handleUpdate);
     return () => socket.off('boardUpdate', handleUpdate);
-  }, [gameId, isAdmin]);
+  }, [gameId, isAdminPath]);
 
   const updateGameWithSync = useCallback(async (newState) => {
     if (!gameId) return;
@@ -367,14 +376,12 @@ function App() {
         updateGameWithSync(step.newState);
       } else {
         addLog(workState, `Jakub stops his rampage.`);
-        
         let jakub = null;
         for (const r of workState.regions) { if (r.pawns.jakub?.length > 0) { jakub = r.pawns.jakub[0]; break; } }
         if (jakub) {
           jakub.range = Math.max(1, jakub.range - 1);
           addLog(workState, `Jakub's range cooled down to ${jakub.range}.`);
         }
-
         const toDiscard = (workState.sets.heldSets || []).filter(s => s.ownerId === 'jakub');
         toDiscard.forEach(s => {
           s.ownerId = null;
@@ -383,11 +390,9 @@ function App() {
           workState.sets.discardPile.push(s);
         });
         workState.sets.heldSets = (workState.sets.heldSets || []).filter(s => s.ownerId !== 'jakub');
-
         workState.players.forEach(p => p.generalOf = null);
         workState.availableGenerals = [...RACES];
         workState.playerOrder = [...workState.players].sort((a, b) => a.points - b.points).map(p => p.id);
-        
         if (workState.currentRound >= 6) {
           workState.phase = 'final_scoring';
           workState.currentPlayerIndex = 0;
@@ -416,11 +421,11 @@ function App() {
         if (pick === 'vampire') {
           let count = 0; workState.regions.forEach(r => count += (r.pawns[pick]?.length || 0));
           addedPoints = count * 2;
-          addLog(workState, `Player ${curId} picked Vampires and gained ${addedPoints} points (2 per unit).`);
+          addLog(workState, `Player ${curId} picked Vampires and gained ${addedPoints} points.`);
         } else if (pick === 'werewolf') {
           let count = 0; workState.regions.forEach(r => count += (r.pawns[pick]?.length || 0));
           addedPoints = count;
-          addLog(workState, `Player ${curId} picked Werewolves and gained ${addedPoints} points (1 per unit).`);
+          addLog(workState, `Player ${curId} picked Werewolves and gained ${addedPoints} points.`);
         } else if (pick === 'ghost') {
           workState.regions.forEach(r => {
             const myCount = r.pawns[pick]?.length || 0;
@@ -434,7 +439,7 @@ function App() {
               }
             }
           });
-          addLog(workState, `Player ${curId} picked Ghosts and gained ${addedPoints} points (alone/plurality bonus).`);
+          addLog(workState, `Player ${curId} picked Ghosts and gained ${addedPoints} points.`);
         } else if (pick === 'bardak') {
           workState.regions.forEach(r => {
             const myCount = r.pawns[pick]?.length || 0;
@@ -444,9 +449,8 @@ function App() {
               if (myCount > othersTotal) addedPoints += 2;
             }
           });
-          addLog(workState, `Player ${curId} picked Bardaks and gained ${addedPoints} dominance points (2 per region).`);
+          addLog(workState, `Player ${curId} picked Bardaks and gained ${addedPoints} points.`);
         }
-        
         curPlayer.points += addedPoints;
         workState.currentPlayerIndex += 1;
         updateGameWithSync(workState);
@@ -560,7 +564,6 @@ function App() {
           targetRegion.pawns[tId].push({ statuses: [...pawnType.defaultStatuses], ...(pawnType.defaultParameters ? JSON.parse(JSON.stringify(pawnType.defaultParameters)) : {}) });
         }
       });
-      
       const usedSet = findAndRemoveSetById(newState, activeSet.set.id);
       if (usedSet) { usedSet.ownerId = null; usedSet.used = false; if (!newState.sets.discardPile) newState.sets.discardPile = []; newState.sets.discardPile.push(usedSet); }
       updateGameWithSync(newState);
@@ -639,7 +642,29 @@ function App() {
   const filteredSets = gameState.sets ? (playerId ? (gameState.sets.heldSets || []).filter(s => s.ownerId === playerId) : (gameState.sets.drawPile || [])) : [];
   const jakubsSets = gameState.sets ? (gameState.sets.heldSets || []).filter(s => s.ownerId === 'jakub') : [];
 
-  if (isAdmin) return <AdminPanel />;
+  if (currentPath === '/admin/sets') return (
+    <div className="app-container">
+      <AdminNav currentPath={currentPath} />
+      <AdminSets />
+    </div>
+  );
+  
+  if (currentPath === '/admin/simulate') return (
+    <div className="app-container">
+      <AdminNav currentPath={currentPath} />
+      <AdminSimulate />
+    </div>
+  );
+
+  if (isAdminPath) return (
+    <div className="app-container">
+      <AdminNav currentPath={currentPath} />
+      <div className="admin-page-content">
+        <p>Please select an Admin section from the menu above.</p>
+      </div>
+    </div>
+  );
+
   if (!gameId) return <LandingPage inputGameId={inputGameId} setInputGameId={setInputGameId} onGoToGame={(e) => { e.preventDefault(); if (inputGameId.trim()) { window.location.href = `/game/${inputGameId.trim()}`; } }} />;
 
   return (
@@ -670,8 +695,8 @@ function App() {
             <button className="menu-item" onClick={() => { const dataStr = JSON.stringify(gameState, null, 2); const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr); const link = document.createElement('a'); link.href = dataUri; link.download = `game_${gameId}.json`; link.click(); }}>Download Board</button>
             <label className="menu-item">Upload Board<input type="file" accept=".json" onChange={(e) => { const file = e.target.files[0]; if (!file) return; const reader = new FileReader(); reader.onload = async (ev) => { try { const data = JSON.parse(ev.target.result); if (data && data.regions) await updateGameWithSync(data); } catch (err) { alert('Failed'); } }; reader.readAsText(file); setIsMenuOpen(false); }} style={{ display: 'none' }} /></label>
             <button className="menu-item reset" onClick={handleResetBoard}>Reset Game</button>
-            <button className="menu-item" onClick={() => { window.history.pushState({}, '', '/'); setGameId(null); setGameState(INITIAL_STATE); setIsAdmin(false); window.dispatchEvent(new Event('popstate')); }}>Change Game</button>
-            <button className="menu-item" onClick={() => { window.history.pushState({}, '', '/admin'); setIsAdmin(true); setGameId(null); setIsMenuOpen(false); window.dispatchEvent(new Event('popstate')); }}>Admin Panel</button>
+            <button className="menu-item" onClick={() => { window.history.pushState({}, '', '/'); setGameId(null); setGameState(INITIAL_STATE); window.dispatchEvent(new Event('popstate')); }}>Change Game</button>
+            <button className="menu-item" onClick={() => { window.history.pushState({}, '', '/admin/sets'); window.dispatchEvent(new Event('popstate')); }}>Admin Panel</button>
 
           </div></>
         )}

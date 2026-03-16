@@ -78,6 +78,19 @@ const AdminSets = () => {
     } catch (_err) { alert('Failed to sort set'); }
   };
 
+  const setAsDefault = async () => {
+    if (!selectedSet) return;
+    try {
+      const res = await fetch('http://localhost:3001/api/config', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ defaultSetName: selectedSet })
+      });
+      const _data = await res.json();
+      alert(`Set ${selectedSet} is now the global default.`);
+    } catch (_err) { alert('Failed to set global default'); }
+  };
+
   const toggleGenForm = () => {
     if (!showGenForm) {
       if (loadedSetData) {
@@ -125,6 +138,7 @@ const AdminSets = () => {
           <>
             <button className="action-button" style={{ backgroundColor: '#9b59b6' }} onClick={() => setIsEditMode(!isEditMode)}>{isEditMode ? 'Exit Edit Mode' : 'Edit Mode'}</button>
             <button className="action-button" style={{ backgroundColor: '#f39c12' }} onClick={handleSort}>Sort Set</button>
+            <button className="action-button" style={{ backgroundColor: '#27ae60' }} onClick={setAsDefault}>Set as Default</button>
             {isEditMode && <button className="action-button" style={{ backgroundColor: '#27ae60' }} onClick={handleSaveEdits}>Save Changes</button>}
           </>
         )}

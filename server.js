@@ -10,7 +10,8 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const GAMES_DIR = path.join(__dirname, 'games');
 const SETS_DIR = path.join(__dirname, 'sets');
-const CONFIG_FILE = path.join(__dirname, 'server_config.json');
+const CONFIGS_DIR = path.join(__dirname, 'configs');
+const CONFIG_FILE = path.join(CONFIGS_DIR, 'server_config.json');
 
 const app = express();
 const server = http.createServer(app);
@@ -25,6 +26,7 @@ app.use(express.json());
 
 if (!fs.existsSync(GAMES_DIR)) fs.mkdirSync(GAMES_DIR);
 if (!fs.existsSync(SETS_DIR)) fs.mkdirSync(SETS_DIR);
+if (!fs.existsSync(CONFIGS_DIR)) fs.mkdirSync(CONFIGS_DIR);
 
 const getGlobalConfig = () => {
   if (fs.existsSync(CONFIG_FILE)) return JSON.parse(fs.readFileSync(CONFIG_FILE, 'utf8'));
@@ -233,8 +235,15 @@ const getGameData = (gameId) => {
     if (!sets.discardPile) sets.discardPile = [];
     if (!sets.heldSets) sets.heldSets = [];
   } else {
-    const config = getGlobalConfig();
-    sets = (config.defaultSetName ? loadSetFile(config.defaultSetName) : null) || generateSetData({ bardak: 80, ghost: 30, werewolf: 20, vampire: 10 }, { vampire: 3, werewolf: 2, ghost: 1, bardak: 1 }, 6);
+    // Priority: 1. set_default.json, 2. Global config, 3. Random generation
+    const defaultSetPath = path.join(CONFIGS_DIR, 'set_default.json');
+    if (fs.existsSync(defaultSetPath)) {
+      sets = JSON.parse(fs.readFileSync(defaultSetPath, 'utf8'));
+      sets.setName = 'set_default';
+    } else {
+      const config = getGlobalConfig();
+      sets = (config.defaultSetName ? loadSetFile(config.defaultSetName) : null) || generateSetData({ bardak: 80, ghost: 30, werewolf: 20, vampire: 10 }, { vampire: 3, werewolf: 2, ghost: 1, bardak: 1 }, 6);
+    }
   }
 
   return { data: { regions, players, sets, history, ...gameState } };
@@ -266,7 +275,16 @@ app.get('/api/next-game-id', (req, res) => {
 });
 app.post('/api/config', (req, res) => {
   const config = getGlobalConfig();
-  if (req.body.defaultSetName !== undefined) config.defaultSetName = req.body.defaultSetName;
+  if (req.body.defaultSetName !== undefined) {
+    config.defaultSetName = req.body.defaultSetName;
+    
+    // Copy the selected set to configs/set_default.json
+    const sourcePath = path.join(SETS_DIR, `${config.defaultSetName}.json`);
+    const targetPath = path.join(CONFIGS_DIR, 'set_default.json');
+    if (fs.existsSync(sourcePath)) {
+      fs.copyFileSync(sourcePath, targetPath);
+    }
+  }
   fs.writeFileSync(CONFIG_FILE, JSON.stringify(config, null, 2));
   res.json(config);
 });
@@ -355,7 +373,15 @@ app.post('/api/init/:gameId', (req, res) => {
   const { gameId } = req.params; const { set } = req.query;
   try {
     const regions = createEmptyRegions(); const players = JSON.parse(JSON.stringify(DEFAULT_PLAYERS));
-    const config = getGlobalConfig(); const requestedSet = set || config.defaultSetName;
+    const config = getGlobalConfig(); 
+    
+    // Priority: 1. set param, 2. set_default.json, 3. Global config, 4. Random generation
+    let requestedSet = set;
+    if (!requestedSet && fs.existsSync(path.join(CONFIGS_DIR, 'set_default.json'))) {
+      requestedSet = 'set_default';
+    }
+    if (!requestedSet) requestedSet = config.defaultSetName;
+    
     let setsData = (requestedSet ? loadSetFile(requestedSet) : null) || generateSetData({ bardak: 80, ghost: 30, werewolf: 20, vampire: 10 }, { vampire: 3, werewolf: 2, ghost: 1, bardak: 1 }, 6);
     if (setsData.items && !setsData.drawPile) { setsData.drawPile = setsData.items; delete setsData.items; }
     if (!setsData.discardPile) setsData.discardPile = []; if (!setsData.heldSets) setsData.heldSets = [];
@@ -381,7 +407,15 @@ app.post('/api/simulate/:gameId', (req, res) => {
   const { set } = req.query;
   try {
     const regions = createEmptyRegions(); const players = JSON.parse(JSON.stringify(DEFAULT_PLAYERS));
-    const config = getGlobalConfig(); const requestedSet = set || config.defaultSetName;
+    const config = getGlobalConfig(); 
+    
+    // Priority: 1. set param, 2. set_default.json, 3. Global config, 4. Random generation
+    let requestedSet = set;
+    if (!requestedSet && fs.existsSync(path.join(CONFIGS_DIR, 'set_default.json'))) {
+      requestedSet = 'set_default';
+    }
+    if (!requestedSet) requestedSet = config.defaultSetName;
+
     let setsData = (requestedSet ? loadSetFile(requestedSet) : null) || generateSetData({ bardak: 80, ghost: 30, werewolf: 20, vampire: 10 }, { vampire: 3, werewolf: 2, ghost: 1, bardak: 1 }, 6);
     if (setsData.items && !setsData.drawPile) { setsData.drawPile = setsData.items; delete setsData.items; }
     if (!setsData.discardPile) setsData.discardPile = []; if (!setsData.heldSets) setsData.heldSets = [];

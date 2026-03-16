@@ -1,7 +1,7 @@
 import React from 'react';
 import { PAWN_TYPES, STATUSES, SUMMARY_PAWN_IDS } from '../constants/pawnTypes';
 
-const Region = ({ index, pawnGroups, onMouseUp, onRemovePawn, onAddPawn, onPawnMouseDown, setHoveredPawn, isValidTarget }) => {
+const Region = ({ pawnGroups, onMouseUp, onRemovePawn, onAddPawn, onPawnMouseDown, setHoveredPawn, isValidTarget }) => {
   // Calculate summary counts for specific pawn types defined in SUMMARY_PAWN_IDS
   const summary = SUMMARY_PAWN_IDS.map(id => {
     const type = PAWN_TYPES.find(t => t.id === id);

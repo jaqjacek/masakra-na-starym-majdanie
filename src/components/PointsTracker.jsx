@@ -14,7 +14,7 @@ const PointsTracker = ({ players, onUpdatePoints, currentPlayerId, onPlayerMouse
     } else {
       url.searchParams.set('player', id);
     }
-    window.location.href = url.toString();
+    window.location.assign(url.toString());
   };
 
   return (

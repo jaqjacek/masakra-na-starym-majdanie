@@ -262,7 +262,7 @@ app.get('/api/next-game-id', (req, res) => {
     const ids = dirs.map(d => parseInt(d)).filter(n => !isNaN(n));
     const nextId = ids.length > 0 ? Math.max(...ids) + 1 : 1;
     res.json({ id: nextId });
-  } catch (err) { res.status(500).json({ error: 'Failed' }); }
+  } catch (_err) { res.status(500).json({ error: 'Failed' }); }
 });
 app.post('/api/config', (req, res) => {
   const config = getGlobalConfig();
@@ -271,13 +271,13 @@ app.post('/api/config', (req, res) => {
   res.json(config);
 });
 
-app.get('/api/sets', (req, res) => {
+app.get('/api/sets', (_req, res) => {
   try { res.json(fs.readdirSync(SETS_DIR).filter(f => f.endsWith('.json')).map(f => f.replace('.json', ''))); }
-  catch (err) { res.status(500).json({ error: 'Failed' }); }
+  catch (_err) { res.status(500).json({ error: 'Failed' }); }
 });
 
 app.get('/api/sets/details/:setName', (req, res) => {
-  try { res.json(loadSetFile(req.params.setName)); } catch (err) { res.status(500).json({ error: 'Failed' }); }
+  try { res.json(loadSetFile(req.params.setName)); } catch (_err) { res.status(500).json({ error: 'Failed' }); }
 });
 
 app.post('/api/sets/generate', (req, res) => {
@@ -292,7 +292,7 @@ app.post('/api/sets/generate', (req, res) => {
     data.setName = fileName.replace('.json', '');
     fs.writeFileSync(path.join(SETS_DIR, fileName), JSON.stringify(data, null, 2));
     res.json({ message: 'Set generated', name: data.setName });
-  } catch (err) { res.status(500).json({ error: 'Failed' }); }
+  } catch (_err) { res.status(500).json({ error: 'Failed' }); }
 });
 
 app.post('/api/sets/save/:setName', (req, res) => {
@@ -312,7 +312,7 @@ app.post('/api/sets/save/:setName', (req, res) => {
 
     fs.writeFileSync(setPath, JSON.stringify(setsData, null, 2));
     res.json({ message: 'Set saved and cleaned successfully' });
-  } catch (err) { res.status(500).json({ error: 'Failed to save set' }); }
+  } catch (_err) { res.status(500).json({ error: 'Failed to save set' }); }
 });
 
 app.post('/api/sets/sort/:setName', (req, res) => {
@@ -323,16 +323,16 @@ app.post('/api/sets/sort/:setName', (req, res) => {
     const sorted = sortSetsData(data);
     fs.writeFileSync(path.join(SETS_DIR, `${setName}.json`), JSON.stringify(sorted, null, 2));
     res.json({ message: 'Set sorted successfully', setsData: sorted });
-  } catch (err) { res.status(500).json({ error: 'Failed to sort set' }); }
+  } catch (_err) { res.status(500).json({ error: 'Failed to sort set' }); }
 });
 
 app.get('/api/map/:gameId', (req, res) => {
-  try { res.json(getGameData(req.params.gameId).data); } catch (err) { res.status(500).json({ error: 'Failed' }); }
+  try { res.json(getGameData(req.params.gameId).data); } catch (_err) { res.status(500).json({ error: 'Failed' }); }
 });
 
 app.post('/api/map/:gameId', (req, res) => {
   try { saveFullState(req.params.gameId, req.body); io.to(`game:${req.params.gameId}`).emit('boardUpdate', req.body); res.json({ message: 'Saved' }); }
-  catch (err) { res.status(500).json({ error: 'Failed' }); }
+  catch (_err) { res.status(500).json({ error: 'Failed' }); }
 });
 
 app.delete('/api/map/:gameId', (req, res) => {
@@ -340,15 +340,15 @@ app.delete('/api/map/:gameId', (req, res) => {
     const gamePath = ensureGameDir(req.params.gameId);
     fs.rmSync(gamePath, { recursive: true, force: true });
     res.json({ message: 'Deleted' });
-  } catch (err) { res.status(500).json({ error: 'Failed' }); }
+  } catch (_err) { res.status(500).json({ error: 'Failed' }); }
 });
 
-app.delete('/api/games', (req, res) => {
+app.delete('/api/games', (_req, res) => {
   try {
     if (fs.existsSync(GAMES_DIR)) { fs.rmSync(GAMES_DIR, { recursive: true, force: true }); }
     fs.mkdirSync(GAMES_DIR);
     res.json({ message: 'All games deleted' });
-  } catch (err) { res.status(500).json({ error: 'Failed' }); }
+  } catch (_err) { res.status(500).json({ error: 'Failed' }); }
 });
 
 app.post('/api/init/:gameId', (req, res) => {
@@ -374,11 +374,11 @@ app.post('/api/init/:gameId', (req, res) => {
       gameStatus: 'active', jakubAngerIncreased: false, jakubTurnExecuted: false 
     };
     saveFullState(gameId, finalState); io.to(`game:${gameId}`).emit('boardUpdate', finalState); res.json({ message: 'Initialized', state: finalState });
-  } catch (err) { res.status(500).json({ error: 'Failed' }); }
+  } catch (_err) { res.status(500).json({ error: 'Failed' }); }
 });
 
 app.post('/api/simulate/:gameId', (req, res) => {
-  const { gameId } = req.params; const { set } = req.query;
+  const { set } = req.query;
   try {
     const regions = createEmptyRegions(); const players = JSON.parse(JSON.stringify(DEFAULT_PLAYERS));
     const config = getGlobalConfig(); const requestedSet = set || config.defaultSetName;
@@ -485,7 +485,7 @@ app.post('/api/simulate/:gameId', (req, res) => {
   } catch (err) { console.error(err); res.status(500).json({ error: 'Simulation failed' }); }
 });
 
-app.use((err, req, res, next) => { console.error("SERVER ERROR:", err); res.status(500).json({ error: "Internal Server Error" }); });
+app.use((err, _req, res, _next) => { console.error("SERVER ERROR:", err); res.status(500).json({ error: "Internal Server Error" }); });
 io.on('connection', (socket) => { socket.to(`game:${socket.handshake.query.gameId}`).emit('userJoined', socket.id); socket.on('joinGame', id => socket.join(`game:${id}`)); });
 server.listen(PORT, () => console.log(`Server running on ${PORT}`));
 

@@ -1,7 +1,6 @@
 #!/usr/bin/env node
 
 import fs from 'fs';
-import path from 'path';
 
 const args = process.argv.slice(2);
 const API_BASE = 'http://localhost:3001/api/map';

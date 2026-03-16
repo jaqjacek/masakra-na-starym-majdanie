@@ -21,6 +21,31 @@ const AdminPanel = () => {
   const [genPawns, setGenPawns] = useState({ bardak: 80, ghost: 30, werewolf: 20, vampire: 10 });
   const [genPower, setGenPower] = useState({ vampire: 3, werewolf: 2, ghost: 1, bardak: 1 });
 
+  const fetchSets = async () => {
+    try {
+      const res = await fetch('http://localhost:3001/api/sets');
+      const list = await res.json();
+      setAvailableSets(list);
+      if (list.length > 0 && !selectedSet) setSelectedSet(list[0]);
+    } catch (_err) { console.error(_err); }
+  };
+
+  const fetchConfig = async () => {
+    try {
+      const res = await fetch('http://localhost:3001/api/config');
+      const config = await res.json();
+      setGlobalDefaultSet(config.defaultSetName);
+    } catch (_err) { console.error(_err); }
+  };
+
+  const fetchSetPreview = async (setName) => {
+    try {
+      const res = await fetch(`http://localhost:3001/api/sets/details/${setName}`);
+      const data = await res.json();
+      setLoadedSetPreview(data);
+    } catch (_err) { console.error(_err); }
+  };
+
   useEffect(() => {
     fetchSets();
     fetchConfig();
@@ -35,31 +60,6 @@ const AdminPanel = () => {
     }
   }, [selectedSet]);
 
-  const fetchSets = async () => {
-    try {
-      const res = await fetch('http://localhost:3001/api/sets');
-      const list = await res.json();
-      setAvailableSets(list);
-      if (list.length > 0 && !selectedSet) setSelectedSet(list[0]);
-    } catch (err) { console.error(err); }
-  };
-
-  const fetchConfig = async () => {
-    try {
-      const res = await fetch('http://localhost:3001/api/config');
-      const config = await res.json();
-      setGlobalDefaultSet(config.defaultSetName);
-    } catch (err) { console.error(err); }
-  };
-
-  const fetchSetPreview = async (setName) => {
-    try {
-      const res = await fetch(`http://localhost:3001/api/sets/details/${setName}`);
-      const data = await res.json();
-      setLoadedSetPreview(data);
-    } catch (err) { console.error(err); }
-  };
-
   const setAsDefault = async () => {
     if (!selectedSet) return;
     try {
@@ -70,7 +70,7 @@ const AdminPanel = () => {
       });
       setGlobalDefaultSet(selectedSet);
       alert(`${selectedSet} is now the global default for new games.`);
-    } catch (err) { alert('Failed to set global default'); }
+    } catch (_err) { alert('Failed to set global default'); }
   };
 
   const handleLoadSet = async () => {
@@ -90,7 +90,7 @@ const AdminPanel = () => {
       const res = await fetch('http://localhost:3001/api/games', { method: 'DELETE' });
       const data = await res.json();
       alert(data.message);
-    } catch (err) { alert('Failed to clear games'); }
+    } catch (_err) { alert('Failed to clear games'); }
   };
 
   const handleGenerate = async (e) => {
@@ -113,7 +113,7 @@ const AdminPanel = () => {
       setShowGenForm(false);
       fetchSets();
       alert(`Set generated successfully as: ${result.name}`);
-    } catch (err) { alert('Failed to generate set'); }
+    } catch (_err) { alert('Failed to generate set'); }
   };
 
   const simulateGames = async () => {
@@ -136,7 +136,7 @@ const AdminPanel = () => {
           });
           results.push(gamePointData);
         }
-      } catch (err) { console.error(err); }
+      } catch (_err) { console.error(_err); }
       setProgress(i);
     }
     

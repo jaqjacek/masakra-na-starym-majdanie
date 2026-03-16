@@ -10,7 +10,7 @@ const LandingPage = ({ inputGameId, setInputGameId, onGoToGame }) => {
       if (data.id) {
         window.location.href = `/game/${data.id}`;
       }
-    } catch (err) {
+    } catch (_err) {
       alert('Failed to get new game ID');
     }
   };

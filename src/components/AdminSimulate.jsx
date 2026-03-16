@@ -10,13 +10,14 @@ const AdminSimulate = () => {
   const [availableSets, setAvailableSets] = useState([]);
   const [selectedSet, setSelectedSet] = useState('');
 
-  useEffect(() => { fetchSets(); }, []);
   const fetchSets = async () => {
     try {
       const res = await fetch('http://localhost:3001/api/sets');
       const list = await res.json(); setAvailableSets(list);
-    } catch (err) { console.error(err); }
+    } catch (_err) { console.error(_err); }
   };
+
+  useEffect(() => { fetchSets(); }, []);
 
   const simulateGames = async () => {
     setIsSimulating(true); setProgress(0);
@@ -31,7 +32,7 @@ const AdminSimulate = () => {
           result.scores.forEach(s => { gamePointData[s.race] = s.points; });
           results.push(gamePointData);
         }
-      } catch (err) { console.error(err); }
+      } catch (_err) { console.error(_err); }
       setProgress(i);
     }
     if (results.length > 0) {

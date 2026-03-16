@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import { VERSION_INFO } from '../constants/version';
 
 const AdminSets = () => {
@@ -16,25 +16,25 @@ const AdminSets = () => {
   const [genPawns, setGenPawns] = useState({ bardak: 80, ghost: 30, werewolf: 20, vampire: 10 });
   const [genPower, setGenPower] = useState({ vampire: 3, werewolf: 2, ghost: 1, bardak: 1 });
 
-  useEffect(() => { fetchSets(); }, []);
-  useEffect(() => {
-    if (selectedSet) fetchSetDetails(selectedSet);
-    else { setLoadedSetData(null); setIsEditMode(false); }
-  }, [selectedSet]);
-
   const fetchSets = async () => {
     try {
       const res = await fetch('http://localhost:3001/api/sets');
       const list = await res.json(); setAvailableSets(list);
-    } catch (err) { console.error(err); }
+    } catch (_err) { console.error(_err); }
   };
 
   const fetchSetDetails = async (setName) => {
     try {
       const res = await fetch(`http://localhost:3001/api/sets/details/${setName}`);
       const data = await res.json(); setLoadedSetData(data);
-    } catch (err) { console.error(err); }
+    } catch (_err) { console.error(_err); }
   };
+
+  useEffect(() => { fetchSets(); }, []);
+  useEffect(() => {
+    if (selectedSet) fetchSetDetails(selectedSet);
+    else { setLoadedSetData(null); setIsEditMode(false); }
+  }, [selectedSet]);
 
   const handleGenerate = async (e) => {
     e.preventDefault();
@@ -51,7 +51,7 @@ const AdminSets = () => {
       setAvailableSets(list);
       setSelectedSet(result.name);
       alert(`Set generated: ${result.name}`);
-    } catch (err) { alert('Failed to generate set'); }
+    } catch (_err) { alert('Failed to generate set'); }
   };
 
   const handleSaveEdits = async () => {
@@ -65,7 +65,7 @@ const AdminSets = () => {
       const data = await res.json();
       alert(data.message);
       setIsEditMode(false);
-    } catch (err) { alert('Failed to save set'); }
+    } catch (_err) { alert('Failed to save set'); }
   };
 
   const handleSort = async () => {
@@ -75,7 +75,7 @@ const AdminSets = () => {
       const data = await res.json();
       setLoadedSetData(data.setsData);
       alert(data.message);
-    } catch (err) { alert('Failed to sort set'); }
+    } catch (_err) { alert('Failed to sort set'); }
   };
 
   const toggleGenForm = () => {

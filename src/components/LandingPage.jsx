@@ -1,5 +1,5 @@
 import React from 'react';
-import { VERSION_INFO } from '../constants/version';
+import Footer from './Footer';
 
 const LandingPage = ({ inputGameId, setInputGameId, onGoToGame }) => {
   
@@ -44,15 +44,10 @@ const LandingPage = ({ inputGameId, setInputGameId, onGoToGame }) => {
           Create New Game
         </button>
       </div>
-
-      <div className="landing-footnote">
-        <span>{VERSION_INFO.branch}</span>
-        <span>{VERSION_INFO.tag}</span>
-        <span>#{VERSION_INFO.hash}</span>
-        <span>{VERSION_INFO.date} {VERSION_INFO.time}</span>
+      <Footer />
       </div>
-    </div>
-  );
-};
+      );
+      };
+
 
 export default LandingPage;

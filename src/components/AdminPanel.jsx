@@ -3,6 +3,8 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 import { PAWN_TYPES } from '../constants/pawnTypes';
 import SetsPanel from './SetsPanel';
 
+import Footer from './Footer';
+
 const AdminPanel = () => {
   const [history, setHistory] = useState([]); // Array of { data, setName, id }
   const [isSimulating, setIsSimulating] = useState(false);
@@ -294,6 +296,7 @@ const AdminPanel = () => {
           })}
         </div>
       </div>
+      <Footer />
     </div>
   );
 };

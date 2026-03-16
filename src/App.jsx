@@ -13,6 +13,7 @@ import AdminSimulate from './components/AdminSimulate';
 import AdminNav from './components/AdminNav';
 import HistoryPanel from './components/HistoryPanel';
 import PawnStatusPopup from './components/PawnStatusPopup';
+import Footer from './components/Footer';
 import { fetchMap, updateMap, resetMap } from './services/api';
 import { io } from 'socket.io-client';
 import { PAWN_TYPES, STATUSES } from './constants/pawnTypes';
@@ -751,6 +752,7 @@ function App() {
       {activeSet && <div className="set-ghost" style={{ left: activeSet.x, top: activeSet.y }}><div className="set-ghost-badge">Set {activeSet.set.id}</div></div>}
       {activeGeneral && <div className="general-ghost" style={{ left: activeGeneral.x, top: activeGeneral.y }}><div className={`general-icon large ${activeGeneral.race}`}></div></div>}
       {hoveredPawn && !activePawn && !activeSet && !activeGeneral && <PawnStatusPopup pawn={hoveredPawn.pawn} pawnType={hoveredPawn.pawnType} position={{ x: hoveredPawn.x, y: hoveredPawn.y }} />}
+      <Footer />
     </div>
   );
 }

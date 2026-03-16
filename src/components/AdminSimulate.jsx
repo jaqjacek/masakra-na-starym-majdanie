@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { PAWN_TYPES } from '../constants/pawnTypes';
-import { VERSION_INFO } from '../constants/version';
+
+import Footer from './Footer';
 
 const AdminSimulate = () => {
   const [history, setHistory] = useState([]);
@@ -98,12 +99,7 @@ const AdminSimulate = () => {
         })}
       </div>
 
-      <div className="landing-footnote">
-        <span>{VERSION_INFO.branch}</span>
-        <span>{VERSION_INFO.tag}</span>
-        <span>#{VERSION_INFO.hash}</span>
-        <span>{VERSION_INFO.date} {VERSION_INFO.time}</span>
-      </div>
+      <Footer />
     </div>
   );
 };

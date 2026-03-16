@@ -1,7 +1,7 @@
 export const VERSION_INFO = {
-  branch: "amind_features",
-  tag: "v1.3.0",
-  hash: "1a22ce3",
-  date: "2026-03-15",
-  time: "16:44"
+  branch: "refactoring",
+  tag: "v1.5.0",
+  hash: "cb6ab2f", // From the last commit
+  date: "2026-03-16",
+  time: "22:38"
 };

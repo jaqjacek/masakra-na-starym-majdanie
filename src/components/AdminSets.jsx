@@ -1,6 +1,4 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import SetsPanel from './SetsPanel';
-import { PAWN_TYPES } from '../constants/pawnTypes';
 import { VERSION_INFO } from '../constants/version';
 
 const AdminSets = () => {
@@ -27,16 +25,14 @@ const AdminSets = () => {
   const fetchSets = async () => {
     try {
       const res = await fetch('http://localhost:3001/api/sets');
-      const list = await res.json();
-      setAvailableSets(list);
+      const list = await res.json(); setAvailableSets(list);
     } catch (err) { console.error(err); }
   };
 
   const fetchSetDetails = async (setName) => {
     try {
       const res = await fetch(`http://localhost:3001/api/sets/details/${setName}`);
-      const data = await res.json();
-      setLoadedSetData(data);
+      const data = await res.json(); setLoadedSetData(data);
     } catch (err) { console.error(err); }
   };
 
@@ -49,7 +45,11 @@ const AdminSets = () => {
         body: JSON.stringify({ displayName: genDisplayName, description: genDescription, pawns: genPawns, power: genPower, maxPower: genMaxPower })
       });
       const result = await response.json();
-      setShowGenForm(false); fetchSets();
+      setShowGenForm(false); 
+      const res = await fetch('http://localhost:3001/api/sets');
+      const list = await res.json();
+      setAvailableSets(list);
+      setSelectedSet(result.name);
       alert(`Set generated: ${result.name}`);
     } catch (err) { alert('Failed to generate set'); }
   };
@@ -66,6 +66,33 @@ const AdminSets = () => {
       alert(data.message);
       setIsEditMode(false);
     } catch (err) { alert('Failed to save set'); }
+  };
+
+  const handleSort = async () => {
+    if (!selectedSet) return;
+    try {
+      const res = await fetch(`http://localhost:3001/api/sets/sort/${selectedSet}`, { method: 'POST' });
+      const data = await res.json();
+      setLoadedSetData(data.setsData);
+      alert(data.message);
+    } catch (err) { alert('Failed to sort set'); }
+  };
+
+  const toggleGenForm = () => {
+    if (!showGenForm) {
+      if (loadedSetData) {
+        setGenDisplayName(loadedSetData.displayName || '');
+        setGenDescription(loadedSetData.description || '');
+        setGenMaxPower(loadedSetData.maxPower || 6);
+        setGenPawns(loadedSetData.pawns || { bardak: 80, ghost: 30, werewolf: 20, vampire: 10 });
+        setGenPower(loadedSetData.power || { vampire: 3, werewolf: 2, ghost: 1, bardak: 1 });
+      } else {
+        setGenDisplayName(''); setGenDescription(''); setGenMaxPower(6);
+        setGenPawns({ bardak: 80, ghost: 30, werewolf: 20, vampire: 10 });
+        setGenPower({ vampire: 3, werewolf: 2, ghost: 1, bardak: 1 });
+      }
+    }
+    setShowGenForm(!showGenForm);
   };
 
   const onPawnDragStart = (race, fromSetId) => { if (isEditMode) setDraggedPawn({ race, fromSetId }); };
@@ -95,17 +122,22 @@ const AdminSets = () => {
           {availableSets.map(s => <option key={s} value={s}>{s}</option>)}
         </select>
         {selectedSet && (
-          <><button className="action-button" style={{ backgroundColor: '#9b59b6' }} onClick={() => setIsEditMode(!isEditMode)}>{isEditMode ? 'Exit Edit Mode' : 'Edit Set (Drag Pawns)'}</button>
-          {isEditMode && <button className="action-button" style={{ backgroundColor: '#27ae60' }} onClick={handleSaveEdits}>Save Changes</button>}</>
+          <>
+            <button className="action-button" style={{ backgroundColor: '#9b59b6' }} onClick={() => setIsEditMode(!isEditMode)}>{isEditMode ? 'Exit Edit Mode' : 'Edit Mode'}</button>
+            <button className="action-button" style={{ backgroundColor: '#f39c12' }} onClick={handleSort}>Sort Set</button>
+            {isEditMode && <button className="action-button" style={{ backgroundColor: '#27ae60' }} onClick={handleSaveEdits}>Save Changes</button>}
+          </>
         )}
-        <button className="action-button download-btn" onClick={() => setShowGenForm(!showGenForm)}>{showGenForm ? 'Hide Form' : 'Generate New Set'}</button>
+        <button className="action-button download-btn" onClick={toggleGenForm}>{showGenForm ? 'Hide Form' : 'Generate New Set'}</button>
       </div>
 
       {showGenForm && (
         <form className="generation-form" onSubmit={handleGenerate}>
-          <h3>Generate New Predefined Set</h3>
-          <div className="form-row"><div className="form-group"><label>Display Name:</label><input type="text" value={genDisplayName} onChange={e => setGenDisplayName(e.target.value)} /></div>
-          <div className="form-group"><label>Max Power:</label><input type="number" value={genMaxPower} onChange={e => setGenMaxPower(parseInt(e.target.value))} /></div></div>
+          <h3>Generate New Set</h3>
+          <div className="form-row">
+            <div className="form-group"><label>Display Name:</label><input type="text" value={genDisplayName} onChange={e => setGenDisplayName(e.target.value)} /></div>
+            <div className="form-group"><label>Max Power:</label><input type="number" value={genMaxPower} onChange={e => setGenMaxPower(parseInt(e.target.value))} /></div>
+          </div>
           <div className="form-grid">
             <div><h4>Pawn Totals</h4>{Object.keys(genPawns).map(race => (<div key={race} className="input-row"><label>{race}:</label><input type="number" value={genPawns[race]} onChange={e => setGenPawns({...genPawns, [race]: parseInt(e.target.value)})} /></div>))}</div>
             <div><h4>Power Config</h4>{Object.keys(genPower).map(race => (<div key={race} className="input-row"><label>{race}:</label><input type="number" value={genPower[race]} onChange={e => setGenPower({...genPower, [race]: parseInt(e.target.value)})} /></div>))}</div>
@@ -117,7 +149,21 @@ const AdminSets = () => {
       {loadedSetData && (
         <div className={`admin-sets-editor ${isEditMode ? 'editing' : ''}`}>
           <div className="editor-section">
-            <h4>Draw Pile ({loadedSetData.drawPile?.length || 0})</h4>
+            <div className="editor-header-with-stats">
+              <h4>Draw Pile ({loadedSetData.drawPile?.length || 0})</h4>
+              <div className="set-totals-summary">
+                {['vampire', 'werewolf', 'ghost', 'bardak'].map(race => {
+                  const total = [...(loadedSetData.drawPile || []), ...(loadedSetData.heldSets || []), ...(loadedSetData.discardPile || [])]
+                    .reduce((sum, set) => sum + (set.content[race] || 0), 0);
+                  return (
+                    <div key={race} className="stat-item">
+                      <div className={`set-icon ${race}`}></div>
+                      <span>{total}</span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
             <div className="sets-container">
               {(loadedSetData.drawPile || []).map(set => (
                 <EditableSet key={set.id} set={set} isEditMode={isEditMode} onPawnDragStart={onPawnDragStart} onPawnDrop={onPawnDrop} />
@@ -139,16 +185,8 @@ const AdminSets = () => {
 
 const EditableSet = ({ set, isEditMode, onPawnDragStart, onPawnDrop }) => {
   const racePriority = { vampire: 0, werewolf: 1, ghost: 2, bardak: 3 };
-  
-  // Create a flat array of all pawns in the set
   const allPawns = [];
-  Object.entries(set.content).forEach(([race, count]) => {
-    for (let i = 0; i < count; i++) {
-      allPawns.push(race);
-    }
-  });
-
-  // Sort by priority V > W > G > B
+  Object.entries(set.content).forEach(([race, count]) => { for (let i = 0; i < count; i++) allPawns.push(race); });
   allPawns.sort((a, b) => racePriority[a] - racePriority[b]);
 
   return (
@@ -156,12 +194,7 @@ const EditableSet = ({ set, isEditMode, onPawnDragStart, onPawnDrop }) => {
       <div className="set-header"><span>Set {set.id}</span><span className="power-badge">P: {set.power}</span></div>
       <div className="set-content">
         {allPawns.map((race, index) => (
-          <div 
-            key={`${race}-${index}`} 
-            className={`set-icon ${race} ${isEditMode ? 'draggable' : ''}`} 
-            draggable={isEditMode} 
-            onDragStart={() => isEditMode && onPawnDragStart(race, set.id)}
-          ></div>
+          <div key={`${race}-${index}`} className={`set-icon ${race} ${isEditMode ? 'draggable' : ''}`} draggable={isEditMode} onDragStart={() => isEditMode && onPawnDragStart(race, set.id)}></div>
         ))}
       </div>
     </div>

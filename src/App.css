@@ -378,48 +378,110 @@ body {
   flex-direction: column;
 }
 
+.admin-actions-bar {
+  display: flex;
+  gap: 1.5rem;
+  align-items: center;
+  margin-bottom: 2rem;
+  background: rgba(255,255,255,0.05);
+  padding: 1.5rem;
+  border-radius: 12px;
+}
+
+.admin-actions-bar select {
+  padding: 0.9rem 1.5rem;
+  font-size: 1.2rem;
+  background: #333;
+  color: white;
+  border: 2px solid #444;
+  border-radius: 8px;
+  min-width: 350px;
+}
+
+.admin-actions-bar .action-button {
+  padding: 0.9rem 1.8rem;
+  font-size: 1.2rem;
+  border-radius: 8px;
+}
+
 .admin-sets-editor .pawn-set {
-  width: 280px;
-  min-height: 80px;
-  padding: 0.4rem 0.8rem;
-  border-width: 1px;
+  width: 300px;
+  min-height: 90px;
+  height: auto; /* Allow growth if many icons */
+  padding: 0.8rem;
+  border-width: 2px;
   margin: 0;
   display: flex;
   flex-direction: column;
-  gap: 0.4rem;
+  gap: 0.6rem;
+  box-sizing: border-box;
+  background: rgba(44, 62, 80, 0.4);
 }
 
 .admin-sets-editor .set-header {
-  font-size: 1rem;
-  margin: 0;
-  padding-top: 2px;
-}
-
-.admin-sets-editor .power-badge {
-  font-size: 0.8rem;
-  padding: 1px 6px;
-}
-
-.admin-sets-editor .set-icon {
-  width: 24px;
-  height: 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 1.1rem;
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+  padding-bottom: 0.4rem;
 }
 
 .admin-sets-editor .set-content {
-  margin: 0;
-  padding-bottom: 2px;
   display: flex;
   flex-wrap: wrap;
-  gap: 4px;
+  gap: 8px; /* Increased gap to prevent "crowding" */
+  align-items: center;
+  justify-content: flex-start;
+  padding: 4px 0;
+}
+
+.admin-sets-editor .set-icon {
+  width: 28px; /* Slightly bigger for easier dragging */
+  height: 28px;
+  flex-shrink: 0;
 }
 
 .admin-sets-editor .sets-container {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 2px;
-  padding: 0.5rem;
-  background: rgba(0,0,0,0.2);
+  grid-template-columns: repeat(auto-fill, minmax(310px, 1fr));
+  gap: 4px;
+  padding: 1rem;
+  background: rgba(0,0,0,0.3);
   border-radius: 8px;
+}
+
+.editor-header-with-stats {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  border-bottom: 1px solid #444;
+  padding-bottom: 0.5rem;
+}
+
+.editor-header-with-stats h4 { margin: 0; font-size: 1.2rem; color: #3498db; }
+
+.set-totals-summary {
+  display: flex;
+  gap: 1.5rem;
+  background: rgba(0,0,0,0.3);
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+}
+
+.set-totals-summary .stat-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: bold;
+  font-size: 1.1rem;
+  color: #ccc;
+}
+
+.set-totals-summary .set-icon {
+  width: 20px;
+  height: 20px;
 }
 .simulation-control { display: flex; gap: 1rem; align-items: center; }
 .simulation-results { background: rgba(255,255,255,0.02); padding: 1.5rem; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05); }

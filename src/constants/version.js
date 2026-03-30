@@ -1,7 +1,7 @@
 export const VERSION_INFO = {
-  branch: "refactoring",
-  tag: "v1.5.0",
-  hash: "cb6ab2f", // From the last commit
-  date: "2026-03-16",
-  time: "22:38"
+  branch: "balancing",
+  tag: "v1.4.0",
+  hash: "8b71689",
+  date: "2026-03-30",
+  time: "08:50"
 };

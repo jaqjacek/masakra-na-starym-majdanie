@@ -38,7 +38,6 @@ const JakubPanel = ({ jakub, onUpdateCounter, onJakubMouseDown, isJakubOnBoard }
           </div>
         ))}
       </div>
-      <div className="jakub-panel-hint">Shift+Click: +1 | Ctrl+Click: -1</div>
 
       <button 
         className={`jakub-place-btn ${isJakubOnBoard ? 'disabled' : ''}`}

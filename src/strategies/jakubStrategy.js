@@ -112,7 +112,8 @@ export const executeJakubStep = (gameState) => {
       return { 
         newState: workState, 
         actionTaken: true, 
-        log: `Jakub targets ${race} and kills ${killCount} unit(s) at [${currentRegion.x},${currentRegion.y}].` 
+        log: `Jakub targets ${race} and kills ${killCount} unit(s) at [${currentRegion.x},${currentRegion.y}]. (-${killCount} pts)`,
+        metadata: { race, points: -killCount }
       };
     }
   }

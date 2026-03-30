@@ -1,4 +1,4 @@
-# Set Generation Specification
+# Set Generation Specification (v1.3.0)
 
 This document defines the rules and parameters for generating game sets in "Wedrowycz-Gemini".
 
@@ -42,8 +42,11 @@ The algorithm follows a strict probabilistic growth pattern for each set:
 After generation or when clicking "Sort Set", all sets are ordered using a hierarchical presence bitmask and then re-indexed (ID 1...N).
 
 ### Sorting Logic:
-1.  **Presence Score (Primary):** Sets are ranked by the combination of races they contain (V=8, W=4, G=2, B=1).
+1.  **Complexity First:** Sets are ranked by the combination of races they contain (V=8, W=4, G=2, B=1).
     - Sets with more high-tier races appear first.
-    - Example order for Vampire sets: **{V,W,G,B} → {V,W,G} → {V,W,B} → {V,W} → {V,G,B} → {V,G} → {V,B} → {V}**.
-2.  **Quantity Tie-break (Secondary):** If two sets contain the exact same races, the one with more units of the highest-tier race (V > W > G > B) comes first.
+    - Order: **{V,W,G,B} → {V,W,G} → {V,W,B} → {V,W} → {V,G,B} → {V,G} → {V,B} → {V}** (and so on for other groups).
+2.  **Quantity Tie-break:** If presence scores are identical, sets with more units of the prioritized race (V > W > G > B) come first.
 3.  **Display Order:** Within each set card, pawns MUST be displayed in the order: **V → W → G → B**.
+
+## 5. Persistence
+Generated sets are stored in the `server/sets/` directory. The configuration used for generation (pawns, power, maxPower) is saved within the JSON file to allow for future cloning or reference.

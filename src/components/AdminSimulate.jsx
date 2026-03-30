@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, Legend } from 'recharts';
 import { PAWN_TYPES } from '../constants/pawnTypes';
-
+import { RACES } from '../constants/game';
+import '../assets/css/admin.css';
 import Footer from './Footer';
 
 const AdminSimulate = () => {
-  const [history, setHistory] = useState([]);
+  const [data, setData] = useState([]);
   const [isSimulating, setIsSimulating] = useState(false);
   const [progress, setProgress] = useState(0);
   const [availableSets, setAvailableSets] = useState([]);
@@ -21,37 +22,61 @@ const AdminSimulate = () => {
   useEffect(() => { fetchSets(); }, []);
 
   const simulateGames = async () => {
-    setIsSimulating(true); setProgress(0);
-    const results = []; const activeSetName = selectedSet || 'Random';
+    setIsSimulating(true);
+    setProgress(0);
+    const results = [];
+    
     for (let i = 1; i <= 100; i++) {
       try {
         const url = `http://localhost:3001/api/simulate/${i}${selectedSet ? `?set=${selectedSet}` : ''}`;
         const response = await fetch(url, { method: 'POST' });
         const result = await response.json();
-        if (result.scores) {
-          const gamePointData = { game: i };
-          result.scores.forEach(s => { gamePointData[s.race] = s.points; });
-          results.push(gamePointData);
+        
+        if (result.analytics) {
+          const gameEntry = { game: i };
+          RACES.forEach(race => {
+            gameEntry[`${race}_afterR1`] = result.analytics[race].afterR1;
+            gameEntry[`${race}_total`] = result.analytics[race].total;
+            gameEntry[`${race}_finalBonus`] = result.analytics[race].finalBonus;
+            gameEntry[`${race}_killed`] = result.analytics[race].killed;
+          });
+          results.push(gameEntry);
         }
-      } catch (_err) { console.error(_err); }
+      } catch (err) { console.error(err); }
       setProgress(i);
-    }
-    if (results.length > 0) {
-      const newEntry = { id: Date.now(), setName: activeSetName, data: results };
-      setHistory(prev => [newEntry, ...prev].slice(0, 5));
+      setData([...results]); // Update UI during simulation
     }
     setIsSimulating(false);
   };
 
-  const calculateWins = (data) => {
-    const wins = { vampire: 0, werewolf: 0, ghost: 0, bardak: 0 };
-    data.forEach(game => {
-      const scores = [ { race: 'vampire', pts: game.vampire || 0 }, { race: 'werewolf', pts: game.werewolf || 0 }, { race: 'ghost', pts: game.ghost || 0 }, { race: 'bardak', pts: game.bardak || 0 } ];
-      scores.sort((a, b) => b.pts - a.pts);
-      if (scores[0].pts > 0) wins[scores[0].race]++;
-    });
-    return wins;
-  };
+  const getRaceColor = (raceId) => PAWN_TYPES.find(p => p.id === raceId)?.color || '#ccc';
+
+  const ChartBox = ({ title, dataKeySuffix, data }) => (
+    <div className="simulation-chart-box">
+      <h3>{title}</h3>
+      <div className="chart-wrapper small">
+        <ResponsiveContainer width="100%" height={300}>
+          <LineChart data={data}>
+            <CartesianGrid strokeDasharray="3 3" stroke="#444" />
+            <XAxis dataKey="game" stroke="#888" hide />
+            <YAxis stroke="#888" />
+            <Tooltip contentStyle={{ backgroundColor: '#2c3e50', border: '1px solid #444' }} />
+            {RACES.map(race => (
+              <Line 
+                key={race} 
+                type="monotone" 
+                dataKey={`${race}_${dataKeySuffix}`} 
+                stroke={getRaceColor(race)} 
+                strokeWidth={2} 
+                dot={false} 
+                name={race}
+              />
+            ))}
+          </LineChart>
+        </ResponsiveContainer>
+      </div>
+    </div>
+  );
 
   return (
     <div className="admin-page-content">
@@ -60,44 +85,35 @@ const AdminSimulate = () => {
           <option value="">Select Set for Simulation...</option>
           {availableSets.map(s => <option key={s} value={s}>{s}</option>)}
         </select>
-        <button className="action-button upload-btn" onClick={simulateGames} disabled={isSimulating}>{isSimulating ? `Simulating... (${progress}%)` : 'Simulate 100 Full Games'}</button>
+        <button className="action-button upload-btn" onClick={simulateGames} disabled={isSimulating}>
+          {isSimulating ? `Simulating... (${progress}%)` : 'Run 100 Game Analytics'}
+        </button>
       </div>
 
-      <div className="simulation-history">
-        {history.map((entry, index) => {
-          const wins = calculateWins(entry.data);
-          return (
-            <div key={entry.id} className="simulation-results">
-              <div className="result-header">
-                <h2>{index === 0 ? 'Latest Run (Final Scores)' : `History #${index} (Final Scores)`} - Set: {entry.setName}</h2>
-                <span className="timestamp">{new Date(entry.id).toLocaleTimeString()}</span>
+      {data.length > 0 && (
+        <div className="simulation-dashboard">
+          <div className="simulation-summary-header">
+            <h2>Simulation Results: {selectedSet || 'Random'}</h2>
+            <p>Analyzing performance across {data.length} games</p>
+          </div>
+          
+          <div className="charts-grid">
+            <ChartBox title="1. Points After Round 1 (Early Game)" dataKeySuffix="afterR1" data={data} />
+            <ChartBox title="2. Total Points (Final Game Score)" dataKeySuffix="total" data={data} />
+            <ChartBox title="3. Final Phase Bonus Points" dataKeySuffix="finalBonus" data={data} />
+            <ChartBox title="4. Pawns Killed by Jakub (Total)" dataKeySuffix="killed" data={data} />
+          </div>
+
+          <div className="custom-legend-row large">
+            {RACES.map(race => (
+              <div key={race} className="legend-stat-item">
+                <div className={`legend-dot ${race}`} style={{ backgroundColor: getRaceColor(race) }}></div>
+                <span className="legend-label">{race.toUpperCase()}</span>
               </div>
-              <div className="chart-wrapper">
-                <ResponsiveContainer width="100%" height={400}>
-                  <LineChart data={entry.data} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#444" />
-                    <XAxis dataKey="game" stroke="#888" />
-                    <YAxis stroke="#888" />
-                    <Tooltip contentStyle={{ backgroundColor: '#2c3e50', border: '1px solid #444' }} />
-                    <Line type="monotone" dataKey="vampire" stroke={PAWN_TYPES.find(p => p.id === 'vampire').color} strokeWidth={2} dot={false} isAnimationActive={index === 0} />
-                    <Line type="monotone" dataKey="werewolf" stroke={PAWN_TYPES.find(p => p.id === 'werewolf').color} strokeWidth={2} dot={false} isAnimationActive={index === 0} />
-                    <Line type="monotone" dataKey="ghost" stroke={PAWN_TYPES.find(p => p.id === 'ghost').color} strokeWidth={2} dot={false} isAnimationActive={index === 0} />
-                    <Line type="monotone" dataKey="bardak" stroke={PAWN_TYPES.find(p => p.id === 'bardak').color} strokeWidth={2} dot={false} isAnimationActive={index === 0} />
-                  </LineChart>
-                </ResponsiveContainer>
-              </div>
-              <div className="custom-legend-row">
-                {PAWN_TYPES.filter(p => !p.isUnique).map(pawn => (
-                  <div key={pawn.id} className="legend-stat-item">
-                    <div className={`legend-dot ${pawn.id}`} style={{ backgroundColor: pawn.color }}></div>
-                    <span className="legend-label">{pawn.name}: <strong>({wins[pawn.id]} wins)</strong></span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          );
-        })}
-      </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       <Footer />
     </div>

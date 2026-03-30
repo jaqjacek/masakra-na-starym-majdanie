@@ -1,6 +1,7 @@
 node_modules
 .idea
-games
+server/games
+server/sets
 .env
 dist
 build

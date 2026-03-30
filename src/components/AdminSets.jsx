@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-
+import '../assets/css/admin.css';
 import Footer from './Footer';
 
 const AdminSets = () => {
@@ -82,14 +82,12 @@ const AdminSets = () => {
   const setAsDefault = async () => {
     if (!selectedSet) return;
     try {
-      const res = await fetch('http://localhost:3001/api/config', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ defaultSetName: selectedSet })
+      const res = await fetch(`http://localhost:3001/api/sets/default/${selectedSet}`, {
+        method: 'POST'
       });
-      const _data = await res.json();
-      alert(`Set ${selectedSet} is now the global default.`);
-    } catch (_err) { alert('Failed to set global default'); }
+      const data = await res.json();
+      alert(data.message);
+    } catch (_err) { alert('Failed to set default'); }
   };
 
   const toggleGenForm = () => {
@@ -139,7 +137,7 @@ const AdminSets = () => {
           <>
             <button className="action-button" style={{ backgroundColor: '#9b59b6' }} onClick={() => setIsEditMode(!isEditMode)}>{isEditMode ? 'Exit Edit Mode' : 'Edit Mode'}</button>
             <button className="action-button" style={{ backgroundColor: '#f39c12' }} onClick={handleSort}>Sort Set</button>
-            <button className="action-button" style={{ backgroundColor: '#27ae60' }} onClick={setAsDefault}>Set as Default</button>
+            <button className="action-button" style={{ backgroundColor: '#e74c3c' }} onClick={setAsDefault}>Set Default</button>
             {isEditMode && <button className="action-button" style={{ backgroundColor: '#27ae60' }} onClick={handleSaveEdits}>Save Changes</button>}
           </>
         )}

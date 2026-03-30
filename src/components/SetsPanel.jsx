@@ -38,7 +38,7 @@ const SetsPanel = ({ sets, onSetMouseDown, title, setInfo, discardPileCount = 0 
           </div>
         </div>
         
-        {displaySetName && (
+        {displaySetName && displaySetName !== "Unknown Set" && displaySetName !== "default" && (
           <div className="header-right-group">
             <span className="active-set-name" title={setInfo?.description || ""}>
               Active: <strong>{displaySetName}</strong>

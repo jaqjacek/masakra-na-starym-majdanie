@@ -1,4 +1,5 @@
 import React from 'react';
+import '../assets/css/landing.css';
 import Footer from './Footer';
 
 const LandingPage = ({ inputGameId, setInputGameId, onGoToGame }) => {
@@ -45,9 +46,8 @@ const LandingPage = ({ inputGameId, setInputGameId, onGoToGame }) => {
         </button>
       </div>
       <Footer />
-      </div>
-      );
-      };
-
+    </div>
+  );
+};
 
 export default LandingPage;

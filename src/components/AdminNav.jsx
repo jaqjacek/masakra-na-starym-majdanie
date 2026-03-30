@@ -1,4 +1,5 @@
 import React from 'react';
+import '../assets/css/admin.css';
 
 const AdminNav = ({ currentPath }) => {
   const navigate = (path) => {

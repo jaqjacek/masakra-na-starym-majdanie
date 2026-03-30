@@ -1,6 +1,6 @@
 # Ignore local game sessions and large set files for faster context gathering
-games/
-sets/
+server/games/
+server/sets/
 node_modules/
 dist/
 build/

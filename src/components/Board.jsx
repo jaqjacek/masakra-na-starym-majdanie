@@ -1,24 +1,26 @@
 import React from 'react';
 import Region from './Region';
 
-const Board = ({ regions, onRegionMouseUp, onRemovePawn, onAddPawn, onPawnMouseDown, setHoveredPawn, validMoveTargets }) => {
+const BoardComponent = ({ regions, onRegionMouseUp, onRemovePawn, onAddPawn, onPawnMouseDown, setHoveredPawn, validMoveTargets }) => {
   return (
-    <div className="board">
-      {regions.map((region, index) => (
-        <Region 
-          key={region.id}
-          index={index}
-          pawnGroups={region.pawns}
-          onMouseUp={(e) => onRegionMouseUp(index, e)}
-          onRemovePawn={(typeId) => onRemovePawn(index, typeId)}
-          onAddPawn={(typeId) => onAddPawn(index, typeId)}
-          onPawnMouseDown={(typeId, pawnIndex, e) => onPawnMouseDown(typeId, index, pawnIndex, e)}
-          setHoveredPawn={setHoveredPawn}
-          isValidTarget={validMoveTargets.includes(index)}
-        />
-      ))}
+    <div className="board-wrapper">
+      <div className="board-background-layer"></div>
+      <div className="board">
+        {regions.map((region) => (
+          <Region 
+            key={region.id}
+            pawnGroups={region.pawns}
+            isValidTarget={validMoveTargets.includes(region.id)}
+            onMouseUp={(e) => onRegionMouseUp(region.id, e)}
+            onRemovePawn={(typeId) => onRemovePawn(region.id, typeId)}
+            onAddPawn={(typeId) => onAddPawn(region.id, typeId)}
+            onPawnMouseDown={(typeId, pIdx, e) => onPawnMouseDown(typeId, region.id, pIdx, e)}
+            setHoveredPawn={setHoveredPawn}
+          />
+        ))}
+      </div>
     </div>
   );
 };
 
-export default Board;
+export default BoardComponent;

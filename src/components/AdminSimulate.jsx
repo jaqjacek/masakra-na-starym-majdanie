@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, Legend } from 'recharts';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { PAWN_TYPES } from '../constants/pawnTypes';
 import { RACES } from '../constants/game';
 import '../assets/css/admin.css';
@@ -39,12 +39,13 @@ const AdminSimulate = () => {
             gameEntry[`${race}_total`] = result.analytics[race].total;
             gameEntry[`${race}_finalBonus`] = result.analytics[race].finalBonus;
             gameEntry[`${race}_killed`] = result.analytics[race].killed;
+            gameEntry[`${race}_ramboPoints`] = result.analytics[race].ramboPoints;
           });
           results.push(gameEntry);
         }
       } catch (err) { console.error(err); }
       setProgress(i);
-      setData([...results]); // Update UI during simulation
+      setData([...results]);
     }
     setIsSimulating(false);
   };
@@ -102,6 +103,7 @@ const AdminSimulate = () => {
             <ChartBox title="2. Total Points (Final Game Score)" dataKeySuffix="total" data={data} />
             <ChartBox title="3. Final Phase Bonus Points" dataKeySuffix="finalBonus" data={data} />
             <ChartBox title="4. Pawns Killed by Jakub (Total)" dataKeySuffix="killed" data={data} />
+            <ChartBox title="5. Rambo Survivor Bonus Points" dataKeySuffix="ramboPoints" data={data} />
           </div>
 
           <div className="custom-legend-row large">

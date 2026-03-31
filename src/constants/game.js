@@ -1,4 +1,12 @@
 import { Board } from './board';
+import { 
+  TOTAL_GAME_ROUNDS, 
+  INITIAL_PLAYER_POINTS, 
+  VAMPIRE_SCORING_RANGE, 
+  WEREWOLF_SCORING_DIVISOR, 
+  BOARD_SIZE, 
+  GHOST_SCORING_BASE 
+} from './constants';
 
 export const RACES = ['vampire', 'werewolf', 'ghost', 'bardak'];
 
@@ -7,14 +15,15 @@ const boardService = new Board(5);
 export const INITIAL_STATE = {
   regions: boardService.generateEmpty(),
   players: [
-    { id: 1, name: '1', points: 30, generalOf: null },
-    { id: 2, name: '2', points: 30, generalOf: null },
-    { id: 3, name: '3', points: 30, generalOf: null },
-    { id: 4, name: '4', points: 30, generalOf: null }
+    { id: 1, name: '1', points: INITIAL_PLAYER_POINTS, generalOf: null },
+    { id: 2, name: '2', points: INITIAL_PLAYER_POINTS, generalOf: null },
+    { id: 3, name: '3', points: INITIAL_PLAYER_POINTS, generalOf: null },
+    { id: 4, name: '4', points: INITIAL_PLAYER_POINTS, generalOf: null }
   ],
   sets: { drawPile: [], discardPile: [], heldSets: [], pawns: { bardak: 80, ghost: 30, werewolf: 20, vampire: 10 } },
   phase: 'setup',
   currentRound: 1,
+  maxRounds: TOTAL_GAME_ROUNDS,
   playerOrder: [1, 2, 3, 4],
   currentPlayerIndex: 0,
   passedPlayers: [],
@@ -25,21 +34,41 @@ export const INITIAL_STATE = {
   history: []
 };
 
-export const calculateSetPlacementPoints = (race, setContent, targetRegion, jakubRegion) => {
+
+export const calculateSetPlacementPoints = (race, setContent, targetRegion, jakubRegion, allRegions = []) => {
   const dist = Board.getDistance(targetRegion, jakubRegion);
-  const ownPawnsInSet = setContent[race] || 0;
-  if (race === 'vampire') return ownPawnsInSet + (3 - dist);
-  if (race === 'werewolf') return (dist <= 2) ? (ownPawnsInSet + 1) : 0;
-  if (race === 'bardak') return Object.values(setContent).reduce((a, b) => a + b, 0);
+  const count = setContent[race] || 0;
+  if (count <= 0 && race !== 'werewolf') return 0;
+
+  if (race === 'vampire') return Math.max(0, VAMPIRE_SCORING_RANGE - dist) * count;
+  
+  if (race === 'werewolf') {
+    if (count <= 0) return 0;
+    let totalW = count;
+    // Count W already in target
+    totalW += (targetRegion.pawns?.werewolf?.length || 0);
+    // Count W in neighbors
+    targetRegion.neighbors.forEach(nIdx => {
+      const neighbor = allRegions[nIdx];
+      if (neighbor) totalW += (neighbor.pawns?.werewolf?.length || 0);
+    });
+    
+    let pts = Math.ceil(totalW / WEREWOLF_SCORING_DIVISOR);
+    if (dist <= 1) pts += 1; // Jakub is in target or neighbor
+    return pts;
+  }
+
+  if (race === 'bardak') {
+    if (dist <= 1) return 0;
+    return count;
+  }
   if (race === 'ghost') {
-    const isBorder = targetRegion.x === 0 || targetRegion.x === 4 || targetRegion.y === 0 || targetRegion.y === 4;
-    if (isBorder) {
-      let pts = ownPawnsInSet;
-      const jakub = jakubRegion?.pawns.jakub[0];
-      if (dist <= (jakub ? jakub.range : 0)) pts -= 1;
-      return pts;
-    }
-    return ownPawnsInSet + (dist > 2 ? 1 : -1);
+    const edgeCoord = BOARD_SIZE - 1;
+    const distToEdge = Math.min(targetRegion.x, edgeCoord - targetRegion.x, targetRegion.y, edgeCoord - targetRegion.y);
+    let perPawn = GHOST_SCORING_BASE - distToEdge;
+    const jakub = jakubRegion?.pawns.jakub[0];
+    if (dist <= (jakub ? jakub.range : 0)) perPawn -= 1;
+    return Math.max(0, perPawn) * count;
   }
   return 0;
 };

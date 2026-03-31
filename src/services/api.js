@@ -1,4 +1,6 @@
-const API_BASE = '/api/map';
+import { SERVER_URL } from '../constants/constants';
+
+const API_BASE = `${SERVER_URL}/api/map`;
 
 export const fetchMap = async (gameId) => {
   const response = await fetch(`${API_BASE}/${gameId}`);

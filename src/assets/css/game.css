@@ -113,9 +113,29 @@
   box-sizing: border-box; z-index: 2000; box-shadow: 0 10px 30px rgba(0,0,0,0.8);
 }
 
+.board-wrapper {
+  position: relative;
+  padding: 4px;
+  background-color: var(--board-color);
+  border: 4px solid var(--board-color);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.board-background-layer {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-image: url('/src/assets/img/board_background.jpeg');
+  background-size: cover;
+  background-position: center;
+  opacity: var(--board-bg-opacity, 0.4);
+  pointer-events: none;
+  z-index: 0;
+}
+
 .board {
   display: grid; grid-template-columns: repeat(5, 100px); grid-template-rows: repeat(5, 100px);
-  gap: 2px; background-color: var(--board-color); border: 4px solid var(--board-color); border-radius: 4px;
+  gap: 2px; position: relative; z-index: 1;
 }
 
 .region {

@@ -1,7 +1,7 @@
 export const VERSION_INFO = {
-  branch: "balancing",
-  tag: "v1.4.0",
-  hash: "8b71689",
-  date: "2026-03-30",
-  time: "08:50"
+  branch: "player_ready",
+  tag: "v1.5.0",
+  hash: "current",
+  date: "2026-03-31",
+  time: "10:20"
 };

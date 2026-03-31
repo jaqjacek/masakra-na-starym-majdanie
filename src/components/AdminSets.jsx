@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import '../assets/css/admin.css';
 import Footer from './Footer';
+import { VERSION_INFO } from '../constants/version';
 
 const AdminSets = () => {
   const [availableSets, setAvailableSets] = useState([]);
@@ -52,7 +53,7 @@ const AdminSets = () => {
       setAvailableSets(list);
       setSelectedSet(result.name);
       alert(`Set generated: ${result.name}`);
-    } catch (_err) { alert('Failed to generate set'); }
+    } catch (err) { alert('Failed to generate set'); }
   };
 
   const handleSaveEdits = async () => {
@@ -66,7 +67,8 @@ const AdminSets = () => {
       const data = await res.json();
       alert(data.message);
       setIsEditMode(false);
-    } catch (_err) { alert('Failed to save set'); }
+      fetchSetDetails(selectedSet); // Refresh to get re-indexed state
+    } catch (err) { alert('Failed to save set'); }
   };
 
   const handleSort = async () => {
@@ -76,18 +78,38 @@ const AdminSets = () => {
       const data = await res.json();
       setLoadedSetData(data.setsData);
       alert(data.message);
-    } catch (_err) { alert('Failed to sort set'); }
+    } catch (err) { alert('Failed to sort set'); }
   };
 
   const setAsDefault = async () => {
     if (!selectedSet) return;
     try {
-      const res = await fetch(`http://localhost:3001/api/sets/default/${selectedSet}`, {
-        method: 'POST'
-      });
+      const res = await fetch(`http://localhost:3001/api/sets/default/${selectedSet}`, { method: 'POST' });
       const data = await res.json();
       alert(data.message);
     } catch (_err) { alert('Failed to set default'); }
+  };
+
+  const handleAddEmptySet = () => {
+    if (!loadedSetData) return;
+    const newData = JSON.parse(JSON.stringify(loadedSetData));
+    const nextId = Math.max(0, ...[...(newData.drawPile || []), ...(newData.heldSets || []), ...(newData.discardPile || [])].map(s => s.id)) + 1;
+    if (!newData.drawPile) newData.drawPile = [];
+    newData.drawPile.push({ id: nextId, content: {}, used: false, power: 0, ownerId: null });
+    setLoadedSetData(newData);
+  };
+
+  const handleClonePawn = (setId, race) => {
+    if (!isEditMode) return;
+    const newData = JSON.parse(JSON.stringify(loadedSetData));
+    const piles = [...(newData.drawPile || []), ...(newData.heldSets || []), ...(newData.discardPile || [])];
+    const targetSet = piles.find(s => s.id === setId);
+    if (targetSet) {
+      targetSet.content[race] = (targetSet.content[race] || 0) + 1;
+      const powerMap = newData.power || { vampire: 3, werewolf: 2, ghost: 1, bardak: 1 };
+      targetSet.power = Object.entries(targetSet.content).reduce((sum, [r, c]) => sum + (powerMap[r] || 0) * c, 0);
+      setLoadedSetData(newData);
+    }
   };
 
   const toggleGenForm = () => {
@@ -118,7 +140,8 @@ const AdminSets = () => {
     if (sourceSet && targetSet && sourceSet.content[race] > 0) {
       sourceSet.content[race] -= 1; if (sourceSet.content[race] === 0) delete sourceSet.content[race];
       targetSet.content[race] = (targetSet.content[race] || 0) + 1;
-      const calculatePower = (content) => Object.entries(content).reduce((sum, [r, count]) => sum + ((newData.power || {vampire:3,werewolf:2,ghost:1,bardak:1})[r] || 0) * count, 0);
+      const powerMap = newData.power || { vampire: 3, werewolf: 2, ghost: 1, bardak: 1 };
+      const calculatePower = (content) => Object.entries(content).reduce((sum, [r, count]) => sum + (powerMap[r] || 0) * count, 0);
       sourceSet.power = calculatePower(sourceSet.content);
       targetSet.power = calculatePower(targetSet.content);
       setLoadedSetData(newData);
@@ -138,6 +161,7 @@ const AdminSets = () => {
             <button className="action-button" style={{ backgroundColor: '#9b59b6' }} onClick={() => setIsEditMode(!isEditMode)}>{isEditMode ? 'Exit Edit Mode' : 'Edit Mode'}</button>
             <button className="action-button" style={{ backgroundColor: '#f39c12' }} onClick={handleSort}>Sort Set</button>
             <button className="action-button" style={{ backgroundColor: '#e74c3c' }} onClick={setAsDefault}>Set Default</button>
+            {isEditMode && <button className="action-button" style={{ backgroundColor: '#3498db' }} onClick={handleAddEmptySet}>+ Add Empty Set</button>}
             {isEditMode && <button className="action-button" style={{ backgroundColor: '#27ae60' }} onClick={handleSaveEdits}>Save Changes</button>}
           </>
         )}
@@ -179,7 +203,14 @@ const AdminSets = () => {
             </div>
             <div className="sets-container">
               {(loadedSetData.drawPile || []).map(set => (
-                <EditableSet key={set.id} set={set} isEditMode={isEditMode} onPawnDragStart={onPawnDragStart} onPawnDrop={onPawnDrop} />
+                <EditableSet 
+                  key={set.id} 
+                  set={set} 
+                  isEditMode={isEditMode} 
+                  onPawnDragStart={onPawnDragStart} 
+                  onPawnDrop={onPawnDrop}
+                  onClonePawn={handleClonePawn}
+                />
               ))}
             </div>
           </div>
@@ -191,7 +222,7 @@ const AdminSets = () => {
   );
 };
 
-const EditableSet = ({ set, isEditMode, onPawnDragStart, onPawnDrop }) => {
+const EditableSet = ({ set, isEditMode, onPawnDragStart, onPawnDrop, onClonePawn }) => {
   const racePriority = { vampire: 0, werewolf: 1, ghost: 2, bardak: 3 };
   const allPawns = [];
   Object.entries(set.content).forEach(([race, count]) => { for (let i = 0; i < count; i++) allPawns.push(race); });
@@ -202,7 +233,14 @@ const EditableSet = ({ set, isEditMode, onPawnDragStart, onPawnDrop }) => {
       <div className="set-header"><span>Set {set.id}</span><span className="power-badge">P: {set.power}</span></div>
       <div className="set-content">
         {allPawns.map((race, index) => (
-          <div key={`${race}-${index}`} className={`set-icon ${race} ${isEditMode ? 'draggable' : ''}`} draggable={isEditMode} onDragStart={() => isEditMode && onPawnDragStart(race, set.id)}></div>
+          <div 
+            key={`${race}-${index}`} 
+            className={`set-icon ${race} ${isEditMode ? 'draggable' : ''}`} 
+            draggable={isEditMode} 
+            onDragStart={() => isEditMode && onPawnDragStart(race, set.id)}
+            onClick={(e) => { if (e.shiftKey) onClonePawn(set.id, race); }}
+            title={isEditMode ? "Drag to move | Shift+Click to clone" : ""}
+          ></div>
         ))}
       </div>
     </div>

@@ -1,10 +1,19 @@
-import React from 'react';
+import React, { useState } from 'react';
 import '../assets/css/landing.css';
 import Footer from './Footer';
 
-const LandingPage = ({ inputGameId, setInputGameId, onGoToGame }) => {
-  
+const LandingPage = ({ onGoToGame }) => {
+  const [inputGameId, setInputGameId] = useState('');
+
+  const handleGoToGame = (e) => {
+    e.preventDefault();
+    if (inputGameId.trim()) {
+      onGoToGame(inputGameId.trim());
+    }
+  };
+
   const handleNewGame = async () => {
+
     try {
       const res = await fetch('http://localhost:3001/api/next-game-id');
       const data = await res.json();
@@ -26,22 +35,21 @@ const LandingPage = ({ inputGameId, setInputGameId, onGoToGame }) => {
       <p className="landing-subtitle">Digital Board Game Engine</p>
       
       <div className="landing-card">
-        <form className="game-select-form" onSubmit={onGoToGame}>
-          <input 
-            type="text" 
-            placeholder="Enter Game ID..." 
-            value={inputGameId} 
+        <form className="game-select-form" onSubmit={handleGoToGame}>
+          <input
+            type="text"
+            placeholder="Enter Game ID..."
+            value={inputGameId}
             onChange={(e) => setInputGameId(e.target.value)}
             autoFocus
           />
-          <button type="submit" className="action-button download-btn" disabled={!inputGameId.trim()}>
+          <button type="submit" className="action-button" disabled={!inputGameId.trim()}>
             Go to Game
           </button>
         </form>
-        
         <div className="landing-divider">OR</div>
         
-        <button className="action-button upload-btn new-game-btn" onClick={handleNewGame}>
+        <button className="action-button new-game-btn" onClick={handleNewGame}>
           Create New Game
         </button>
       </div>

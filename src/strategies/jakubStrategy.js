@@ -2,22 +2,24 @@ export const RACES = ['vampire', 'werewolf', 'ghost', 'bardak'];
 
 /**
  * Updates Jakub's anger based on set contents and handles overflow logic.
+ * Range = 1 + (number of races with Anger > 10)
  */
 export const applySetToJakubAnger = (jakub, setContent) => {
   const newAnger = { ...jakub.anger };
-  let newRange = jakub.range;
 
   Object.entries(setContent).forEach(([race, count]) => {
     if (newAnger[race] !== undefined) {
       newAnger[race] += count;
-      while (newAnger[race] >= 10) {
-        newAnger[race] = 5;
-        newRange += 1;
-      }
     }
   });
 
-  return { anger: newAnger, range: newRange };
+  // Recalculate range based on new anger
+  let bonusRange = 0;
+  RACES.forEach(race => {
+    if (newAnger[race] > 10) bonusRange += 1;
+  });
+
+  return { anger: newAnger, range: 1 + bonusRange };
 };
 
 const getRegionsInRange = (regions, startIndex, range) => {

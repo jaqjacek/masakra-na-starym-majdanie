@@ -1,85 +1,59 @@
-# Wędrowycz-Gemini: Oficjalne Zasady Gry
+# Wedrowycz-Gemini: Oficjalne Zasady Gry
 
 ## 1. Cel Gry
-Gracze wcielają się w role Generałów dowodzących armiami potworów (Wampiry, Wilkołaki, Duchy, Bardaki). Celem jest zdobycie jak największej liczby punktów poprzez strategiczne wystawianie zestawów pionków na planszę oraz przetrwanie czystek dokonywanych przez Jakuba Wędrowycza.
+Wędrowycz-Gemini to gra strategiczna, w której gracze (Generałowie) dowodzą czterema nacjami: Vampirami, Wilkołakami, Duchami i Bardakami. Celem jest zdobycie jak największej liczby punktów zwycięstwa (Victory Points) w ciągu 8 rund, unikając gniewu Jakuba Wędrowycza.
 
----
+## 2. Elementy Gry
+*   **Plansza:** Siatka 5x5 regionów.
+*   **Nacje:** Vampire (V), Werewolf (W), Ghost (G), Bardak (B).
+*   **Jakub:** Unikalny pionek poruszający się po planszy, niszczący jednostki.
+*   **Zestawy (Sets):** Karty zawierające kombinacje pionków o różnej mocy.
 
-## 2. Inicjalizacja Gry (Tylko na starcie)
-1.  **Wybór Zestawu:** Wybierany jest predefiniowany szablon zestawów (np. `set_1`).
-2.  **Zasoby Startowe:** Każdy gracz otrzymuje **30 punktów** oraz **2 losowe zestawy** (sets) z puli.
-3.  **Pozycja Jakuba:** Jakub zostaje umieszczony w losowym regionie wnętrza planszy (koordynaty X/Y od 1 do 3).
-4.  **Kolejność:** Początkowa kolejność graczy jest losowana.
+## 3. Przebieg Gry
+Gra toczy się przez **8 rund**. Każda runda składa się z trzech faz:
 
----
+### Faza I: Setup
+1.  **Rozdysponowanie Zestawów:** Każdy gracz otrzymuje zestawy pionków z talii Draw Pile. Gracze dążą do posiadania optymalnych kombinacji jednostek.
+2.  **Zasoby Jakuba:** Jakub również pobiera 2 zestawy, które zwiększą jego agresję w danej rundzie.
 
-## 3. Cykl Rundy (6 Tur: od 00:00 do 06:00)
-Gra trwa dokładnie 6 rund. Każda runda składa się z trzech faz:
-
-### Faza I: Setup (Przygotowanie)
-*   **Rozdawanie Setów:** Jeżeli w puli ogólnej (stos aktywny + odrzucony) znajduje się co najmniej 4 zestawy, każdy gracz otrzymuje po jednym. Proces ten powtarza się w systemie "round-robin", dopóki każdy z graczy nie otrzyma w tej fazie **3 dodatkowych zestawów** lub pula przestanie wystarczać na sprawiedliwy podział.
-*   **Recykling:** Zestawy zagrane lub odrzucone w poprzednich rundach wracają do puli ogólnej jako zestawy odrzucone. Kiedy stos aktywny (Draw Pile) staje się pusty, wszystkie zestawy ze stosu odrzuconego (Discard Pile) zostają wtasowane i stają się aktywne.
-
-### Faza II: Faza Graczy
-Faza ta dzieli się na wybór roli oraz pętlę akcji.
-
-1.  **Wybór Generała:** W aktualnej kolejności każdy gracz wybiera jedną z dostępnych nacji (Vampire, Werewolf, Ghost, Bardak). Wybranej nacji nie może przejąć inny gracz.
-2.  **Pętla Akcji:** Gracze wykonują akcje po kolei, dopóki wszyscy nie spasują. Dostępne akcje:
-    *   **Wystawienie Zestawu:** Gracz kładzie zestaw na pusty region (brak pionków graczy). 
-        *   *Warunek:* W puli ogólnej muszą być dostępne wszystkie pionki opisane w zestawie.
-        *   *Punktacja:* Gracz natychmiast otrzymuje punkty wg wzorów nacji (patrz sekcja 5).
-    *   **Odrzucenie Zestawu:** Gracz oddaje zestaw do puli ogólnej i otrzymuje **+1 punkt**.
-    *   **Pas:** Gracz kończy swoje działania w tej fazie. Po spasowaniu nie można już wykonywać akcji.
-*   **Limit:** Na koniec fazy gracz może zachować **maksymalnie 2 zestawy** na kolejną rundę. Nadmiarowe zestawy muszą zostać odrzucone (bez punktów lub automatycznie z bonusem +1, zależnie od strategii).
+### Faza II: Faza Graczy (Player Phase)
+Gracze wykonują tury naprzemiennie (wg aktualnej kolejności):
+1.  **Wybór Generała:** Gracz wybiera nację, którą dowodzi w tej rundzie (V, W, G lub B).
+2.  **Akcja:** Gracz może wystawić zestaw pionków w pustym regionie.
+3.  **Punktacja Natychmiastowa (Rozproszona):** Za wystawienie zestawu punkty otrzymują **wszyscy aktualni Generałowie**, których pionki znajdują się w tym zestawie. Punkty są naliczane **za każdego pionka z osobna**, zgodnie z logiką danej nacji. Gracz wystawiający nie musi otrzymać żadnych punktów, jeśli w zestawie nie ma pionków jego nacji.
+4.  **Pasowanie:** Gracz może spasować. Musi wtedy odrzucić nadmiarowe zestawy (zostawiając max 3). Za każdy odrzucony zestaw otrzymuje +1 pkt, a zestaw trafia do Jakuba.
 
 ### Faza III: Faza Jakuba
 Po spasowaniu wszystkich graczy, Jakub rusza do akcji:
 
-1.  **Zasilanie Złości (Nowość):**
-    *   Jakub pobiera **2 losowe zestawy** z puli Draw Pile na start fazy.
-    *   Wszystkie zestawy **odrzucone przez graczy** (+1 pkt) w tej rundzie również trafiają do Jakuba.
-    *   Jakub "absorbuje" te zestawy: każdy pionek w nich zawarty zwiększa jego Anger dla danej rasy.
-    *   **Przepełnienie:** Jeżeli Anger rasy osiągnie **10 lub więcej**, zostaje zresetowany do **5**, a **Range (zasięg)** Jakuba rośnie o **1**.
-2.  **Czystka (Killing Spree):**
-    *   Jakub zabija pionki graczy w swoim aktualnym regionie, zaczynając od rasy, na którą ma największy Anger.
-    *   Za każdego zabitego pionka, gracz który jest **aktualnie Generałem tej nacji**, traci **1 punkt**.
-    *   Każdy zabity pionek zmniejsza Anger Jakuba na tę rasę o 1.
-    *   Zabite pionki wracają do puli ogólnej (Discard Pile).
-3.  **Ruch i Łowy:**
-    *   Jeżeli Jakub ma jeszcze złość na jakąś rasę, a nie ma jej już w jego regionie, skanuje wszystkie regiony w swoim **Range** (zasięgu).
-    *   Zasięg obejmuje ruchy ortogonalne i **diagonalne** (King's Move).
-    *   Jakub przemieszcza się bezpośrednio do regionu z największą liczbą jednostek najbardziej znienawidzonej rasy (tie-break: V>W>G>B).
-    *   Powtarza czystkę, aż skończy mu się złość lub w zasięgu nie będzie celów.
+1.  **Zasilanie Złości:** Jakub absorbuje zestawy pobrane na starcie rundy oraz te odrzucone przez graczy. Każdy pionek zwiększa Anger (złość) na daną rasę. Przepełnienie (Anger >= 10) resetuje złość do 5 i zwiększa Range (zasięg) Jakuba o 1.
+2.  **Czystka (Killing Spree):** Jakub zabija pionki w swoim regionie. Za każdego zabitego pionka, aktualny Generał tej nacji traci 1 punkt.
+3.  **Ruch i Łowy:** Jakub skanuje regiony w swoim Range ( King's Move - wliczając skosy). Przemieszcza się do regionu z największą liczbą jednostek nacji, na którą jest najbardziej wściekły.
 4.  **Koniec Fazy:**
+    *   **Rambo Survivor Bonus:** Jeżeli po zakończeniu ruchu i czystki Jakuba, w jego aktualnym regionie znajdują się jakiekolwiek pionki graczy, ich aktualny Generał otrzymuje **2 punkty bonusowe** za każdy taki pionek. (Log: *Rambo Survivor*).
     *   Range Jakuba spada o 1 (minimum 1).
-    *   Wszystkie zestawy Jakuba trafiają do Discard Pile.
-    *   Generałowie wracają do puli.
-    *   Kolejność graczy: najmniejsza liczba punktów = pierwszy.
-
----
+    *   Zestawy Jakuba trafiają na Discard Pile.
+    *   **Rundy 1-7:** Generałowie wracają do puli. Kolejność graczy: najmniej punktów = pierwszy.
+    *   **Runda 8:** Gracze **zachowują** swoich generałów do ostatecznego punktowania.
 
 ## 4. Zakończenie Gry i Punktacja Końcowa
-Po zakończeniu 6. rundy następuje ostateczne podsumowanie:
-1.  W aktualnej kolejności (ustalonej po ostatniej fazie Jakuba) gracze po raz ostatni wybierają Generała nacji.
-2.  **Bonus Końcowy:**
-    *   **Vampire:** 2 punkty za każdy swój pionek na planszy.
-    *   **Werewolf:** 1 punkt za każdy swój pionek na planszy.
-    *   **Ghost:** 2 punkty za każdy region, w którym są same; 1 punkt za każdy inny region, w którym jest ich więcej niż jakiejkolwiek innej nacji z osobna (Pluralizacja).
-    *   **Bardak:** 2 punkty za każdy region, w którym mają przewagę (więcej własnych pionków niż wszystkich pozostałych nacji razem wziętych).
-3.  Zwycięża gracz z największą łączną sumą punktów.
-
----
+Po zakończeniu fazy Jakuba w **8. rundzie**, następuje ostateczne podsumowanie. Gracze otrzymują bonusy za nacje, którymi dowodzili w ostatniej rundzie:
+1.  **Vampire:** 2 punkty za każdy swój pionek na planszy.
+2.  **Werewolf:** 1 punkt za każdy swój pionek na planszy.
+3.  **Ghost:** 2 punkty za każdy region, w którym są same; 1 punkt za każdy inny region, w którym jest ich więcej niż jakiejkolwiek innej nacji z osobna (Pluralizacja).
+4.  **Bardak:** 1 punkt za każdy region, w którym jest ich więcej niż jakiejkolwiek innej nacji z osobna (Pluralizacja).
+5.  Zwycięża gracz z największą sumą punktów.
 
 ## 5. Charakterystyka Nacji i Punktacja Setów
-Punkty za wystawienie zestawu zależą od odległości regionu od Jakuba (Manhattan distance):
-
-*   **Vampire (V):** Moc 3. Punkty = `(Liczba V w secie) + (3 - odległość)`. *Najsilniejsze blisko Jakuba.*
-*   **Werewolf (W):** Moc 2. Punkty = `(Liczba W w secie) + 1` tylko jeśli `odległość <= 2`. W innym wypadku 0 pkt.
-*   **Ghost (G):** Moc 1. Punkty:
-    *   **Na brzegach planszy (X/Y = 1 lub 5):** Liczba G w secie. Jeżeli region jest w aktualnym zasięgu Jakuba (Range), odejmij **1 punkt** od sumy.
-    *   **Wewnątrz planszy:** Liczba G w secie + (1 jeśli odległość > 2, inaczej -1).
-*   **Bardak (B):** Moc 1. Punkty = `Łączna liczba wszystkich pionków w zestawie`. *Zawsze solidne punkty.*
+Punkty za wystawienie zestawu (odległość liczona wg King's Move):
+*   **Vampire (V):** Punkty = `4 - odległość`.
+*   **Werewolf (W):** Punkty = `3 - odległość`.
+*   **Ghost (G):** Punkty za pionka = `2 - (odległość do najbliższej krawędzi)`.
+    *   Krawędź (odległość 0): **2 punkty** za pionka.
+    *   1 pole od krawędzi: **1 punkt** za pionka.
+    *   Centrum (2 pola od krawędzi): **0 punktów**.
+    *   **Kara Jakuba:** Jeżeli region jest w Range Jakuba, odejmij **1 punkt** od wartości za każdego pionka (min. 0).
+*   **Bardak (B):** Punkty = `Liczba Bardaków w zestawie`. Jeżeli region jest w odległości **0 lub 1** od Jakuba (wliczając skosy), Bardaki otrzymują **0 punktów**.
 
 ---
-
 *Zasady te stanowią fundament logiki symulatora Wedrowycz-Gemini.*

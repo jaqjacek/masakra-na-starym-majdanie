@@ -1,7 +1,7 @@
 import React from 'react';
-import { PAWN_TYPES } from '../constants/pawnTypes';
+import { PAWN_TYPES, SUMMARY_PAWN_IDS } from '../constants/pawnTypes';
 
-const JakubPanel = ({ jakub, onUpdateCounter, onJakubMouseDown, isJakubOnBoard }) => {
+const JakubPanel = ({ jakub, onUpdateCounter, onJakubMouseDown, isJakubOnBoard, sets = [], onMouseUp }) => {
   if (!jakub) return null;
 
   const handleClick = (e, path) => {
@@ -13,19 +13,18 @@ const JakubPanel = ({ jakub, onUpdateCounter, onJakubMouseDown, isJakubOnBoard }
   const normalPawnTypes = PAWN_TYPES.filter(p => !p.isUnique);
 
   return (
-    <div className="jakub-panel">
-      <h3>Jakub Parameters</h3>
+    <div className="jakub-panel" onMouseUp={onMouseUp}>
+      <h3>Jakub</h3>
       
       <div className="jakub-stats">
         <div className="jakub-stat-row" onClick={(e) => handleClick(e, ['speed'])}>
-          <span>Speed:</span> <strong>{jakub.speed}</strong>
+          <span>S:</span> <strong>{jakub.speed}</strong>
         </div>
         <div className="jakub-stat-row" onClick={(e) => handleClick(e, ['range'])}>
-          <span>Range:</span> <strong>{jakub.range}</strong>
+          <span>R:</span> <strong>{jakub.range}</strong>
         </div>
       </div>
       
-      <h4>Anger Counters</h4>
       <div className="jakub-anger-list">
         {normalPawnTypes.map(type => (
           <div 
@@ -39,13 +38,32 @@ const JakubPanel = ({ jakub, onUpdateCounter, onJakubMouseDown, isJakubOnBoard }
         ))}
       </div>
 
-      <button 
-        className={`jakub-place-btn ${isJakubOnBoard ? 'disabled' : ''}`}
-        onMouseDown={(e) => !isJakubOnBoard && onJakubMouseDown(e)}
-        title={isJakubOnBoard ? "Jakub is already on the map" : "Drag Jakub to the map"}
-      >
-        J
-      </button>
+      <div className="jakub-sets-mini">
+        {sets.map((set, idx) => (
+          <div key={set.id} className="mini-set" title={`Power: ${set.power}`}>
+            <div className="mini-set-content">
+              {SUMMARY_PAWN_IDS.map(typeId => {
+                const count = set.content[typeId] || 0;
+                return Array.from({ length: count }).map((_, i) => (
+                  <div key={`${typeId}-${i}`} className="mini-item">
+                    <div className={`set-icon ${typeId}`}></div>
+                  </div>
+                ));
+              })}
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {!isJakubOnBoard && (
+        <button 
+          className="jakub-place-btn"
+          onMouseDown={(e) => onJakubMouseDown(e)}
+          title="Drag Jakub to the map"
+        >
+          J
+        </button>
+      )}
     </div>
   );
 };

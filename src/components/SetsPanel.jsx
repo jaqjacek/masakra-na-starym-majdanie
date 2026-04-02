@@ -1,22 +1,25 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { PAWN_TYPES, SUMMARY_PAWN_IDS } from '../constants/pawnTypes';
 
-const SetsPanel = ({ sets, onSetMouseDown, title, setInfo, discardPileCount = 0 }) => {
-  if (!sets) return null;
+const SetsPanel = ({ sets, discardedSets = [], onSetMouseDown, title, setInfo, discardPileCount = 0, hideTabs = false }) => {
+  const [activeTab, setActiveTab] = useState('active');
 
-  const totalSets = sets.length;
+  const currentSets = activeTab === 'active' ? sets : discardedSets;
+  if (!currentSets) return null;
+
+  const totalSets = currentSets.length;
   const breakdown = SUMMARY_PAWN_IDS.reduce((acc, id) => {
     acc[id] = 0;
     return acc;
   }, {});
 
-  sets.forEach(set => {
+  currentSets.forEach(set => {
     Object.entries(set.content).forEach(([typeId, count]) => {
       if (breakdown[typeId] !== undefined) breakdown[typeId] += count;
     });
   });
 
-  const sortedSets = [...sets].sort((a, b) => {
+  const sortedSets = [...currentSets].sort((a, b) => {
     if (a.used === b.used) return 0;
     return a.used ? 1 : -1;
   });
@@ -25,20 +28,29 @@ const SetsPanel = ({ sets, onSetMouseDown, title, setInfo, discardPileCount = 0 
 
   return (
     <div className="sets-panel">
+      {!hideTabs && (
+        <div className="sets-panel-tabs">
+          <button 
+            className={`tab-btn ${activeTab === 'active' ? 'active' : ''}`}
+            onClick={() => setActiveTab('active')}
+          >
+            Active ({sets.length})
+          </button>
+          <button 
+            className={`tab-btn ${activeTab === 'discarded' ? 'active' : ''}`}
+            onClick={() => setActiveTab('discarded')}
+          >
+            Discarded ({discardedSets.length})
+          </button>
+        </div>
+      )}
+
       <div className="sets-panel-header compact-row">
         <div className="header-left-group">
-          <h3>{title || "Sets"} ({totalSets}) | Discard: {discardPileCount}</h3>
-          <div className="sets-total-breakdown compact">
-            {SUMMARY_PAWN_IDS.map(id => (
-              <div key={id} className="sets-breakdown-item" title={`${id} total`}>
-                <div className={`breakdown-dot ${id}`}></div>
-                <span>{breakdown[id]}</span>
-              </div>
-            ))}
-          </div>
+          <h3>{activeTab === 'active' ? (title || "Sets") : "Discarded Pile"}</h3>
         </div>
         
-        {displaySetName && displaySetName !== "Unknown Set" && displaySetName !== "default" && (
+        {activeTab === 'active' && displaySetName && displaySetName !== "Unknown Set" && displaySetName !== "default" && (
           <div className="header-right-group">
             <span className="active-set-name" title={setInfo?.description || ""}>
               Active: <strong>{displaySetName}</strong>
@@ -46,28 +58,33 @@ const SetsPanel = ({ sets, onSetMouseDown, title, setInfo, discardPileCount = 0 
           </div>
         )}
       </div>
+
       <div className="sets-container">
-        {sortedSets.map((set, index) => (
-          <div 
-            key={`${set.id}-${index}`} 
-            className={`pawn-set ${set.used ? 'used' : ''}`}
-            onMouseDown={(e) => !set.used && onSetMouseDown(set, e)}
-            title={set.used ? "Already used" : `Power: ${set.power} | Drag to a region or player`}
-          >
-            <div className="set-header">
-              <span>Set {set.id}</span>
-              <span className="power-badge">P: {set.power}</span>
+        {sortedSets.length === 0 ? (
+          <div className="no-sets-message">No sets in this category.</div>
+        ) : (
+          sortedSets.map((set, index) => (
+            <div 
+              key={`${set.id}-${index}`} 
+              className={`pawn-set ${set.used || activeTab === 'discarded' ? 'used' : ''}`}
+              onMouseDown={(e) => !set.used && activeTab === 'active' && onSetMouseDown(set, e)}
+              title={set.used || activeTab === 'discarded' ? "Cannot use this set" : `Power: ${set.power} | Drag to a region or player`}
+            >
+              <div className="set-header">
+                <span>Set {set.id}</span>
+                <span className="power-badge">P: {set.power}</span>
+              </div>
+              <div className="set-content">
+                {SUMMARY_PAWN_IDS.map(typeId => {
+                  const count = set.content[typeId] || 0;
+                  return Array.from({ length: count }).map((_, i) => (
+                    <div key={`${typeId}-${i}`} className={`set-icon ${typeId}`}></div>
+                  ));
+                })}
+              </div>
             </div>
-            <div className="set-content">
-              {Object.entries(set.content).map(([typeId, count]) => (
-                <div key={typeId} className="set-item">
-                  <div className={`set-icon ${typeId}`}></div>
-                  <span className="set-count">:{count}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-        ))}
+          ))
+        )}
       </div>
     </div>
   );

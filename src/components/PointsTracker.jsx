@@ -1,6 +1,6 @@
 import React from 'react';
 
-const PointsTracker = ({ players, onUpdatePoints, currentPlayerId, onPlayerMouseUp, sets }) => {
+const PointsTracker = ({ players, onUpdatePoints, currentPlayerId, onPlayerMouseUp, onGeneralClick, sets, passedPlayers = [] }) => {
   const handleClick = (e, index) => {
     if (e.shiftKey) onUpdatePoints(index, 1);
     else if (e.ctrlKey) onUpdatePoints(index, -1);
@@ -21,6 +21,7 @@ const PointsTracker = ({ players, onUpdatePoints, currentPlayerId, onPlayerMouse
     <div className="points-tracker full-width">
       {players.map((player, index) => {
         const isMe = player.id === currentPlayerId;
+        const isPassed = passedPlayers.includes(player.id);
         const displayName = `${player.id}:${player.name || ''}`;
         
         // Calculate sets in player's hand
@@ -37,28 +38,40 @@ const PointsTracker = ({ players, onUpdatePoints, currentPlayerId, onPlayerMouse
             className={`player-point-item ${isMe ? 'me-item' : ''}`}
             onMouseUp={() => onPlayerMouseUp && onPlayerMouseUp(player.id)}
           >
-            <div className="player-general-info">
-              {player.generalOf && (
-                <div className={`general-icon ${player.generalOf}`} title={`General of ${player.generalOf}s`}></div>
-              )}
-              <div className="player-name-container">
-                <span className={`player-name ${isMe ? 'is-me' : ''}`} title={displayName}>
-                  {displayName}
+            <div className="player-cell-top">
+              <div className="player-general-container">
+                {player.generalOf ? (
+                  <div 
+                    className={`general-icon ${player.generalOf} clickable`} 
+                    onClick={() => onGeneralClick && onGeneralClick(player.id)}
+                    title={isMe ? "Click to resign from being General" : `General of ${player.generalOf}s`}
+                  ></div>
+                ) : (
+                  <div className="general-placeholder" title="No General chosen"></div>
+                )}
+              </div>
+              {isPassed && <div className="pass-badge">PASS</div>}
+              <div className="player-points-display">
+                <span 
+                  className="player-points interactive" 
+                  onClick={(e) => handleClick(e, index)}
+                  title="Shift+Click: +1 | Ctrl+Click: -1"
+                >
+                  {player.points}
                 </span>
+              </div>
+            </div>
+
+            <div className="player-cell-bottom">
+              <div className="player-info-badge">
+                <span className="player-id-label">P{player.id}</span>
                 {ownedSetsCount > 0 && (
                   <div className="owned-sets-badge" title={`${ownedSetsCount} sets in hand`}>
-                    S:{ownedSetsCount}
+                    {ownedSetsCount} Sets
                   </div>
                 )}
               </div>
             </div>
-            <span 
-              className="player-points interactive" 
-              onClick={(e) => handleClick(e, index)}
-              title="Shift+Click: +1 | Ctrl+Click: -1"
-            >
-              {player.points}
-            </span>
 
             <button 
               className="player-switch-btn" 

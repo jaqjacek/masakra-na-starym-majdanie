@@ -21,7 +21,8 @@ export const useAutoplay = ({
   addLog, 
   jakubRegion 
 }) => {
-  const [isAutoplay, setIsAutoplay] = useState(false);
+  const [isFullAutoplay, setIsFullAutoplay] = useState(false);
+  const [isJakubAutoplay, setIsJakubAutoplay] = useState(false);
   const [autoplaySpeed, setAutoplaySpeed] = useState(DEFAULT_AUTOPLAY_SPEED);
 
   const refillSetsIfNeeded = useCallback((state) => {
@@ -42,17 +43,27 @@ export const useAutoplay = ({
   }, [refillSetsIfNeeded]);
 
   const findAndRemoveSetById = useCallback((state, setId) => {
-    let idx = (state.sets.drawPile || []).findIndex(s => s.id === setId);
+    let idx = (state.sets.drawPile || []).findIndex(s => s.id == setId);
     if (idx !== -1) return state.sets.drawPile.splice(idx, 1)[0];
-    idx = (state.sets.heldSets || []).findIndex(s => s.id === setId);
+    idx = (state.sets.heldSets || []).findIndex(s => s.id == setId);
     if (idx !== -1) return state.sets.heldSets.splice(idx, 1)[0];
-    idx = (state.sets.discardPile || []).findIndex(s => s.id === setId);
+    idx = (state.sets.discardPile || []).findIndex(s => s.id == setId);
     if (idx !== -1) return state.sets.discardPile.splice(idx, 1)[0];
     return null;
   }, []);
 
   const handleAutoplayTick = useCallback(async () => {
-    if (!isAutoplay || !gameId || gameState.gameStatus === 'finished') return;
+    if (!isFullAutoplay && !isJakubAutoplay) return;
+    if (!gameId || gameState.gameStatus === 'finished') return;
+
+    // If only Jakub automation is active, we only automate jakub_phase 
+    // OR the transition to it if everyone has passed.
+    if (isJakubAutoplay && !isFullAutoplay && gameState.phase !== 'jakub_phase') {
+      const allPassed = gameState.players && gameState.passedPlayers && 
+                        gameState.passedPlayers.length === gameState.players.length;
+      if (!allPassed) return;
+    }
+
     let workState = JSON.parse(JSON.stringify(gameState));
     
     if (workState.phase === 'setup') {
@@ -217,20 +228,22 @@ export const useAutoplay = ({
           workState.currentRound += 1; workState.phase = 'setup'; 
           addLog(workState, `--- Round ${workState.currentRound} ---`); 
         }
+        
+        if (!isFullAutoplay) {
+          setIsJakubAutoplay(false); // Stop if it was only Jakub mode
+        }
+        
         updateGameWithSync(workState);
       }
       return;
     }
 
     if (workState.phase === 'final_scoring') {
-      const curIdx = workState.currentPlayerIndex;
-      if (curIdx < workState.players.length) {
-        const curPlayer = workState.players[curIdx];
+      workState.players.forEach(curPlayer => {
         const pick = curPlayer.generalOf;
-        if (!pick) { workState.currentPlayerIndex += 1; updateGameWithSync(workState); return; }
+        if (!pick) return;
         let addedPoints = 0;
-        // Scoring logic (Vampire, Werewolf, Ghost, Bardak)
-        // ... omitted details for brevity in write_file if possible, but keeping logic consistent
+        
         if (pick === 'vampire') { 
           let count = 0; 
           workState.regions.forEach(r => count += (r.pawns[pick]?.length || 0)); 
@@ -255,7 +268,7 @@ export const useAutoplay = ({
             }
           });
         }
- else if (pick === 'bardak') {
+        else if (pick === 'bardak') {
           workState.regions.forEach(r => {
             const myCount = r.pawns[pick]?.length || 0;
             if (myCount > 0) {
@@ -266,28 +279,42 @@ export const useAutoplay = ({
           });
         }
         curPlayer.points += addedPoints; 
-        addLog(workState, `Player ${curPlayer.id} gained ${addedPoints} points for ${pick}s.`, { race: pick, points: addedPoints });
-        workState.currentPlayerIndex += 1; 
-        updateGameWithSync(workState);
+        addLog(workState, `Final Scoring: Player ${curPlayer.id} (+${addedPoints} for ${pick}s)`);
+      });
+
+      workState.phase = 'End Game';
+      workState.gameStatus = 'finished';
+      
+      const maxPoints = Math.max(...workState.players.map(p => p.points));
+      const winners = workState.players.filter(p => p.points === maxPoints);
+      
+      if (winners.length > 1) {
+        addLog(workState, `GAME OVER! It's a TIE between Players: ${winners.map(w => w.id).join(', ')} with ${maxPoints} points!`);
       } else {
-        workState.gameStatus = 'finished';
-        const winner = [...workState.players].sort((a,b)=>b.points-a.points)[0];
-        addLog(workState, `GAME OVER! Winner: Player ${winner.id} with ${winner.points} points.`);
-        setIsAutoplay(false); updateGameWithSync(workState);
+        addLog(workState, `GAME OVER! Winner: Player ${winners[0].id} with ${maxPoints} points.`);
       }
+
+      setIsFullAutoplay(false);
+      setIsJakubAutoplay(false);
+      updateGameWithSync(workState);
+      return;
     }
-  }, [isAutoplay, gameId, gameState, updateGameWithSync, jakubRegion, addLog, drawSet, findAndRemoveSetById]);
+  }, [isFullAutoplay, isJakubAutoplay, gameId, gameState, updateGameWithSync, jakubRegion, addLog, drawSet, findAndRemoveSetById]);
 
   useEffect(() => {
-    const timer = setInterval(() => { if (isAutoplay) handleAutoplayTick(); }, autoplaySpeed);
+    const timer = setInterval(() => { 
+      if (isFullAutoplay || isJakubAutoplay) handleAutoplayTick(); 
+    }, autoplaySpeed);
     return () => clearInterval(timer);
-  }, [isAutoplay, autoplaySpeed, handleAutoplayTick]);
+  }, [isFullAutoplay, isJakubAutoplay, autoplaySpeed, handleAutoplayTick]);
 
   return {
-    isAutoplay,
-    setIsAutoplay,
+    isFullAutoplay,
+    setIsFullAutoplay,
+    isJakubAutoplay,
+    setIsJakubAutoplay,
     autoplaySpeed,
     setAutoplaySpeed,
-    findAndRemoveSetById // Exporting this as it's needed in App.jsx for manual moves
+    findAndRemoveSetById
   };
 };

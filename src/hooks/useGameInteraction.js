@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { PAWN_TYPES, STATUSES } from '../constants/pawnTypes';
 import { Board } from '../constants/board';
 import { RACES, calculateSetPlacementPoints } from '../constants/game';
+import { applySetToJakubAnger } from '../strategies/jakubStrategy';
 
 export const useGameInteraction = ({
   gameId,
@@ -27,19 +28,31 @@ export const useGameInteraction = ({
     if (availablePool[typeId] <= 0) return; 
     setActivePawn({ typeId, x: e.clientX, y: e.clientY, fromIndex: null });
     setValidMoveTargets(gameState.regions.map(r => r.id));
-  }, [gameState.regions, counters.breakdown, availablePool]);
+  }, [gameState, counters.breakdown, availablePool]);
 
   const handleJakubMouseDownFromPanel = useCallback((e) => {
     if (isJakubOnBoard) return;
     setActivePawn({ typeId: 'jakub', x: e.clientX, y: e.clientY, fromIndex: null });
     setValidMoveTargets(gameState.regions.map(r => r.id));
-  }, [isJakubOnBoard, gameState.regions]);
+  }, [isJakubOnBoard, gameState]);
 
   const handleSetMouseDown = useCallback((set, e) => {
     setActiveSet({ set, x: e.clientX, y: e.clientY });
+    
+    // Check if enough pawns in pool for this set
+    let hasEnough = true;
+    Object.entries(set.content).forEach(([tId, count]) => {
+      if (availablePool[tId] < count) hasEnough = false;
+    });
+
+    if (!hasEnough) {
+      setValidMoveTargets([]);
+      return;
+    }
+
     const validIndices = gameState.regions.filter(r => !RACES.some(race => r.pawns[race]?.length > 0)).map(r => r.id);
     setValidMoveTargets(validIndices);
-  }, [gameState.regions]);
+  }, [gameState, availablePool]);
 
   const handleGeneralMouseDown = useCallback((race, e) => { if (playerId) return; setActiveGeneral({ race, x: e.clientX, y: e.clientY }); }, [playerId]);
 
@@ -53,7 +66,7 @@ export const useGameInteraction = ({
       const speed = typeId === 'jakub' ? pawn.speed : PAWN_TYPES.find(p => p.id === typeId).speed;
       setValidMoveTargets(Board.getReachableRegions(gameState.regions, regionIndex, speed));
     }
-  }, [gameState.regions]);
+  }, [gameState]);
 
   useEffect(() => {
     const handleMouseMove = (e) => { 
@@ -89,11 +102,21 @@ export const useGameInteraction = ({
       updateGameWithSync(newState); setActivePawn(null); setValidMoveTargets([]);
     }
     if (activeSet) {
-      e.stopPropagation(); if (!validMoveTargets.includes(toIndex)) { setActiveSet(null); setValidMoveTargets([]); return; }
-      let canPlace = true; Object.entries(activeSet.set.content).forEach(([tId, count]) => { if (availablePool[tId] < count) canPlace = false; });
-      if (!canPlace) { alert("Not enough pawns."); setActiveSet(null); setValidMoveTargets([]); return; }
-      const targetRegion = newState.regions[toIndex];
+      e.stopPropagation();
+      if (!validMoveTargets.includes(toIndex)) { setActiveSet(null); setValidMoveTargets([]); return; }
       
+      let canPlace = true;
+      Object.entries(activeSet.set.content).forEach(([tId, count]) => {
+        if (availablePool[tId] < count) canPlace = false;
+      });
+
+      if (!canPlace) {
+        setActiveSet(null);
+        setValidMoveTargets([]);
+        return;
+      }
+
+      const targetRegion = newState.regions[toIndex];
       let logSummary = [];
       newState.players.forEach(p => {
         if (p.generalOf) {
@@ -112,10 +135,19 @@ export const useGameInteraction = ({
           targetRegion.pawns[tId].push({ statuses: [...pawnType.defaultStatuses], ...(pawnType.defaultParameters ? JSON.parse(JSON.stringify(pawnType.defaultParameters)) : {}) });
         }
       });
+
       const usedSet = findAndRemoveSetById(newState, activeSet.set.id);
-      if (usedSet) { usedSet.ownerId = null; usedSet.used = false; if (!newState.sets.discardPile) newState.sets.discardPile = []; newState.sets.discardPile.push(usedSet); }
+      if (usedSet) {
+        usedSet.ownerId = null;
+        usedSet.used = false;
+        if (!newState.sets.discardPile) newState.sets.discardPile = [];
+        newState.sets.discardPile.push(usedSet);
+      }
+
       addLog(newState, `Manual: Set ${activeSet.set.id} placed [${logSummary.join(', ')}]`);
-      updateGameWithSync(newState); setActiveSet(null); setValidMoveTargets([]);
+      updateGameWithSync(newState);
+      setActiveSet(null);
+      setValidMoveTargets([]);
     }
   }, [activePawn, activeSet, gameState, gameId, validMoveTargets, jakubRegion, availablePool, updateGameWithSync, addLog, findAndRemoveSetById]);
 
@@ -136,6 +168,40 @@ export const useGameInteraction = ({
     }
   }, [activeSet, activeGeneral, gameState, playerId, updateGameWithSync, addLog, findAndRemoveSetById]);
 
+  const handleJakubMouseUp = useCallback((e) => {
+    if (activeSet) {
+      e.stopPropagation();
+      const newState = JSON.parse(JSON.stringify(gameState));
+      const curId = playerId || newState.playerOrder[newState.currentPlayerIndex];
+      const playerIdx = newState.players.findIndex(p => p.id === curId);
+      
+      if (playerIdx !== -1) {
+        const s = findAndRemoveSetById(newState, activeSet.set.id);
+        if (s) {
+          newState.players[playerIdx].points += 1;
+          s.ownerId = 'jakub';
+          if (!newState.sets.heldSets) newState.sets.heldSets = [];
+          newState.sets.heldSets.push(s);
+          
+          // Automatically update Jakub Anger
+          let jakub = null;
+          for (const r of newState.regions) { if (r.pawns.jakub?.length > 0) { jakub = r.pawns.jakub[0]; break; } }
+          if (jakub) {
+            const result = applySetToJakubAnger(jakub, s.content);
+            jakub.anger = result.anger;
+            jakub.range = result.range;
+            addLog(newState, `Player ${curId} gave Set ${s.id} to Jakub. Anger updated | Range: ${jakub.range}`);
+          } else {
+            addLog(newState, `Player ${curId} gave Set ${s.id} to Jakub for 1 pt.`);
+          }
+        }
+        updateGameWithSync(newState);
+      }
+      setActiveSet(null);
+      setValidMoveTargets([]);
+    }
+  }, [activeSet, gameState, playerId, updateGameWithSync, addLog, findAndRemoveSetById]);
+
   return {
     activePawn,
     activeSet,
@@ -149,6 +215,7 @@ export const useGameInteraction = ({
     handleGeneralMouseDown,
     handlePawnMouseDown,
     handleRegionMouseUp,
-    handlePlayerMouseUp
+    handlePlayerMouseUp,
+    handleJakubMouseUp
   };
 };

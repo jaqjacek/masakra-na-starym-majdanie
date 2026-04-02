@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import '../assets/css/admin.css';
 import Footer from './Footer';
 import { VERSION_INFO } from '../constants/version';
+import { SERVER_URL } from '../constants/constants';
 
 const AdminSets = () => {
   const [availableSets, setAvailableSets] = useState([]);
@@ -20,14 +21,14 @@ const AdminSets = () => {
 
   const fetchSets = async () => {
     try {
-      const res = await fetch('http://localhost:3001/api/sets');
+      const res = await fetch(`${SERVER_URL}/api/sets`);
       const list = await res.json(); setAvailableSets(list);
     } catch (_err) { console.error(_err); }
   };
 
   const fetchSetDetails = async (setName) => {
     try {
-      const res = await fetch(`http://localhost:3001/api/sets/details/${setName}`);
+      const res = await fetch(`${SERVER_URL}/api/sets/details/${setName}`);
       const data = await res.json(); setLoadedSetData(data);
     } catch (_err) { console.error(_err); }
   };
@@ -41,14 +42,14 @@ const AdminSets = () => {
   const handleGenerate = async (e) => {
     e.preventDefault();
     try {
-      const response = await fetch('http://localhost:3001/api/sets/generate', {
+      const response = await fetch(`${SERVER_URL}/api/sets/generate`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ displayName: genDisplayName, description: genDescription, pawns: genPawns, power: genPower, maxPower: genMaxPower })
       });
       const result = await response.json();
       setShowGenForm(false); 
-      const res = await fetch('http://localhost:3001/api/sets');
+      const res = await fetch(`${SERVER_URL}/api/sets`);
       const list = await res.json();
       setAvailableSets(list);
       setSelectedSet(result.name);
@@ -59,7 +60,7 @@ const AdminSets = () => {
   const handleSaveEdits = async () => {
     if (!selectedSet || !loadedSetData) return;
     try {
-      const res = await fetch(`http://localhost:3001/api/sets/save/${selectedSet}`, {
+      const res = await fetch(`${SERVER_URL}/api/sets/save/${selectedSet}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ setsData: loadedSetData })
@@ -74,7 +75,7 @@ const AdminSets = () => {
   const handleSort = async () => {
     if (!selectedSet) return;
     try {
-      const res = await fetch(`http://localhost:3001/api/sets/sort/${selectedSet}`, { method: 'POST' });
+      const res = await fetch(`${SERVER_URL}/api/sets/sort/${selectedSet}`, { method: 'POST' });
       const data = await res.json();
       setLoadedSetData(data.setsData);
       alert(data.message);
@@ -84,7 +85,7 @@ const AdminSets = () => {
   const setAsDefault = async () => {
     if (!selectedSet) return;
     try {
-      const res = await fetch(`http://localhost:3001/api/sets/default/${selectedSet}`, { method: 'POST' });
+      const res = await fetch(`${SERVER_URL}/api/sets/default/${selectedSet}`, { method: 'POST' });
       const data = await res.json();
       alert(data.message);
     } catch (_err) { alert('Failed to set default'); }

@@ -2,8 +2,11 @@
 
 import fs from 'fs';
 
+const config = JSON.parse(fs.readFileSync(new URL('./server_config.json', import.meta.url)));
+const SERVER_URL = config.SERVER_URL;
+
 const args = process.argv.slice(2);
-const API_BASE = 'http://localhost:3001/api/map';
+const API_BASE = `${SERVER_URL}/api/map`;
 
 const usage = `
 Usage:
@@ -25,10 +28,10 @@ async function run() {
     return;
   }
   const gameId = args[gameIndex + 1];
-  const command = args[gameIndex + 2];
-  const API_URL = `http://localhost:3001/api/map/${gameId}`;
-  const STATUS_URL = `http://localhost:3001/api/status/${gameId}`;
-  const INIT_URL = `http://localhost:3001/api/init/${gameId}`;
+  const API_URL = `${SERVER_URL}/api/map/${gameId}`;
+  const STATUS_URL = `${SERVER_URL}/api/status/${gameId}`;
+  const INIT_URL = `${SERVER_URL}/api/init/${gameId}`;
+
 
   if (command === '--get') {
     try {

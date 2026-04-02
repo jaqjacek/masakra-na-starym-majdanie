@@ -1,8 +1,10 @@
+import config from '../../server_config.json';
+
 /**
  * Global game configuration constants.
  */
 
-export const SERVER_URL = 'http://localhost:3001';
+export const SERVER_URL = config.SERVER_URL;
 export const TOTAL_GAME_ROUNDS = 8;
 export const INITIAL_HAND_SIZE = 5;
 export const MAX_HAND_SIZE = 3;

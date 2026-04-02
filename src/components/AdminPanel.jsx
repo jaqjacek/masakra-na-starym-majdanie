@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { PAWN_TYPES } from '../constants/pawnTypes';
+import { SERVER_URL } from '../constants/constants';
 import SetsPanel from './SetsPanel';
 
 import Footer from './Footer';
@@ -25,7 +26,7 @@ const AdminPanel = () => {
 
   const fetchSets = async () => {
     try {
-      const res = await fetch('http://localhost:3001/api/sets');
+      const res = await fetch(`${SERVER_URL}/api/sets`);
       const list = await res.json();
       setAvailableSets(list);
       if (list.length > 0 && !selectedSet) setSelectedSet(list[0]);
@@ -34,7 +35,7 @@ const AdminPanel = () => {
 
   const fetchConfig = async () => {
     try {
-      const res = await fetch('http://localhost:3001/api/config');
+      const res = await fetch(`${SERVER_URL}/api/config`);
       const config = await res.json();
       setGlobalDefaultSet(config.defaultSetName);
     } catch (_err) { console.error(_err); }
@@ -42,7 +43,7 @@ const AdminPanel = () => {
 
   const fetchSetPreview = async (setName) => {
     try {
-      const res = await fetch(`http://localhost:3001/api/sets/details/${setName}`);
+      const res = await fetch(`${SERVER_URL}/api/sets/details/${setName}`);
       const data = await res.json();
       setLoadedSetPreview(data);
     } catch (_err) { console.error(_err); }
@@ -65,7 +66,7 @@ const AdminPanel = () => {
   const setAsDefault = async () => {
     if (!selectedSet) return;
     try {
-      await fetch('http://localhost:3001/api/config', {
+      await fetch(`${SERVER_URL}/api/config`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ defaultSetName: selectedSet })
@@ -89,7 +90,7 @@ const AdminPanel = () => {
   const clearAllGames = async () => {
     if (!window.confirm('Are you sure you want to delete ALL game sessions? This cannot be undone.')) return;
     try {
-      const res = await fetch('http://localhost:3001/api/games', { method: 'DELETE' });
+      const res = await fetch(`${SERVER_URL}/api/games`, { method: 'DELETE' });
       const data = await res.json();
       alert(data.message);
     } catch (_err) { alert('Failed to clear games'); }
@@ -98,7 +99,7 @@ const AdminPanel = () => {
   const handleGenerate = async (e) => {
     e.preventDefault();
     try {
-      const response = await fetch('http://localhost:3001/api/sets/generate', {
+      const response = await fetch(`${SERVER_URL}/api/sets/generate`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
@@ -127,7 +128,7 @@ const AdminPanel = () => {
     
     for (let i = 1; i <= 100; i++) {
       try {
-        const url = `http://localhost:3001/api/simulate/${i}${selectedSet ? `?set=${selectedSet}` : ''}`;
+        const url = `${SERVER_URL}/api/simulate/${i}${selectedSet ? `?set=${selectedSet}` : ''}`;
         const response = await fetch(url, { method: 'POST' });
         const result = await response.json();
         

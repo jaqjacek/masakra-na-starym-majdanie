@@ -26,7 +26,7 @@ import { useGameInteraction } from './hooks/useGameInteraction';
 // Constants & Utilities
 import { PAWN_TYPES, SUMMARY_PAWN_IDS } from './constants/pawnTypes';
 import { RACES, INITIAL_STATE } from './constants/game';
-import { TOTAL_GAME_ROUNDS, INITIAL_HAND_SIZE, JAKUB_INITIAL_SETS } from './constants/constants';
+import { TOTAL_GAME_ROUNDS, INITIAL_HAND_SIZE, JAKUB_INITIAL_SETS, SERVER_URL } from './constants/constants';
 import { resetMap } from './services/api';
 
 function App() {
@@ -316,7 +316,7 @@ function App() {
           <><div className="menu-backdrop" onClick={() => setIsMenuOpen(false)}></div><div className="dropdown-menu">
             <button className="menu-item" onClick={async () => {
               try {
-                const res = await fetch(`http://localhost:3001/api/next-game-id`);
+                const res = await fetch(`${SERVER_URL}/api/next-game-id`);
                 const data = await res.json();
                 if (data.id) window.location.href = `/game/${data.id}`;
               } catch (err) { alert('Failed to get new game ID'); }

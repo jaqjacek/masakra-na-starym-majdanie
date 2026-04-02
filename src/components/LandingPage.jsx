@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import '../assets/css/landing.css';
 import Footer from './Footer';
+import { SERVER_URL } from '../constants/constants';
 
 const LandingPage = ({ onGoToGame }) => {
   const [inputGameId, setInputGameId] = useState('');
@@ -15,7 +16,7 @@ const LandingPage = ({ onGoToGame }) => {
   const handleNewGame = async () => {
 
     try {
-      const res = await fetch('http://localhost:3001/api/next-game-id');
+      const res = await fetch(`${SERVER_URL}/api/next-game-id`);
       const data = await res.json();
       if (data.id) {
         window.location.href = `/game/${data.id}`;

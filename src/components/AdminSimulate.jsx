@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { PAWN_TYPES } from '../constants/pawnTypes';
 import { RACES } from '../constants/game';
+import { SERVER_URL } from '../constants/constants';
 import '../assets/css/admin.css';
 import Footer from './Footer';
 
@@ -14,7 +15,7 @@ const AdminSimulate = () => {
 
   const fetchSets = async () => {
     try {
-      const res = await fetch('http://localhost:3001/api/sets');
+      const res = await fetch(`${SERVER_URL}/api/sets`);
       const list = await res.json(); setAvailableSets(list);
     } catch (_err) { console.error(_err); }
   };
@@ -28,7 +29,7 @@ const AdminSimulate = () => {
     
     for (let i = 1; i <= 100; i++) {
       try {
-        const url = `http://localhost:3001/api/simulate/${i}${selectedSet ? `?set=${selectedSet}` : ''}`;
+        const url = `${SERVER_URL}/api/simulate/${i}${selectedSet ? `?set=${selectedSet}` : ''}`;
         const response = await fetch(url, { method: 'POST' });
         const result = await response.json();
         

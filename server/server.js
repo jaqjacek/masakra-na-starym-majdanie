@@ -26,6 +26,12 @@ const PORT = process.env.PORT || 3001;
 app.use(cors());
 app.use(express.json());
 
+// Serve static files from the frontend build
+const DIST_PATH = path.join(process.cwd(), 'dist');
+if (fs.existsSync(DIST_PATH)) {
+  app.use(express.static(DIST_PATH));
+}
+
 if (!fs.existsSync(GAMES_DIR)) fs.mkdirSync(GAMES_DIR);
 if (!fs.existsSync(SETS_DIR)) fs.mkdirSync(SETS_DIR);
 if (!fs.existsSync(CONFIGS_DIR)) fs.mkdirSync(CONFIGS_DIR);
@@ -372,6 +378,17 @@ app.post('/api/simulate/:gameId', (req, res) => {
 });
 
 app.use((err, req, res, next) => { console.error("SERVER ERROR:", err); res.status(500).json({ error: "Internal Server Error" }); });
+
+// Catch-all route for React Router
+app.get('*path', (req, res) => {
+  const indexPath = path.join(process.cwd(), 'dist', 'index.html');
+  if (fs.existsSync(indexPath)) {
+    res.sendFile(indexPath);
+  } else {
+    res.status(404).send('Frontend not built');
+  }
+});
+
 io.on('connection', (socket) => { socket.to(`game:${socket.handshake.query.gameId}`).emit('userJoined', socket.id); socket.on('joinGame', id => socket.join(`game:${id}`)); });
 server.listen(PORT, () => console.log(`Server running on ${PORT}`));
 

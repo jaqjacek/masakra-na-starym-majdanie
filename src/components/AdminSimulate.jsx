@@ -103,8 +103,8 @@ const AdminSimulate = () => {
             <ChartBox title="1. Points After Round 1 (Early Game)" dataKeySuffix="afterR1" data={data} />
             <ChartBox title="2. Total Points (Final Game Score)" dataKeySuffix="total" data={data} />
             <ChartBox title="3. Final Phase Bonus Points" dataKeySuffix="finalBonus" data={data} />
-            <ChartBox title="4. Pawns Killed by Jakub (Total)" dataKeySuffix="killed" data={data} />
-            <ChartBox title="5. Rambo Survivor Bonus Points" dataKeySuffix="ramboPoints" data={data} />
+            <ChartBox title="4. Rambo Survivor Bonus Points" dataKeySuffix="ramboPoints" data={data} />
+            <ChartBox title="5. Pawns Killed by Jakub (Total)" dataKeySuffix="killed" data={data} />
           </div>
 
           <div className="custom-legend-row large">

@@ -11,7 +11,8 @@ import {
   GHOST_FINAL_SCORING_MAX_OTHER_BONUS
 } from '../constants/constants';
 import { PAWN_TYPES } from '../constants/pawnTypes';
-import { RACES, calculateSetPlacementPoints } from '../constants/game';
+import { RACES } from '../constants/game';
+import { Scoring } from '../logic/Scoring';
 import { applySetToJakubAnger, executeJakubStep } from '../strategies/jakubStrategy';
 
 export const useAutoplay = ({ 
@@ -82,13 +83,25 @@ export const useAutoplay = ({
         }
       });
       if (distributionCount > 0) addLog(workState, `Round ${workState.currentRound}: Refilled player hands to ${INITIAL_HAND_SIZE} sets.`);
+      
+      let jakub = null;
+      for (const r of workState.regions) { if (r.pawns.jakub?.length > 0) { jakub = r.pawns.jakub[0]; break; } }
+
       for (let i = 0; i < JAKUB_INITIAL_SETS; i++) {
         const set = drawSet(workState);
         if (set) {
           set.ownerId = 'jakub';
           if (!workState.sets.heldSets) workState.sets.heldSets = [];
           workState.sets.heldSets.push(set);
-          addLog(workState, `Jakub claimed Set ${set.id} from pool.`);
+          
+          if (jakub) {
+            const result = applySetToJakubAnger(jakub, set.content);
+            jakub.anger = result.anger;
+            jakub.range = result.range;
+            addLog(workState, `Jakub claimed Set ${set.id}. Anger updated immediately.`);
+          } else {
+            addLog(workState, `Jakub claimed Set ${set.id} from pool.`);
+          }
         }
       }
       workState.phase = 'player_phase';
@@ -129,8 +142,9 @@ export const useAutoplay = ({
         Object.entries(set.content).forEach(([tId, count]) => { if (currentPool[tId] < count) isPlaceable = false; });
         if (!isPlaceable) return;
         emptyR.forEach(region => {
-          const pts = calculateSetPlacementPoints(curPlayer.generalOf, set.content, region, jakubRegion);
-          if (!best || pts > best.pts) best = { set, region, pts };
+          const placementScores = Scoring.calculatePlacementPoints(workState.regions, region, set.content);
+          const pts = placementScores[curPlayer.generalOf] || 0;
+          if (!best || pts > best.pts) best = { set, region, pts, allScores: placementScores };
         });
       });
 
@@ -147,7 +161,7 @@ export const useAutoplay = ({
         let logSummary = [];
         workState.players.forEach(p => {
           if (p.generalOf) {
-            const racePts = calculateSetPlacementPoints(p.generalOf, best.set.content, targetRegion, jakubRegion);
+            const racePts = best.allScores[p.generalOf] || 0;
             if (racePts > 0) {
               p.points += racePts;
               logSummary.push(`${p.generalOf[0].toUpperCase()}:+${racePts}`);
@@ -165,42 +179,43 @@ export const useAutoplay = ({
           const excessCount = currentHand.length - MAX_HAND_SIZE;
           const sorted = [...currentHand].sort((a, b) => (a.content[curPlayer.generalOf] || 0) - (b.content[curPlayer.generalOf] || 0));
           const toDiscard = sorted.slice(0, excessCount);
+          
+          let jakub = null;
+          for (const r of workState.regions) { if (r.pawns.jakub?.length > 0) { jakub = r.pawns.jakub[0]; break; } }
+
           toDiscard.forEach(s => {
             const idx = workState.sets.heldSets.findIndex(h => h.id === s.id);
-            if (idx !== -1) workState.sets.heldSets[idx].ownerId = 'jakub';
+            if (idx !== -1) {
+              workState.sets.heldSets[idx].ownerId = 'jakub';
+              if (jakub) {
+                const result = applySetToJakubAnger(jakub, s.content);
+                jakub.anger = result.anger;
+                jakub.range = result.range;
+              }
+            }
           });
           curPlayer.points += excessCount;
-          addLog(workState, `Player ${curId} passed and sold ${excessCount} excess set(s) for ${excessCount} pts.`, { race: curPlayer.generalOf, points: excessCount });
+          addLog(workState, `Player ${curId} passed and sold ${excessCount} excess set(s). Jakub Anger updated.`, { race: curPlayer.generalOf, points: excessCount });
         } else { addLog(workState, `Player ${curId} passed.`); }
       }
       if (workState.passedPlayers.length === workState.players.length) {
-        workState.phase = 'jakub_phase'; workState.jakubAngerIncreased = false; addLog(workState, `--- Start of Jakub Phase ---`);
+        workState.phase = 'jakub_phase'; addLog(workState, `--- Start of Jakub Phase ---`);
       } else workState.currentPlayerIndex = (workState.currentPlayerIndex + 1) % workState.playerOrder.length;
       updateGameWithSync(workState);
       return;
     }
 
     if (workState.phase === 'jakub_phase') {
-      if (!workState.jakubAngerIncreased) {
-        let jakub = null;
-        for (const r of workState.regions) { if (r.pawns.jakub?.length > 0) { jakub = r.pawns.jakub[0]; break; } }
-        if (jakub) {
-          const jakubSets = (workState.sets.heldSets || []).filter(s => s.ownerId === 'jakub');
-          jakubSets.forEach(s => {
-            const result = applySetToJakubAnger(jakub, s.content);
-            jakub.anger = result.anger; jakub.range = result.range;
-            addLog(workState, `Jakub absorbed Set ${s.id}. Anger updated | Range: ${jakub.range}`);
-          });
-          workState.jakubAngerIncreased = true; updateGameWithSync(workState); return;
-        }
-      }
       const step = executeJakubStep(workState);
       if (step.actionTaken) { addLog(step.newState, step.log, step.metadata || {}); updateGameWithSync(step.newState); }
       else {
         addLog(workState, `Jakub stops his rampage.`);
         let jakub = null;
         for (const r of workState.regions) { if (r.pawns.jakub?.length > 0) { jakub = r.pawns.jakub[0]; break; } }
-        if (jakub) { jakub.range = 1; addLog(workState, `Jakub range reset to 1.`); }
+        if (jakub) { 
+          jakub.range = 0; 
+          addLog(workState, `Jakub range falls to 0.`); 
+        }
         const toDiscard = (workState.sets.heldSets || []).filter(s => s.ownerId === 'jakub');
         toDiscard.forEach(s => { s.ownerId = null; s.used = false; if (!workState.sets.discardPile) workState.sets.discardPile = []; workState.sets.discardPile.push(s); });
         workState.sets.heldSets = (workState.sets.heldSets || []).filter(s => s.ownerId !== 'jakub');

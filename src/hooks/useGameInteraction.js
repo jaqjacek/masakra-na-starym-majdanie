@@ -1,7 +1,8 @@
 import { useState, useEffect, useCallback } from 'react';
 import { PAWN_TYPES, STATUSES } from '../constants/pawnTypes';
 import { Board } from '../constants/board';
-import { RACES, calculateSetPlacementPoints } from '../constants/game';
+import { RACES } from '../constants/game';
+import { Scoring } from '../logic/Scoring';
 import { applySetToJakubAnger } from '../strategies/jakubStrategy';
 
 export const useGameInteraction = ({
@@ -14,7 +15,8 @@ export const useGameInteraction = ({
   jakubRegion,
   updateGameWithSync,
   addLog,
-  findAndRemoveSetById
+  findAndRemoveSetById,
+  advanceTurn
 }) => {
   const [activePawn, setActivePawn] = useState(null); 
   const [activeSet, setActiveSet] = useState(null); 
@@ -117,10 +119,12 @@ export const useGameInteraction = ({
       }
 
       const targetRegion = newState.regions[toIndex];
+      const placementScores = Scoring.calculatePlacementPoints(newState.regions, targetRegion, activeSet.set.content);
+      
       let logSummary = [];
       newState.players.forEach(p => {
         if (p.generalOf) {
-          const racePts = calculateSetPlacementPoints(p.generalOf, activeSet.set.content, targetRegion, jakubRegion);
+          const racePts = placementScores[p.generalOf] || 0;
           if (racePts > 0) {
             p.points += racePts;
             logSummary.push(`${p.generalOf[0].toUpperCase()}:+${racePts}`);
@@ -145,11 +149,14 @@ export const useGameInteraction = ({
       }
 
       addLog(newState, `Manual: Set ${activeSet.set.id} placed [${logSummary.join(', ')}]`);
+      
+      if (advanceTurn) advanceTurn(newState);
+
       updateGameWithSync(newState);
       setActiveSet(null);
       setValidMoveTargets([]);
     }
-  }, [activePawn, activeSet, gameState, gameId, validMoveTargets, jakubRegion, availablePool, updateGameWithSync, addLog, findAndRemoveSetById]);
+  }, [activePawn, activeSet, gameState, gameId, validMoveTargets, jakubRegion, availablePool, updateGameWithSync, addLog, findAndRemoveSetById, advanceTurn]);
 
   const handlePlayerMouseUp = useCallback((targetPlayerId) => {
     if (activeSet && !playerId) { 
@@ -194,13 +201,14 @@ export const useGameInteraction = ({
           } else {
             addLog(newState, `Player ${curId} gave Set ${s.id} to Jakub for 1 pt.`);
           }
+          if (advanceTurn) advanceTurn(newState);
         }
         updateGameWithSync(newState);
       }
       setActiveSet(null);
       setValidMoveTargets([]);
     }
-  }, [activeSet, gameState, playerId, updateGameWithSync, addLog, findAndRemoveSetById]);
+  }, [activeSet, gameState, playerId, updateGameWithSync, addLog, findAndRemoveSetById, advanceTurn]);
 
   return {
     activePawn,

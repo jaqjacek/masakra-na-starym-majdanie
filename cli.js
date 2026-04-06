@@ -28,6 +28,8 @@ async function run() {
     return;
   }
   const gameId = args[gameIndex + 1];
+  const command = args.find((arg, idx) => arg.startsWith('--') && idx !== gameIndex);
+
   const API_URL = `${SERVER_URL}/api/map/${gameId}`;
   const STATUS_URL = `${SERVER_URL}/api/status/${gameId}`;
   const INIT_URL = `${SERVER_URL}/api/init/${gameId}`;

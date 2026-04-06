@@ -40,7 +40,7 @@ export class Board {
     
     while (queue.length > 0) {
       const { index, dist } = queue.shift();
-      if (dist > 0) reachable.add(index);
+      reachable.add(index);
       if (dist < range) {
         regions[index].neighbors.forEach(nIdx => {
           if (!visited.has(nIdx)) { 

@@ -1,6 +1,6 @@
 import React from 'react';
 
-const PointsTracker = ({ players, onUpdatePoints, currentPlayerId, onPlayerMouseUp, onGeneralClick, sets, passedPlayers = [] }) => {
+const PlayersPanel = ({ players, onUpdatePoints, currentPlayerId, onPlayerMouseUp, onGeneralClick, sets, passedPlayers = [] }) => {
   const handleClick = (e, index) => {
     if (e.shiftKey) onUpdatePoints(index, 1);
     else if (e.ctrlKey) onUpdatePoints(index, -1);
@@ -18,7 +18,7 @@ const PointsTracker = ({ players, onUpdatePoints, currentPlayerId, onPlayerMouse
   };
 
   return (
-    <div className="points-tracker full-width">
+    <div className="points-tracker">
       {players.map((player, index) => {
         const isMe = player.id === currentPlayerId;
         const isPassed = passedPlayers.includes(player.id);
@@ -89,4 +89,4 @@ const PointsTracker = ({ players, onUpdatePoints, currentPlayerId, onPlayerMouse
   );
 };
 
-export default PointsTracker;
+export default PlayersPanel;

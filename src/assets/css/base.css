@@ -17,12 +17,19 @@
   color-scheme: light dark;
 }
 
-body {
+html, body {
   margin: 0; padding: 0;
   width: 100%;
-  min-height: 100vh;
+  height: 100vh;
+  overflow: hidden;
   background-color: var(--bg-color); color: var(--text-color);
   user-select: none;
+}
+
+body.admin-mode {
+  overflow-y: scroll !important;
+  height: auto;
+  min-height: 100vh;
 }
 
 #root {
@@ -62,7 +69,7 @@ body {
 .jakub { background-image: url('/src/assets/icons/jakub.svg'); }
 
 /* Universal Icon Properties */
-.pawn-preview, .pawn-indicator, .pawn-ghost, .breakdown-dot, .set-icon, .anger-icon, .general-icon, .summary-icon {
+.pawn-preview, .pawn-indicator, .mouse-element, .breakdown-dot, .set-icon, .anger-icon, .general-icon, .summary-icon {
   background-size: contain; background-repeat: no-repeat; background-position: center;
   width: 100%; height: 100%; /* Ensure they take parent size if needed */
   display: block;

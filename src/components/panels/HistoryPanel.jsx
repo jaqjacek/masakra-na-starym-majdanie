@@ -17,7 +17,7 @@ const HistoryPanel = ({ logs = [] }) => {
         {logs.length > 0 ? (
           logs.map((log, index) => (
             <div key={index} className="history-log-item">
-              <span className="log-time">{log.time}</span>
+              <span className="log-time">[{log.time}] </span>
               <span className="log-text">{log.text}</span>
             </div>
           ))

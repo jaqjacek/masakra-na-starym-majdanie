@@ -1,5 +1,5 @@
 import React from 'react';
-import { PAWN_TYPES, SUMMARY_PAWN_IDS } from '../constants/pawnTypes';
+import { PAWN_TYPES, SUMMARY_PAWN_IDS } from '../../constants/pawnTypes';
 
 const JakubPanel = ({ jakub, onUpdateCounter, onJakubMouseDown, isJakubOnBoard, sets = [], onMouseUp }) => {
   if (!jakub) return null;

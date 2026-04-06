@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import { PAWN_TYPES } from '../constants/pawnTypes';
-import { SERVER_URL } from '../constants/constants';
+import { PAWN_TYPES } from '../../constants/pawnTypes';
+import { SERVER_URL } from '../../constants/constants';
 import SetsPanel from './SetsPanel';
 
-import Footer from './Footer';
+import Footer from '../Footer';
 
 const AdminPanel = () => {
   const [history, setHistory] = useState([]); // Array of { data, setName, id }

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { PAWN_TYPES, SUMMARY_PAWN_IDS } from '../constants/pawnTypes';
+import { PAWN_TYPES, SUMMARY_PAWN_IDS } from '../../constants/pawnTypes';
 
 const SetsPanel = ({ sets, discardedSets = [], onSetMouseDown, title, setInfo, discardPileCount = 0, hideTabs = false }) => {
   const [activeTab, setActiveTab] = useState('active');

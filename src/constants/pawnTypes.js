@@ -68,7 +68,7 @@ export const PAWN_TYPES = [
     // New defaults for special Jakub logic
     defaultParameters: {
       speed: 1,
-      range: 1,
+      range: 0,
       anger: {
         vampire: 0,
         werewolf: 0,

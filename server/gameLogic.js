@@ -1,0 +1,75 @@
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import { RACES, DEFAULT_PLAYERS, INITIAL_PAWN_POOL, DEFAULT_POWER_CONFIG } from './constants.js';
+import { createEmptyRegions } from './boardManager.js';
+import { loadSetFile, generateSetData } from './setManager.js';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+export const GAMES_DIR = path.join(__dirname, 'games');
+export const SETS_DIR = path.join(__dirname, 'sets');
+export const CONFIGS_DIR = path.join(__dirname, 'configs');
+export const CONFIG_FILE = path.join(CONFIGS_DIR, 'server_config.json');
+export const BOARD_DEFAULT_FILE = path.join(CONFIGS_DIR, 'board_default.json');
+
+if (!fs.existsSync(GAMES_DIR)) fs.mkdirSync(GAMES_DIR);
+if (!fs.existsSync(SETS_DIR)) fs.mkdirSync(SETS_DIR);
+if (!fs.existsSync(CONFIGS_DIR)) fs.mkdirSync(CONFIGS_DIR);
+
+export const getGlobalConfig = () => {
+  if (fs.existsSync(CONFIG_FILE)) return JSON.parse(fs.readFileSync(CONFIG_FILE, 'utf8'));
+  const defaultConfig = { defaultSetName: null };
+  fs.writeFileSync(CONFIG_FILE, JSON.stringify(defaultConfig, null, 2));
+  return defaultConfig;
+};
+
+export const ensureGameDir = (gameId) => {
+  const pathDir = path.join(GAMES_DIR, String(gameId));
+  if (!fs.existsSync(pathDir)) fs.mkdirSync(pathDir, { recursive: true });
+  return pathDir;
+};
+
+export const getGameData = (gameId) => {
+  const gamePath = ensureGameDir(gameId);
+  const mapPath = path.join(gamePath, 'map.json');
+  const playersPath = path.join(gamePath, 'players.json');
+  const setsPath = path.join(gamePath, 'sets.json');
+  const statePath = path.join(gamePath, 'state.json');
+  const historyPath = path.join(gamePath, 'history.json');
+  let regions = fs.existsSync(mapPath) ? JSON.parse(fs.readFileSync(mapPath, 'utf8')) : createEmptyRegions();
+  let players = fs.existsSync(playersPath) ? JSON.parse(fs.readFileSync(playersPath, 'utf8')) : JSON.parse(JSON.stringify(DEFAULT_PLAYERS));
+  let history = fs.existsSync(historyPath) ? JSON.parse(fs.readFileSync(historyPath, 'utf8')) : [];
+  let gameState = fs.existsSync(statePath) ? JSON.parse(fs.readFileSync(statePath, 'utf8')) : { phase: 'setup', currentRound: 1, currentPlayerIndex: 0, playerOrder: [1, 2, 3, 4], passedPlayers: [], availableGenerals: [...RACES], setName: 'default', gameStatus: 'active' };
+  let sets;
+  if (fs.existsSync(setsPath)) {
+    sets = JSON.parse(fs.readFileSync(setsPath, 'utf8'));
+    if (sets.items && !sets.drawPile) { sets.drawPile = sets.items; delete sets.items; }
+    if (!sets.discardPile) sets.discardPile = []; if (!sets.heldSets) sets.heldSets = [];
+  } else {
+    const defaultSetPath = path.join(CONFIGS_DIR, 'set_default.json');
+    if (fs.existsSync(defaultSetPath)) { sets = JSON.parse(fs.readFileSync(defaultSetPath, 'utf8')); sets.setName = 'set_default'; }
+    else { const config = getGlobalConfig(); sets = (config.defaultSetName ? loadSetFile(config.defaultSetName) : null) || generateSetData(INITIAL_PAWN_POOL, DEFAULT_POWER_CONFIG, 6); }
+  }
+  return { data: { regions, players, sets, history, ...gameState } };
+};
+
+export const saveFullState = (gameId, data) => {
+  const gamePath = ensureGameDir(gameId);
+  if (data.regions) fs.writeFileSync(path.join(gamePath, 'map.json'), JSON.stringify(data.regions, null, 2));
+  if (data.players) fs.writeFileSync(path.join(gamePath, 'players.json'), JSON.stringify(data.players, null, 2));
+  if (data.sets) fs.writeFileSync(path.join(gamePath, 'sets.json'), JSON.stringify(data.sets, null, 2));
+  if (data.history) {
+    fs.writeFileSync(path.join(gamePath, 'history.json'), JSON.stringify(data.history, null, 2));
+    const logContent = data.history.map(h => {
+      const racePrefix = h.race ? ` [${h.race.toUpperCase()}]` : '';
+      const pointsSuffix = h.points !== undefined ? ` (${h.points > 0 ? '+' : ''}${h.points} pts)` : '';
+      return `[${h.time}]${racePrefix} ${h.text}${pointsSuffix}`;
+    }).join('\n');
+    fs.writeFileSync(path.join(gamePath, 'history.log'), logContent);
+  }
+  const meta = {}; const keys = ['phase', 'currentRound', 'currentPlayerIndex', 'playerOrder', 'passedPlayers', 'availableGenerals', 'setName', 'gameStatus', 'jakubAngerIncreased', 'jakubTurnExecuted'];
+  keys.forEach(k => { if (data[k] !== undefined) meta[k] = data[k]; });
+  fs.writeFileSync(path.join(gamePath, 'state.json'), JSON.stringify(meta, null, 2));
+};

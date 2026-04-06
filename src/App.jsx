@@ -1,20 +1,21 @@
-import React, { useState, useCallback, useMemo } from 'react';
+import React, { useState, useCallback, useMemo, useEffect } from 'react';
 import './assets/css/base.css';
 import './assets/css/game.css';
 
 // Components
 import BoardComponent from './components/Board';
 import Bag from './components/Bag';
-import PawnGhost from './components/PawnGhost';
+import MouseElement from './components/MouseElement';
 import LandingPage from './components/LandingPage';
 import GameHeader from './components/GameHeader';
-import JakubPanel from './components/JakubPanel';
-import SetsPanel from './components/SetsPanel';
-import PointsTracker from './components/PointsTracker';
+import JakubPanel from './components/panels/JakubPanel';
+import SetsPanel from './components/panels/SetsPanel';
+import PlayersPanel from './components/panels/PlayersPanel';
 import AdminSets from './components/AdminSets';
 import AdminSimulate from './components/AdminSimulate';
 import AdminNav from './components/AdminNav';
-import HistoryPanel from './components/HistoryPanel';
+import HistoryPanel from './components/panels/HistoryPanel';
+import GamePanel from './components/panels/GamePanel';
 import PawnStatusPopup from './components/PawnStatusPopup';
 import Footer from './components/Footer';
 
@@ -26,18 +27,29 @@ import { useGameInteraction } from './hooks/useGameInteraction';
 // Constants & Utilities
 import { PAWN_TYPES, SUMMARY_PAWN_IDS } from './constants/pawnTypes';
 import { RACES, INITIAL_STATE } from './constants/game';
+import { applySetToJakubAnger } from './strategies/jakubStrategy';
 import { TOTAL_GAME_ROUNDS, INITIAL_HAND_SIZE, JAKUB_INITIAL_SETS, SERVER_URL } from './constants/constants';
 import { resetMap } from './services/api';
 
 function App() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isSetsPanelOpen, setIsSetsPanelOpen] = useState(false);
+  const [isScoringPopupOpen, setIsScoringPopupOpen] = useState(false);
 
   // 1. Basic state and sync
   const isAdminPath = useMemo(() => window.location.pathname.startsWith('/admin'), []);
   const {
     gameId, setGameId, playerId, gameState, setGameState, currentPath, updateGameWithSync, addLog
   } = useGameState(isAdminPath);
+
+  // Toggle body class for scrolling
+  useEffect(() => {
+    if (isAdminPath) {
+      document.body.classList.add('admin-mode');
+    } else {
+      document.body.classList.remove('admin-mode');
+    }
+  }, [isAdminPath]);
 
   // 2. Computed values
   const counters = useMemo(() => {
@@ -78,13 +90,24 @@ function App() {
     autoplaySpeed, setAutoplaySpeed, findAndRemoveSetById
   } = useAutoplay({ gameId, gameState, updateGameWithSync, addLog, jakubRegion });
 
+  const advanceTurn = useCallback((state) => {
+    if (state.passedPlayers.length >= state.players.length) return;
+    let nextIdx = (state.currentPlayerIndex + 1) % state.playerOrder.length;
+    let safety = 0;
+    while (state.passedPlayers.includes(state.playerOrder[nextIdx]) && safety < 10) {
+      nextIdx = (nextIdx + 1) % state.playerOrder.length;
+      safety++;
+    }
+    state.currentPlayerIndex = nextIdx;
+  }, []);
+
   // 4. Interaction logic
   const {
     activePawn, activeSet, activeGeneral, hoveredPawn, setHoveredPawn, validMoveTargets,
     handleBagMouseDown, handleJakubMouseDownFromPanel, handleSetMouseDown, handleGeneralMouseDown,
     handlePawnMouseDown, handleRegionMouseUp, handlePlayerMouseUp, handleJakubMouseUp
   } = useGameInteraction({
-    gameId, playerId, gameState, availablePool, counters, isJakubOnBoard, jakubRegion, updateGameWithSync, addLog, findAndRemoveSetById
+    gameId, playerId, gameState, availablePool, counters, isJakubOnBoard, jakubRegion, updateGameWithSync, addLog, findAndRemoveSetById, advanceTurn
   });
 
   // 5. Specific handlers
@@ -125,12 +148,18 @@ function App() {
 
   const handleResetBoard = useCallback(async () => {
     if (gameId && window.confirm('Reset game?')) {
-      try { const serverData = await resetMap(gameId); if (serverData) setGameState(serverData); setIsMenuOpen(false); } catch (err) { alert('Reset failed'); }
+      try { const serverData = await resetMap(gameId); if (serverData) setGameState(serverData); setIsMenuOpen(false); } catch (_err) { alert('Reset failed'); }
     }
   }, [gameId, setGameState]);
 
   const handleManualDrawSets = useCallback(() => {
+    if (!gameState.players || !gameState.regions) {
+      console.error("Game state incomplete, cannot draw sets.");
+      return;
+    }
     const workState = JSON.parse(JSON.stringify(gameState));
+    if (!workState.sets) workState.sets = { drawPile: [], discardPile: [], heldSets: [] };
+
     const refillSets = (state) => {
       if (!state.sets.drawPile) state.sets.drawPile = [];
       if (!state.sets.discardPile) state.sets.discardPile = [];
@@ -161,14 +190,28 @@ function App() {
         }
       }
     });
-    if (distributionCount > 0) addLog(workState, `Round ${workState.currentRound}: Refilled player hands.`);
+    if (distributionCount > 0) addLog(workState, `Round ${workState.currentRound}: Refilled player hands to ${INITIAL_HAND_SIZE}.`);
+    
+    // Find Jakub to update his stats
+    let jakubRegionObj = workState.regions.find(r => r.pawns.jakub?.length > 0);
+    let jakub = jakubRegionObj ? jakubRegionObj.pawns.jakub[0] : null;
+
     for (let i = 0; i < JAKUB_INITIAL_SETS; i++) {
       const set = draw(workState);
       if (set) {
         set.ownerId = 'jakub';
         if (!workState.sets.heldSets) workState.sets.heldSets = [];
         workState.sets.heldSets.push(set);
-        addLog(workState, `Jakub claimed Set ${set.id} from pool.`);
+        
+        // AUTOMATICALLY apply anger when Jakub gets a set
+        if (jakub) {
+          const result = applySetToJakubAnger(jakub, set.content);
+          jakub.anger = result.anger;
+          jakub.range = result.range;
+          addLog(workState, `Jakub claimed Set ${set.id}. Anger/Range updated immediately.`);
+        } else {
+          addLog(workState, `Jakub claimed Set ${set.id} from pool.`);
+        }
       }
     }
     workState.phase = 'general_phase';
@@ -191,14 +234,10 @@ function App() {
       workState.passedPlayers.push(curId);
       addLog(workState, `Player ${curId} passed.`);
       
-      // If playing in order, advance index to next non-passed player if possible
-      if (!playerId) {
-        workState.currentPlayerIndex = (workState.currentPlayerIndex + 1) % workState.playerOrder.length;
-      }
-      
+      advanceTurn(workState);
       updateGameWithSync(workState);
     }
-  }, [gameState, playerId, addLog, updateGameWithSync]);
+  }, [gameState, playerId, addLog, updateGameWithSync, advanceTurn]);
 
   const handleGoToJakubPhase = useCallback(async () => {
     const workState = JSON.parse(JSON.stringify(gameState));
@@ -223,15 +262,10 @@ function App() {
       workState.availableGenerals = workState.availableGenerals.filter(r => r !== race);
       addLog(workState, `Player ${player.id} chose General of ${race}s`);
       
-      // Advance turn ONLY if we are following the natural order (no specific playerId in URL)
-      // or if the person whose turn it was just picked.
-      if (!playerId || playerId === workState.playerOrder[workState.currentPlayerIndex]) {
-        workState.currentPlayerIndex = (workState.currentPlayerIndex + 1) % workState.playerOrder.length;
-      }
-      
+      advanceTurn(workState);
       updateGameWithSync(workState);
     }
-  }, [gameState, updateGameWithSync, addLog, playerId]);
+  }, [gameState, updateGameWithSync, addLog, playerId, advanceTurn]);
 
   const handleDeselectGeneral = useCallback((targetPlayerId) => {
     const workState = JSON.parse(JSON.stringify(gameState));
@@ -249,7 +283,6 @@ function App() {
   }, [gameState, updateGameWithSync, addLog]);
 
   // 6. Filtering
-  const filteredSets = gameState.sets ? (playerId ? (gameState.sets.heldSets || []).filter(s => s.ownerId === playerId) : (gameState.sets.drawPile || [])) : [];
   const jakubsSets = gameState.sets ? (gameState.sets.heldSets || []).filter(s => s.ownerId === 'jakub') : [];
 
   // 7. Render logic
@@ -260,73 +293,39 @@ function App() {
 
   return (
     <div className="app-container">
-      <div className="top-header-bar">
-        <button className="menu-toggle-btn" onClick={() => setIsMenuOpen(!isMenuOpen)}><div className="hamburger-icon"><span></span><span></span><span></span></div></button>
-        <div className="game-id-info">Game ID: <strong>{gameId}</strong> <span className="phase-indicator">{gameState.phase}</span> <span className="round-indicator">R:{gameState.currentRound}/{TOTAL_GAME_ROUNDS}</span></div>
-        {!isFullAutoplay && !isJakubAutoplay && (
-          <div className="manual-phase-controls">
-            {gameState.phase === 'setup' && (
-              <button className="action-button next-btn" onClick={handleManualDrawSets}>DRAW SETS</button>
-            )}
-            
-            {gameState.phase === 'general_phase' && (
-              gameState.players.every(p => p.generalOf) ? (
-                <button className="action-button next-btn" onClick={handleGoToPlayerPhase}>GO TO PLAYER PHASE</button>
-              ) : <span className="phase-hint">Waiting for all players to choose generals...</span>
-            )}
-
-            {gameState.phase === 'player_phase' && (
-              <>
-                {gameState.passedPlayers.length < gameState.players.length ? (
-                  <button 
-                    className="action-button pass-btn" 
-                    onClick={handlePass}
-                    disabled={gameState.passedPlayers.includes(playerId || gameState.playerOrder[gameState.currentPlayerIndex])}
-                  >
-                    PASS
-                  </button>
-                ) : (
-                  <button className="action-button next-btn jakub-trigger" onClick={handleGoToJakubPhase}>GO TO JAKUB PHASE</button>
-                )}
-              </>
-            )}
-          </div>
-        )}
-        <div className="autoplay-controls">
-          <button 
-            className={`autoplay-btn ${isJakubAutoplay ? 'active' : ''}`} 
-            onClick={() => { setIsJakubAutoplay(!isJakubAutoplay); setIsFullAutoplay(false); }}
-            title="Automate only Jakub's phase"
-          >
-            {isJakubAutoplay ? 'PAUSE J' : 'JAKUB AUTO'}
-          </button>
-          
-          <button 
-            className={`autoplay-btn full ${isFullAutoplay ? 'active' : ''}`} 
-            onClick={() => { setIsFullAutoplay(!isFullAutoplay); setIsJakubAutoplay(false); }}
-            title="Automate everything"
-          >
-            {isFullAutoplay ? 'PAUSE FULL' : 'FULL AUTO'}
-          </button>
-
-          <div className="speed-control"><span className="speed-label">{autoplaySpeed}ms</span><input type="range" min="100" max="1500" step="50" value={autoplaySpeed} onChange={(e) => setAutoplaySpeed(parseInt(e.target.value))} /></div>
-        </div>
-        <div className="header-actions"><button className={`sets-toggle-btn ${isSetsPanelOpen ? 'active' : ''}`} onClick={() => setIsSetsPanelOpen(!isSetsPanelOpen)}>SETS</button></div>
-        {isMenuOpen && (
-          <><div className="menu-backdrop" onClick={() => setIsMenuOpen(false)}></div><div className="dropdown-menu">
-            <button className="menu-item" onClick={async () => {
-              try {
-                const res = await fetch(`${SERVER_URL}/api/next-game-id`);
-                const data = await res.json();
-                if (data.id) window.location.href = `/game/${data.id}`;
-              } catch (err) { alert('Failed to get new game ID'); }
-            }}>Create New Game</button>
-            <button className="menu-item reset" onClick={handleResetBoard}>Reset Current Game</button>
-            <button className="menu-item" onClick={() => { window.history.pushState({}, '', '/'); setGameId(null); setGameState(INITIAL_STATE); window.dispatchEvent(new Event('popstate')); }}>Change Game</button>
-            <button className="menu-item" onClick={() => { window.history.pushState({}, '', '/admin/sets'); window.dispatchEvent(new Event('popstate')); }}>Admin Panel</button>
-          </div></>
-        )}
-      </div>
+      <GamePanel 
+        gameId={gameId}
+        gameState={gameState}
+        totalRounds={TOTAL_GAME_ROUNDS}
+        isMenuOpen={isMenuOpen}
+        setIsMenuOpen={setIsMenuOpen}
+        isFullAutoplay={isFullAutoplay}
+        setIsFullAutoplay={setIsFullAutoplay}
+        isJakubAutoplay={isJakubAutoplay}
+        setIsJakubAutoplay={setIsJakubAutoplay}
+        autoplaySpeed={autoplaySpeed}
+        setAutoplaySpeed={setAutoplaySpeed}
+        isSetsPanelOpen={isSetsPanelOpen}
+        setIsSetsPanelOpen={setIsSetsPanelOpen}
+        playerId={playerId}
+        onManualDrawSets={handleManualDrawSets}
+        onGoToPlayerPhase={handleGoToPlayerPhase}
+        onPass={handlePass}
+        onGoToJakubPhase={handleGoToJakubPhase}
+        onOpenScoring={() => setIsScoringPopupOpen(true)}
+        onResetBoard={handleResetBoard}
+        onCreateNewGame={async () => {
+          try {
+            const res = await fetch(`${SERVER_URL}/api/next-game-id`);
+            const data = await res.json();
+            if (data.id) window.location.href = `/game/${data.id}`;
+          } catch (_err) { alert('Failed to get new game ID'); }
+        }}
+        onChangeGame={() => { window.history.pushState({}, '', '/'); setGameId(null); setGameState(INITIAL_STATE); window.dispatchEvent(new Event('popstate')); }}
+        onAdminPanel={() => { window.history.pushState({}, '', '/admin/sets'); window.dispatchEvent(new Event('popstate')); }}
+        serverUrl={SERVER_URL}
+        initialState={INITIAL_STATE}
+      />
 
       <div className="game-layout-wrapper">
         <div className="left-controls">
@@ -344,8 +343,14 @@ function App() {
         </div>
         <div className="main-game-area">
           {gameState.regions && <BoardComponent regions={gameState.regions} onRegionMouseUp={handleRegionMouseUp} onRemovePawn={handleRegionRemove} onAddPawn={handleRegionAdd} onPawnMouseDown={handlePawnMouseDown} setHoveredPawn={setHoveredPawn} validMoveTargets={validMoveTargets} />}
-          <GameHeader counters={counters} maxPool={gameState.sets?.pawns || {}} />
-          <PointsTracker 
+          <GameHeader 
+            counters={counters} 
+            maxPool={gameState.sets?.pawns || {}} 
+            playerOrder={gameState.playerOrder} 
+            currentPlayerIndex={gameState.currentPlayerIndex} 
+            passedPlayers={gameState.passedPlayers} 
+          />
+          <PlayersPanel 
             players={gameState.players || []} 
             onUpdatePoints={handleUpdatePoints} 
             currentPlayerId={playerId} 
@@ -406,7 +411,37 @@ function App() {
 
       <div className="bottom-history-container"><HistoryPanel logs={gameState.history || []} /></div>
       
-      {activePawn && <PawnGhost type={PAWN_TYPES.find(p => p.id === activePawn.typeId)} x={activePawn.x} y={activePawn.y} />}
+      {isScoringPopupOpen && (
+        <div className="scoring-modal-overlay" onClick={() => setIsScoringPopupOpen(false)}>
+          <div className="scoring-modal-content" onClick={e => e.stopPropagation()}>
+            <button className="modal-close-x" onClick={() => setIsScoringPopupOpen(false)}>×</button>
+            <div className="scoring-rules-container">
+              <h2>SCORING RULES</h2>
+              <div className="rules-section">
+                <h3>Placement Points (Immediate)</h3>
+                <p><strong>Vampire:</strong> (4 - distance from Jakub) × count.</p>
+                <p><strong>Werewolf:</strong> floor(total pack / 3) + 1. Plus 1 if Jakub is in target or neighbor.</p>
+                <p><strong>Ghost:</strong> (2 - distance to edge) - 1 if in Jakub's reach.</p>
+                <p><strong>Bardak:</strong> 1 pt per pawn (0 if distance ≤ 1 from Jakub).</p>
+                <p><em>* Points are awarded for each nation to their current General.</em></p>
+              </div>
+              <div className="rules-section">
+                <h3>Rambo Survivor Bonus</h3>
+                <p>Generals get <strong>+2 points</strong> for each of their pawns remaining in Jakub's region after his rampage.</p>
+              </div>
+              <div className="rules-section">
+                <h3>End Game Bonus (Final Round)</h3>
+                <p><strong>Vampire:</strong> 2 pts per pawn on board.</p>
+                <p><strong>Werewolf:</strong> 1 pt per pawn on board.</p>
+                <p><strong>Ghost:</strong> 2 pts if alone in region; 1 pt if pluralization (more than any other single race).</p>
+                <p><strong>Bardak:</strong> 1 pt if pluralization.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {activePawn && <MouseElement type={PAWN_TYPES.find(p => p.id === activePawn.typeId)} x={activePawn.x} y={activePawn.y} />}
       {activeSet && (
         <div className="set-ghost" style={{ left: activeSet.x, top: activeSet.y }}>
           <div className="set-ghost-content">

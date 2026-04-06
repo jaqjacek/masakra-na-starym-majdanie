@@ -20,18 +20,20 @@ Gra toczy się przez **8 rund**. Każda runda składa się z trzech faz:
 Gracze wykonują tury naprzemiennie (wg aktualnej kolejności):
 1.  **Wybór Generała:** Gracz wybiera nację, którą dowodzi w tej rundzie (V, W, G lub B).
 2.  **Akcja:** Gracz może wystawić zestaw pionków w pustym regionie.
-3.  **Punktacja Natychmiastowa (Rozproszona):** Za wystawienie zestawu punkty otrzymują **wszyscy aktualni Generałowie**, których pionki znajdują się w tym zestawie. Punkty są naliczane **za każdego pionka z osobna**, zgodnie z logiką danej nacji. Gracz wystawiający nie musi otrzymać żadnych punktów, jeśli w zestawie nie ma pionków jego nacji.
+3.  **Punktacja Natychmiastowa (Rozproszona):** Punkty otrzymują wszyscy generałowie za pionki swojej nacji z wystawionego zestawu, zgodnie z logiką danej nacji. Gracz wystawiający nie musi otrzymać żadnych punktów, jeśli w zestawie nie ma pionków jego nacji.
 4.  **Pasowanie:** Gracz może spasować. Musi wtedy odrzucić nadmiarowe zestawy (zostawiając max 3). Za każdy odrzucony zestaw otrzymuje +1 pkt, a zestaw trafia do Jakuba.
 
 ### Faza III: Faza Jakuba
 Po spasowaniu wszystkich graczy, Jakub rusza do akcji:
 
-1.  **Zasilanie Złości:** Jakub absorbuje zestawy pobrane na starcie rundy oraz te odrzucone przez graczy. Każdy pionek zwiększa Anger (złość) na daną rasę. Przepełnienie (Anger >= 10) resetuje złość do 5 i zwiększa Range (zasięg) Jakuba o 1.
+1.  **Zasilanie Złości:** Jakub absorbuje zestawy pobrane na starcie rundy oraz te odrzucone przez graczy. Każdy pionek zwiększa Anger (złość) na daną rasę. 
+    *   **Zasięg (Range):** Zasięg Jakuba to teraz **1 + suma punktów złości powyżej 9** (dla każdej rasy: `anger - 9`).
+    *   Złość nie jest już resetowana do 5 po osiągnięciu 10 punktów.
 2.  **Czystka (Killing Spree):** Jakub zabija pionki w swoim regionie. Za każdego zabitego pionka, aktualny Generał tej nacji traci 1 punkt.
-3.  **Ruch i Łowy:** Jakub skanuje regiony w swoim Range ( King's Move - wliczając skosy). Przemieszcza się do regionu z największą liczbą jednostek nacji, na którą jest najbardziej wściekły.
+3.  **Ruch i Łowy:** Jakub skanuje regiony w swoim Range. Przemieszcza się do regionu z największą liczbą jednostek nacji, na którą jest najbardziej wściekły. Każdy ruch zmniejsza aktualny Range o 1.
 4.  **Koniec Fazy:**
-    *   **Rambo Survivor Bonus:** Jeżeli po zakończeniu ruchu i czystki Jakuba, w jego aktualnym regionie znajdują się jakiekolwiek pionki graczy, ich aktualny Generał otrzymuje **2 punkty bonusowe** za każdy taki pionek. (Log: *Rambo Survivor*).
-    *   Range Jakuba spada o 1 (minimum 1).
+    *   **Rambo Survivor Bonus:** Jeżeli po zakończeniu ruchu i czystki Jakuba, w jego aktualnym regionie znajdują się jakiekolwiek pionki graczy, ich aktualny Generał otrzymuje **2 punkty bonusowe** za każdy taki pionek.
+    *   **Reset Zasięgu:** Po zakończeniu akcji Jakuba, jego **Range spada do 0**.
     *   Zestawy Jakuba trafiają na Discard Pile.
     *   **Rundy 1-7:** Generałowie wracają do puli. Kolejność graczy: najmniej punktów = pierwszy.
     *   **Runda 8:** Gracze **zachowują** swoich generałów do ostatecznego punktowania.
@@ -47,7 +49,7 @@ Po zakończeniu fazy Jakuba w **8. rundzie**, następuje ostateczne podsumowanie
 ## 5. Charakterystyka Nacji i Punktacja Setów
 Punkty za wystawienie zestawu (odległość liczona wg King's Move):
 *   **Vampire (V):** Punkty = `4 - odległość`.
-*   **Werewolf (W):** Punkty = `3 - odległość`.
+*   **Werewolf (W):** Punkty = `floor(suma_wilkołaków / 3) + 1`. Jeżeli Jakub jest w odległości **0 lub 1** od regionu docelowego, Wilkołaki otrzymują dodatkowy **+1 punkt**. (Suma wilkołaków obejmuje pionki z zestawu oraz te już stojące w celu i u sąsiadów).
 *   **Ghost (G):** Punkty za pionka = `2 - (odległość do najbliższej krawędzi)`.
     *   Krawędź (odległość 0): **2 punkty** za pionka.
     *   1 pole od krawędzi: **1 punkt** za pionka.

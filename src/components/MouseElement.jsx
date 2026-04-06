@@ -1,11 +1,11 @@
 import React from 'react';
 
-const PawnGhost = ({ type, x, y }) => {
+const MouseElement = ({ type, x, y }) => {
   if (!type) return null;
   
   return (
     <div 
-      className={`pawn-ghost ${type.id}`}
+      className={`mouse-element ${type.id}`}
       style={{
         left: `${x}px`,
         top: `${y}px`
@@ -14,4 +14,4 @@ const PawnGhost = ({ type, x, y }) => {
   );
 };
 
-export default PawnGhost;
+export default MouseElement;

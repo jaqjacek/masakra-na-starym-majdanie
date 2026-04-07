@@ -26,10 +26,20 @@ html, body {
   user-select: none;
 }
 
-body.admin-mode {
-  overflow-y: scroll !important;
+/* Enable scrolling only in Admin mode (class on <html>) */
+html.admin-mode, 
+html.admin-mode body {
+  overflow-y: scroll !important; /* Keep scrollbar always visible to prevent jump */
   height: auto;
   min-height: 100vh;
+}
+
+/* Ensure root and container don't trap the scroll in admin mode */
+html.admin-mode #root,
+html.admin-mode .app-container {
+  height: auto;
+  min-height: 100vh;
+  overflow: visible;
 }
 
 #root {

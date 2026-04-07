@@ -29,7 +29,7 @@ import { PAWN_TYPES, SUMMARY_PAWN_IDS } from './constants/pawnTypes';
 import { RACES, INITIAL_STATE } from './constants/game';
 import { applySetToJakubAnger } from './strategies/jakubStrategy';
 import { TOTAL_GAME_ROUNDS, INITIAL_HAND_SIZE, JAKUB_INITIAL_SETS, SERVER_URL } from './constants/constants';
-import { resetMap } from './services/api';
+import { fetchMap } from './services/api';
 
 function App() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -42,12 +42,12 @@ function App() {
     gameId, setGameId, playerId, gameState, setGameState, currentPath, updateGameWithSync, addLog
   } = useGameState(isAdminPath);
 
-  // Toggle body class for scrolling
+  // Toggle html class for scrolling
   useEffect(() => {
     if (isAdminPath) {
-      document.body.classList.add('admin-mode');
+      document.documentElement.classList.add('admin-mode');
     } else {
-      document.body.classList.remove('admin-mode');
+      document.documentElement.classList.remove('admin-mode');
     }
   }, [isAdminPath]);
 
@@ -145,12 +145,6 @@ function App() {
     curr[path[path.length - 1]] = Math.max(0, curr[path[path.length - 1]] + delta);
     updateGameWithSync(newState);
   }, [gameState, updateGameWithSync]);
-
-  const handleResetBoard = useCallback(async () => {
-    if (gameId && window.confirm('Reset game?')) {
-      try { const serverData = await resetMap(gameId); if (serverData) setGameState(serverData); setIsMenuOpen(false); } catch (_err) { alert('Reset failed'); }
-    }
-  }, [gameId, setGameState]);
 
   const handleManualDrawSets = useCallback(() => {
     if (!gameState.players || !gameState.regions) {
@@ -313,7 +307,6 @@ function App() {
         onPass={handlePass}
         onGoToJakubPhase={handleGoToJakubPhase}
         onOpenScoring={() => setIsScoringPopupOpen(true)}
-        onResetBoard={handleResetBoard}
         onCreateNewGame={async () => {
           try {
             const res = await fetch(`${SERVER_URL}/api/next-game-id`);
@@ -421,20 +414,19 @@ function App() {
                 <h3>Placement Points (Immediate)</h3>
                 <p><strong>Vampire:</strong> (4 - distance from Jakub) × count.</p>
                 <p><strong>Werewolf:</strong> floor(total pack / 3) + 1. Plus 1 if Jakub is in target or neighbor.</p>
-                <p><strong>Ghost:</strong> (2 - distance to edge) - 1 if in Jakub's reach.</p>
+                <p><strong>Ghost:</strong> (2 - distance to edge) per pawn. -1 if in Jakub's reach.</p>
                 <p><strong>Bardak:</strong> 1 pt per pawn (0 if distance ≤ 1 from Jakub).</p>
-                <p><em>* Points are awarded for each nation to their current General.</em></p>
-              </div>
-              <div className="rules-section">
+                </div>
+                <div className="rules-section">
                 <h3>Rambo Survivor Bonus</h3>
                 <p>Generals get <strong>+2 points</strong> for each of their pawns remaining in Jakub's region after his rampage.</p>
-              </div>
-              <div className="rules-section">
+                </div>
+                <div className="rules-section">
                 <h3>End Game Bonus (Final Round)</h3>
-                <p><strong>Vampire:</strong> 2 pts per pawn on board.</p>
+                <p><strong>Vampire:</strong> 2 pts per region containing vampires.</p>
                 <p><strong>Werewolf:</strong> 1 pt per pawn on board.</p>
-                <p><strong>Ghost:</strong> 2 pts if alone in region; 1 pt if pluralization (more than any other single race).</p>
-                <p><strong>Bardak:</strong> 1 pt if pluralization.</p>
+                <p><strong>Ghost:</strong> 2 pts if alone in region; 1 pt if Majority.</p>
+                <p><strong>Bardak:</strong> 1 pt if Majority.</p>
               </div>
             </div>
           </div>

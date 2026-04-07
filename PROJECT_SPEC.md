@@ -2,7 +2,7 @@
 
 ## 1. Project Overview
 **Name:** Wedrowycz-Gemini
-**Description:** A digital board game simulator where players manage pieces (pawns) and special game objects across a 5x5 grid.
+**Description:** A digital board game simulator where players manage pieces (pawns) and special game objects across a 6x6 grid.
 **Goal:** A multi-client, real-time synchronized game engine with complex movement rules, resource distribution (Sets), and phase-based gameplay.
 
 ## 2. Tech Stack

@@ -39,7 +39,7 @@ export class Scoring {
     // 3. Ghost
     const gCount = setContent.ghost || 0;
     if (gCount > 0) {
-      const distToEdge = Math.min(targetRegion.x, 4 - targetRegion.x, targetRegion.y, 4 - targetRegion.y);
+      const distToEdge = Math.min(targetRegion.x, 5 - targetRegion.x, targetRegion.y, 5 - targetRegion.y);
       let perPawn = 2 - distToEdge;
       if (dist <= jakubRange) perPawn -= 1;
       points.ghost = Math.max(0, perPawn) * gCount;

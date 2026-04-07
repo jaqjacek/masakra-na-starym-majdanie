@@ -213,8 +213,8 @@ export const useAutoplay = ({
         let jakub = null;
         for (const r of workState.regions) { if (r.pawns.jakub?.length > 0) { jakub = r.pawns.jakub[0]; break; } }
         if (jakub) { 
-          jakub.range = 0; 
-          addLog(workState, `Jakub range falls to 0.`); 
+          jakub.range = 1; 
+          addLog(workState, `Jakub range reset to 1.`); 
         }
         const toDiscard = (workState.sets.heldSets || []).filter(s => s.ownerId === 'jakub');
         toDiscard.forEach(s => { s.ownerId = null; s.used = false; if (!workState.sets.discardPile) workState.sets.discardPile = []; workState.sets.discardPile.push(s); });
@@ -259,15 +259,12 @@ export const useAutoplay = ({
         if (!pick) return;
         let addedPoints = 0;
         
-        if (pick === 'vampire') { 
-          let count = 0; 
-          workState.regions.forEach(r => count += (r.pawns[pick]?.length || 0)); 
-          addedPoints = count * VAMPIRE_FINAL_SCORING_MULTIPLIER; 
-        }
-        else if (pick === 'werewolf') { 
-          let count = 0; 
-          workState.regions.forEach(r => count += (r.pawns[pick]?.length || 0)); 
-          addedPoints = count; 
+        if (pick === 'vampire') {
+          let regionsWithVampires = 0;
+          workState.regions.forEach(r => {
+            if (r.pawns[pick]?.length > 0) regionsWithVampires++;
+          });
+          addedPoints = regionsWithVampires * 2;
         }
         else if (pick === 'ghost') {
           workState.regions.forEach(r => {
@@ -275,15 +272,14 @@ export const useAutoplay = ({
             if (myCount > 0) {
               let othersCounts = RACES.filter(race => race !== pick).map(race => r.pawns[race]?.length || 0);
               const othersTotal = othersCounts.reduce((a, b) => a + b, 0);
-              if (othersTotal === 0) addedPoints += GHOST_FINAL_SCORING_BONUS; 
-              else { 
-                const maxOther = Math.max(...othersCounts); 
-                if (myCount > maxOther) addedPoints += GHOST_FINAL_SCORING_MAX_OTHER_BONUS; 
+              if (othersTotal === 0) addedPoints += GHOST_FINAL_SCORING_BONUS;
+              else {
+                const maxOther = Math.max(...othersCounts);
+                if (myCount > maxOther) addedPoints += GHOST_FINAL_SCORING_MAX_OTHER_BONUS;
               }
             }
           });
-        }
-        else if (pick === 'bardak') {
+        }        else if (pick === 'bardak') {
           workState.regions.forEach(r => {
             const myCount = r.pawns[pick]?.length || 0;
             if (myCount > 0) {

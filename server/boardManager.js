@@ -3,7 +3,7 @@ import path from 'path';
 import { RACES, DEFAULT_PLAYERS } from './constants.js';
 
 export const createEmptyRegions = () => {
-  const size = 5; const regions = [];
+  const size = 6; const regions = [];
   for (let i = 0; i < size * size; i++) { regions.push({ id: i, x: i % size, y: Math.floor(i / size), neighbors: [], pawns: {} }); }
   regions.forEach(region => {
     const { x, y } = region;
@@ -15,9 +15,10 @@ export const createEmptyRegions = () => {
       }
     }
   });
-  const interior = regions.filter(r => r.x > 0 && r.x < 4 && r.y > 0 && r.y < 4).map(r => r.id);
+  // Jakub starts in the interior (not on the very edge)
+  const interior = regions.filter(r => r.x > 0 && r.x < 5 && r.y > 0 && r.y < 5).map(r => r.id);
   const rIdx = interior[Math.floor(Math.random() * interior.length)];
-  regions[rIdx].pawns.jakub = [{ statuses: ['ENABLED'], speed: 1, range: 0, anger: { vampire: 0, werewolf: 0, ghost: 0, bardak: 0 } }];
+  regions[rIdx].pawns.jakub = [{ statuses: ['ENABLED'], speed: 1, range: 1, anger: { vampire: 0, werewolf: 0, ghost: 0, bardak: 0 } }];
   return regions;
 };
 

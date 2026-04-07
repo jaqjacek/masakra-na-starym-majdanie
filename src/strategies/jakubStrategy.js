@@ -1,8 +1,8 @@
-export const RACES = ['vampire', 'werewolf', 'ghost', 'bardak'];
+import { RACES } from '../constants/game';
+import { JAKUB_ANGER_THRESHOLD, JAKUB_BASE_RANGE } from '../constants/constants';
 
 /**
  * Updates Jakub's anger based on set contents and handles overflow logic.
- * Overflow: If any race's anger reaches or exceeds 10, it resets to 5 and Range increases by 1.
  */
 export const applySetToJakubAnger = (jakub, setContent) => {
   const newAnger = { ...jakub.anger };
@@ -13,14 +13,15 @@ export const applySetToJakubAnger = (jakub, setContent) => {
     }
   });
 
+  // Rule: Range = Base + (number of races with anger >= threshold)
   let extraRange = 0;
   Object.values(newAnger).forEach(val => {
-    if (val > 9) {
-      extraRange += (val - 9);
+    if (val >= JAKUB_ANGER_THRESHOLD) {
+      extraRange += 1;
     }
   });
 
-  return { anger: newAnger, range: 1 + extraRange };
+  return { anger: newAnger, range: Math.min(5, JAKUB_BASE_RANGE + extraRange) };
 };
 
 const getRegionsInRange = (regions, startIndex, range) => {

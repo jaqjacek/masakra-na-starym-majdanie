@@ -20,7 +20,6 @@ const GamePanel = ({
   onPass,
   onGoToJakubPhase,
   onOpenScoring,
-  onResetBoard,
   onCreateNewGame,
   onChangeGame,
   onAdminPanel,
@@ -106,8 +105,8 @@ const GamePanel = ({
         <>
           <div className="menu-backdrop" onClick={() => setIsMenuOpen(false)}></div>
           <div className="dropdown-menu">
+            <button className="menu-item" onClick={() => window.location.href = '/'}>Landing Page</button>
             <button className="menu-item" onClick={onCreateNewGame}>Create New Game</button>
-            <button className="menu-item reset" onClick={onResetBoard}>Reset Current Game</button>
             <button className="menu-item" onClick={onChangeGame}>Change Game</button>
             <button className="menu-item" onClick={onAdminPanel}>Admin Panel</button>
           </div>

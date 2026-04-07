@@ -150,9 +150,6 @@
 }
 
 .menu-item:hover { background: #333; border-color: #444; color: #fff; }
-.menu-item.reset { background: rgba(192, 57, 43, 0.1); border-color: rgba(192, 57, 43, 0.3); color: #e74c3c; }
-.menu-item.reset:hover { background: #c0392b; border-color: #fff; color: #fff; }
-
 
 .game-layout-wrapper { display: flex; gap: 1rem; align-items: flex-start; margin-bottom: 0.5rem; width: 100%; justify-content: space-between; }
 
@@ -542,7 +539,7 @@
 }
 
 .board {
-  display: grid; grid-template-columns: repeat(5, 100px); grid-template-rows: repeat(5, 100px);
+  display: grid; grid-template-columns: repeat(6, 100px); grid-template-rows: repeat(6, 100px);
   gap: 2px; position: relative; z-index: 1;
 }
 

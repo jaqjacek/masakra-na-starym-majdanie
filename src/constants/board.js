@@ -1,5 +1,5 @@
 export class Board {
-  constructor(size = 5) {
+  constructor(size = 6) {
     this.size = size;
   }
 

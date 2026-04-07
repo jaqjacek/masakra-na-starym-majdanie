@@ -17,11 +17,3 @@ export const updateMap = async (gameId, board) => {
   if (!response.ok) throw new Error('Failed to update map');
   return response.json();
 };
-
-export const resetMap = async (gameId) => {
-  const response = await fetch(`${API_BASE}/${gameId}`, {
-    method: 'DELETE',
-  });
-  if (!response.ok) throw new Error('Failed to reset map');
-  return response.json();
-};

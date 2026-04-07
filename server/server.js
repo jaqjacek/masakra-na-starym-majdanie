@@ -6,7 +6,14 @@ import { fileURLToPath } from 'url';
 import { Server } from 'socket.io';
 import http from 'http';
 
-import { RACES, DEFAULT_PLAYERS, INITIAL_PAWN_POOL, DEFAULT_POWER_CONFIG } from './constants.js';
+import { 
+  RACES, 
+  DEFAULT_PLAYERS, 
+  INITIAL_PAWN_POOL, 
+  DEFAULT_POWER_CONFIG,
+  JAKUB_ANGER_THRESHOLD,
+  JAKUB_BASE_RANGE 
+} from './constants.js';
 import { 
   createEmptyRegions, 
   getRegionsInRange, 
@@ -144,14 +151,6 @@ app.post('/api/map/:gameId', (req, res) => {
   } catch (_err) { res.status(500).json({ error: 'Failed' }); } 
 });
 
-app.delete('/api/map/:gameId', (req, res) => { 
-  try { 
-    const gamePath = ensureGameDir(req.params.gameId); 
-    fs.rmSync(gamePath, { recursive: true, force: true }); 
-    res.json({ message: 'Deleted' }); 
-  } catch (_err) { res.status(500).json({ error: 'Failed' }); } 
-});
-
 app.delete('/api/games', (_req, res) => { 
   try { 
     if (fs.existsSync(GAMES_DIR)) { fs.rmSync(GAMES_DIR, { recursive: true, force: true }); } 
@@ -215,7 +214,7 @@ app.post('/api/simulate/:gameId', (req, res) => {
       ghost: { afterR1: 0, total: 0, finalBonus: 0, killed: 0, ramboPoints: 0 },
       bardak: { afterR1: 0, total: 0, finalBonus: 0, killed: 0, ramboPoints: 0 }
     };
-    for (let round = 1; round <= 8; round++) {
+    for (let round = 1; round <= 10; round++) {
       players.forEach(p => { const myHeld = setsData.heldSets.filter(s => s.ownerId === p.id); const needed = 5 - myHeld.length; for (let i = 0; i < needed; i++) { const s = drawSet(); if (s) { s.ownerId = p.id; setsData.heldSets.push(s); } } });
       for (let i = 0; i < 2; i++) { const s = drawSet(); if (s) { s.ownerId = 'jakub'; setsData.heldSets.push(s); } }
       let availableGenerals = [...RACES].sort(() => Math.random() - 0.5);
@@ -264,10 +263,10 @@ app.post('/api/simulate/:gameId', (req, res) => {
           }
         });
       });
-      // Recalculate range based on new rule: 1 + Σ (anger > 9 ? anger - 9 : 0)
+      // Recalculate range based on rule: Base + (count of races with anger >= threshold). Max 5.
       let extraRange = 0;
-      Object.values(jakub.anger).forEach(val => { if (val > 9) extraRange += (val - 9); });
-      jakub.range = 1 + extraRange;
+      Object.values(jakub.anger).forEach(val => { if (val >= JAKUB_ANGER_THRESHOLD) extraRange += 1; });
+      jakub.range = Math.min(5, JAKUB_BASE_RANGE + extraRange);
 
       let continues = true;
       while (continues) {
@@ -295,15 +294,19 @@ app.post('/api/simulate/:gameId', (req, res) => {
           if (count > 0) { const pts = count * 2; const p = players.find(x => x.generalOf === race); if (p) { p.points += pts; analytics[race].ramboPoints += pts; } }
         });
       }
-      jakub.range = 0; // Range falls to 0 after Jakub's phase
+      jakub.range = 1; // Reset to 1 after Jakub's phase
       jakubSets.forEach(s => { const idx = setsData.heldSets.findIndex(x => x.id === s.id); const recycled = setsData.heldSets.splice(idx, 1)[0]; recycled.ownerId = null; recycled.used = false; setsData.discardPile.push(recycled); });
       if (round === 1) { players.forEach(p => { if (p.generalOf) analytics[p.generalOf].afterR1 = p.points; }); }
-      if (round < 8) { players.forEach(p => p.generalOf = null); playerOrder = [...players].sort((a,b) => a.points - b.points).map(p => p.id); }
+      if (round < 10) { players.forEach(p => p.generalOf = null); playerOrder = [...players].sort((a,b) => a.points - b.points).map(p => p.id); }
     }
     players.forEach(p => {
       const pick = p.generalOf; if (!pick) return;
       let addedPoints = 0;
-      if (pick === 'vampire') { let count = 0; regions.forEach(r => count += (r.pawns[pick]?.length || 0)); addedPoints = count * 2; }
+      if (pick === 'vampire') {
+        let regionsWithVampires = 0;
+        regions.forEach(r => { if (r.pawns[pick]?.length > 0) regionsWithVampires++; });
+        addedPoints = regionsWithVampires * 2;
+      }
       else if (pick === 'werewolf') { let count = 0; regions.forEach(r => count += (r.pawns[pick]?.length || 0)); addedPoints = count; }
       else if (pick === 'ghost') {
         regions.forEach(r => {
@@ -315,7 +318,12 @@ app.post('/api/simulate/:gameId', (req, res) => {
         });
       } else if (pick === 'bardak') {
         regions.forEach(r => {
-          const myCount = r.pawns[pick]?.length || 0; if (myCount > 0) { let othersCounts = RACES.filter(race => race !== pick).map(race => r.pawns[race]?.length || 0); const maxOther = Math.max(...othersCounts); if (myCount > maxOther) addedPoints += 1; }
+          const myCount = r.pawns[pick]?.length || 0;
+          if (myCount > 0) {
+            let othersCounts = RACES.filter(race => race !== pick).map(race => r.pawns[race]?.length || 0);
+            const maxOther = Math.max(...othersCounts);
+            if (myCount > maxOther) addedPoints += 1;
+          }
         });
       }
       p.points += addedPoints; analytics[pick].finalBonus = addedPoints; analytics[pick].total = p.points;

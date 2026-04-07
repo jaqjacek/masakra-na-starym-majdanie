@@ -10,7 +10,7 @@ import {
 
 export const RACES = ['vampire', 'werewolf', 'ghost', 'bardak'];
 
-const boardService = new Board(5);
+const boardService = new Board(6);
 
 export const INITIAL_STATE = {
   regions: boardService.generateEmpty(),

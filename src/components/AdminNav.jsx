@@ -10,7 +10,7 @@ const AdminNav = ({ currentPath }) => {
   return (
     <div className="admin-nav-bar">
       <div className="admin-nav-left">
-        <button className="action-button" style={{ backgroundColor: '#7f8c8d' }} onClick={() => navigate('/')}>
+        <button className="action-button" style={{ backgroundColor: '#7f8c8d' }} onClick={() => window.location.href = '/'}>
           ← Landing Page
         </button>
         <h2 className="admin-nav-title">Admin Dashboard</h2>

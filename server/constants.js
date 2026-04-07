@@ -27,3 +27,7 @@ export const DEFAULT_POWER_CONFIG = {
   ghost: 1,
   bardak: 1
 };
+
+export const JAKUB_ANGER_THRESHOLD = 10;
+export const JAKUB_BASE_RANGE = 1;
+

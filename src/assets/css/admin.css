@@ -66,6 +66,13 @@
   display: flex; align-items: center; gap: 0.5rem; font-weight: bold; font-size: 1.1rem; color: #ccc;
 }
 
+.stat-item-group { display: flex; flex-direction: column; gap: 4px; align-items: center; border-right: 1px solid rgba(255,255,255,0.1); padding-right: 1.5rem; }
+.stat-item-group:last-child { border-right: none; padding-right: 0; }
+
+.limit-edit-input { display: flex; align-items: center; gap: 4px; }
+.limit-edit-input label { font-size: 0.8rem; color: #3498db; font-weight: bold; }
+.limit-edit-input input { width: 45px; background: #222; border: 1px solid #444; color: #f1c40f; font-size: 0.9rem; padding: 2px 4px; border-radius: 4px; text-align: center; }
+
 .set-totals-summary .set-icon { width: 20px; height: 20px; }
 
 .simulation-dashboard { display: flex; flex-direction: column; gap: 2rem; margin-top: 1rem; }

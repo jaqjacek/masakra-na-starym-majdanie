@@ -103,13 +103,13 @@ app.get('/api/sets/details/:setName', (req, res) => {
 
 app.post('/api/sets/generate', (req, res) => {
   try {
-    const { pawns, power, maxPower, displayName, description } = req.body;
+    const { pawns, pawnsInPlayLimit, power, maxPower, displayName, description } = req.body;
     const files = fs.readdirSync(SETS_DIR).filter(f => f.startsWith('set_') && f.endsWith('.json'));
     let nextId = 1; 
     const ids = files.map(f => parseInt(f.replace('set_', '').replace('.json', ''))).filter(n => !isNaN(n)); 
     if (ids.length > 0) nextId = Math.max(...ids) + 1;
     const fileName = `set_${nextId}.json`; 
-    const data = generateSetData(pawns, power, maxPower, { displayName, description }); 
+    const data = generateSetData(pawns, power, maxPower, { displayName, description, pawnsInPlayLimit }); 
     data.setName = fileName.replace('.json', ''); 
     fs.writeFileSync(path.join(SETS_DIR, fileName), JSON.stringify(data, null, 2)); 
     res.json({ message: 'Set generated', name: data.setName });

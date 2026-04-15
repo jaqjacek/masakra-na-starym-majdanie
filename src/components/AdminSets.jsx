@@ -17,6 +17,7 @@ const AdminSets = () => {
   const [genDescription, setGenDescription] = useState('');
   const [genMaxPower, setGenMaxPower] = useState(6);
   const [genPawns, setGenPawns] = useState({ bardak: 80, ghost: 30, werewolf: 20, vampire: 10 });
+  const [genPawnsInPlayLimit, setGenPawnsInPlayLimit] = useState({ bardak: 80, ghost: 30, werewolf: 20, vampire: 10 });
   const [genPower, setGenPower] = useState({ vampire: 3, werewolf: 2, ghost: 1, bardak: 1 });
 
   const fetchSets = async () => {
@@ -45,7 +46,7 @@ const AdminSets = () => {
       const response = await fetch(`${SERVER_URL}/api/sets/generate`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ displayName: genDisplayName, description: genDescription, pawns: genPawns, power: genPower, maxPower: genMaxPower })
+        body: JSON.stringify({ displayName: genDisplayName, description: genDescription, pawns: genPawns, pawnsInPlayLimit: genPawnsInPlayLimit, power: genPower, maxPower: genMaxPower })
       });
       const result = await response.json();
       setShowGenForm(false); 
@@ -120,10 +121,12 @@ const AdminSets = () => {
         setGenDescription(loadedSetData.description || '');
         setGenMaxPower(loadedSetData.maxPower || 6);
         setGenPawns(loadedSetData.pawns || { bardak: 80, ghost: 30, werewolf: 20, vampire: 10 });
+        setGenPawnsInPlayLimit(loadedSetData.pawnsInPlayLimit || loadedSetData.pawns || { bardak: 80, ghost: 30, werewolf: 20, vampire: 10 });
         setGenPower(loadedSetData.power || { vampire: 3, werewolf: 2, ghost: 1, bardak: 1 });
       } else {
         setGenDisplayName(''); setGenDescription(''); setGenMaxPower(6);
         setGenPawns({ bardak: 80, ghost: 30, werewolf: 20, vampire: 10 });
+        setGenPawnsInPlayLimit({ bardak: 80, ghost: 30, werewolf: 20, vampire: 10 });
         setGenPower({ vampire: 3, werewolf: 2, ghost: 1, bardak: 1 });
       }
     }
@@ -178,6 +181,7 @@ const AdminSets = () => {
           </div>
           <div className="form-grid">
             <div><h4>Pawn Totals</h4>{Object.keys(genPawns).map(race => (<div key={race} className="input-row"><label>{race}:</label><input type="number" value={genPawns[race]} onChange={e => setGenPawns({...genPawns, [race]: parseInt(e.target.value)})} /></div>))}</div>
+            <div><h4>Play Limits</h4>{Object.keys(genPawnsInPlayLimit).map(race => (<div key={race} className="input-row"><label>{race}:</label><input type="number" value={genPawnsInPlayLimit[race]} onChange={e => setGenPawnsInPlayLimit({...genPawnsInPlayLimit, [race]: parseInt(e.target.value)})} /></div>))}</div>
             <div><h4>Power Config</h4>{Object.keys(genPower).map(race => (<div key={race} className="input-row"><label>{race}:</label><input type="number" value={genPower[race]} onChange={e => setGenPower({...genPower, [race]: parseInt(e.target.value)})} /></div>))}</div>
           </div>
           <button type="submit" className="action-button download-btn">Generate & Save</button>
@@ -193,10 +197,30 @@ const AdminSets = () => {
                 {['vampire', 'werewolf', 'ghost', 'bardak'].map(race => {
                   const total = [...(loadedSetData.drawPile || []), ...(loadedSetData.heldSets || []), ...(loadedSetData.discardPile || [])]
                     .reduce((sum, set) => sum + (set.content[race] || 0), 0);
+                  
+                  const limits = loadedSetData.pawnsInPlayLimit || loadedSetData.pawns || { bardak: 80, ghost: 30, werewolf: 20, vampire: 10 };
+
                   return (
-                    <div key={race} className="stat-item">
-                      <div className={`set-icon ${race}`}></div>
-                      <span>{total}</span>
+                    <div key={race} className="stat-item-group">
+                      <div className="stat-item">
+                        <div className={`set-icon ${race}`}></div>
+                        <span>{total}</span>
+                      </div>
+                      {isEditMode && (
+                        <div className="limit-edit-input">
+                          <label>L:</label>
+                          <input 
+                            type="number" 
+                            value={limits[race]} 
+                            onChange={(e) => {
+                              const newData = JSON.parse(JSON.stringify(loadedSetData));
+                              if (!newData.pawnsInPlayLimit) newData.pawnsInPlayLimit = JSON.parse(JSON.stringify(limits));
+                              newData.pawnsInPlayLimit[race] = parseInt(e.target.value);
+                              setLoadedSetData(newData);
+                            }}
+                          />
+                        </div>
+                      )}
                     </div>
                   );
                 })}

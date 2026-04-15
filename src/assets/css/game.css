@@ -169,12 +169,14 @@
 }
 
 .bag-limit-sub {
-  font-size: 0.55rem;
+  font-size: 0.6rem;
   color: #f1c40f;
   font-weight: bold;
-  margin-top: 2px;
+  margin-top: 4px;
   text-align: center;
   display: block;
+  width: 100%;
+  letter-spacing: 0.5px;
 }
 
 .game-status-horizontal {

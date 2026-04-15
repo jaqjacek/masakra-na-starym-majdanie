@@ -21,6 +21,13 @@ export const INITIAL_PAWN_POOL = {
   vampire: 10
 };
 
+export const PAWNS_IN_PLAY_LIMIT = {
+  vampire: 10,
+  werewolf: 20,
+  ghost: 30,
+  bardak: 80
+};
+
 export const DEFAULT_POWER_CONFIG = {
   vampire: 3,
   werewolf: 2,

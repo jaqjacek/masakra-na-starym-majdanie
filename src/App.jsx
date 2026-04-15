@@ -54,25 +54,36 @@ function App() {
   // 2. Computed values
   const counters = useMemo(() => {
     const breakdown = PAWN_TYPES.reduce((acc, pawn) => { acc[pawn.id] = 0; return acc; }, {});
+    const onBoard = PAWN_TYPES.reduce((acc, pawn) => { acc[pawn.id] = 0; return acc; }, {});
     let total = 0;
     if (gameState.regions) {
       gameState.regions.forEach(region => {
         Object.entries(region.pawns).forEach(([typeId, instances]) => {
           if (breakdown[typeId] !== undefined && Array.isArray(instances)) {
-            breakdown[typeId] += instances.length; total += instances.length;
+            breakdown[typeId] += instances.length; 
+            onBoard[typeId] += instances.length;
+            total += instances.length;
           }
         });
       });
     }
-    return { total, breakdown };
+    return { total, breakdown, onBoard };
   }, [gameState.regions]);
 
   const availablePool = useMemo(() => {
     if (!gameState.sets || !gameState.sets.pawns) return {};
     const pool = { ...gameState.sets.pawns };
-    Object.keys(pool).forEach(race => { pool[race] = Math.max(0, pool[race] - (counters.breakdown[race] || 0)); });
-    return pool;
-  }, [gameState.sets, counters.breakdown]);
+    const limits = gameState.sets.pawnsInPlayLimit || pool;
+    
+    const available = {};
+    Object.keys(pool).forEach(race => { 
+      // Available is limited by BOTH total remaining pawns AND play limit
+      const remainingGlobal = Math.max(0, pool[race] - (counters.breakdown[race] || 0));
+      const remainingOnBoard = Math.max(0, (limits[race] || 999) - (counters.onBoard[race] || 0));
+      available[race] = Math.min(remainingGlobal, remainingOnBoard);
+    });
+    return available;
+  }, [gameState.sets, counters.breakdown, counters.onBoard]);
 
   const isJakubOnBoard = useMemo(() => (counters.breakdown['jakub'] || 0) > 0, [counters.breakdown]);
 
@@ -322,7 +333,18 @@ function App() {
 
       <div className="game-layout-wrapper">
         <div className="left-controls">
-          <div className="bags-container">{PAWN_TYPES.filter(p => !p.isUnique).map(pawn => (<Bag key={pawn.id} type={pawn} onMouseDown={(e) => handleBagMouseDown(pawn.id, e)} availableCount={availablePool[pawn.id]} />))}</div>
+          <div className="bags-container">
+            {PAWN_TYPES.filter(p => !p.isUnique).map(pawn => (
+              <Bag 
+                key={pawn.id} 
+                type={pawn} 
+                onMouseDown={(e) => handleBagMouseDown(pawn.id, e)} 
+                availableCount={availablePool[pawn.id]} 
+                onBoard={counters.onBoard[pawn.id]}
+                limit={gameState.sets?.pawnsInPlayLimit?.[pawn.id] || gameState.sets?.pawns?.[pawn.id]}
+              />
+            ))}
+          </div>
           <div className="jakub-management">
             <JakubPanel 
               jakub={jakubInstance} 
@@ -339,6 +361,7 @@ function App() {
           <GameHeader 
             counters={counters} 
             maxPool={gameState.sets?.pawns || {}} 
+            pawnsInPlayLimit={gameState.sets?.pawnsInPlayLimit}
             playerOrder={gameState.playerOrder} 
             currentPlayerIndex={gameState.currentPlayerIndex} 
             passedPlayers={gameState.passedPlayers} 

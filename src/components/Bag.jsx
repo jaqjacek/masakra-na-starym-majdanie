@@ -1,7 +1,8 @@
 import React from 'react';
 
-const Bag = ({ type, onMouseDown, disabled, availableCount }) => {
+const Bag = ({ type, onMouseDown, disabled, availableCount, onBoard, limit }) => {
   const isOutOfStock = availableCount <= 0;
+  const showLimit = onBoard !== undefined && limit !== undefined;
 
   return (
     <div 
@@ -16,6 +17,9 @@ const Bag = ({ type, onMouseDown, disabled, availableCount }) => {
         <div className="bag-count-badge">{availableCount}</div>
       </div>
       <span className="bag-label">{type.name}</span>
+      {showLimit && (
+        <span className="bag-limit-sub">{onBoard}/{limit} In Play</span>
+      )}
     </div>
   );
 };

@@ -1,16 +1,17 @@
 import React from 'react';
 import { PAWN_TYPES, SUMMARY_PAWN_IDS } from '../constants/pawnTypes';
 
-const GameHeader = ({ counters, maxPool, playerOrder = [], currentPlayerIndex, passedPlayers = [] }) => {
+const GameHeader = ({ counters, maxPool, pawnsInPlayLimit, playerOrder = [], currentPlayerIndex, passedPlayers = [] }) => {
   const currentActiveId = playerOrder[currentPlayerIndex];
+  const limits = pawnsInPlayLimit || maxPool;
 
   return (
     <div className="game-status-horizontal">
       <div className="pawn-pool-counters">
         {SUMMARY_PAWN_IDS.map(id => (
-          <div key={id} className="status-item race-summary" title={`${id} pool`}>
+          <div key={id} className="status-item race-summary" title={`${id} pool (Total: ${maxPool[id] || 0}, In Play Limit: ${limits[id] || 0})`}>
             <div className={`set-icon ${id}`}></div>
-            <span>{counters.breakdown[id] || 0}/{maxPool[id] || 0}</span>
+            <span>{counters.onBoard[id] || 0}/{limits[id] || 0}</span>
           </div>
         ))}
       </div>

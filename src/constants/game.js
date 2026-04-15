@@ -20,7 +20,13 @@ export const INITIAL_STATE = {
     { id: 3, name: '3', points: INITIAL_PLAYER_POINTS, generalOf: null },
     { id: 4, name: '4', points: INITIAL_PLAYER_POINTS, generalOf: null }
   ],
-  sets: { drawPile: [], discardPile: [], heldSets: [], pawns: { bardak: 80, ghost: 30, werewolf: 20, vampire: 10 } },
+  sets: { 
+    drawPile: [], 
+    discardPile: [], 
+    heldSets: [], 
+    pawns: { bardak: 80, ghost: 30, werewolf: 20, vampire: 10 },
+    pawnsInPlayLimit: { bardak: 80, ghost: 30, werewolf: 20, vampire: 10 }
+  },
   phase: 'setup',
   currentRound: 1,
   maxRounds: TOTAL_GAME_ROUNDS,

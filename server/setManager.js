@@ -1,7 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { RACES, PAWN_CONSTRAINTS, INITIAL_PAWN_POOL, DEFAULT_POWER_CONFIG } from './constants.js';
+import { RACES, PAWN_CONSTRAINTS, INITIAL_PAWN_POOL, DEFAULT_POWER_CONFIG, PAWNS_IN_PLAY_LIMIT } from './constants.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -14,6 +14,7 @@ export const loadSetFile = (setName) => {
   if (fs.existsSync(setPath)) {
     const data = JSON.parse(fs.readFileSync(setPath, 'utf8'));
     data.setName = setName;
+    if (!data.pawnsInPlayLimit) data.pawnsInPlayLimit = data.pawns || INITIAL_PAWN_POOL;
     return data;
   }
   return null;
@@ -80,6 +81,6 @@ export const generateSetData = (pawnsConfig, powerConfig, maxPower, meta = {}) =
     }
     items.push({ id: 0, content, used: false, power: calcPower(content), ownerId: null });
   }
-  const result = { pawns: pawnsConfig, power: powerConfig, maxPower, drawPile: items, discardPile: [], heldSets: [], setName: 'generated', ...meta };
+  const result = { pawns: pawnsConfig, pawnsInPlayLimit: (meta.pawnsInPlayLimit || PAWNS_IN_PLAY_LIMIT), power: powerConfig, maxPower, drawPile: items, discardPile: [], heldSets: [], setName: 'generated', ...meta };
   return sortSetsData(result);
 };

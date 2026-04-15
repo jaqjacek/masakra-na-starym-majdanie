@@ -12,7 +12,8 @@ import {
   INITIAL_PAWN_POOL, 
   DEFAULT_POWER_CONFIG,
   JAKUB_ANGER_THRESHOLD,
-  JAKUB_BASE_RANGE 
+  JAKUB_BASE_RANGE,
+  PAWNS_IN_PLAY_LIMIT
 } from './constants.js';
 import { 
   createEmptyRegions, 

@@ -133,13 +133,18 @@ export const useAutoplay = ({
       const emptyR = workState.regions.filter(r => !RACES.some(race => r.pawns[race]?.length > 0));
       const currentOnBoard = PAWN_TYPES.reduce((acc, p) => ({ ...acc, [p.id]: 0 }), {});
       workState.regions.forEach(r => Object.entries(r.pawns).forEach(([tId, insts]) => { if (currentOnBoard[tId] !== undefined) currentOnBoard[tId] += insts.length; }));
-      const currentPool = { ...workState.sets.pawns };
-      Object.keys(currentPool).forEach(r => currentPool[r] -= currentOnBoard[r]);
+      
+      const globalPool = { ...workState.sets.pawns };
+      const playLimits = workState.sets.pawnsInPlayLimit || globalPool;
       
       let best = null;
       myHeld.forEach(set => {
         let isPlaceable = true;
-        Object.entries(set.content).forEach(([tId, count]) => { if (currentPool[tId] < count) isPlaceable = false; });
+        Object.entries(set.content).forEach(([tId, count]) => { 
+          const remainingGlobal = globalPool[tId] - currentOnBoard[tId];
+          const remainingPlay = playLimits[tId] - currentOnBoard[tId];
+          if (remainingGlobal < count || remainingPlay < count) isPlaceable = false; 
+        });
         if (!isPlaceable) return;
         emptyR.forEach(region => {
           const placementScores = Scoring.calculatePlacementPoints(workState.regions, region, set.content);

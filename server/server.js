@@ -229,10 +229,15 @@ app.get('/api/simulate-detailed', (req, res) => {
           if (passed.has(id)) continue;
           const p = players.find(x => x.id === id); const myHeld = setsData.heldSets.filter(s => s.ownerId === p.id); const emptyR = regions.filter(r => !RACES.some(race => r.pawns[race]?.length > 0));
           const onBoard = {}; RACES.forEach(r => onBoard[r] = 0); regions.forEach(r => Object.entries(r.pawns).forEach(([tid, insts]) => { if (onBoard[tid] !== undefined) onBoard[tid] += insts.length; }));
-          const pool = { ...setsData.pawns }; RACES.forEach(r => pool[r] -= onBoard[r]);
+          const pool = { ...setsData.pawns }; 
+          const playLimits = setsData.pawnsInPlayLimit || pool;
           let best = null;
           myHeld.forEach(s => {
-            let can = true; Object.entries(s.content).forEach(([tid, count]) => { if (pool[tid] < count) can = false; });
+            let can = true; Object.entries(s.content).forEach(([tid, count]) => { 
+              const remainingGlobal = pool[tid] - onBoard[tid];
+              const remainingPlay = playLimits[tid] - onBoard[tid];
+              if (remainingGlobal < count || remainingPlay < count) can = false; 
+            });
             if (!can) return;
             emptyR.forEach(r => { const placementScores = Scoring.calculatePlacementPoints(regions, r, s.content); const pts = placementScores[p.generalOf] || 0; if (!best || pts > best.pts) best = { s, r, pts, allScores: placementScores }; });
           });
@@ -353,18 +358,24 @@ app.post('/api/simulate/:gameId', (req, res) => {
           const emptyR = regions.filter(r => !RACES.some(race => r.pawns[race]?.length > 0));
           const onBoard = {}; RACES.forEach(r => onBoard[r] = 0);
           regions.forEach(r => Object.entries(r.pawns).forEach(([tid, insts]) => { if (onBoard[tid] !== undefined) onBoard[tid] += insts.length; }));
-          const pool = { ...setsData.pawns }; RACES.forEach(r => pool[r] -= onBoard[r]);
+          const pool = { ...setsData.pawns }; 
+          const playLimits = setsData.pawnsInPlayLimit || pool;
           let best = null;
           myHeld.forEach(s => {
-            let can = true; Object.entries(s.content).forEach(([tid, count]) => { if (pool[tid] < count) can = false; });
+            let can = true; Object.entries(s.content).forEach(([tid, count]) => { 
+              const remainingGlobal = pool[tid] - onBoard[tid];
+              const remainingPlay = playLimits[tid] - onBoard[tid];
+              if (remainingGlobal < count || remainingPlay < count) can = false; 
+            });
             if (!can) return;
-            emptyR.forEach(r => { 
+            emptyR.forEach(r => {
               const placementScores = Scoring.calculatePlacementPoints(regions, r, s.content);
-              const pts = placementScores[p.generalOf] || 0; 
-              if (!best || pts > best.pts) best = { s, r, pts, allScores: placementScores }; 
+              const pts = placementScores[p.generalOf] || 0;
+              if (!best || pts > best.pts) best = { s, r, pts, allScores: placementScores };
             });
             });
-            if (best && best.pts > 1) { 
+            if (best && best.pts > 1) {
+ 
             players.forEach(beneficiary => { 
               if (beneficiary.generalOf) { 
                 beneficiary.points += best.allScores[beneficiary.generalOf] || 0; 

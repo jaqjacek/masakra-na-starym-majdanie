@@ -206,9 +206,9 @@ const AdminSets = () => {
                         <div className={`set-icon ${race}`}></div>
                         <span>{total}</span>
                       </div>
-                      {isEditMode && (
-                        <div className="limit-edit-input">
-                          <label>L:</label>
+                      <div className="limit-display">
+                        <label>L:</label>
+                        {isEditMode ? (
                           <input 
                             type="number" 
                             value={limits[race]} 
@@ -219,8 +219,10 @@ const AdminSets = () => {
                               setLoadedSetData(newData);
                             }}
                           />
-                        </div>
-                      )}
+                        ) : (
+                          <span className="limit-value">{limits[race]}</span>
+                        )}
+                      </div>
                     </div>
                   );
                 })}

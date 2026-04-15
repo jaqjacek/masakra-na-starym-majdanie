@@ -422,7 +422,7 @@
   flex: 1; display: flex; flex-direction: column; align-items: center; position: relative;
 }
 
-.generals-pool-wrapper {
+.generals-pool-wrapper, .setup-summary-wrapper {
   position: absolute;
   top: 50%;
   left: 50%;
@@ -432,11 +432,62 @@
   align-items: center;
   gap: 0.8rem;
   z-index: 2000;
-  background: rgba(0,0,0,0.85);
-  padding: 2rem;
+  background: rgba(0,0,0,0.9);
+  padding: 2.5rem;
   border-radius: 20px;
   border: 2px solid #f1c40f;
-  box-shadow: 0 0 30px rgba(0,0,0,0.8);
+  box-shadow: 0 0 50px rgba(0,0,0,0.9);
+  min-width: 400px;
+}
+
+.setup-summary-header {
+  font-size: 1.2rem;
+  color: #f1c40f;
+  text-transform: uppercase;
+  font-weight: bold;
+  letter-spacing: 2px;
+  margin-bottom: 1rem;
+}
+
+.setup-limits-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 2rem;
+  width: 100%;
+}
+
+.setup-limit-section h4 {
+  color: #3498db;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  margin-bottom: 1rem;
+  text-align: center;
+}
+
+.setup-limit-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+
+.setup-limit-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  background: rgba(255,255,255,0.05);
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+}
+
+.setup-limit-item .set-icon {
+  width: 24px;
+  height: 24px;
+}
+
+.setup-limit-item span {
+  font-weight: bold;
+  font-size: 1.1rem;
+  color: #fff;
 }
 
 .generals-pool-header {

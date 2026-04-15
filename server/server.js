@@ -215,7 +215,15 @@ app.get('/api/simulate-detailed', (req, res) => {
     const drawSet = () => { if (setsData.drawPile.length === 0) { if (setsData.discardPile.length === 0) return null; setsData.drawPile = [...setsData.discardPile]; setsData.discardPile = []; } return setsData.drawPile.splice(Math.floor(Math.random() * setsData.drawPile.length), 1)[0]; };
     players.forEach(p => { for (let i = 0; i < 5; i++) { const s = drawSet(); if (s) { s.ownerId = p.id; setsData.heldSets.push(s); } } });
     
-    const gameHistory = { setup: { playerOrder: [...playerOrder], initialSets: JSON.parse(JSON.stringify(setsData.heldSets)) }, rounds: [] };
+    const gameHistory = { 
+      setup: { 
+        playerOrder: [...playerOrder], 
+        initialSets: JSON.parse(JSON.stringify(setsData.heldSets)),
+        pawnPool: setsData.pawns,
+        pawnsInPlayLimit: setsData.pawnsInPlayLimit || setsData.pawns
+      }, 
+      rounds: [] 
+    };
 
     for (let round = 1; round <= 10; round++) {
       const roundData = { round, generals: {}, turns: [], endPoints: {} };

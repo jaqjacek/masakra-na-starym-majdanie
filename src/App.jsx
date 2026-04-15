@@ -73,17 +73,22 @@ function App() {
   const availablePool = useMemo(() => {
     if (!gameState.sets || !gameState.sets.pawns) return {};
     const pool = { ...gameState.sets.pawns };
-    const limits = gameState.sets.pawnsInPlayLimit || pool;
-    
     const available = {};
     Object.keys(pool).forEach(race => { 
-      // Available is limited by BOTH total remaining pawns AND play limit
-      const remainingGlobal = Math.max(0, pool[race] - (counters.breakdown[race] || 0));
-      const remainingOnBoard = Math.max(0, (limits[race] || 999) - (counters.onBoard[race] || 0));
-      available[race] = Math.min(remainingGlobal, remainingOnBoard);
+      available[race] = Math.max(0, pool[race] - (counters.breakdown[race] || 0));
     });
     return available;
-  }, [gameState.sets, counters.breakdown, counters.onBoard]);
+  }, [gameState.sets, counters.breakdown]);
+
+  const placementPool = useMemo(() => {
+    const limits = gameState.sets?.pawnsInPlayLimit || gameState.sets?.pawns || {};
+    const placement = {};
+    Object.keys(availablePool).forEach(race => {
+      const remainingOnBoard = Math.max(0, (limits[race] || 999) - (counters.onBoard[race] || 0));
+      placement[race] = Math.min(availablePool[race], remainingOnBoard);
+    });
+    return placement;
+  }, [availablePool, gameState.sets, counters.onBoard]);
 
   const isJakubOnBoard = useMemo(() => (counters.breakdown['jakub'] || 0) > 0, [counters.breakdown]);
 
@@ -118,7 +123,7 @@ function App() {
     handleBagMouseDown, handleJakubMouseDownFromPanel, handleSetMouseDown, handleGeneralMouseDown,
     handlePawnMouseDown, handleRegionMouseUp, handlePlayerMouseUp, handleJakubMouseUp
   } = useGameInteraction({
-    gameId, playerId, gameState, availablePool, counters, isJakubOnBoard, jakubRegion, updateGameWithSync, addLog, findAndRemoveSetById, advanceTurn
+    gameId, playerId, gameState, availablePool, placementPool, counters, isJakubOnBoard, jakubRegion, updateGameWithSync, addLog, findAndRemoveSetById, advanceTurn
   });
 
   // 5. Specific handlers
@@ -339,7 +344,7 @@ function App() {
                 key={pawn.id} 
                 type={pawn} 
                 onMouseDown={(e) => handleBagMouseDown(pawn.id, e)} 
-                availableCount={availablePool[pawn.id]} 
+                availableCount={placementPool[pawn.id]} 
                 onBoard={counters.onBoard[pawn.id]}
                 limit={gameState.sets?.pawnsInPlayLimit?.[pawn.id] || gameState.sets?.pawns?.[pawn.id]}
               />
@@ -375,6 +380,40 @@ function App() {
             sets={gameState.sets} 
             passedPlayers={gameState.passedPlayers || []}
           />
+
+          {gameState.phase === 'setup' && (
+            <div className="setup-summary-wrapper">
+              <div className="setup-summary-header">Game Setup: {gameState.setName || 'Random'}</div>
+              <div className="setup-limits-grid">
+                <div className="setup-limit-section">
+                  <h4>Total Pawn Pool</h4>
+                  <div className="setup-limit-list">
+                    {RACES.map(race => (
+                      <div key={race} className="setup-limit-item">
+                        <div className={`set-icon ${race}`}></div>
+                        <span>{gameState.sets?.pawns?.[race] || 0}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                <div className="setup-limit-section">
+                  <h4>Pawn Play Limits</h4>
+                  <div className="setup-limit-list">
+                    {RACES.map(race => (
+                      <div key={race} className="setup-limit-item">
+                        <div className={`set-icon ${race}`}></div>
+                        <span>{gameState.sets?.pawnsInPlayLimit?.[race] || gameState.sets?.pawns?.[race] || 0}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+              <div className="setup-hint" style={{ marginTop: '1.5rem', color: '#888', fontSize: '0.8rem' }}>
+                Waiting for host to click "DRAW SETS" in the top bar...
+              </div>
+            </div>
+          )}
+
           {gameState.phase === 'general_phase' && (() => {
             const curId = playerId || gameState.playerOrder[gameState.currentPlayerIndex];
             const player = gameState.players.find(p => p.id === curId);

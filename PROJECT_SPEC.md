@@ -75,3 +75,26 @@
 ## 6. Project Status (Current: v1.7.0)
 - **Implemented:** Manual & Automated gameplay, Dockerization, Deployment scripts, multi-phase logic, refined scoring, and UI polishing.
 - **Next Steps:** Refactoring AI strategies and enhancing simulation accuracy.
+
+## 7. Core File Map (AI Navigation)
+### 7.1 Backend (Logic & State)
+- **Game Engine:** `server/gameLogic.js` (Phase transitions, move validation)
+- **Board/Regions:** `server/boardManager.js` (Map initialization, coordinate logic)
+- **Sets/Pawns:** `server/setManager.js` (Pawn generation, Set distribution)
+- **Scoring:** `server/scoring.js` (Final point calculation)
+- **Persistence:** `server/games/{id}/` (JSON state storage)
+- **Config:** `server/configs/game_config.json`, `server/configs/set_default.json`
+
+### 7.2 Frontend (UI & Interaction)
+- **Main State:** `src/hooks/useGameState.js` (Socket synchronization, global state)
+- **Interaction:** `src/hooks/useGameInteraction.js` (Click handlers, drag-and-drop logic)
+- **Components:** `src/components/Board.jsx`, `src/components/Region.jsx`, `src/components/Bag.jsx`
+- **Panels:** `src/components/panels/` (Jakub, History, Players, Sets)
+- **Styles:** `src/assets/css/` (base.css, game.css, admin.css)
+- **Strategy:** `src/strategies/jakubStrategy.js` (AI behavior for Jakub Phase)
+
+## 8. Development Constraints & Standards
+- **Vanilla Only:** No external UI libraries (MUI, Tailwind, etc.). Use `src/assets/css/`.
+- **JSON Integrity:** Never modify JSON structures in `server/games/` without ensuring the frontend `useGameState.js` can parse them.
+- **Atomic Commits:** Focus on one phase or one component at a time.
+- **Docker First:** All backend changes must be verified to run within the Docker container (Alpine-based).

@@ -1,9 +1,12 @@
 # GEMINI Instructions
 
-## 1. Primary Project Source of Truth
-The file `PROJECT_SPEC.md` contains the authoritative specifications, architecture, and coding standards for this project.
+## 1. Single Source of Truth
+The file `PROJECT_SPEC.md` is the authoritative source for architecture, file mapping, and standards. **Always read it first.**
 
-## 2. General Mandates
-- Always refer to `PROJECT_SPEC.md` before generating new features or modifying the existing architecture.
-- Ensure all code changes align with the tech stack and coding standards defined in `PROJECT_SPEC.md`.
-- Update `PROJECT_SPEC.md` when significant architectural decisions are made or new core features are implemented.
+## 2. Context Efficiency
+- **Skip Research:** For standard UI/Logic updates, refer to the 'Core File Map' in `PROJECT_SPEC.md` instead of full-project `grep`.
+- **No Structure File:** Do not look for `project_structure.md`. Use the tree provided in the session context.
+
+## 3. General Mandates
+- Ensure all code changes align with the tech stack defined in `PROJECT_SPEC.md`.
+- Update `PROJECT_SPEC.md` immediately if architectural paths or core JSON schemas change.

@@ -46,17 +46,30 @@ const io = new Server(server, {
 });
 
 const PORT = process.env.PORT || 3001;
+// Robust path resolution for Docker
+const DIST_PATH = path.join(process.cwd(), 'dist');
 
 app.use(cors());
 app.use(express.json());
 
-// Serve static files from the frontend build
-const DIST_PATH = path.join(process.cwd(), 'dist');
+// Log all requests
+app.use((req, res, next) => {
+  console.log(`[${new Date().toLocaleTimeString()}] ${req.method} ${req.url}`);
+  next();
+});
+
+// 1. Health check / Ping
+app.get('/api/ping', (req, res) => res.send('pong'));
+
+// 2. Static files
 if (fs.existsSync(DIST_PATH)) {
+  console.log(`Serving static files from: ${DIST_PATH}`);
   app.use(express.static(DIST_PATH));
+} else {
+  console.error(`CRITICAL: DIST_PATH does not exist: ${DIST_PATH}`);
 }
 
-// API Routes
+// 3. API Routes
 app.get('/api/config', (req, res) => res.json(getGlobalConfig()));
 
 app.get('/api/next-game-id', (req, res) => {
@@ -187,6 +200,115 @@ app.post('/api/init/:gameId', (req, res) => {
     io.to(`game:${gameId}`).emit('boardUpdate', finalState); 
     res.json({ message: 'Initialized', state: finalState });
   } catch (_err) { res.status(500).json({ error: 'Failed' }); }
+});
+
+app.get('/api/simulate-detailed', (req, res) => {
+  const { set } = req.query;
+  try {
+    const regions = createEmptyRegions(); const players = JSON.parse(JSON.stringify(DEFAULT_PLAYERS)); const config = getGlobalConfig(); 
+    let requestedSet = set; if (!requestedSet && fs.existsSync(path.join(CONFIGS_DIR, 'set_default.json'))) requestedSet = 'set_default'; if (!requestedSet) requestedSet = config.defaultSetName;
+    let setsData = (requestedSet ? loadSetFile(requestedSet) : null) || generateSetData(INITIAL_PAWN_POOL, DEFAULT_POWER_CONFIG, 6);
+    if (setsData.items && !setsData.drawPile) { setsData.drawPile = setsData.items; delete setsData.items; }
+    if (!setsData.discardPile) setsData.discardPile = []; if (!setsData.heldSets) setsData.heldSets = [];
+    let playerOrder = [1, 2, 3, 4].sort(() => Math.random() - 0.5);
+    const drawSet = () => { if (setsData.drawPile.length === 0) { if (setsData.discardPile.length === 0) return null; setsData.drawPile = [...setsData.discardPile]; setsData.discardPile = []; } return setsData.drawPile.splice(Math.floor(Math.random() * setsData.drawPile.length), 1)[0]; };
+    players.forEach(p => { for (let i = 0; i < 5; i++) { const s = drawSet(); if (s) { s.ownerId = p.id; setsData.heldSets.push(s); } } });
+    
+    const gameHistory = { setup: { playerOrder: [...playerOrder], initialSets: JSON.parse(JSON.stringify(setsData.heldSets)) }, rounds: [] };
+
+    for (let round = 1; round <= 10; round++) {
+      const roundData = { round, generals: {}, turns: [], endPoints: {} };
+      players.forEach(p => { const myHeld = setsData.heldSets.filter(s => s.ownerId === p.id); const needed = 5 - myHeld.length; for (let i = 0; i < needed; i++) { const s = drawSet(); if (s) { s.ownerId = p.id; setsData.heldSets.push(s); } } });
+      for (let i = 0; i < 2; i++) { const s = drawSet(); if (s) { s.ownerId = 'jakub'; setsData.heldSets.push(s); } }
+      let availableGenerals = [...RACES].sort(() => Math.random() - 0.5);
+      playerOrder.forEach(id => { const p = players.find(x => x.id === id); p.generalOf = availableGenerals.pop(); roundData.generals[p.name] = p.generalOf; });
+      let passed = new Set();
+      while (passed.size < players.length) {
+        for (const id of playerOrder) {
+          if (passed.has(id)) continue;
+          const p = players.find(x => x.id === id); const myHeld = setsData.heldSets.filter(s => s.ownerId === p.id); const emptyR = regions.filter(r => !RACES.some(race => r.pawns[race]?.length > 0));
+          const onBoard = {}; RACES.forEach(r => onBoard[r] = 0); regions.forEach(r => Object.entries(r.pawns).forEach(([tid, insts]) => { if (onBoard[tid] !== undefined) onBoard[tid] += insts.length; }));
+          const pool = { ...setsData.pawns }; RACES.forEach(r => pool[r] -= onBoard[r]);
+          let best = null;
+          myHeld.forEach(s => {
+            let can = true; Object.entries(s.content).forEach(([tid, count]) => { if (pool[tid] < count) can = false; });
+            if (!can) return;
+            emptyR.forEach(r => { const placementScores = Scoring.calculatePlacementPoints(regions, r, s.content); const pts = placementScores[p.generalOf] || 0; if (!best || pts > best.pts) best = { s, r, pts, allScores: placementScores }; });
+          });
+          if (best && best.pts > 1) { 
+            const pointGains = [];
+            players.forEach(beneficiary => { 
+              if (beneficiary.generalOf) { 
+                const gain = best.allScores[beneficiary.generalOf] || 0;
+                beneficiary.points += gain; 
+                if (gain > 0) {
+                  pointGains.push({ player: beneficiary.name, race: beneficiary.generalOf, points: gain });
+                }
+              } 
+            });
+            Object.entries(best.s.content).forEach(([tid, count]) => { if (!best.r.pawns[tid]) best.r.pawns[tid] = []; for (let i = 0; i < count; i++) best.r.pawns[tid].push({ statuses: ['ENABLED'] }); }); 
+            const idx = setsData.heldSets.findIndex(x => x.id === best.s.id); const used = setsData.heldSets.splice(idx, 1)[0]; used.ownerId = null; setsData.discardPile.push(used); 
+            roundData.turns.push({ 
+              type: 'placement', 
+              player: p.name, 
+              race: p.generalOf, 
+              regionId: best.r.id, 
+              pointGains,
+              content: best.s.content 
+            });
+          } else {
+            if (myHeld.length > 3) { 
+              const excess = myHeld.length - 3; 
+              const sorted = [...myHeld].sort((a,b) => (a.content[p.generalOf]||0) - (b.content[p.generalOf]||0)); 
+              for(let i=0; i<excess; i++) { const s = sorted[i]; s.ownerId = 'jakub'; } 
+              p.points += excess; 
+              roundData.turns.push({ 
+                type: 'pass_to_jakub', 
+                player: p.name, 
+                race: p.generalOf,
+                setsGiven: excess,
+                pointGains: [{ player: p.name, race: p.generalOf, points: excess }]
+              }); 
+            }
+            passed.add(id);
+          }
+        }
+      }
+      let jakR = regions.find(r => r.pawns.jakub?.length > 0); let jakub = jakR.pawns.jakub[0]; const jakubSets = setsData.heldSets.filter(s => s.ownerId === 'jakub');
+      jakubSets.forEach(s => { Object.entries(s.content).forEach(([race, count]) => { if (jakub.anger[race] !== undefined) jakub.anger[race] += count; }); });
+      let extraRange = 0; Object.values(jakub.anger).forEach(val => { if (val >= JAKUB_ANGER_THRESHOLD) extraRange += 1; }); jakub.range = Math.min(5, JAKUB_BASE_RANGE + extraRange);
+      let continues = true;
+      while (continues) {
+        continues = false; let curR = regions.find(r => r.pawns.jakub?.length > 0); const sortedAngerRaces = RACES.map(r => ({ race: r, val: jakub.anger[r] })).filter(a => a.val > 0).sort((a,b) => b.val - a.val || RACES.indexOf(a.race) - RACES.indexOf(b.race)).map(a => a.race);
+        if (sortedAngerRaces.length === 0) break;
+        let actionFound = false;
+        for (const race of sortedAngerRaces) {
+          const units = curR.pawns[race]?.length || 0;
+          if (units > 0) { const killCount = Math.min(units, jakub.anger[race]); const p = players.find(x => x.generalOf === race); if (p) p.points = Math.max(0, p.points - killCount); jakub.anger[race] -= killCount; curR.pawns[race].splice(0, killCount); if (curR.pawns[race].length === 0) delete curR.pawns[race]; continues = true; actionFound = true; roundData.turns.push({ type: 'jakub_attack', regionId: curR.id, race, killCount }); break; }
+        }
+        if (actionFound) continue;
+        const candidates = getRegionsInRange(regions, curR.id, jakub.range); const bestRIdx = getBestTargetRegion(candidates, sortedAngerRaces, regions);
+        if (bestRIdx !== null) { const fromId = curR.id; regions[bestRIdx].pawns.jakub = curR.pawns.jakub; delete curR.pawns.jakub; jakub.range = Math.max(0, jakub.range - 1); continues = true; roundData.turns.push({ type: 'jakub_move', from: fromId, to: regions[bestRIdx].id, remainingRange: jakub.range }); }
+      }
+      let jakR_after = regions.find(r => r.pawns.jakub?.length > 0);
+      if (jakR_after) { RACES.forEach(race => { const count = jakR_after.pawns[race]?.length || 0; if (count > 0) { const pts = count * 2; const p = players.find(x => x.generalOf === race); if (p) { p.points += pts; roundData.turns.push({ type: 'rambo_points', player: p.name, race, points: pts }); } } }); }
+      jakub.range = 1; jakubSets.forEach(s => { const idx = setsData.heldSets.findIndex(x => x.id === s.id); const recycled = setsData.heldSets.splice(idx, 1)[0]; recycled.ownerId = null; recycled.used = false; setsData.discardPile.push(recycled); });
+      players.forEach(p => roundData.endPoints[p.name] = p.points); gameHistory.rounds.push(roundData);
+      if (round < 10) { players.forEach(p => p.generalOf = null); playerOrder = [...players].sort((a,b) => a.points - b.points).map(p => p.id); }
+    }
+    const finalScoringBreakdown = {};
+    players.forEach(p => {
+      const pick = p.generalOf; if (!pick) return; let addedPoints = 0;
+      if (pick === 'vampire') { let regionsWithVampires = 0; regions.forEach(r => { if (r.pawns[pick]?.length > 0) regionsWithVampires++; }); addedPoints = regionsWithVampires * 2; }
+      else if (pick === 'werewolf') { let count = 0; regions.forEach(r => count += (r.pawns[pick]?.length || 0)); addedPoints = count; }
+      else if (pick === 'ghost') { regions.forEach(r => { const myCount = r.pawns[pick]?.length || 0; if (myCount > 0) { let others = RACES.filter(race => race !== pick).map(race => r.pawns[race]?.length || 0); if (others.reduce((a,b)=>a+b,0) === 0) addedPoints += 2; else if (myCount > Math.max(...others)) addedPoints += 1; } }); }
+      else if (pick === 'bardak') { regions.forEach(r => { const myCount = r.pawns[pick]?.length || 0; if (myCount > 0) { let othersCounts = RACES.filter(race => race !== pick).map(race => r.pawns[race]?.length || 0); const maxOther = Math.max(...othersCounts); if (myCount > maxOther) addedPoints += 1; } }); }
+      p.points += addedPoints; finalScoringBreakdown[p.name] = { race: pick, bonus: addedPoints, finalTotal: p.points };
+    });
+    gameHistory.finalScoring = finalScoringBreakdown;
+    gameHistory.winner = [...players].sort((a,b) => b.points - a.points)[0].name;
+    res.json(gameHistory);
+  } catch (err) { console.error(err); res.status(500).json({ error: 'Detailed simulation failed' }); }
 });
 
 app.post('/api/simulate/:gameId', (req, res) => {
@@ -334,13 +456,14 @@ app.post('/api/simulate/:gameId', (req, res) => {
 
 app.use((err, req, res, next) => { console.error("SERVER ERROR:", err); res.status(500).json({ error: "Internal Server Error" }); });
 
-// Catch-all route for React Router
-app.get('*path', (req, res) => {
-  const indexPath = path.join(process.cwd(), 'dist', 'index.html');
+// 4. Catch-all for SPA
+app.get('*any', (req, res, next) => {
+  if (req.url.startsWith('/api')) return next();
+  const indexPath = path.join(DIST_PATH, 'index.html');
   if (fs.existsSync(indexPath)) {
     res.sendFile(indexPath);
   } else {
-    res.status(404).send('Frontend not built');
+    res.status(404).send(`Frontend build missing at: ${indexPath}`);
   }
 });
 
@@ -350,4 +473,9 @@ io.on('connection', (socket) => {
   socket.on('joinGame', id => socket.join(`game:${id}`)); 
 });
 
-server.listen(PORT, () => console.log(`Server running on ${PORT}`));
+server.listen(PORT, '0.0.0.0', () => {
+  console.log(`Server running on port ${PORT}`);
+  if (fs.existsSync(DIST_PATH)) {
+    console.log(`DIST folder contains: ${fs.readdirSync(DIST_PATH).join(', ')}`);
+  }
+});

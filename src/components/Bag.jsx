@@ -18,7 +18,7 @@ const Bag = ({ type, onMouseDown, disabled, availableCount, onBoard, limit }) =>
       </div>
       <span className="bag-label">{type.name}</span>
       {showLimit && (
-        <span className="bag-limit-sub">{onBoard}/{limit} In Play</span>
+        <span className="bag-limit-sub">{onBoard}/{limit}</span>
       )}
     </div>
   );

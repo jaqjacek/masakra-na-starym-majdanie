@@ -168,6 +168,15 @@
   color: #fff; font-size: 0.6rem; font-weight: bold; padding: 1px 4px; border-radius: 8px;
 }
 
+.bag-limit-sub {
+  font-size: 0.55rem;
+  color: #f1c40f;
+  font-weight: bold;
+  margin-top: 2px;
+  text-align: center;
+  display: block;
+}
+
 .game-status-horizontal {
   display: flex;
   justify-content: center;

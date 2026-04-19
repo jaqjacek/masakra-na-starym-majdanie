@@ -44,4 +44,4 @@ This document describes the standard release workflow for the Wedrowycz-Gemini p
     ```
 
 ---
-*Last Release Performed: v1.8.0*
+*Last Release Performed: v1.9.0*

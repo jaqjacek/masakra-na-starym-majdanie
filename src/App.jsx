@@ -29,7 +29,6 @@ import { PAWN_TYPES, SUMMARY_PAWN_IDS } from './constants/pawnTypes';
 import { RACES, INITIAL_STATE } from './constants/game';
 import { applySetToJakubAnger } from './strategies/jakubStrategy';
 import { TOTAL_GAME_ROUNDS, INITIAL_HAND_SIZE, JAKUB_INITIAL_SETS, SERVER_URL } from './constants/constants';
-import { fetchMap } from './services/api';
 
 function App() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -104,7 +103,7 @@ function App() {
   const {
     isFullAutoplay, setIsFullAutoplay, isJakubAutoplay, setIsJakubAutoplay,
     autoplaySpeed, setAutoplaySpeed, findAndRemoveSetById
-  } = useAutoplay({ gameId, gameState, updateGameWithSync, addLog, jakubRegion });
+  } = useAutoplay({ gameId, gameState, updateGameWithSync, addLog });
 
   const advanceTurn = useCallback((state) => {
     if (state.passedPlayers.length >= state.players.length) return;
@@ -123,7 +122,7 @@ function App() {
     handleBagMouseDown, handleJakubMouseDownFromPanel, handleSetMouseDown, handleGeneralMouseDown,
     handlePawnMouseDown, handleRegionMouseUp, handlePlayerMouseUp, handleJakubMouseUp
   } = useGameInteraction({
-    gameId, playerId, gameState, availablePool, placementPool, counters, isJakubOnBoard, jakubRegion, updateGameWithSync, addLog, findAndRemoveSetById, advanceTurn
+    gameId, playerId, gameState, availablePool, placementPool, counters, isJakubOnBoard, updateGameWithSync, addLog, findAndRemoveSetById, advanceTurn
   });
 
   // 5. Specific handlers

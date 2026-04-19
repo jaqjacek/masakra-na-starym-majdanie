@@ -22,9 +22,7 @@ const GamePanel = ({
   onOpenScoring,
   onCreateNewGame,
   onChangeGame,
-  onAdminPanel,
-  serverUrl,
-  initialState
+  onAdminPanel
 }) => {
   return (
     <div className="top-header-bar">

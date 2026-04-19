@@ -4,7 +4,7 @@
 REGISTRY="docker.jaqjacek.duckdns.org"
 IMAGE_NAME="wedrowycz-app"
 CONTAINER_NAME="wedrowycz_app"
-PORT="6666"
+PORT="7777"
 
 FULL_IMAGE_NAME="$REGISTRY/$IMAGE_NAME:latest"
 

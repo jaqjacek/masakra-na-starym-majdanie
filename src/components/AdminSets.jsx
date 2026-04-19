@@ -55,7 +55,7 @@ const AdminSets = () => {
       setAvailableSets(list);
       setSelectedSet(result.name);
       alert(`Set generated: ${result.name}`);
-    } catch (err) { alert('Failed to generate set'); }
+    } catch (_err) { alert('Failed to generate set'); }
   };
 
   const handleSaveEdits = async () => {
@@ -70,7 +70,7 @@ const AdminSets = () => {
       alert(data.message);
       setIsEditMode(false);
       fetchSetDetails(selectedSet); // Refresh to get re-indexed state
-    } catch (err) { alert('Failed to save set'); }
+    } catch (_err) { alert('Failed to save set'); }
   };
 
   const handleSort = async () => {
@@ -80,7 +80,7 @@ const AdminSets = () => {
       const data = await res.json();
       setLoadedSetData(data.setsData);
       alert(data.message);
-    } catch (err) { alert('Failed to sort set'); }
+    } catch (_err) { alert('Failed to sort set'); }
   };
 
   const setAsDefault = async () => {

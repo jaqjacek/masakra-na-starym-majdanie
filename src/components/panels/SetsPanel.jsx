@@ -1,30 +1,18 @@
 import React, { useState } from 'react';
 import { PAWN_TYPES, SUMMARY_PAWN_IDS } from '../../constants/pawnTypes';
 
-const SetsPanel = ({ sets, discardedSets = [], onSetMouseDown, title, setInfo, discardPileCount = 0, hideTabs = false }) => {
+const SetsPanel = ({ sets, discardedSets = [], onSetMouseDown, title, setInfo, hideTabs = false }) => {
   const [activeTab, setActiveTab] = useState('active');
 
   const currentSets = activeTab === 'active' ? sets : discardedSets;
   if (!currentSets) return null;
 
-  const totalSets = currentSets.length;
-  const breakdown = SUMMARY_PAWN_IDS.reduce((acc, id) => {
-    acc[id] = 0;
-    return acc;
-  }, {});
-
-  currentSets.forEach(set => {
-    Object.entries(set.content).forEach(([typeId, count]) => {
-      if (breakdown[typeId] !== undefined) breakdown[typeId] += count;
-    });
-  });
+  const displaySetName = setInfo?.displayName || setInfo?.setName || "Unknown Set";
 
   const sortedSets = [...currentSets].sort((a, b) => {
     if (a.used === b.used) return 0;
     return a.used ? 1 : -1;
   });
-
-  const displaySetName = setInfo?.displayName || setInfo?.setName || "Unknown Set";
 
   return (
     <div className="sets-panel">

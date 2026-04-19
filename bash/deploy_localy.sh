@@ -4,7 +4,7 @@
 REGISTRY="docker.jaqjacek.duckdns.org"
 IMAGE_NAME="wedrowycz-app"
 CONTAINER_NAME="wedrowycz_app"
-PORT="6666"
+PORT="7777"
 
 # Obsługa parametru --tag
 VERSION=""
@@ -34,7 +34,7 @@ fi
 
 echo "--- 2. Wybrana wersja (Tag): $VERSION ---"
 echo "--- 3. Budowanie obrazu: $IMAGE_NAME:$VERSION ---"
-docker build -t "$IMAGE_NAME:$VERSION" .
+docker build -t "$IMAGE_NAME:$VERSION" --no-cache .
 
 echo "--- 4. Uruchamianie nowej wersji lokalnie ---"
 # Uruchamiamy w tle na porcie 6666 (mapujemy na 3001 w kontenerze)

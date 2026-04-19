@@ -28,6 +28,7 @@ COPY --from=build /app/dist ./dist
 # Copy the backend code and server configs
 COPY server/ ./server/
 COPY server_config.json ./
+COPY server_config.json ./server/configs/
 
 # Create persistent storage directories for the server
 RUN mkdir -p server/games server/sets server/configs

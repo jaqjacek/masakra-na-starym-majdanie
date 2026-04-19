@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { io } from 'socket.io-client';
 import { fetchMap, updateMap } from '../services/api';
 import { INITIAL_STATE } from '../constants/game';

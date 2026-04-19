@@ -18,7 +18,7 @@ const GameHeader = ({ counters, maxPool, pawnsInPlayLimit, playerOrder = [], cur
 
       <div className="player-order-track">
         <span className="order-label">TURN:</span>
-        {playerOrder.map((pid, idx) => {
+        {playerOrder.map((pid) => {
           const isCurrent = pid === currentActiveId;
           const isPassed = passedPlayers.includes(pid);
           return (

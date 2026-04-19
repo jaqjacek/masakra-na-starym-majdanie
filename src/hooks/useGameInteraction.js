@@ -10,9 +10,9 @@ export const useGameInteraction = ({
   playerId,
   gameState,
   availablePool,
+  placementPool,
   counters,
   isJakubOnBoard,
-  jakubRegion,
   updateGameWithSync,
   addLog,
   findAndRemoveSetById,
@@ -27,10 +27,10 @@ export const useGameInteraction = ({
   const handleBagMouseDown = useCallback((typeId, e) => {
     const pawnType = PAWN_TYPES.find(p => p.id === typeId);
     if (pawnType.isUnique && (counters.breakdown[typeId] || 0) > 0) return;
-    if (availablePool[typeId] <= 0) return; 
+    if (placementPool[typeId] <= 0) return; 
     setActivePawn({ typeId, x: e.clientX, y: e.clientY, fromIndex: null });
     setValidMoveTargets(gameState.regions.map(r => r.id));
-  }, [gameState, counters.breakdown, availablePool]);
+  }, [gameState, counters.breakdown, placementPool]);
 
   const handleJakubMouseDownFromPanel = useCallback((e) => {
     if (isJakubOnBoard) return;
@@ -109,7 +109,7 @@ export const useGameInteraction = ({
       
       let canPlace = true;
       Object.entries(activeSet.set.content).forEach(([tId, count]) => {
-        if (availablePool[tId] < count) canPlace = false;
+        if (placementPool[tId] < count) canPlace = false;
       });
 
       if (!canPlace) {
@@ -148,7 +148,14 @@ export const useGameInteraction = ({
         newState.sets.discardPile.push(usedSet);
       }
 
-      addLog(newState, `Manual: Set ${activeSet.set.id} placed [${logSummary.join(', ')}]`);
+      const limits = newState.sets?.pawnsInPlayLimit || newState.sets?.pawns || {};
+      const statusLog = RACES.map(race => {
+        const count = newState.regions.reduce((sum, r) => sum + (r.pawns[race]?.length || 0), 0);
+        const limit = limits[race] || 0;
+        return `${race[0].toUpperCase()}:${count}/${limit}`;
+      }).join(' ');
+
+      addLog(newState, `Manual: Set ${activeSet.set.id} placed [${logSummary.join(', ')}] | Board: ${statusLog}`);
       
       if (advanceTurn) advanceTurn(newState);
 
@@ -156,7 +163,7 @@ export const useGameInteraction = ({
       setActiveSet(null);
       setValidMoveTargets([]);
     }
-  }, [activePawn, activeSet, gameState, gameId, validMoveTargets, jakubRegion, availablePool, updateGameWithSync, addLog, findAndRemoveSetById, advanceTurn]);
+  }, [activePawn, activeSet, gameState, gameId, validMoveTargets, availablePool, placementPool, updateGameWithSync, addLog, findAndRemoveSetById, advanceTurn]);
 
   const handlePlayerMouseUp = useCallback((targetPlayerId) => {
     if (activeSet && !playerId) { 

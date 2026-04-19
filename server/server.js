@@ -32,7 +32,6 @@ import {
   CONFIG_FILE, 
   CONFIGS_DIR,
   getGlobalConfig, 
-  ensureGameDir, 
   getGameData, 
   saveFullState 
 } from './gameLogic.js';
@@ -93,12 +92,12 @@ app.post('/api/config', (req, res) => {
 app.get('/api/sets', (req, res) => { 
   try { 
     res.json(fs.readdirSync(SETS_DIR).filter(f => f.endsWith('.json')).map(f => f.replace('.json', ''))); 
-  } catch (err) { res.status(500).json({ error: 'Failed' }); } 
+  } catch (_err) { res.status(500).json({ error: 'Failed' }); } 
 });
 
 app.get('/api/sets/details/:setName', (req, res) => { 
   try { res.json(loadSetFile(req.params.setName)); } 
-  catch (err) { res.status(500).json({ error: 'Failed' }); } 
+  catch (_err) { res.status(500).json({ error: 'Failed' }); } 
 });
 
 app.post('/api/sets/generate', (req, res) => {
@@ -113,7 +112,7 @@ app.post('/api/sets/generate', (req, res) => {
     data.setName = fileName.replace('.json', ''); 
     fs.writeFileSync(path.join(SETS_DIR, fileName), JSON.stringify(data, null, 2)); 
     res.json({ message: 'Set generated', name: data.setName });
-  } catch (err) { res.status(500).json({ error: 'Failed' }); }
+  } catch (_err) { res.status(500).json({ error: 'Failed' }); }
 });
 
 app.post('/api/sets/save/:setName', (req, res) => {
@@ -203,12 +202,20 @@ app.post('/api/init/:gameId', (req, res) => {
   } catch (_err) { res.status(500).json({ error: 'Failed' }); }
 });
 
-app.get('/api/simulate-detailed', (req, res) => {
+app.post('/api/simulate-detailed', (req, res) => {
   const { set } = req.query;
+  const { setsData: uploadedSets } = req.body;
   try {
     const regions = createEmptyRegions(); const players = JSON.parse(JSON.stringify(DEFAULT_PLAYERS)); const config = getGlobalConfig(); 
-    let requestedSet = set; if (!requestedSet && fs.existsSync(path.join(CONFIGS_DIR, 'set_default.json'))) requestedSet = 'set_default'; if (!requestedSet) requestedSet = config.defaultSetName;
-    let setsData = (requestedSet ? loadSetFile(requestedSet) : null) || generateSetData(INITIAL_PAWN_POOL, DEFAULT_POWER_CONFIG, 6);
+    
+    let setsData = uploadedSets;
+    if (!setsData) {
+      let requestedSet = set; 
+      if (!requestedSet && fs.existsSync(path.join(CONFIGS_DIR, 'set_default.json'))) requestedSet = 'set_default'; 
+      if (!requestedSet) requestedSet = config.defaultSetName;
+      setsData = (requestedSet ? loadSetFile(requestedSet) : null) || generateSetData(INITIAL_PAWN_POOL, DEFAULT_POWER_CONFIG, 6);
+    }
+
     if (setsData.items && !setsData.drawPile) { setsData.drawPile = setsData.items; delete setsData.items; }
     if (!setsData.discardPile) setsData.discardPile = []; if (!setsData.heldSets) setsData.heldSets = [];
     let playerOrder = [1, 2, 3, 4].sort(() => Math.random() - 0.5);
@@ -262,13 +269,20 @@ app.get('/api/simulate-detailed', (req, res) => {
             });
             Object.entries(best.s.content).forEach(([tid, count]) => { if (!best.r.pawns[tid]) best.r.pawns[tid] = []; for (let i = 0; i < count; i++) best.r.pawns[tid].push({ statuses: ['ENABLED'] }); }); 
             const idx = setsData.heldSets.findIndex(x => x.id === best.s.id); const used = setsData.heldSets.splice(idx, 1)[0]; used.ownerId = null; setsData.discardPile.push(used); 
+            const onBoardStatus = {};
+            RACES.forEach(race => {
+              const current = regions.reduce((sum, r) => sum + (r.pawns[race]?.length || 0), 0);
+              onBoardStatus[race] = `${current}/${playLimits[race]}`;
+            });
+
             roundData.turns.push({ 
               type: 'placement', 
               player: p.name, 
               race: p.generalOf, 
               regionId: best.r.id, 
               pointGains,
-              content: best.s.content 
+              content: best.s.content,
+              boardStatus: onBoardStatus
             });
           } else {
             if (myHeld.length > 3) { 
@@ -322,17 +336,23 @@ app.get('/api/simulate-detailed', (req, res) => {
     gameHistory.finalScoring = finalScoringBreakdown;
     gameHistory.winner = [...players].sort((a,b) => b.points - a.points)[0].name;
     res.json(gameHistory);
-  } catch (err) { console.error(err); res.status(500).json({ error: 'Detailed simulation failed' }); }
+  } catch (_err) { console.error(_err); res.status(500).json({ error: 'Detailed simulation failed' }); }
 });
 
 app.post('/api/simulate/:gameId', (req, res) => {
   const { set } = req.query;
+  const { setsData: uploadedSets } = req.body;
   try {
     const regions = createEmptyRegions(); const players = JSON.parse(JSON.stringify(DEFAULT_PLAYERS)); const config = getGlobalConfig(); 
-    let requestedSet = set; 
-    if (!requestedSet && fs.existsSync(path.join(CONFIGS_DIR, 'set_default.json'))) requestedSet = 'set_default'; 
-    if (!requestedSet) requestedSet = config.defaultSetName;
-    let setsData = (requestedSet ? loadSetFile(requestedSet) : null) || generateSetData(INITIAL_PAWN_POOL, DEFAULT_POWER_CONFIG, 6);
+    
+    let setsData = uploadedSets;
+    if (!setsData) {
+      let requestedSet = set; 
+      if (!requestedSet && fs.existsSync(path.join(CONFIGS_DIR, 'set_default.json'))) requestedSet = 'set_default'; 
+      if (!requestedSet) requestedSet = config.defaultSetName;
+      setsData = (requestedSet ? loadSetFile(requestedSet) : null) || generateSetData(INITIAL_PAWN_POOL, DEFAULT_POWER_CONFIG, 6);
+    }
+
     if (setsData.items && !setsData.drawPile) { setsData.drawPile = setsData.items; delete setsData.items; }
     if (!setsData.discardPile) setsData.discardPile = []; if (!setsData.heldSets) setsData.heldSets = [];
     let playerOrder = [1, 2, 3, 4].sort(() => Math.random() - 0.5);
@@ -360,8 +380,6 @@ app.post('/api/simulate/:gameId', (req, res) => {
         for (const id of playerOrder) {
           if (passed.has(id)) continue;
           const p = players.find(x => x.id === id); 
-          const jakRIdx = regions.findIndex(r => r.pawns.jakub?.length > 0); 
-          const jakubRegion = regions[jakRIdx];
           const myHeld = setsData.heldSets.filter(s => s.ownerId === p.id); 
           const emptyR = regions.filter(r => !RACES.some(race => r.pawns[race]?.length > 0));
           const onBoard = {}; RACES.forEach(r => onBoard[r] = 0);
@@ -471,10 +489,10 @@ app.post('/api/simulate/:gameId', (req, res) => {
       p.points += addedPoints; analytics[pick].finalBonus = addedPoints; analytics[pick].total = p.points;
     });
     res.json({ analytics });
-  } catch (err) { console.error(err); res.status(500).json({ error: 'Simulation failed' }); }
+  } catch (_err) { console.error(_err); res.status(500).json({ error: 'Simulation failed' }); }
 });
 
-app.use((err, req, res, next) => { console.error("SERVER ERROR:", err); res.status(500).json({ error: "Internal Server Error" }); });
+app.use((err, _req, res, _next) => { console.error("SERVER ERROR:", err); res.status(500).json({ error: "Internal Server Error" }); });
 
 // 4. Catch-all for SPA
 app.get('*any', (req, res, next) => {

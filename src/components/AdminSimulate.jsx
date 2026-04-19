@@ -6,6 +6,35 @@ import { SERVER_URL } from '../constants/constants';
 import '../assets/css/admin.css';
 import Footer from './Footer';
 
+const getRaceColor = (raceId) => PAWN_TYPES.find(p => p.id === raceId)?.color || '#ccc';
+
+const ChartBox = ({ title, dataKeySuffix, data }) => (
+  <div className="simulation-chart-box">
+    <h3>{title}</h3>
+    <div className="chart-wrapper small">
+      <ResponsiveContainer width="100%" height={300}>
+        <LineChart data={data}>
+          <CartesianGrid strokeDasharray="3 3" stroke="#444" />
+          <XAxis dataKey="game" stroke="#888" hide />
+          <YAxis stroke="#888" />
+          <Tooltip contentStyle={{ backgroundColor: '#2c3e50', border: '1px solid #444' }} />
+          {RACES.map(race => (
+            <Line 
+              key={race} 
+              type="monotone" 
+              dataKey={`${race}_${dataKeySuffix}`} 
+              stroke={getRaceColor(race)} 
+              strokeWidth={2} 
+              dot={false} 
+              name={race}
+            />
+          ))}
+        </LineChart>
+      </ResponsiveContainer>
+    </div>
+  </div>
+);
+
 const AdminSimulate = () => {
   const [data, setData] = useState([]);
   const [isSimulating, setIsSimulating] = useState(false);
@@ -50,35 +79,6 @@ const AdminSimulate = () => {
     }
     setIsSimulating(false);
   };
-
-  const getRaceColor = (raceId) => PAWN_TYPES.find(p => p.id === raceId)?.color || '#ccc';
-
-  const ChartBox = ({ title, dataKeySuffix, data }) => (
-    <div className="simulation-chart-box">
-      <h3>{title}</h3>
-      <div className="chart-wrapper small">
-        <ResponsiveContainer width="100%" height={300}>
-          <LineChart data={data}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#444" />
-            <XAxis dataKey="game" stroke="#888" hide />
-            <YAxis stroke="#888" />
-            <Tooltip contentStyle={{ backgroundColor: '#2c3e50', border: '1px solid #444' }} />
-            {RACES.map(race => (
-              <Line 
-                key={race} 
-                type="monotone" 
-                dataKey={`${race}_${dataKeySuffix}`} 
-                stroke={getRaceColor(race)} 
-                strokeWidth={2} 
-                dot={false} 
-                name={race}
-              />
-            ))}
-          </LineChart>
-        </ResponsiveContainer>
-      </div>
-    </div>
-  );
 
   return (
     <div className="admin-page-content">

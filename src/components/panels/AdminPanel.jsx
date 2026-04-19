@@ -52,6 +52,7 @@ const AdminPanel = () => {
   useEffect(() => {
     fetchSets();
     fetchConfig();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {

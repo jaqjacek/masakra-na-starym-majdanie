@@ -39,7 +39,7 @@ const JakubPanel = ({ jakub, onUpdateCounter, onJakubMouseDown, isJakubOnBoard, 
       </div>
 
       <div className="jakub-sets-mini">
-        {sets.map((set, idx) => (
+        {sets.map((set) => (
           <div key={set.id} className="mini-set" title={`Power: ${set.power}`}>
             <div className="mini-set-content">
               {SUMMARY_PAWN_IDS.map(typeId => {

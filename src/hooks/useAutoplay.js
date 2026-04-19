@@ -19,8 +19,7 @@ export const useAutoplay = ({
   gameId, 
   gameState, 
   updateGameWithSync, 
-  addLog, 
-  jakubRegion 
+  addLog 
 }) => {
   const [isFullAutoplay, setIsFullAutoplay] = useState(false);
   const [isJakubAutoplay, setIsJakubAutoplay] = useState(false);
@@ -174,9 +173,15 @@ export const useAutoplay = ({
           }
         });
 
+        const statusLog = RACES.map(race => {
+          const count = workState.regions.reduce((sum, r) => sum + (r.pawns[race]?.length || 0), 0);
+          const limit = playLimits[race];
+          return `${race[0].toUpperCase()}:${count}/${limit}`;
+        }).join(' ');
+
         const usedSet = findAndRemoveSetById(workState, best.set.id);
         if (usedSet) { usedSet.ownerId = null; usedSet.used = false; if (!workState.sets.discardPile) workState.sets.discardPile = []; workState.sets.discardPile.push(usedSet); }
-        addLog(workState, `Player ${curId} placed Set ${best.set.id} [${logSummary.join(', ')}]`);
+        addLog(workState, `Player ${curId} placed Set ${best.set.id} [${logSummary.join(', ')}] | Board: ${statusLog}`);
       } else {
         workState.passedPlayers.push(curId);
         const currentHand = (workState.sets.heldSets || []).filter(s => s.ownerId === curId);
@@ -315,7 +320,7 @@ export const useAutoplay = ({
       updateGameWithSync(workState);
       return;
     }
-  }, [isFullAutoplay, isJakubAutoplay, gameId, gameState, updateGameWithSync, jakubRegion, addLog, drawSet, findAndRemoveSetById]);
+  }, [isFullAutoplay, isJakubAutoplay, gameId, gameState, updateGameWithSync, addLog, drawSet, findAndRemoveSetById]);
 
   useEffect(() => {
     const timer = setInterval(() => { 

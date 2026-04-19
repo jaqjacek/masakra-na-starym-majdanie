@@ -92,6 +92,29 @@ html.admin-mode .app-container {
   margin-top: auto;
   border-top: 1px solid rgba(255, 255, 255, 0.1);
   z-index: 10;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.footer-links {
+  display: flex;
+  gap: 2rem;
+  margin-bottom: 0.25rem;
+}
+
+.footer-links a {
+  color: #3498db;
+  text-decoration: none;
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: color 0.2s;
+}
+
+.footer-links a:hover {
+  color: #2ecc71;
+  text-decoration: underline;
 }
 
 .footer-content {

@@ -4,6 +4,10 @@ import { VERSION_INFO } from '../constants/version';
 const Footer = () => {
   return (
     <footer className="app-footer">
+      <div className="footer-links">
+        <a href="/api/docs/api" target="_blank" rel="noopener noreferrer">API Docs</a>
+        <a href="/api/docs/game" target="_blank" rel="noopener noreferrer">Game Rules</a>
+      </div>
       <div className="footer-content">
         <span className="version-badge">{VERSION_INFO.tag}</span>
         <span className="branch-info">branch: <strong>{VERSION_INFO.branch}</strong></span>

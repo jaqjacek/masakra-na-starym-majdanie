@@ -25,6 +25,9 @@ RUN npm install --omit=dev --legacy-peer-deps
 # Copy the built frontend from Stage 1
 COPY --from=build /app/dist ./dist
 
+# Copy documentation
+COPY API_DOCS.md GAME_RULES.md ./
+
 # Copy the backend code and server configs
 COPY server/ ./server/
 COPY server_config.json ./

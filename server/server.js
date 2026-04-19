@@ -61,6 +61,10 @@ app.use((req, res, next) => {
 // 1. Health check / Ping
 app.get('/api/ping', (req, res) => res.send('pong'));
 
+// Documentation routes
+app.get('/api/docs/api', (req, res) => res.sendFile(path.join(process.cwd(), 'API_DOCS.md')));
+app.get('/api/docs/game', (req, res) => res.sendFile(path.join(process.cwd(), 'GAME_RULES.md')));
+
 // 2. Static files
 if (fs.existsSync(DIST_PATH)) {
   console.log(`Serving static files from: ${DIST_PATH}`);

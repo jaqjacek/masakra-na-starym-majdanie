@@ -1,0 +1,198 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Wedrowycz-Gemini API",
+    "description": "Interactive API Documentation for the Wedrowycz-Gemini Game Engine.",
+    "version": "1.9.0"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:3001",
+      "description": "Local Development Server"
+    }
+  ],
+  "paths": {
+    "/api/ping": {
+      "get": {
+        "summary": "Health Check",
+        "responses": {
+          "200": {
+            "description": "Returns 'pong'"
+          }
+        }
+      }
+    },
+    "/api/config": {
+      "get": {
+        "summary": "Get Global Configuration",
+        "responses": {
+          "200": {
+            "description": "Returns global server configuration"
+          }
+        }
+      },
+      "post": {
+        "summary": "Update Global Configuration",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "defaultSetName": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Configuration updated" }
+        }
+      }
+    },
+    "/api/sets": {
+      "get": {
+        "summary": "List Available Sets",
+        "responses": {
+          "200": {
+            "description": "Array of set names"
+          }
+        }
+      }
+    },
+    "/api/sets/details/{setName}": {
+      "get": {
+        "summary": "Get Set Details",
+        "parameters": [
+          {
+            "name": "setName",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "Full JSON structure of the requested set" }
+        }
+      }
+    },
+    "/api/map/{gameId}": {
+      "get": {
+        "summary": "Get Game State",
+        "parameters": [
+          {
+            "name": "gameId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "Current game state JSON" }
+        }
+      },
+      "post": {
+        "summary": "Save Game State",
+        "parameters": [
+          {
+            "name": "gameId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "requestBody": {
+          "content": { "application/json": { "schema": { "type": "object" } } }
+        },
+        "responses": {
+          "200": { "description": "State saved" }
+        }
+      }
+    },
+    "/api/init/{gameId}": {
+      "post": {
+        "summary": "Initialize New Game",
+        "parameters": [
+          {
+            "name": "gameId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          },
+          {
+            "name": "set",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "string" },
+            "description": "Optional set name to use for initialization"
+          }
+        ],
+        "responses": {
+          "200": { "description": "Game initialized" }
+        }
+      }
+    },
+    "/api/simulate/{gameId}": {
+      "post": {
+        "summary": "Run Quick Simulation (10 Rounds)",
+        "parameters": [
+          {
+            "name": "gameId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          },
+          {
+            "name": "set",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "string" }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "setsData": { "type": "object", "description": "Custom set JSON configuration to simulate" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Analytics results" }
+        }
+      }
+    },
+    "/api/simulate-detailed": {
+      "post": {
+        "summary": "Run Comprehensive Simulation (100 Games)",
+        "parameters": [
+          {
+            "name": "set",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "string" }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "setsData": { "type": "object", "description": "Custom set JSON configuration to simulate" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Detailed simulation history" }
+        }
+      }
+    }
+  }
+}

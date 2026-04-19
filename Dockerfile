@@ -27,6 +27,7 @@ COPY --from=build /app/dist ./dist
 
 # Copy documentation
 COPY API_DOCS.md GAME_RULES.md ./
+COPY server/openapi.json ./server/
 
 # Copy the backend code and server configs
 COPY server/ ./server/

@@ -6,6 +6,8 @@ import { fileURLToPath } from 'url';
 import { Server } from 'socket.io';
 import http from 'http';
 
+import { apiReference } from '@scalar/express-api-reference';
+
 import { 
   RACES, 
   DEFAULT_PLAYERS, 
@@ -62,7 +64,15 @@ app.use((req, res, next) => {
 app.get('/api/ping', (req, res) => res.send('pong'));
 
 // Documentation routes
-app.get('/api/docs/api', (req, res) => res.sendFile(path.join(process.cwd(), 'API_DOCS.md')));
+app.use(
+  '/api/docs/api',
+  apiReference({
+    theme: 'purple',
+    spec: {
+      content: JSON.parse(fs.readFileSync(path.join(process.cwd(), 'server/openapi.json'), 'utf8')),
+    },
+  })
+);
 app.get('/api/docs/game', (req, res) => res.sendFile(path.join(process.cwd(), 'GAME_RULES.md')));
 
 // 2. Static files
@@ -499,8 +509,7 @@ app.post('/api/simulate/:gameId', (req, res) => {
 app.use((err, _req, res, _next) => { console.error("SERVER ERROR:", err); res.status(500).json({ error: "Internal Server Error" }); });
 
 // 4. Catch-all for SPA
-app.get('*any', (req, res, next) => {
-  if (req.url.startsWith('/api')) return next();
+app.get(/^(?!\/api).+/, (req, res) => {
   const indexPath = path.join(DIST_PATH, 'index.html');
   if (fs.existsSync(indexPath)) {
     res.sendFile(indexPath);

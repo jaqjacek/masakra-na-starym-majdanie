@@ -1,0 +1,192 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Wedrowycz-Gemini API",
+    "description": "Interactive API Documentation for the Wedrowycz-Gemini Game Engine.",
+    "version": "1.9.0"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:3001",
+      "description": "Local Development Server"
+    }
+  ],
+  "paths": {
+    "/api/ping": {
+      "get": {
+        "summary": "Health Check",
+        "responses": { "200": { "description": "Returns 'pong'" } }
+      }
+    },
+    "/api/config": {
+      "get": {
+        "summary": "Get Global Configuration",
+        "responses": { "200": { "description": "Returns global server configuration" } }
+      },
+      "post": {
+        "summary": "Update Global Configuration",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": { "defaultSetName": { "type": "string" } }
+              }
+            }
+          }
+        },
+        "responses": { "200": { "description": "Configuration updated" } }
+      }
+    },
+    "/api/map/next-id": {
+      "get": {
+        "summary": "Get Next Available Game ID",
+        "responses": { "200": { "description": "Returns the next available numeric game ID" } }
+      }
+    },
+    "/api/sets": {
+      "get": {
+        "summary": "List Available Sets",
+        "responses": { "200": { "description": "Array of set names" } }
+      }
+    },
+    "/api/sets/details/{setName}": {
+      "get": {
+        "summary": "Get Set Details",
+        "parameters": [
+          { "name": "setName", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "responses": { "200": { "description": "Full JSON structure of the requested set" } }
+      }
+    },
+    "/api/sets/generate": {
+      "post": {
+        "summary": "Generate a new pawn set",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "pawns": { "type": "object" },
+                  "power": { "type": "object" },
+                  "maxPower": { "type": "number" },
+                  "displayName": { "type": "string" },
+                  "description": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": { "200": { "description": "Set generated" } }
+      }
+    },
+    "/api/map/{gameId}": {
+      "get": {
+        "summary": "Get Game State",
+        "parameters": [
+          { "name": "gameId", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "responses": { "200": { "description": "Current game state JSON" } }
+      },
+      "post": {
+        "summary": "Save Game State",
+        "parameters": [
+          { "name": "gameId", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "requestBody": {
+          "content": { "application/json": { "schema": { "type": "object" } } }
+        },
+        "responses": { "200": { "description": "State saved" } }
+      },
+      "delete": {
+        "summary": "Reset Board",
+        "parameters": [
+          { "name": "gameId", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "responses": { "200": { "description": "Board reset to empty" } }
+      }
+    },
+    "/api/map/status/{gameId}": {
+      "get": {
+        "summary": "Get simplified game status",
+        "parameters": [
+          { "name": "gameId", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "responses": { "200": { "description": "Basic player info and points" } }
+      }
+    },
+    "/api/map/init/{gameId}": {
+      "post": {
+        "summary": "Initialize New Game",
+        "parameters": [
+          { "name": "gameId", "in": "path", "required": true, "schema": { "type": "string" } },
+          { "name": "set", "in": "query", "required": false, "schema": { "type": "string" } }
+        ],
+        "responses": { "200": { "description": "Game initialized" } }
+      }
+    },
+    "/api/simulate/": {
+      "post": {
+        "summary": "Run Quick Simulation",
+        "parameters": [
+          { "name": "set", "in": "query", "required": false, "schema": { "type": "string" } }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "type": "object", "properties": { "setsData": { "type": "object" } } }
+            }
+          }
+        },
+        "responses": { "200": { "description": "Simulation results" } }
+      }
+    },
+    "/api/simulate/detailed": {
+      "post": {
+        "summary": "Run Comprehensive Simulation",
+        "parameters": [
+          { "name": "set", "in": "query", "required": false, "schema": { "type": "string" } }
+        ],
+        "responses": { "200": { "description": "Detailed simulation history" } }
+      }
+    },
+    "/api/simulate/full": {
+      "post": {
+        "summary": "Run Simulation with Full Config",
+        "description": "Accepts complete JSON objects for both sets and game parameters. Supports both JSON body and multipart/form-data file uploads.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "sets": { "type": "object", "description": "Full sets configuration object" },
+                  "game": { 
+                    "type": "object", 
+                    "description": "Game configuration parameters (rounds, draw amounts, etc.)"
+                  }
+                },
+                "required": ["sets"]
+              }
+            },
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "sets": { "type": "string", "format": "binary", "description": "JSON file with sets configuration" },
+                  "game": { "type": "string", "format": "binary", "description": "JSON file with game configuration" }
+                },
+                "required": ["sets"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Simulation analytics result" },
+          "400": { "description": "Missing required configuration or invalid JSON in files" }
+        }
+      }
+    }
+  }
+}

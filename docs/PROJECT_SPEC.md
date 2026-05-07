@@ -100,10 +100,12 @@
 - **Docker First:** All backend changes must be verified to run within the Docker container (Alpine-based).
 
 ## 9. Documentation System
+- **Narrative Context:** Found in `docs/STORY.md`. All UI flavor text and game rules must align with this "Final Raid on Stary Majdan" scenario.
 - **API Documentation:** Interactive reference powered by **Scalar** using the OpenAPI 3.0 standard.
-  - Spec File: `server/openapi.json`
+  - Spec File: `docs/openapi.json`
   - Endpoint: `/api/docs/api`
+  - Static Viewer: `docs/index.html` (Redoc)
 - **Game Rules:** Markdown-based rulebook served directly.
-  - File: `GAME_RULES.md`
+  - File: `docs/GAME_RULES.md`
   - Endpoint: `/api/docs/game`
 - **UI Integration:** Links available in the application `Footer.jsx`.

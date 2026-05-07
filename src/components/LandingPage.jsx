@@ -16,9 +16,9 @@ const LandingPage = ({ onGoToGame }) => {
   const handleNewGame = async () => {
 
     try {
-      const res = await fetch(`${SERVER_URL}/api/next-game-id`);
+      const res = await fetch(`${SERVER_URL}/api/map/next-id`);
       const data = await res.json();
-      if (data.id) {
+      if (data.id !== undefined) {
         window.location.href = `/game/${data.id}`;
       }
     } catch (_err) {

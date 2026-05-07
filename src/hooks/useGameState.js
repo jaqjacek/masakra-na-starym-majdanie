@@ -48,7 +48,7 @@ export const useGameState = (isAdminPath) => {
       time: getTime(), 
       text,
       ...metadata
-    }].slice(-HISTORY_LIMIT);
+    }];
   }, []);
 
   return {

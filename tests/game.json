@@ -1,0 +1,7 @@
+{
+  "startPointsAmmount": 10,
+  "initialSetsPerPlayer": 2,
+  "setupSetsPerPlayerPerRound": 3,
+  "jakubSetsPerRound": 2,
+  "totalRounds": 3
+}

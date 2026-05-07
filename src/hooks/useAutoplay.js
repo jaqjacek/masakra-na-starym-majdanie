@@ -246,7 +246,7 @@ export const useAutoplay = ({
           });
         }
 
-        if (workState.currentRound >= TOTAL_GAME_ROUNDS) { workState.phase = 'final_scoring'; workState.currentPlayerIndex = 0; addLog(workState, `--- FINAL SCORING PHASE (08:00) ---`); }
+        if (workState.currentRound >= (workState.totalRounds || TOTAL_GAME_ROUNDS)) { workState.phase = 'final_scoring'; workState.currentPlayerIndex = 0; addLog(workState, `--- FINAL SCORING PHASE (08:00) ---`); }
         else { 
           workState.players.forEach(p => p.generalOf = null); workState.availableGenerals = [...RACES];
           workState.playerOrder = [...workState.players].sort((a, b) => a.points - b.points).map(p => p.id);

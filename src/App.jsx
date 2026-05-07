@@ -14,6 +14,7 @@ import PlayersPanel from './components/panels/PlayersPanel';
 import AdminSets from './components/AdminSets';
 import AdminSimulate from './components/AdminSimulate';
 import AdminNav from './components/AdminNav';
+import GameRulesPage from './components/docs/GameRulesPage';
 import HistoryPanel from './components/panels/HistoryPanel';
 import GamePanel from './components/panels/GamePanel';
 import PawnStatusPopup from './components/PawnStatusPopup';
@@ -295,6 +296,7 @@ function App() {
   const jakubsSets = gameState.sets ? (gameState.sets.heldSets || []).filter(s => s.ownerId === 'jakub') : [];
 
   // 7. Render logic
+  if (currentPath === '/docs/game') return <GameRulesPage />;
   if (currentPath === '/admin/sets') return <div className="app-container"><AdminNav currentPath={currentPath} /><AdminSets /></div>;
   if (currentPath === '/admin/simulate') return <div className="app-container"><AdminNav currentPath={currentPath} /><AdminSimulate /></div>;
   if (isAdminPath) return <div className="app-container"><AdminNav currentPath={currentPath} /><div className="admin-page-content"><p>Please select an Admin section.</p></div></div>;
@@ -305,7 +307,7 @@ function App() {
       <GamePanel 
         gameId={gameId}
         gameState={gameState}
-        totalRounds={TOTAL_GAME_ROUNDS}
+        totalRounds={gameState.totalRounds || TOTAL_GAME_ROUNDS}
         isMenuOpen={isMenuOpen}
         setIsMenuOpen={setIsMenuOpen}
         isFullAutoplay={isFullAutoplay}
@@ -324,9 +326,9 @@ function App() {
         onOpenScoring={() => setIsScoringPopupOpen(true)}
         onCreateNewGame={async () => {
           try {
-            const res = await fetch(`${SERVER_URL}/api/next-game-id`);
+            const res = await fetch(`${SERVER_URL}/api/map/next-id`);
             const data = await res.json();
-            if (data.id) window.location.href = `/game/${data.id}`;
+            if (data.id !== undefined) window.location.href = `/game/${data.id}`;
           } catch (_err) { alert('Failed to get new game ID'); }
         }}
         onChangeGame={() => { window.history.pushState({}, '', '/'); setGameId(null); setGameState(INITIAL_STATE); window.dispatchEvent(new Event('popstate')); }}

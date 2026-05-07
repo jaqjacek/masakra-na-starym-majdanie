@@ -56,10 +56,11 @@ export const generateSetData = (pawnsConfig, powerConfig, maxPower, meta = {}) =
   const totals = { ...pawnsConfig };
   const items = [];
   const REVERSE_RACES = [...RACES].reverse();
+  const maxUnits = meta.maxUnitsPerSet || 5;
   const calcPower = (content) => Object.entries(content).reduce((sum, [r, c]) => sum + (powerConfig[r] || 0) * c, 0);
   const countUnits = (content) => Object.values(content).reduce((a, b) => a + b, 0);
   const canAdd = (content, race) => {
-    if (totals[race] <= 0 || countUnits(content) >= 5 || (content[race] || 0) >= PAWN_CONSTRAINTS[race] || calcPower({ ...content, [race]: (content[race] || 0) + 1 }) > maxPower) return false;
+    if (totals[race] <= 0 || countUnits(content) >= maxUnits || (content[race] || 0) >= PAWN_CONSTRAINTS[race] || calcPower({ ...content, [race]: (content[race] || 0) + 1 }) > maxPower) return false;
     return true;
   };
   while (RACES.some(r => totals[r] > 0)) {
@@ -70,7 +71,7 @@ export const generateSetData = (pawnsConfig, powerConfig, maxPower, meta = {}) =
     content[firstRace] = 1; totals[firstRace]--;
     let adding = true;
     while (adding) {
-      if (calcPower(content) >= maxPower || countUnits(content) >= 5) break;
+      if (calcPower(content) >= maxPower || countUnits(content) >= maxUnits) break;
       let pawnAddedThisPass = false;
       for (const race of REVERSE_RACES) {
         if (canAdd(content, race)) {
@@ -81,6 +82,6 @@ export const generateSetData = (pawnsConfig, powerConfig, maxPower, meta = {}) =
     }
     items.push({ id: 0, content, used: false, power: calcPower(content), ownerId: null });
   }
-  const result = { pawns: pawnsConfig, pawnsInPlayLimit: (meta.pawnsInPlayLimit || PAWNS_IN_PLAY_LIMIT), power: powerConfig, maxPower, drawPile: items, discardPile: [], heldSets: [], setName: 'generated', ...meta };
+  const result = { pawns: pawnsConfig, pawnsInPlayLimit: (meta.pawnsInPlayLimit || PAWNS_IN_PLAY_LIMIT), power: powerConfig, maxPower, maxUnitsPerSet: maxUnits, drawPile: items, discardPile: [], heldSets: [], setName: 'generated', ...meta };
   return sortSetsData(result);
 };

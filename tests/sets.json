@@ -1,0 +1,28 @@
+{
+  "pawns": {
+    "bardak": 80,
+    "ghost": 30,
+    "werewolf": 20,
+    "vampire": 10
+  },
+  "pawnsInPlayLimit": {
+    "vampire": 8,
+    "werewolf": 15,
+    "ghost": 25,
+    "bardak": 40
+  },
+  "power": {
+    "vampire": 3,
+    "werewolf": 2,
+    "ghost": 1,
+    "bardak": 1
+  },
+  "maxPower": 6,
+  "drawPile": [
+    { "id": 1, "content": { "werewolf": 1, "vampire": 1 }, "power": 5 },
+    { "id": 2, "content": { "bardak": 2, "ghost": 1, "vampire": 1 }, "power": 6 },
+    { "id": 3, "content": { "bardak": 2, "vampire": 1, "ghost": 1 }, "power": 6 },
+    { "id": 4, "content": { "vampire": 1, "ghost": 1, "bardak": 2 }, "power": 6 },
+    { "id": 5, "content": { "vampire": 1, "bardak": 2, "ghost": 1 }, "power": 6 }
+  ]
+}

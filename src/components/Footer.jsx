@@ -6,7 +6,16 @@ const Footer = () => {
     <footer className="app-footer">
       <div className="footer-links">
         <a href="/api/docs/api" target="_blank" rel="noopener noreferrer">API Docs</a>
-        <a href="/api/docs/game" target="_blank" rel="noopener noreferrer">Game Rules</a>
+        <a 
+          href="/docs/game" 
+          onClick={(e) => { 
+            e.preventDefault(); 
+            window.history.pushState({}, '', '/docs/game'); 
+            window.dispatchEvent(new PopStateEvent('popstate')); 
+          }}
+        >
+          Game Rules
+        </a>
       </div>
       <div className="footer-content">
         <span className="version-badge">{VERSION_INFO.tag}</span>

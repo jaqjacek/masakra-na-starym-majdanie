@@ -10,12 +10,14 @@ const HistoryPanel = ({ logs = [] }) => {
     }
   }, [logs]);
 
+  const displayLogs = logs.slice(-100);
+
   return (
     <div className="history-panel">
-      <h3>Game History</h3>
+      <h3>Game History (last 100)</h3>
       <div className="history-log-container" ref={containerRef}>
-        {logs.length > 0 ? (
-          logs.map((log, index) => (
+        {displayLogs.length > 0 ? (
+          displayLogs.map((log, index) => (
             <div key={index} className="history-log-item">
               <span className="log-time">[{log.time}] </span>
               <span className="log-text">{log.text}</span>

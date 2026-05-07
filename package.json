@@ -1,7 +1,7 @@
 {
   "name": "wedrowycz-gemini",
   "private": true,
-  "version": "1.9.0",
+  "version": "1.10.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -15,6 +15,7 @@
     "@scalar/express-api-reference": "^0.9.9",
     "cors": "^2.8.6",
     "express": "^5.2.1",
+    "multer": "^2.1.1",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "recharts": "^3.8.1",

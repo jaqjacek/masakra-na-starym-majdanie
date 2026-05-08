@@ -10,8 +10,45 @@ import {
   createEmptyRegions 
 } from '../boardManager.js';
 import { initializeGame } from '../services/gameService.js';
+import { GameEventPhaseManager } from '../gameEventPhaseManager.js';
+import { RACES } from '../constants.js';
 
 const router = express.Router();
+
+router.post('/:gameId/event-phase', (req, res) => {
+  try {
+    const { gameId } = req.params;
+    const { data } = getGameData(gameId);
+    
+    // Ensure data has previous phase for logging
+    data._previousPhase = data.phase;
+    data.phase = 'event_phase';
+    
+    const eventManager = new GameEventPhaseManager(data);
+    eventManager.executePhase();
+    
+    // Transition to next phase
+    if (data.currentRound < data.totalRounds) {
+      data.phase = 'setup';
+      data.currentRound += 1;
+      // Reset round-specific state
+      data.availableGenerals = [...RACES];
+      data.players.forEach(p => p.generalOf = null);
+      data.passedPlayers = [];
+      data.currentPlayerIndex = 0;
+      data.playerOrder = [...data.players].sort((a, b) => a.points - b.points).map(p => p.id);
+    } else {
+      data.phase = 'final_scoring';
+    }
+    
+    saveFullState(gameId, data);
+    req.app.get('io').to(`game:${gameId}`).emit('boardUpdate', data);
+    res.json({ message: 'Event phase completed', state: data });
+  } catch (err) {
+    console.error('Event phase execution failed:', err);
+    res.status(500).json({ error: 'Failed to execute event phase' });
+  }
+});
 
 router.get('/next-id', (req, res) => {
   try {

@@ -1,8 +1,8 @@
 {
   "openapi": "3.0.0",
   "info": {
-    "title": "Wedrowycz-Gemini API",
-    "description": "Interactive API Documentation for the Wedrowycz-Gemini Game Engine.",
+    "title": "MASAKRA na Starym Majdanie API",
+    "description": "Interactive API Documentation for the MASAKRA na Starym Majdanie Game Engine.",
     "version": "1.9.0"
   },
   "servers": [
@@ -36,6 +36,25 @@
           }
         },
         "responses": { "200": { "description": "Configuration updated" } }
+      }
+    },
+    "/api/config/title": {
+      "get": {
+        "summary": "Get Dynamic Game Title",
+        "description": "Returns the current game title as defined in game_config.json.",
+        "responses": { 
+          "200": { 
+            "description": "Game title retrieved",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": { "title": { "type": "string" } }
+                }
+              }
+            }
+          } 
+        }
       }
     },
     "/api/map/next-id": {
@@ -124,6 +143,19 @@
           { "name": "set", "in": "query", "required": false, "schema": { "type": "string" } }
         ],
         "responses": { "200": { "description": "Game initialized" } }
+      }
+    },
+    "/api/map/{gameId}/event-phase": {
+      "post": {
+        "summary": "Execute Event Phase",
+        "description": "Draws a random event, applies its effects, and transitions the game to the next round or final scoring.",
+        "parameters": [
+          { "name": "gameId", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "responses": { 
+          "200": { "description": "Event phase completed and state updated" },
+          "500": { "description": "Failed to execute event phase" }
+        }
       }
     },
     "/api/simulate/": {

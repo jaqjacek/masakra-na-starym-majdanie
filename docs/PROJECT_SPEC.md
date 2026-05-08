@@ -1,7 +1,7 @@
-# Project Specification: Wedrowycz-Gemini
+# Project Specification: MASAKRA na Starym Majdanie
 
 ## 1. Project Overview
-**Name:** Wedrowycz-Gemini
+**Name:** MASAKRA na Starym Majdanie
 **Description:** A digital board game simulator where players manage pieces (pawns) and special game objects across a 6x6 grid.
 **Goal:** A multi-client, real-time synchronized game engine with complex movement rules, resource distribution (Sets), and phase-based gameplay.
 
@@ -24,7 +24,8 @@
   - `state.json`: Current game phase and metadata.
 
 ### 3.2 Real-time Synchronization
-- **WebSocket Integration:** Any change made by one client (placing pawns, moving Jakub, changing points) is instantly broadcast to all other clients in the same game room.
+- **Dynamic Rebranding:** The game title is fully dynamic and managed in `server/configs/game_config.json`.
+- **WebSocket Integration:** Any change made by one client (placing pawns, moving Jakub, changing points, triggering events) is instantly broadcast to all other clients in the same game room.
 - **Optimistic Updates:** Frontend updates state immediately for responsiveness, then synchronizes with the server.
 
 ## 4. Game Mechanics

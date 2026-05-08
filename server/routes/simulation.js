@@ -7,7 +7,7 @@ const upload = multer();
 
 router.post('/detailed', (req, res) => {
   const { set } = req.query;
-  const { setsData: uploadedSets } = req.body;
+  const { setsData: uploadedSets } = req.body || {};
   try {
     const gameHistory = runDetailedSimulation(set, uploadedSets);
     res.json(gameHistory);
@@ -42,8 +42,8 @@ router.post('/full', upload.fields([
   }
 
   // Fallback to JSON body if files not provided (for backward compatibility)
-  if (!setsConfig) setsConfig = req.body.sets;
-  if (!gameConfig) gameConfig = req.body.game;
+  if (!setsConfig) setsConfig = req.body?.sets;
+  if (!gameConfig) gameConfig = req.body?.game;
 
   if (!setsConfig) return res.status(400).json({ error: 'Missing sets configuration' });
   
@@ -58,7 +58,7 @@ router.post('/full', upload.fields([
 
 router.post('/', (req, res) => {
   const { set } = req.query;
-  const { setsData: uploadedSets } = req.body;
+  const { setsData: uploadedSets } = req.body || {};
   try {
     const result = runBasicSimulation(set, uploadedSets);
     res.json(result);
@@ -70,7 +70,7 @@ router.post('/', (req, res) => {
 
 router.post('/:gameId', (req, res) => {
   const { set } = req.query;
-  const { setsData: uploadedSets } = req.body;
+  const { setsData: uploadedSets } = req.body || {};
   try {
     const result = runBasicSimulation(set, uploadedSets);
     res.json(result);

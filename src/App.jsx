@@ -1,6 +1,7 @@
 import React, { useState, useCallback, useMemo, useEffect } from 'react';
 import './assets/css/base.css';
 import './assets/css/game.css';
+import './assets/css/events.css';
 
 // Components
 import BoardComponent from './components/Board';
@@ -17,6 +18,7 @@ import AdminNav from './components/AdminNav';
 import GameRulesPage from './components/docs/GameRulesPage';
 import HistoryPanel from './components/panels/HistoryPanel';
 import GamePanel from './components/panels/GamePanel';
+import EventsPanel from './components/panels/EventsPanel';
 import PawnStatusPopup from './components/PawnStatusPopup';
 import Footer from './components/Footer';
 
@@ -34,6 +36,7 @@ import { TOTAL_GAME_ROUNDS, INITIAL_HAND_SIZE, JAKUB_INITIAL_SETS, SERVER_URL } 
 function App() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isSetsPanelOpen, setIsSetsPanelOpen] = useState(false);
+  const [isEventsPanelOpen, setIsEventsPanelOpen] = useState(false);
   const [isScoringPopupOpen, setIsScoringPopupOpen] = useState(false);
 
   // 1. Basic state and sync
@@ -258,6 +261,22 @@ function App() {
     setIsJakubAutoplay(true); // Automatically run ONLY the Jakub phase
   }, [gameState, addLog, updateGameWithSync, setIsJakubAutoplay]);
 
+  const handleExecuteEventPhase = useCallback(async () => {
+    try {
+      const res = await fetch(`${SERVER_URL}/api/map/${gameId}/event-phase`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+      });
+      const data = await res.json();
+      if (data.state) {
+        setGameState(data.state);
+      }
+    } catch (err) {
+      console.error('Failed to execute event phase:', err);
+      alert('Event phase failed. See console.');
+    }
+  }, [gameId, setGameState, SERVER_URL]);
+
   const handleSelectGeneral = useCallback((race) => {
     const workState = JSON.parse(JSON.stringify(gameState));
     // If we have a playerId in URL, we assign specifically to that player
@@ -318,11 +337,14 @@ function App() {
         setAutoplaySpeed={setAutoplaySpeed}
         isSetsPanelOpen={isSetsPanelOpen}
         setIsSetsPanelOpen={setIsSetsPanelOpen}
+        isEventsPanelOpen={isEventsPanelOpen}
+        setIsEventsPanelOpen={setIsEventsPanelOpen}
         playerId={playerId}
         onManualDrawSets={handleManualDrawSets}
         onGoToPlayerPhase={handleGoToPlayerPhase}
         onPass={handlePass}
         onGoToJakubPhase={handleGoToJakubPhase}
+        onExecuteEventPhase={handleExecuteEventPhase}
         onOpenScoring={() => setIsScoringPopupOpen(true)}
         onCreateNewGame={async () => {
           try {
@@ -336,6 +358,29 @@ function App() {
         serverUrl={SERVER_URL}
         initialState={INITIAL_STATE}
       />
+
+      {isEventsPanelOpen && (
+        <EventsPanel 
+          events={gameState.events} 
+          onClose={() => setIsEventsPanelOpen(false)} 
+        />
+      )}
+
+      {isSetsPanelOpen && (
+        <div className="sets-modal-overlay" onClick={() => setIsSetsPanelOpen(false)}>
+          <div className="sets-modal-content" onClick={e => e.stopPropagation()}>
+            <button className="modal-close-x" onClick={() => setIsSetsPanelOpen(false)}>×</button>
+            <SetsPanel 
+              sets={gameState.sets?.drawPile || []} 
+              discardedSets={gameState.sets?.discardPile || []}
+              onSetMouseDown={handleSetMouseDown} 
+              title="Global Sets Pool" 
+              setInfo={gameState.sets} 
+              discardPileCount={gameState.sets?.discardPile?.length || 0} 
+            />
+          </div>
+        </div>
+      )}
 
       <div className="game-layout-wrapper">
         <div className="left-controls">
@@ -439,18 +484,7 @@ function App() {
           })()}
         </div>
         <div className="right-controls">
-          {isSetsPanelOpen && (
-            <div className="sidebar-sets-container">
-              <SetsPanel 
-                sets={gameState.sets?.drawPile || []} 
-                discardedSets={gameState.sets?.discardPile || []}
-                onSetMouseDown={handleSetMouseDown} 
-                title="Draw Pile" 
-                setInfo={gameState.sets} 
-                discardPileCount={gameState.sets?.discardPile?.length || 0} 
-              />
-            </div>
-          )}
+          <HistoryPanel logs={gameState.history || []} />
           
           {playerId && (
             <div className="player-hand-section always-visible">
@@ -464,8 +498,6 @@ function App() {
           )}
         </div>
       </div>
-
-      <div className="bottom-history-container"><HistoryPanel logs={gameState.history || []} /></div>
       
       {isScoringPopupOpen && (
         <div className="scoring-modal-overlay" onClick={() => setIsScoringPopupOpen(false)}>

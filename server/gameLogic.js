@@ -4,6 +4,7 @@ import { fileURLToPath } from 'url';
 import { RACES, DEFAULT_PLAYERS, INITIAL_PAWN_POOL, DEFAULT_POWER_CONFIG } from './constants.js';
 import { createEmptyRegions } from './boardManager.js';
 import { loadSetFile, generateSetData } from './setManager.js';
+import { GameEventPhaseManager } from './gameEventPhaseManager.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -28,6 +29,7 @@ export const getGlobalConfig = () => {
 
 export const getGameConfig = () => {
   const defaultGameConfig = {
+    gameTitle: "MASAKRA na Starym Majdanie",
     startPointsAmmount: 10,
     initialSetsPerPlayer: 5,
     setupSetsPerPlayerPerRound: 3,
@@ -94,7 +96,16 @@ export const getGameData = (gameId) => {
       sets = (globalConfig.defaultSetName ? loadSetFile(globalConfig.defaultSetName) : null) || generateSetData(INITIAL_PAWN_POOL, DEFAULT_POWER_CONFIG, gameConfig.totalRounds); 
     }
   }
-  return { data: { regions, players, sets, history, ...gameState } };
+  
+  const data = { regions, players, sets, history, ...gameState };
+  
+  // Ensure events are initialized if missing
+  if (!data.events) {
+    const eventManager = new GameEventPhaseManager(data);
+    eventManager.ensureEventState();
+  }
+
+  return { data };
 };
 
 export const saveFullState = (gameId, data) => {
@@ -111,7 +122,25 @@ export const saveFullState = (gameId, data) => {
     }).join('\n');
     fs.writeFileSync(path.join(gamePath, 'history.log'), logContent);
   }
-  const meta = {}; const keys = ['phase', 'currentRound', 'totalRounds', 'currentPlayerIndex', 'playerOrder', 'passedPlayers', 'availableGenerals', 'setName', 'gameStatus', 'jakubAngerIncreased', 'jakubTurnExecuted'];
+  const meta = {}; 
+  const keys = ['phase', 'currentRound', 'totalRounds', 'currentPlayerIndex', 'playerOrder', 'passedPlayers', 'availableGenerals', 'setName', 'gameStatus', 'jakubAngerIncreased', 'jakubTurnExecuted', 'events', '_lastLoggedPhase'];
+  
+  // Log phase transition if it changed
+  if (data.phase && data._lastLoggedPhase !== data.phase) {
+    const phaseName = data.phase.toUpperCase().replace('_', ' ');
+    if (!data.history) data.history = [];
+    
+    // Check if this phase was already logged recently to avoid duplicates
+    const lastLog = data.history.length > 0 ? data.history[data.history.length - 1].text : '';
+    if (!lastLog.includes(`--- Start of ${phaseName} ---`)) {
+      data.history.push({
+        time: new Date().toLocaleTimeString(),
+        text: `--- Start of ${phaseName} ---`
+      });
+    }
+    data._lastLoggedPhase = data.phase;
+  }
+
   keys.forEach(k => { if (data[k] !== undefined) meta[k] = data[k]; });
   fs.writeFileSync(path.join(gamePath, 'state.json'), JSON.stringify(meta, null, 2));
 };

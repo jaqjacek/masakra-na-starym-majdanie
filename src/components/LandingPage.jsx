@@ -32,7 +32,7 @@ const LandingPage = ({ onGoToGame }) => {
         <a href="/admin" className="admin-link-top">Admin Panel</a>
       </div>
 
-      <h1 className="landing-title">Wędrowycz Board Game Simulator</h1>
+      <h1 className="landing-title">{gameTitle}</h1>
       <p className="landing-subtitle">Digital Board Game Engine</p>
       
       <div className="landing-card">
@@ -47,6 +47,20 @@ const LandingPage = ({ onGoToGame }) => {
           <button type="submit" className="action-button" disabled={!inputGameId.trim()}>
             Go to Game
           </button>
+        </form>
+        <div className="landing-divider">OR</div>
+        
+        <button className="action-button new-game-btn" onClick={handleNewGame}>
+          Create New Game
+        </button>
+      </div>
+      <Footer />
+    </div>
+  );
+};
+
+export default LandingPage;
+      </button>
         </form>
         <div className="landing-divider">OR</div>
         

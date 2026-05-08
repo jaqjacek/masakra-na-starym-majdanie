@@ -1,8 +1,17 @@
 import express from 'express';
 import fs from 'fs';
-import { GAMES_DIR, CONFIG_FILE, getGlobalConfig } from '../gameLogic.js';
+import { GAMES_DIR, CONFIG_FILE, getGlobalConfig, getGameConfig } from '../gameLogic.js';
 
 const router = express.Router();
+
+router.get('/title', (req, res) => {
+  try {
+    const config = getGameConfig();
+    res.json({ title: config.gameTitle || "MASAKRA na Starym Majdanie" });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to get game title' });
+  }
+});
 
 router.get('/', (req, res) => res.json(getGlobalConfig()));
 

@@ -31,7 +31,15 @@ export const useGameState = (isAdminPath) => {
   useEffect(() => {
     if (!gameId || isAdminPath) return;
     socket.emit('joinGame', gameId);
-    fetchMap(gameId).then(d => { if (d && d.regions) setGameState(d); }).catch(console.error);
+
+    // Fetch game title
+    fetch(`${SERVER_URL}/api/config/title`)
+      .then(res => res.json())
+      .then(data => setGameState(prev => ({ ...prev, gameTitle: data.title })))
+      .catch(console.error);
+
+    fetchMap(gameId).then(d => { if (d && d.regions) setGameState(prev => ({ ...prev, ...d })); }).catch(console.error);
+
     const handleUpdate = (newData) => { if (newData && newData.regions) setGameState(prev => ({ ...prev, ...newData })); };
     socket.on('boardUpdate', handleUpdate);
     return () => socket.off('boardUpdate', handleUpdate);

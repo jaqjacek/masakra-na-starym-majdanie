@@ -1,4 +1,4 @@
-# Wedrowycz-Gemini: Oficjalne Zasady Gry
+# MASAKRA na Starym Majdanie: Oficjalne Zasady Gry
 
 ## 1. Cel Gry
 Wędrowycz-Gemini to gra strategiczna, w której gracze (Generałowie) dowodzą czterema nacjami: Vampirami, Wilkołakami, Duchami i Bardakami. Celem jest zdobycie jak największej liczby punktów zwycięstwa (Victory Points) w ciągu 10 rund, unikając gniewu Jakuba Wędrowycza.
@@ -37,6 +37,16 @@ Po spasowaniu wszystkich graczy, Jakub rusza do akcji:
     *   Zestawy Jakuba trafiają na Discard Pile.
     *   **Rundy 1-9:** Generałowie wracają do puli. Kolejność graczy: najmniej punktów = pierwszy.
     *   **Runda 10:** Gracze **zachowują** swoich generałów do ostatecznego punktowania.
+
+### Faza IV: Faza Eventu (Event Phase)
+Po zakończeniu akcji Jakuba, jeżeli gra nie dobiegła końca (Rundy 1-9), następuje faza wydarzeń:
+1.  **Dobór Wydarzenia:** Z puli dostępnych eventów losowane jest jedno wydarzenie.
+2.  **Efekty Natychmiastowe:** Wydarzenie może wpłynąć na:
+    *   **Gniew Jakuba:** Zwiększenie lub zmniejszenie złości na konkretne rasy.
+    *   **Limity Pionków:** Zmiana maksymalnej liczby jednostek danej nacji na planszy.
+    *   **Czystki Sektorowe (Wipe):** Wyeliminowanie wszystkich pionków z konkretnych obszarów planszy (np. narożniki, centrum). Za każdego usuniętego pionka Generał danej rasy traci 1 punkt.
+    *   **Wsparcie:** Każdy gracz otrzymuje dodatkowe zestawy pionków do swojej ręki.
+3.  **Następna Runda:** Po rozpatrzeniu eventu, gra przechodzi do fazy Setup nowej rundy.
 
 ## 4. Zakończenie Gry i Punktacja Końcowa
 Po zakończeniu fazy Jakuba w **10. rundzie**, następuje ostateczne podsumowanie. Gracze otrzymują bonusy za nacje, którymi dowodzili w ostatniej rundzie:

@@ -8,7 +8,8 @@ import {
   DEFAULT_AUTOPLAY_SPEED,
   VAMPIRE_FINAL_SCORING_MULTIPLIER,
   GHOST_FINAL_SCORING_BONUS,
-  GHOST_FINAL_SCORING_MAX_OTHER_BONUS
+  GHOST_FINAL_SCORING_MAX_OTHER_BONUS,
+  SERVER_URL
 } from '../constants/constants';
 import { PAWN_TYPES } from '../constants/pawnTypes';
 import { RACES } from '../constants/game';
@@ -246,12 +247,14 @@ export const useAutoplay = ({
           });
         }
 
-        if (workState.currentRound >= (workState.totalRounds || TOTAL_GAME_ROUNDS)) { workState.phase = 'final_scoring'; workState.currentPlayerIndex = 0; addLog(workState, `--- FINAL SCORING PHASE (08:00) ---`); }
+        if (workState.currentRound >= (workState.totalRounds || TOTAL_GAME_ROUNDS)) { 
+          workState.phase = 'final_scoring'; 
+          workState.currentPlayerIndex = 0; 
+          addLog(workState, `--- FINAL SCORING PHASE (08:00) ---`); 
+        }
         else { 
-          workState.players.forEach(p => p.generalOf = null); workState.availableGenerals = [...RACES];
-          workState.playerOrder = [...workState.players].sort((a, b) => a.points - b.points).map(p => p.id);
-          workState.currentRound += 1; workState.phase = 'setup'; 
-          addLog(workState, `--- Round ${workState.currentRound} ---`); 
+          workState.phase = 'event_phase'; 
+          addLog(workState, `--- EVENT PHASE ---`); 
         }
         
         if (!isFullAutoplay) {
@@ -259,6 +262,27 @@ export const useAutoplay = ({
         }
         
         updateGameWithSync(workState);
+      }
+      return;
+    }
+
+    if (workState.phase === 'event_phase') {
+      if (isFullAutoplay) {
+        // Automatically call the server to execute the event phase
+        try {
+          const res = await fetch(`${SERVER_URL}/api/map/${gameId}/event-phase`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' }
+          });
+          const data = await res.json();
+          if (data.state) {
+            // State is already updated on server and emitted via socket, 
+            // but we update locally too for smoothness if needed.
+            // Actually, socket will handle it.
+          }
+        } catch (err) {
+          console.error('Autoplay event phase failed:', err);
+        }
       }
       return;
     }

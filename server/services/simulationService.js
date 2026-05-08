@@ -23,6 +23,7 @@ import {
   getGlobalConfig,
   getGameConfig
 } from '../gameLogic.js';
+import { GameEventPhaseManager } from '../gameEventPhaseManager.js';
 
 export function runDetailedSimulation(set, uploadedSets) {
   const regions = createEmptyRegions();
@@ -137,7 +138,18 @@ export function runDetailedSimulation(set, uploadedSets) {
       let actionFound = false;
       for (const race of sortedAngerRaces) {
         const units = curR.pawns[race]?.length || 0;
-        if (units > 0) { const killCount = Math.min(units, jakub.anger[race]); const p = players.find(x => x.generalOf === race); if (p) p.points = Math.max(0, p.points - killCount); jakub.anger[race] -= killCount; curR.pawns[race].splice(0, killCount); if (curR.pawns[race].length === 0) delete curR.pawns[race]; continues = true; actionFound = true; roundData.turns.push({ type: 'jakub_attack', regionId: curR.id, race, killCount }); break; }
+        if (units > 0) { 
+          const killCount = Math.min(units, jakub.anger[race]); 
+          const p = players.find(x => x.generalOf === race); 
+          if (p) p.points = Math.max(0, p.points - killCount); 
+          jakub.anger[race] = Math.max(0, jakub.anger[race] - killCount); 
+          curR.pawns[race].splice(0, killCount); 
+          if (curR.pawns[race].length === 0) delete curR.pawns[race]; 
+          continues = true; 
+          actionFound = true; 
+          roundData.turns.push({ type: 'jakub_attack', regionId: curR.id, race, killCount }); 
+          break; 
+        }
       }
       if (actionFound) continue;
       const candidates = getRegionsInRange(regions, curR.id, jakub.range); const bestRIdx = getBestTargetRegion(candidates, sortedAngerRaces, regions);
@@ -146,6 +158,18 @@ export function runDetailedSimulation(set, uploadedSets) {
     let jakR_after = regions.find(r => r.pawns.jakub?.length > 0);
     if (jakR_after) { RACES.forEach(race => { const count = jakR_after.pawns[race]?.length || 0; if (count > 0) { const pts = count * 2; const p = players.find(x => x.generalOf === race); if (p) { p.points += pts; roundData.turns.push({ type: 'rambo_points', player: p.name, race, points: pts }); } } }); }
     jakub.range = 1; jakubSets.forEach(s => { const idx = setsData.heldSets.findIndex(x => x.id === s.id); const recycled = setsData.heldSets.splice(idx, 1)[0]; recycled.ownerId = null; recycled.used = false; setsData.discardPile.push(recycled); });
+    
+    // --- EVENT PHASE ---
+    if (round < gameConfig.totalRounds) {
+      const eventManager = new GameEventPhaseManager({ regions, players, sets: setsData, history: [], currentRound: round, totalRounds: gameConfig.totalRounds, phase: 'event_phase' });
+      eventManager.executePhase();
+      // Transfer history from eventManager back to roundData if needed, or just keep it separate
+      // For simulation, we can just add the event to turns or a new field
+      const event = eventManager.gameData.events.drawn[eventManager.gameData.events.drawn.length - 1];
+      roundData.event = event;
+      roundData.turns.push({ type: 'event_drawn', eventId: event.id, title: event.title });
+    }
+
     players.forEach(p => roundData.endPoints[p.name] = p.points); gameHistory.rounds.push(roundData);
     if (round < gameConfig.totalRounds) { players.forEach(p => p.generalOf = null); playerOrder = [...players].sort((a,b) => a.points - b.points).map(p => p.id); }
   }
@@ -282,6 +306,13 @@ export function runBasicSimulation(set, uploadedSets) {
     }
     jakub.range = 1; // Reset to 1 after Jakub's phase
     jakubSets.forEach(s => { const idx = setsData.heldSets.findIndex(x => x.id === s.id); const recycled = setsData.heldSets.splice(idx, 1)[0]; recycled.ownerId = null; recycled.used = false; setsData.discardPile.push(recycled); });
+
+    // --- EVENT PHASE ---
+    if (round < gameConfig.totalRounds) {
+      const eventManager = new GameEventPhaseManager({ regions, players, sets: setsData, history: [], currentRound: round, totalRounds: gameConfig.totalRounds, phase: 'event_phase' });
+      eventManager.executePhase();
+    }
+
     if (round === 1) { players.forEach(p => { if (p.generalOf) analytics[p.generalOf].afterR1 = p.points; }); }
     if (round < gameConfig.totalRounds) { players.forEach(p => p.generalOf = null); playerOrder = [...players].sort((a,b) => a.points - b.points).map(p => p.id); }
   }
@@ -449,6 +480,17 @@ export function runFullSimulation(setsConfig, inputGameConfig) {
     jakub.range = 1;
     jakubSets.forEach(s => { const idx = setsData.heldSets.findIndex(x => x.id === s.id); const recycled = setsData.heldSets.splice(idx, 1)[0]; recycled.ownerId = null; recycled.used = false; setsData.discardPile.push(recycled); });
     
+    // --- EVENT PHASE ---
+    if (round < roundsToPlay) {
+      const eventManager = new GameEventPhaseManager({ regions, players, sets: setsData, history: [], currentRound: round, totalRounds: roundsToPlay, phase: 'event_phase' });
+      eventManager.executePhase();
+      const event = eventManager.gameData.events.drawn[eventManager.gameData.events.drawn.length - 1];
+      if (event) {
+        // Apply any rambo-related analytics changes if needed, but events mostly affect anger and limits
+        // which are already applied to the objects in the simulation.
+      }
+    }
+
     if (round === 1) { players.forEach(p => { if (p.generalOf) analytics[p.generalOf].afterR1 = p.points; }); }
     if (round < roundsToPlay) { players.forEach(p => p.generalOf = null); playerOrder = [...players].sort((a,b) => a.points - b.points).map(p => p.id); }
   }

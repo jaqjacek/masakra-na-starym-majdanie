@@ -14,11 +14,14 @@ const GamePanel = ({
   setAutoplaySpeed,
   isSetsPanelOpen,
   setIsSetsPanelOpen,
+  isEventsPanelOpen,
+  setIsEventsPanelOpen,
   playerId,
   onManualDrawSets,
   onGoToPlayerPhase,
   onPass,
   onGoToJakubPhase,
+  onExecuteEventPhase,
   onOpenScoring,
   onCreateNewGame,
   onChangeGame,
@@ -66,6 +69,10 @@ const GamePanel = ({
                 )}
               </>
             )}
+
+            {gameState.phase === 'event_phase' && (
+              <button className="action-button next-btn event-trigger" onClick={onExecuteEventPhase}>EXECUTE EVENT</button>
+            )}
           </div>
         )}
       </div>
@@ -95,6 +102,7 @@ const GamePanel = ({
         </div>
 
         <div className="header-actions">
+          <button className={`sets-toggle-btn ${isEventsPanelOpen ? 'active' : ''}`} onClick={() => setIsEventsPanelOpen(!isEventsPanelOpen)} style={{ marginRight: '10px' }}>EVENTS</button>
           <button className={`sets-toggle-btn ${isSetsPanelOpen ? 'active' : ''}`} onClick={() => setIsSetsPanelOpen(!isSetsPanelOpen)}>SETS</button>
         </div>
       </div>

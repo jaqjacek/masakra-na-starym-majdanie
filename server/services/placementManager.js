@@ -18,7 +18,7 @@ export class PlacementManager {
    */
   static findBestPlacement(regions, heldSets, playerId, generalOf, globalPawnPool, playLimits) {
     const myHeld = heldSets.filter(s => s.ownerId === playerId);
-    const emptyR = regions.filter(r => !RACES.some(race => r.pawns[race]?.length > 0));
+    const emptyRegions = regions.filter(r => !RACES.some(race => r.pawns[race]?.length > 0));
     
     // Count current pawns in play on the entire board
     const currentOnBoard = {};
@@ -31,19 +31,32 @@ export class PlacementManager {
       });
     });
 
+    // Filter heldSets to sets that can be put on board (pawns are within globalPawnPool and play limits)
+    const placeableSets = myHeld.filter(set => {
+      let isPlaceable = true;
+      Object.entries(set.content).forEach(([tId, count]) => {
+        const remainingGlobal = globalPawnPool[tId] - currentOnBoard[tId];
+        const remainingPlay = playLimits[tId] - currentOnBoard[tId];
+        if (remainingGlobal < count || remainingPlay < count) {
+          isPlaceable = false;
+        }
+      });
+      return isPlaceable;
+    });
+
     const calculatePlacementPoints = Scoring.calculatePlacementPoints.bind(Scoring);
 
     if (generalOf === 'vampire') {
-      return VampireScoring.findBestPlacement(regions, emptyR, myHeld, globalPawnPool, currentOnBoard, playLimits, calculatePlacementPoints);
+      return VampireScoring.findBestPlacement(regions, emptyRegions, placeableSets, calculatePlacementPoints);
     }
     if (generalOf === 'werewolf') {
-      return WerewolfScoring.findBestPlacement(regions, emptyR, myHeld, globalPawnPool, currentOnBoard, playLimits, calculatePlacementPoints);
+      return WerewolfScoring.findBestPlacement(regions, emptyRegions, placeableSets, calculatePlacementPoints);
     }
     if (generalOf === 'ghost') {
-      return GhostScoring.findBestPlacement(regions, emptyR, myHeld, globalPawnPool, currentOnBoard, playLimits, calculatePlacementPoints);
+      return GhostScoring.findBestPlacement(regions, emptyRegions, placeableSets, calculatePlacementPoints);
     }
     if (generalOf === 'bardak') {
-      return BardakScoring.findBestPlacement(regions, emptyR, myHeld, globalPawnPool, currentOnBoard, playLimits, calculatePlacementPoints);
+      return BardakScoring.findBestPlacement(regions, emptyRegions, placeableSets, calculatePlacementPoints);
     }
 
     return null;

@@ -28,17 +28,9 @@ export class GhostScoring {
   /**
    * Searches for the best place to put a set for the Ghost race.
    */
-  static findBestPlacement(regions, emptyRegions, heldSets, globalPawnPool, currentOnBoard, playLimits, calculatePlacementPoints) {
+  static findBestPlacement(regions, emptyRegions, placeableSets, calculatePlacementPoints) {
     let best = null;
-    heldSets.forEach(set => {
-      let isPlaceable = true;
-      Object.entries(set.content).forEach(([tId, count]) => {
-        const remainingGlobal = globalPawnPool[tId] - currentOnBoard[tId];
-        const remainingPlay = playLimits[tId] - currentOnBoard[tId];
-        if (remainingGlobal < count || remainingPlay < count) isPlaceable = false;
-      });
-      if (!isPlaceable) return;
-
+    placeableSets.forEach(set => {
       emptyRegions.forEach(region => {
         const placementScores = calculatePlacementPoints(regions, region, set.content);
         const pts = placementScores.ghost || 0;

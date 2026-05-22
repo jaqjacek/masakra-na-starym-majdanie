@@ -34,8 +34,17 @@ export class GhostScoring {
       emptyRegions.forEach(region => {
         const placementScores = calculatePlacementPoints(regions, region, set.content);
         const pts = placementScores.ghost || 0;
-        if (!best || pts > best.pts) {
+        const currentDist = region.jakubDistance || 0;
+
+        if (!best) {
           best = { set, region, pts, allScores: placementScores };
+        } else {
+          const bestDist = best.region.jakubDistance || 0;
+          if (pts > best.pts) {
+            best = { set, region, pts, allScores: placementScores };
+          } else if (pts === best.pts && currentDist > bestDist) {
+            best = { set, region, pts, allScores: placementScores };
+          }
         }
       });
     });

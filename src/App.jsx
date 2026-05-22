@@ -47,12 +47,19 @@ function App() {
 
   // Toggle html class for scrolling
   useEffect(() => {
+    const isScrollablePath = isAdminPath || currentPath === '/docs/game';
     if (isAdminPath) {
       document.documentElement.classList.add('admin-mode');
     } else {
       document.documentElement.classList.remove('admin-mode');
     }
-  }, [isAdminPath]);
+
+    if (isScrollablePath) {
+      document.documentElement.classList.add('scrollable');
+    } else {
+      document.documentElement.classList.remove('scrollable');
+    }
+  }, [isAdminPath, currentPath]);
 
   // 2. Computed values
   const counters = useMemo(() => {
@@ -275,7 +282,7 @@ function App() {
       console.error('Failed to execute event phase:', err);
       alert('Event phase failed. See console.');
     }
-  }, [gameId, setGameState, SERVER_URL]);
+  }, [gameId, setGameState]);
 
   const handleSelectGeneral = useCallback((race) => {
     const workState = JSON.parse(JSON.stringify(gameState));
@@ -472,7 +479,7 @@ function App() {
                   {gameState.availableGenerals.map(race => (
                     <div 
                       key={race} 
-                      className={`general-icon large ${race} ${hasGeneral ? 'disabled' : ''}`} 
+                      className={`general-icon large portrait ${race} ${hasGeneral ? 'disabled' : ''}`} 
                       onMouseDown={(e) => !hasGeneral && handleGeneralMouseDown(race, e)}
                       onClick={() => !hasGeneral && handleSelectGeneral(race)}
                       title={hasGeneral ? "You already have a general" : `Click to choose ${race}`}
@@ -541,7 +548,7 @@ function App() {
           </div>
         </div>
       )}
-      {activeGeneral && <div className="general-ghost" style={{ left: activeGeneral.x, top: activeGeneral.y }}><div className={`general-icon large ${activeGeneral.race}`}></div></div>}
+      {activeGeneral && <div className="general-ghost" style={{ left: activeGeneral.x, top: activeGeneral.y }}><div className={`general-icon large portrait ${activeGeneral.race}`}></div></div>}
       {hoveredPawn && !activePawn && !activeSet && !activeGeneral && <PawnStatusPopup pawn={hoveredPawn.pawn} pawnType={hoveredPawn.pawnType} position={{ x: hoveredPawn.x, y: hoveredPawn.y }} />}
       <Footer />
     </div>

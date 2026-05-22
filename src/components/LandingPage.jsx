@@ -1,10 +1,18 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import '../assets/css/landing.css';
 import Footer from './Footer';
 import { SERVER_URL } from '../constants/constants';
 
 const LandingPage = ({ onGoToGame }) => {
   const [inputGameId, setInputGameId] = useState('');
+  const [gameTitle, setGameTitle] = useState('Wędrowycz Board Game Simulator');
+
+  useEffect(() => {
+    fetch(`${SERVER_URL}/api/config/title`)
+      .then(res => res.json())
+      .then(data => setGameTitle(data.title))
+      .catch(console.error);
+  }, []);
 
   const handleGoToGame = (e) => {
     e.preventDefault();
@@ -14,7 +22,6 @@ const LandingPage = ({ onGoToGame }) => {
   };
 
   const handleNewGame = async () => {
-
     try {
       const res = await fetch(`${SERVER_URL}/api/map/next-id`);
       const data = await res.json();
@@ -47,20 +54,6 @@ const LandingPage = ({ onGoToGame }) => {
           <button type="submit" className="action-button" disabled={!inputGameId.trim()}>
             Go to Game
           </button>
-        </form>
-        <div className="landing-divider">OR</div>
-        
-        <button className="action-button new-game-btn" onClick={handleNewGame}>
-          Create New Game
-        </button>
-      </div>
-      <Footer />
-    </div>
-  );
-};
-
-export default LandingPage;
-      </button>
         </form>
         <div className="landing-divider">OR</div>
         

@@ -19,6 +19,7 @@ import {
   CONFIGS_DIR,
   saveFullState
 } from '../gameLogic.js';
+import { GameEventPhaseManager } from '../gameEventPhaseManager.js';
 
 export function initializeGame(gameId, requestedSet, io) {
   const regions = createEmptyRegions(); 
@@ -60,6 +61,11 @@ export function initializeGame(gameId, requestedSet, io) {
     }], 
     gameStatus: 'active', jakubAngerIncreased: false, jakubTurnExecuted: false 
   };
+
+  // Initialize events
+  const eventManager = new GameEventPhaseManager(finalState);
+  eventManager.ensureEventState();
+  console.log(`[Game ${gameId}] Events initialized:`, !!finalState.events, finalState.events?.pool?.length);
   
   saveFullState(gameId, finalState); 
   if (io) io.to(`game:${gameId}`).emit('boardUpdate', finalState); 

@@ -1,8 +1,8 @@
-import vampireIcon from '../assets/icons/vampire.svg';
-import werewolfIcon from '../assets/icons/werewolf.svg';
-import ghostIcon from '../assets/icons/ghost.svg';
-import bardakIcon from '../assets/icons/bardak.svg';
-import jakubIcon from '../assets/icons/jakub.svg';
+import vampireIcon from '../assets/icons/vampire_128x128.png';
+import werewolfIcon from '../assets/icons/warewolf_128x128.png';
+import ghostIcon from '../assets/icons/ghost_128x128.png';
+import bardakIcon from '../assets/icons/bardak_128x128.png';
+import jakubIcon from '../assets/icons/jakub_128x128.png';
 
 export const STATUSES = {
   DISABLED: 'DISABLED',

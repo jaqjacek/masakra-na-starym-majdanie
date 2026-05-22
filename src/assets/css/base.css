@@ -26,17 +26,21 @@ html, body {
   user-select: none;
 }
 
-/* Enable scrolling only in Admin mode (class on <html>) */
+/* Enable scrolling for specific modes (class on <html>) */
 html.admin-mode, 
-html.admin-mode body {
-  overflow-y: scroll !important; /* Keep scrollbar always visible to prevent jump */
+html.admin-mode body,
+html.scrollable,
+html.scrollable body {
+  overflow-y: auto !important;
   height: auto;
   min-height: 100vh;
 }
 
-/* Ensure root and container don't trap the scroll in admin mode */
+/* Ensure root and container don't trap the scroll */
 html.admin-mode #root,
-html.admin-mode .app-container {
+html.admin-mode .app-container,
+html.scrollable #root,
+html.scrollable .app-container {
   height: auto;
   min-height: 100vh;
   overflow: visible;
@@ -72,14 +76,21 @@ html.admin-mode .app-container {
 .next-btn { background-color: #8e44ad; }
 
 /* Race-specific Icons */
-.vampire { background-image: url('/src/assets/icons/vampire.svg'); }
-.werewolf { background-image: url('/src/assets/icons/werewolf.svg'); }
-.ghost { background-image: url('/src/assets/icons/ghost.svg'); }
-.bardak { background-image: url('/src/assets/icons/bardak.svg'); }
-.jakub { background-image: url('/src/assets/icons/jakub.svg'); }
+.vampire { background-image: url('/src/assets/icons/vampire_128x128.png'); }
+.werewolf { background-image: url('/src/assets/icons/warewolf_128x128.png'); }
+.ghost { background-image: url('/src/assets/icons/ghost_128x128.png'); }
+.bardak { background-image: url('/src/assets/icons/bardak_128x128.png'); }
+.jakub { background-image: url('/src/assets/icons/jakub_128x128.png'); }
+
+/* Large Character Portraits (Raw High-Res) */
+.portrait.vampire { background-image: url('/src/assets/icons/general_vampire_raw.jpg'); }
+.portrait.werewolf { background-image: url('/src/assets/icons/general_warewolf_raw.jpg'); }
+.portrait.ghost { background-image: url('/src/assets/icons/general_ghost_raw.jpg'); }
+.portrait.bardak { background-image: url('/src/assets/icons/general_bardak_raw.jpg'); }
+.portrait.jakub { background-image: url('/src/assets/icons/general_jakub_raw.jpg'); }
 
 /* Universal Icon Properties */
-.pawn-preview, .pawn-indicator, .mouse-element, .breakdown-dot, .set-icon, .anger-icon, .general-icon, .summary-icon {
+.pawn-preview, .pawn-indicator, .mouse-element, .breakdown-dot, .set-icon, .anger-icon, .general-icon, .summary-icon, .portrait {
   background-size: contain; background-repeat: no-repeat; background-position: center;
   width: 100%; height: 100%; /* Ensure they take parent size if needed */
   display: block;

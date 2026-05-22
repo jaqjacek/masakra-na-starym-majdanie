@@ -8,7 +8,7 @@ router.get('/title', (req, res) => {
   try {
     const config = getGameConfig();
     res.json({ title: config.gameTitle || "MASAKRA na Starym Majdanie" });
-  } catch (err) {
+  } catch (_err) {
     res.status(500).json({ error: 'Failed to get game title' });
   }
 });

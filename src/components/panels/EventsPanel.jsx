@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 
 const EventsPanel = ({ events, onClose }) => {
+  console.log('EventsPanel rendering with events:', events);
   const [hoveredEvent, setHoveredEvent] = useState(null);
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
 

@@ -1,3 +1,4 @@
+
 # Project Specification: MASAKRA na Starym Majdanie
 
 ## 1. Project Overview

@@ -28,14 +28,14 @@ router.post('/full', upload.fields([
     if (req.files['sets']) {
       try {
         setsConfig = JSON.parse(req.files['sets'][0].buffer.toString());
-      } catch (err) {
+      } catch (_err) {
         return res.status(400).json({ error: 'Invalid JSON in sets file' });
       }
     }
     if (req.files['game']) {
       try {
         gameConfig = JSON.parse(req.files['game'][0].buffer.toString());
-      } catch (err) {
+      } catch (_err) {
         return res.status(400).json({ error: 'Invalid JSON in game file' });
       }
     }

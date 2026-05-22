@@ -2,7 +2,7 @@
 .rulebook-wrapper {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 40px;
+  padding: 0; /* Remove padding to let cover go edge-to-edge */
   background-color: #f4f1ea; /* "Old paper" color */
   color: #2c3e50;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -10,26 +10,217 @@
   min-height: 100vh;
 }
 
+.rulebook-cover-container {
+  position: relative;
+  width: 100%;
+  height: 500px; /* Initial height for the cover */
+  overflow: hidden;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #000;
+}
+
+.rulebook-cover-bg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.rulebook-title-header-container {
+  display: flex;
+  justify-content: center;
+  margin: 0 auto;
+  max-width: 600px;
+}
+
+.rulebook-title-img {
+  width: 100%;
+  height: auto;
+  max-height: 150px;
+  object-fit: contain;
+}
+
 .rulebook-header {
   text-align: center;
   border-bottom: 4px double #2c3e50;
-  margin-bottom: 40px;
+  margin: 40px;
   padding-bottom: 20px;
 }
 
-.rulebook-header h1 {
-  font-size: 3.5rem;
-  margin: 0;
-  text-transform: uppercase;
-  letter-spacing: 4px;
+/* Two-column layout for main text */
+.rulebook-full-width {
+  margin: 0 40px 40px 40px;
+  text-align: justify;
 }
 
-/* Two-column layout for main text */
+.generals-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+  gap: 20px;
+  margin-top: 20px;
+}
+
+.general-card {
+  background: rgba(0,0,0,0.03);
+  padding: 20px;
+  border-radius: 8px;
+  border: 1px solid rgba(0,0,0,0.1);
+  display: flex;
+  gap: 20px;
+  align-items: flex-start;
+}
+
+.general-portrait-container {
+  width: 120px;
+  height: 213px; /* Adjusted for approx 9:16 ratio (120 * 16 / 9) */
+  flex-shrink: 0;
+  border-radius: 6px;
+  overflow: hidden;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+  border: 1px solid rgba(0,0,0,0.1);
+  background-color: #fff;
+}
+
+.general-portrait-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain; /* Shows the full image without cropping */
+}
+
+.special-jakub {
+  background: rgba(192, 57, 43, 0.05);
+  border-color: rgba(192, 57, 43, 0.3);
+}
+
+.special-jakub strong {
+  color: #c0392b;
+  font-size: 1.2rem;
+}
+
+.general-placeholder {
+  width: 100px;
+  height: 100px;
+  background-color: #ddd;
+  border: 2px dashed #999;
+  border-radius: 50%;
+  flex-shrink: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.general-icon-container.placeholder-pawn {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #333;
+  padding: 10px;
+}
+
+.pawn-icon-preview {
+  width: 100%;
+  height: 100%;
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+}
+
+/* Showcase for actual pawn icons */
+.pawn-showcase {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 15px;
+  margin: 20px 0;
+}
+
+.pawn-showcase-item {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  background: rgba(0,0,0,0.05);
+  padding: 10px;
+  border-radius: 6px;
+  border: 1px solid rgba(0,0,0,0.1);
+}
+
+.pawn-showcase-item.special {
+  grid-column: span 2;
+  background: rgba(192, 57, 43, 0.1);
+  border-color: #c0392b;
+}
+
+.pawn-showcase-item img {
+  width: 60px;
+  height: 60px;
+  object-fit: contain;
+}
+
+.pawn-showcase-item span {
+  font-weight: bold;
+  text-transform: uppercase;
+  font-size: 0.9rem;
+  color: #2c3e50;
+}
+
+.general-card-horizontal {
+  display: flex;
+  gap: 20px;
+  align-items: center;
+}
+
+.info-text {
+  flex: 1;
+}
+
+.general-placeholder::after {
+  content: 'IKONA';
+  font-size: 0.6rem;
+  color: #666;
+}
+
+/* Screenshot styling */
+.element-example {
+  margin: 15px 0;
+  text-align: center;
+}
+
+.rule-screenshot {
+  max-width: 100%;
+  height: auto;
+  border-radius: 4px;
+  box-shadow: 2px 2px 8px rgba(0,0,0,0.3);
+  border: 1px solid rgba(0,0,0,0.1);
+}
+
+.caption {
+  font-size: 0.75rem;
+  font-style: italic;
+  color: #7f8c8d;
+  margin-top: 5px;
+}
+
+.general-info strong {
+  color: #c0392b;
+  display: block;
+  font-size: 1.1rem;
+  margin-bottom: 8px;
+}
+
+.general-info p {
+  margin: 0;
+  line-height: 1.4;
+  font-size: 0.95rem;
+}
+
 .rulebook-columns {
   column-count: 2;
   column-gap: 50px;
   column-rule: 1px solid rgba(0,0,0,0.1);
   text-align: justify;
+  margin: 0 40px;
 }
 
 .rule-section {
@@ -42,6 +233,73 @@
   border-bottom: 2px solid #e67e22;
   color: #d35400;
   margin-top: 0;
+}
+
+.phase-card {
+  background-color: rgba(255,255,255,0.5);
+  border: 1px solid rgba(0,0,0,0.1);
+  padding: 15px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  break-inside: avoid;
+}
+
+.phase-card h3 {
+  margin-top: 0;
+  font-size: 1.2rem;
+  color: #2c3e50;
+  border-bottom: 1px solid rgba(0,0,0,0.1);
+  padding-bottom: 5px;
+}
+
+.mechanic-box {
+  background-color: #e8f6f3;
+  border: 1px solid #16a085;
+  padding: 15px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+}
+
+.mechanic-box h3 {
+  margin-top: 0;
+  color: #16a085;
+  font-size: 1.1rem;
+  text-transform: uppercase;
+}
+
+.scoring-box {
+  background-color: rgba(46, 204, 113, 0.1);
+  border-left: 5px solid #2ecc71;
+  padding: 15px;
+  margin: 20px 0;
+}
+
+.scoring-box h3 {
+  margin-top: 0;
+  color: #27ae60;
+  font-size: 1.1rem;
+}
+
+.tie-breaker-box {
+  background-color: rgba(192, 57, 43, 0.05);
+  border: 1px dashed #c0392b;
+  padding: 15px;
+  margin-top: 20px;
+}
+
+.tie-breaker-box h3 {
+  margin-top: 0;
+  color: #c0392b;
+  font-size: 1rem;
+  text-transform: uppercase;
+}
+
+.hierarchy {
+  font-weight: bold;
+  font-size: 1.1rem;
+  text-align: center;
+  color: #2c3e50;
+  letter-spacing: 2px;
 }
 
 .flavor-text {
@@ -93,6 +351,15 @@
   color: #27ae60;
   font-size: 1.1rem;
   text-transform: uppercase;
+}
+
+.rulebook-footer {
+  margin: 50px 40px;
+  text-align: center;
+  font-size: 0.8rem;
+  opacity: 0.5;
+  border-top: 1px solid rgba(0,0,0,0.1);
+  padding-top: 20px;
 }
 
 /* PDF / Print Specifics */

@@ -464,6 +464,15 @@
   border: 2px solid transparent;
 }
 
+.general-icon.large.portrait {
+  width: 120px;
+  height: 213px; /* Adjusted for 9:16 ratio */
+  border-radius: 8px;
+  background-size: contain; /* Show the full portrait from head to toe */
+  background-color: #fff;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+}
+
 .general-icon.large:hover {
   transform: scale(1.1);
   background-color: rgba(255,255,255,0.2);

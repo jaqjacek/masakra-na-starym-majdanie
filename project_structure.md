@@ -55,7 +55,14 @@ This file maps the codebase for the **MASAKRA na Starym Majdanie** digital board
   - [server/configs/events_default.json](file:///C:/projects/ai/wedrowycz-gemini/server/configs/events_default.json) - Dynamic in-game events definition schema.
 - **server/routes/** - REST controllers mapping:
   - `config.js`, `games.js`, `sets.js`, `simulation.js`.
+- **server/scorings/** - Specialized point scoring calculations per race.
+  - [server/scorings/vampireScoring.js](file:///C:/projects/ai/wedrowycz-gemini/server/scorings/vampireScoring.js) - Vampire distance-based scoring calculations.
+  - [server/scorings/werewolfScoring.js](file:///C:/projects/ai/wedrowycz-gemini/server/scorings/werewolfScoring.js) - Werewolf neighbors-based scoring calculations.
+  - [server/scorings/ghostScoring.js](file:///C:/projects/ai/wedrowycz-gemini/server/scorings/ghostScoring.js) - Ghost edge-based scoring calculations.
+  - [server/scorings/bardakScoring.js](file:///C:/projects/ai/wedrowycz-gemini/server/scorings/bardakScoring.js) - Bardak distance-based scoring calculations.
 - **server/services/** - Helper services such as game state simulation.
+  - [server/services/simulationService.js](file:///C:/projects/ai/wedrowycz-gemini/server/services/simulationService.js) - Automated gameplay round simulator service.
+  - [server/services/placementManager.js](file:///C:/projects/ai/wedrowycz-gemini/server/services/placementManager.js) - Pawn placement and passing simulation manager.
 - **server/sets/** - Saved pawn collections generated through simulation/admin tools.
 - **server/games/** - Unique persistent game directories containing `state.json`, `map.json`, `sets.json`, `players.json`.
 
@@ -79,7 +86,10 @@ This file maps the codebase for the **MASAKRA na Starym Majdanie** digital board
 - **src/hooks/** - React custom hooks handling:
   - `useGameState.js` (WebSockets and optimistic updates)
   - `useGameInteraction.js` (Click events, drag-and-drop support, shortcuts)
+  - `useAutoplay.js` (Automated ticks, time intervals, and phase transitions)
 - **src/logic/** - UI local helpers for scoring and graphics filters.
+  - [src/logic/Scoring.js](file:///C:/projects/ai/wedrowycz-gemini/src/logic/Scoring.js) - UI score calculations per race.
+  - [src/logic/placementManager.js](file:///C:/projects/ai/wedrowycz-gemini/src/logic/placementManager.js) - Pawn placement and passing UI automation manager.
 - **src/strategies/** - AI movement policies (`jakubStrategy.js`).
 - **src/services/** - Sockets and fetch wrappers for API.
 

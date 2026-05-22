@@ -13,7 +13,7 @@ import {
 } from '../constants/constants';
 import { PAWN_TYPES } from '../constants/pawnTypes';
 import { RACES } from '../constants/game';
-import { Scoring } from '../logic/Scoring';
+import { PlacementManager } from '../logic/placementManager';
 import { applySetToJakubAnger, executeJakubStep } from '../strategies/jakubStrategy';
 
 export const useAutoplay = ({ 
@@ -129,85 +129,20 @@ export const useAutoplay = ({
         updateGameWithSync(workState);
         return;
       }
-      const myHeld = (workState.sets.heldSets || []).filter(s => s.ownerId === curId);
-      const emptyR = workState.regions.filter(r => !RACES.some(race => r.pawns[race]?.length > 0));
-      const currentOnBoard = PAWN_TYPES.reduce((acc, p) => ({ ...acc, [p.id]: 0 }), {});
-      workState.regions.forEach(r => Object.entries(r.pawns).forEach(([tId, insts]) => { if (currentOnBoard[tId] !== undefined) currentOnBoard[tId] += insts.length; }));
-      
       const globalPool = { ...workState.sets.pawns };
       const playLimits = workState.sets.pawnsInPlayLimit || globalPool;
-      
-      let best = null;
-      myHeld.forEach(set => {
-        let isPlaceable = true;
-        Object.entries(set.content).forEach(([tId, count]) => { 
-          const remainingGlobal = globalPool[tId] - currentOnBoard[tId];
-          const remainingPlay = playLimits[tId] - currentOnBoard[tId];
-          if (remainingGlobal < count || remainingPlay < count) isPlaceable = false; 
-        });
-        if (!isPlaceable) return;
-        emptyR.forEach(region => {
-          const placementScores = Scoring.calculatePlacementPoints(workState.regions, region, set.content);
-          const pts = placementScores[curPlayer.generalOf] || 0;
-          if (!best || pts > best.pts) best = { set, region, pts, allScores: placementScores };
-        });
-      });
+      const best = PlacementManager.findBestPlacement(workState.regions, workState.sets.heldSets, curId, curPlayer.generalOf, globalPool, playLimits);
 
       if (best && best.pts > 1) {
-        const targetRegion = workState.regions[best.region.id];
-        Object.entries(best.set.content).forEach(([tId, count]) => {
-          if (!targetRegion.pawns[tId]) targetRegion.pawns[tId] = [];
-          for (let i = 0; i < count; i++) {
-            const pawnType = PAWN_TYPES.find(p => p.id === tId);
-            targetRegion.pawns[tId].push({ statuses: [...pawnType.defaultStatuses], ...(pawnType.defaultParameters ? JSON.parse(JSON.stringify(pawnType.defaultParameters)) : {}) });
-          }
-        });
-
-        let logSummary = [];
-        workState.players.forEach(p => {
-          if (p.generalOf) {
-            const racePts = best.allScores[p.generalOf] || 0;
-            if (racePts > 0) {
-              p.points += racePts;
-              logSummary.push(`${p.generalOf[0].toUpperCase()}:+${racePts}`);
-            }
-          }
-        });
-
-        const statusLog = RACES.map(race => {
-          const count = workState.regions.reduce((sum, r) => sum + (r.pawns[race]?.length || 0), 0);
-          const limit = playLimits[race];
-          return `${race[0].toUpperCase()}:${count}/${limit}`;
-        }).join(' ');
-
-        const usedSet = findAndRemoveSetById(workState, best.set.id);
-        if (usedSet) { usedSet.ownerId = null; usedSet.used = false; if (!workState.sets.discardPile) workState.sets.discardPile = []; workState.sets.discardPile.push(usedSet); }
-        addLog(workState, `Player ${curId} placed Set ${best.set.id} [${logSummary.join(', ')}] | Board: ${statusLog}`);
+        const { logSummaryString, statusLogString } = PlacementManager.executePlacement(best, workState, PAWN_TYPES, playLimits);
+        addLog(workState, `Player ${curId} placed Set ${best.set.id} [${logSummaryString}] | Board: ${statusLogString}`);
       } else {
-        workState.passedPlayers.push(curId);
-        const currentHand = (workState.sets.heldSets || []).filter(s => s.ownerId === curId);
-        if (currentHand.length > MAX_HAND_SIZE) {
-          const excessCount = currentHand.length - MAX_HAND_SIZE;
-          const sorted = [...currentHand].sort((a, b) => (a.content[curPlayer.generalOf] || 0) - (b.content[curPlayer.generalOf] || 0));
-          const toDiscard = sorted.slice(0, excessCount);
-          
-          let jakub = null;
-          for (const r of workState.regions) { if (r.pawns.jakub?.length > 0) { jakub = r.pawns.jakub[0]; break; } }
-
-          toDiscard.forEach(s => {
-            const idx = workState.sets.heldSets.findIndex(h => h.id === s.id);
-            if (idx !== -1) {
-              workState.sets.heldSets[idx].ownerId = 'jakub';
-              if (jakub) {
-                const result = applySetToJakubAnger(jakub, s.content);
-                jakub.anger = result.anger;
-                jakub.range = result.range;
-              }
-            }
-          });
-          curPlayer.points += excessCount;
-          addLog(workState, `Player ${curId} passed and sold ${excessCount} excess set(s). Jakub Anger updated.`, { race: curPlayer.generalOf, points: excessCount });
-        } else { addLog(workState, `Player ${curId} passed.`); }
+        const excess = PlacementManager.executePass(curPlayer, workState, MAX_HAND_SIZE, applySetToJakubAnger);
+        if (excess > 0) {
+          addLog(workState, `Player ${curId} passed and sold ${excess} excess set(s). Jakub Anger updated.`, { race: curPlayer.generalOf, points: excess });
+        } else {
+          addLog(workState, `Player ${curId} passed.`);
+        }
       }
       if (workState.passedPlayers.length === workState.players.length) {
         workState.phase = 'jakub_phase'; addLog(workState, `--- Start of Jakub Phase ---`);
@@ -344,7 +279,7 @@ export const useAutoplay = ({
       updateGameWithSync(workState);
       return;
     }
-  }, [isFullAutoplay, isJakubAutoplay, gameId, gameState, updateGameWithSync, addLog, drawSet, findAndRemoveSetById]);
+  }, [isFullAutoplay, isJakubAutoplay, gameId, gameState, updateGameWithSync, addLog, drawSet]);
 
   useEffect(() => {
     const timer = setInterval(() => { 

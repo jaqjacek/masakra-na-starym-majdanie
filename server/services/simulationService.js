@@ -14,6 +14,7 @@ import {
   getBestTargetRegion 
 } from '../boardManager.js';
 import { Scoring } from '../scoring.js';
+import { PlacementManager } from './placementManager.js';
 import { 
   loadSetFile, 
   generateSetData 
@@ -68,61 +69,37 @@ export function runDetailedSimulation(set, uploadedSets) {
     while (passed.size < players.length) {
       for (const id of playerOrder) {
         if (passed.has(id)) continue;
-        const p = players.find(x => x.id === id); const myHeld = setsData.heldSets.filter(s => s.ownerId === p.id); const emptyR = regions.filter(r => !RACES.some(race => r.pawns[race]?.length > 0));
-        const onBoard = {}; RACES.forEach(r => onBoard[r] = 0); regions.forEach(r => Object.entries(r.pawns).forEach(([tid, insts]) => { if (onBoard[tid] !== undefined) onBoard[tid] += insts.length; }));
-        const pool = { ...setsData.pawns }; 
+        const p = players.find(x => x.id === id);
+        const pool = { ...setsData.pawns };
         const playLimits = setsData.pawnsInPlayLimit || pool;
-        let best = null;
-        myHeld.forEach(s => {
-          let can = true; Object.entries(s.content).forEach(([tid, count]) => { 
-            const remainingGlobal = pool[tid] - onBoard[tid];
-            const remainingPlay = playLimits[tid] - onBoard[tid];
-            if (remainingGlobal < count || remainingPlay < count) can = false; 
-          });
-          if (!can) return;
-          emptyR.forEach(r => { const placementScores = Scoring.calculatePlacementPoints(regions, r, s.content); const pts = placementScores[p.generalOf] || 0; if (!best || pts > best.pts) best = { s, r, pts, allScores: placementScores }; });
-        });
-        if (best && best.pts > 1) { 
-          const pointGains = [];
-          players.forEach(beneficiary => { 
-            if (beneficiary.generalOf) { 
-              const gain = best.allScores[beneficiary.generalOf] || 0;
-              beneficiary.points += gain; 
-              if (gain > 0) {
-                pointGains.push({ player: beneficiary.name, race: beneficiary.generalOf, points: gain });
-              }
-            } 
-          });
-          Object.entries(best.s.content).forEach(([tid, count]) => { if (!best.r.pawns[tid]) best.r.pawns[tid] = []; for (let i = 0; i < count; i++) best.r.pawns[tid].push({ statuses: ['ENABLED'] }); }); 
-          const idx = setsData.heldSets.findIndex(x => x.id === best.s.id); const used = setsData.heldSets.splice(idx, 1)[0]; used.ownerId = null; setsData.discardPile.push(used); 
+        const best = PlacementManager.findBestPlacement(regions, setsData.heldSets, p.id, p.generalOf, pool, playLimits);
+        if (best && best.pts > 1) {
+          const pointGains = PlacementManager.executePlacement(best, regions, players, setsData.heldSets, setsData.discardPile);
           const onBoardStatus = {};
           RACES.forEach(race => {
             const current = regions.reduce((sum, r) => sum + (r.pawns[race]?.length || 0), 0);
             onBoardStatus[race] = `${current}/${playLimits[race]}`;
           });
 
-          roundData.turns.push({ 
-            type: 'placement', 
-            player: p.name, 
-            race: p.generalOf, 
-            regionId: best.r.id, 
+          roundData.turns.push({
+            type: 'placement',
+            player: p.name,
+            race: p.generalOf,
+            regionId: best.region.id,
             pointGains,
-            content: best.s.content,
+            content: best.set.content,
             boardStatus: onBoardStatus
           });
         } else {
-          if (myHeld.length > 3) { 
-            const excess = myHeld.length - 3; 
-            const sorted = [...myHeld].sort((a,b) => (a.content[p.generalOf]||0) - (b.content[p.generalOf]||0)); 
-            for(let i=0; i<excess; i++) { const s = sorted[i]; s.ownerId = 'jakub'; } 
-            p.points += excess; 
-            roundData.turns.push({ 
-              type: 'pass_to_jakub', 
-              player: p.name, 
+          const excess = PlacementManager.executePass(p, setsData.heldSets, 3);
+          if (excess > 0) {
+            roundData.turns.push({
+              type: 'pass_to_jakub',
+              player: p.name,
               race: p.generalOf,
               setsGiven: excess,
               pointGains: [{ player: p.name, race: p.generalOf, points: excess }]
-            }); 
+            });
           }
           passed.add(id);
         }
@@ -230,37 +207,14 @@ export function runBasicSimulation(set, uploadedSets) {
     while (passed.size < players.length) {
       for (const id of playerOrder) {
         if (passed.has(id)) continue;
-        const p = players.find(x => x.id === id); 
-        const myHeld = setsData.heldSets.filter(s => s.ownerId === p.id); 
-        const emptyR = regions.filter(r => !RACES.some(race => r.pawns[race]?.length > 0));
-        const onBoard = {}; RACES.forEach(r => onBoard[r] = 0);
-        regions.forEach(r => Object.entries(r.pawns).forEach(([tid, insts]) => { if (onBoard[tid] !== undefined) onBoard[tid] += insts.length; }));
-        const pool = { ...setsData.pawns }; 
+        const p = players.find(x => x.id === id);
+        const pool = { ...setsData.pawns };
         const playLimits = setsData.pawnsInPlayLimit || pool;
-        let best = null;
-        myHeld.forEach(s => {
-          let can = true; Object.entries(s.content).forEach(([tid, count]) => { 
-            const remainingGlobal = pool[tid] - onBoard[tid];
-            const remainingPlay = playLimits[tid] - onBoard[tid];
-            if (remainingGlobal < count || remainingPlay < count) can = false; 
-          });
-          if (!can) return;
-          emptyR.forEach(r => {
-            const placementScores = Scoring.calculatePlacementPoints(regions, r, s.content);
-            const pts = placementScores[p.generalOf] || 0;
-            if (!best || pts > best.pts) best = { s, r, pts, allScores: placementScores };
-          });
-          });
-          if (best && best.pts > 1) {
-
-          players.forEach(beneficiary => { 
-            if (beneficiary.generalOf) { 
-              beneficiary.points += best.allScores[beneficiary.generalOf] || 0; 
-            } 
-          });
-          Object.entries(best.s.content).forEach(([tid, count]) => { if (!best.r.pawns[tid]) best.r.pawns[tid] = []; for (let i = 0; i < count; i++) best.r.pawns[tid].push({ statuses: ['ENABLED'] }); }); 
-          const idx = setsData.heldSets.findIndex(x => x.id === best.s.id); const used = setsData.heldSets.splice(idx, 1)[0]; used.ownerId = null; setsData.discardPile.push(used); 
-          } else {            if (myHeld.length > 3) { const excess = myHeld.length - 3; const sorted = [...myHeld].sort((a,b) => (a.content[p.generalOf]||0) - (b.content[p.generalOf]||0)); for(let i=0; i<excess; i++) { const s = sorted[i]; s.ownerId = 'jakub'; } p.points += excess; }
+        const best = PlacementManager.findBestPlacement(regions, setsData.heldSets, p.id, p.generalOf, pool, playLimits);
+        if (best && best.pts > 1) {
+          PlacementManager.executePlacement(best, regions, players, setsData.heldSets, setsData.discardPile);
+        } else {
+          PlacementManager.executePass(p, setsData.heldSets, 3);
           passed.add(id);
         }
       }
@@ -399,39 +353,14 @@ export function runFullSimulation(setsConfig, inputGameConfig) {
     while (passed.size < players.length) {
       for (const id of playerOrder) {
         if (passed.has(id)) continue;
-        const p = players.find(x => x.id === id); 
-        const myHeld = setsData.heldSets.filter(s => s.ownerId === p.id); 
-        const emptyR = regions.filter(r => !RACES.some(race => r.pawns[race]?.length > 0));
-        const onBoard = {}; RACES.forEach(r => onBoard[r] = 0);
-        regions.forEach(r => Object.entries(r.pawns).forEach(([tid, insts]) => { if (onBoard[tid] !== undefined) onBoard[tid] += insts.length; }));
-        const pool = { ...setsData.pawns }; 
+        const p = players.find(x => x.id === id);
+        const pool = { ...setsData.pawns };
         const playLimits = setsData.pawnsInPlayLimit || pool;
-        let best = null;
-        
-        myHeld.forEach(s => {
-          let can = true; Object.entries(s.content).forEach(([tid, count]) => { 
-            const remainingGlobal = pool[tid] - onBoard[tid];
-            const remainingPlay = playLimits[tid] - onBoard[tid];
-            if (remainingGlobal < count || remainingPlay < count) can = false; 
-          });
-          if (!can) return;
-          emptyR.forEach(r => {
-            const placementScores = Scoring.calculatePlacementPoints(regions, r, s.content);
-            const pts = placementScores[p.generalOf] || 0;
-            if (!best || pts > best.pts) best = { s, r, pts, allScores: placementScores };
-          });
-        });
-
+        const best = PlacementManager.findBestPlacement(regions, setsData.heldSets, p.id, p.generalOf, pool, playLimits);
         if (best && best.pts > 1) {
-          players.forEach(beneficiary => { 
-            if (beneficiary.generalOf) { 
-              beneficiary.points += best.allScores[beneficiary.generalOf] || 0; 
-            } 
-          });
-          Object.entries(best.s.content).forEach(([tid, count]) => { if (!best.r.pawns[tid]) best.r.pawns[tid] = []; for (let i = 0; i < count; i++) best.r.pawns[tid].push({ statuses: ['ENABLED'] }); }); 
-          const idx = setsData.heldSets.findIndex(x => x.id === best.s.id); const used = setsData.heldSets.splice(idx, 1)[0]; used.ownerId = null; setsData.discardPile.push(used); 
+          PlacementManager.executePlacement(best, regions, players, setsData.heldSets, setsData.discardPile);
         } else {
-          if (myHeld.length > 3) { const excess = myHeld.length - 3; const sorted = [...myHeld].sort((a,b) => (a.content[p.generalOf]||0) - (b.content[p.generalOf]||0)); for(let i=0; i<excess; i++) { const s = sorted[i]; s.ownerId = 'jakub'; } p.points += excess; }
+          PlacementManager.executePass(p, setsData.heldSets, 3);
           passed.add(id);
         }
       }

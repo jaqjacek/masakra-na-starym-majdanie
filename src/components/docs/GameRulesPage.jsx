@@ -267,7 +267,7 @@ const GameRulesPage = () => {
       </div>
 
       <footer className="rulebook-footer">
-        © 2026 Wędrowycz-Gemini Project - Professional Rulebook v1.10.1 | Jakub approves.
+        © 2026 Wędrowycz-Gemini Project - Professional Rulebook v1.11.0 | Jakub approves.
       </footer>
     </div>
   );

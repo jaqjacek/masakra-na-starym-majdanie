@@ -16,7 +16,9 @@ export class Scoring {
    */
   static calculatePlacementPoints(regions, targetRegion, setContent) {
     const jakubRegion = regions.find(r => r.pawns.jakub?.length > 0);
-    const dist = Board.getDistance(targetRegion, jakubRegion);
+    const dist = targetRegion.jakubDistance !== undefined 
+      ? targetRegion.jakubDistance 
+      : Board.getDistance(targetRegion, jakubRegion);
     const jakub = jakubRegion?.pawns.jakub[0];
     const jakubRange = jakub ? jakub.range : 0;
 

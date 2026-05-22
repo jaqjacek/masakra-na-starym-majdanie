@@ -13,6 +13,7 @@ import {
 } from '../constants/constants';
 import { PAWN_TYPES } from '../constants/pawnTypes';
 import { RACES } from '../constants/game';
+import { Board } from '../constants/board';
 import { PlacementManager } from '../logic/placementManager';
 import { applySetToJakubAnger, executeJakubStep } from '../strategies/jakubStrategy';
 
@@ -181,6 +182,8 @@ export const useAutoplay = ({
             }
           });
         }
+
+        Board.updateJakubDistance(workState.regions);
 
         if (workState.currentRound >= (workState.totalRounds || TOTAL_GAME_ROUNDS)) { 
           workState.phase = 'final_scoring'; 

@@ -17,6 +17,19 @@ export const createEmptyRegions = () => {
   const interior = regions.filter(r => r.x > 0 && r.x < 5 && r.y > 0 && r.y < 5).map(r => r.id);
   const rIdx = interior[Math.floor(Math.random() * interior.length)];
   regions[rIdx].pawns.jakub = [{ statuses: ['ENABLED'], speed: 1, range: 1, anger: { vampire: 0, werewolf: 0, ghost: 0, bardak: 0 } }];
+  updateJakubDistance(regions);
+  return regions;
+};
+
+export const updateJakubDistance = (regions) => {
+  const jakubRegion = regions.find(r => r.pawns.jakub?.length > 0);
+  regions.forEach(r => {
+    if (jakubRegion) {
+      r.jakubDistance = Math.max(Math.abs(r.x - jakubRegion.x), Math.abs(r.y - jakubRegion.y));
+    } else {
+      r.jakubDistance = 999;
+    }
+  });
   return regions;
 };
 

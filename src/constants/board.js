@@ -57,4 +57,16 @@ export class Board {
     if (!r1 || !r2) return 999;
     return Math.max(Math.abs(r1.x - r2.x), Math.abs(r1.y - r2.y));
   }
+
+  static updateJakubDistance(regions) {
+    const jakubRegion = regions.find(r => r.pawns.jakub?.length > 0);
+    regions.forEach(r => {
+      if (jakubRegion) {
+        r.jakubDistance = Math.max(Math.abs(r.x - jakubRegion.x), Math.abs(r.y - jakubRegion.y));
+      } else {
+        r.jakubDistance = 999;
+      }
+    });
+    return regions;
+  }
 }

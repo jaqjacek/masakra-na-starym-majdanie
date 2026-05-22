@@ -11,7 +11,8 @@ import {
 import { 
   createEmptyRegions, 
   getRegionsInRange, 
-  getBestTargetRegion 
+  getBestTargetRegion,
+  updateJakubDistance
 } from '../boardManager.js';
 import { Scoring } from '../scoring.js';
 import { PlacementManager } from './placementManager.js';
@@ -132,6 +133,7 @@ export function runDetailedSimulation(set, uploadedSets) {
       const candidates = getRegionsInRange(regions, curR.id, jakub.range); const bestRIdx = getBestTargetRegion(candidates, sortedAngerRaces, regions);
       if (bestRIdx !== null) { const fromId = curR.id; regions[bestRIdx].pawns.jakub = curR.pawns.jakub; delete curR.pawns.jakub; jakub.range = Math.max(0, jakub.range - 1); continues = true; roundData.turns.push({ type: 'jakub_move', from: fromId, to: regions[bestRIdx].id, remainingRange: jakub.range }); }
     }
+    updateJakubDistance(regions);
     let jakR_after = regions.find(r => r.pawns.jakub?.length > 0);
     if (jakR_after) { RACES.forEach(race => { const count = jakR_after.pawns[race]?.length || 0; if (count > 0) { const pts = count * 2; const p = players.find(x => x.generalOf === race); if (p) { p.points += pts; roundData.turns.push({ type: 'rambo_points', player: p.name, race, points: pts }); } } }); }
     jakub.range = 1; jakubSets.forEach(s => { const idx = setsData.heldSets.findIndex(x => x.id === s.id); const recycled = setsData.heldSets.splice(idx, 1)[0]; recycled.ownerId = null; recycled.used = false; setsData.discardPile.push(recycled); });
@@ -251,6 +253,7 @@ export function runBasicSimulation(set, uploadedSets) {
         continues = true; 
       }
     }
+    updateJakubDistance(regions);
     let jakR_after = regions.find(r => r.pawns.jakub?.length > 0);
     if (jakR_after) {
       RACES.forEach(race => {
@@ -399,6 +402,7 @@ export function runFullSimulation(setsConfig, inputGameConfig) {
         continues = true; 
       }
     }
+    updateJakubDistance(regions);
     let jakR_after = regions.find(r => r.pawns.jakub?.length > 0);
     if (jakR_after) {
       RACES.forEach(race => {

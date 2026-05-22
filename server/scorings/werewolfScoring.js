@@ -27,4 +27,29 @@ export class WerewolfScoring {
     
     return pts;
   }
+
+  /**
+   * Searches for the best place to put a set for the Werewolf race.
+   */
+  static findBestPlacement(regions, emptyRegions, heldSets, globalPawnPool, currentOnBoard, playLimits, calculatePlacementPoints) {
+    let best = null;
+    heldSets.forEach(set => {
+      let isPlaceable = true;
+      Object.entries(set.content).forEach(([tId, count]) => {
+        const remainingGlobal = globalPawnPool[tId] - currentOnBoard[tId];
+        const remainingPlay = playLimits[tId] - currentOnBoard[tId];
+        if (remainingGlobal < count || remainingPlay < count) isPlaceable = false;
+      });
+      if (!isPlaceable) return;
+
+      emptyRegions.forEach(region => {
+        const placementScores = calculatePlacementPoints(regions, region, set.content);
+        const pts = placementScores.werewolf || 0;
+        if (!best || pts > best.pts) {
+          best = { set, region, pts, allScores: placementScores };
+        }
+      });
+    });
+    return best;
+  }
 }

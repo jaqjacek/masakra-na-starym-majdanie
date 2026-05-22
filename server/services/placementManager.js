@@ -1,5 +1,9 @@
 import { Scoring } from '../scoring.js';
 import { RACES } from '../constants.js';
+import { VampireScoring } from '../scorings/vampireScoring.js';
+import { WerewolfScoring } from '../scorings/werewolfScoring.js';
+import { GhostScoring } from '../scorings/ghostScoring.js';
+import { BardakScoring } from '../scorings/bardakScoring.js';
 
 export class PlacementManager {
   /**
@@ -27,32 +31,22 @@ export class PlacementManager {
       });
     });
 
-    let best = null;
+    const calculatePlacementPoints = Scoring.calculatePlacementPoints.bind(Scoring);
 
-    myHeld.forEach(set => {
-      // Check if placing this set violates global limits or play limits
-      let isPlaceable = true;
-      Object.entries(set.content).forEach(([tId, count]) => {
-        const remainingGlobal = globalPawnPool[tId] - currentOnBoard[tId];
-        const remainingPlay = playLimits[tId] - currentOnBoard[tId];
-        if (remainingGlobal < count || remainingPlay < count) {
-          isPlaceable = false;
-        }
-      });
+    if (generalOf === 'vampire') {
+      return VampireScoring.findBestPlacement(regions, emptyR, myHeld, globalPawnPool, currentOnBoard, playLimits, calculatePlacementPoints);
+    }
+    if (generalOf === 'werewolf') {
+      return WerewolfScoring.findBestPlacement(regions, emptyR, myHeld, globalPawnPool, currentOnBoard, playLimits, calculatePlacementPoints);
+    }
+    if (generalOf === 'ghost') {
+      return GhostScoring.findBestPlacement(regions, emptyR, myHeld, globalPawnPool, currentOnBoard, playLimits, calculatePlacementPoints);
+    }
+    if (generalOf === 'bardak') {
+      return BardakScoring.findBestPlacement(regions, emptyR, myHeld, globalPawnPool, currentOnBoard, playLimits, calculatePlacementPoints);
+    }
 
-      if (!isPlaceable) return;
-
-      // Find the region that scores the highest for our general race
-      emptyR.forEach(region => {
-        const placementScores = Scoring.calculatePlacementPoints(regions, region, set.content);
-        const pts = placementScores[generalOf] || 0;
-        if (!best || pts > best.pts) {
-          best = { set, region, pts, allScores: placementScores };
-        }
-      });
-    });
-
-    return best;
+    return null;
   }
 
   /**

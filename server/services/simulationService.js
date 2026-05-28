@@ -124,7 +124,6 @@ export function runDetailedSimulation(set, uploadedSets, uploadedEvents) {
     let jakR = regions.find(r => r.pawns.jakub?.length > 0); let jakub = jakR.pawns.jakub[0]; const jakubSets = setsData.heldSets.filter(s => s.ownerId === 'jakub');
     jakubSets.forEach(s => { Object.entries(s.content).forEach(([race, count]) => { if (jakub.anger[race] !== undefined) jakub.anger[race] += count; }); });
     let extraRange = 0; Object.values(jakub.anger).forEach(val => { if (val >= JAKUB_ANGER_THRESHOLD) extraRange += 1; }); jakub.range = Math.min(5, JAKUB_BASE_RANGE + extraRange);
-    let movedThisRound = false;
     let continues = true;
     while (continues) {
       continues = false;
@@ -169,7 +168,6 @@ export function runDetailedSimulation(set, uploadedSets, uploadedEvents) {
 
       let targetRace = null;
       let validCandidates = [];
-      let chosenPriorityIndex = -1;
 
       // Search through races in sortedAnger order for first one with pawns in range
       for (let i = 0; i < sortedAnger.length; i++) {
@@ -178,7 +176,6 @@ export function runDetailedSimulation(set, uploadedSets, uploadedEvents) {
         if (filtered.length > 0) {
           targetRace = race;
           validCandidates = filtered;
-          chosenPriorityIndex = i;
           break;
         }
       }
@@ -212,7 +209,6 @@ export function runDetailedSimulation(set, uploadedSets, uploadedEvents) {
         delete curR.pawns.jakub;
         jakub.range = calculatedRange;
         continues = true;
-        movedThisRound = true;
         roundData.turns.push({ 
           type: 'jakub_move', 
           from: fromId, 
@@ -348,7 +344,6 @@ export function runBasicSimulation(set, uploadedSets, uploadedEvents) {
     Object.values(jakub.anger).forEach(val => { if (val >= JAKUB_ANGER_THRESHOLD) extraRange += 1; });
     jakub.range = Math.min(5, JAKUB_BASE_RANGE + extraRange);
 
-    let movedThisRound = false;
     let continues = true;
     while (continues) {
       continues = false;
@@ -393,7 +388,6 @@ export function runBasicSimulation(set, uploadedSets, uploadedEvents) {
 
       let targetRace = null;
       let validCandidates = [];
-      let chosenPriorityIndex = -1;
 
       // Search through races in sortedAnger order for first one with pawns in range
       for (let i = 0; i < sortedAnger.length; i++) {
@@ -402,7 +396,6 @@ export function runBasicSimulation(set, uploadedSets, uploadedEvents) {
         if (filtered.length > 0) {
           targetRace = race;
           validCandidates = filtered;
-          chosenPriorityIndex = i;
           break;
         }
       }
@@ -435,7 +428,6 @@ export function runBasicSimulation(set, uploadedSets, uploadedEvents) {
         delete curR.pawns.jakub;
         jakub.range = calculatedRange;
         continues = true;
-        movedThisRound = true;
       }
     }
     updateJakubDistance(regions);
@@ -568,7 +560,6 @@ export function runFullSimulation(setsConfig, inputGameConfig, uploadedEvents) {
     Object.values(jakub.anger).forEach(val => { if (val >= JAKUB_ANGER_THRESHOLD) extraRange += 1; });
     jakub.range = Math.min(5, JAKUB_BASE_RANGE + extraRange);
 
-    let movedThisRound = false;
     let continues = true;
     while (continues) {
       continues = false;
@@ -613,7 +604,6 @@ export function runFullSimulation(setsConfig, inputGameConfig, uploadedEvents) {
 
       let targetRace = null;
       let validCandidates = [];
-      let chosenPriorityIndex = -1;
 
       // Search through races in sortedAnger order for first one with pawns in range
       for (let i = 0; i < sortedAnger.length; i++) {
@@ -622,7 +612,6 @@ export function runFullSimulation(setsConfig, inputGameConfig, uploadedEvents) {
         if (filtered.length > 0) {
           targetRace = race;
           validCandidates = filtered;
-          chosenPriorityIndex = i;
           break;
         }
       }
@@ -655,7 +644,6 @@ export function runFullSimulation(setsConfig, inputGameConfig, uploadedEvents) {
         delete curR.pawns.jakub;
         jakub.range = calculatedRange;
         continues = true;
-        movedThisRound = true;
       }
     }
     updateJakubDistance(regions);

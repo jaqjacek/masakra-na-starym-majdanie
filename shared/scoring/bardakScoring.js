@@ -37,8 +37,8 @@ export class BardakScoring {
     regions.forEach(r => {
       const myCount = r.pawns?.bardak?.length || r.pawns?.B?.length || 0;
       if (myCount > 0) {
-        let othersCounts = RACES.filter(race => race !== 'bardak').map(race => r.pawns[race]?.length || 0);
-        const maxOther = Math.max(...othersCounts);
+        let othersCounts = RACES.filter(race => race !== 'bardak').map(race => r.pawns?.[race]?.length || 0);
+        const maxOther = Math.max.apply(null, othersCounts);
         if (myCount > maxOther) {
           addedPoints += 1;
         }

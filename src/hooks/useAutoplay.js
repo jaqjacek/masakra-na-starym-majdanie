@@ -243,6 +243,13 @@ export const useAutoplay = ({
           });
           addedPoints = regionsWithVampires * 2;
         }
+        else if (pick === 'werewolf') {
+          let count = 0;
+          workState.regions.forEach(r => {
+            count += (r.pawns[pick]?.length || 0);
+          });
+          addedPoints = count;
+        }
         else if (pick === 'ghost') {
           workState.regions.forEach(r => {
             const myCount = r.pawns[pick]?.length || 0;

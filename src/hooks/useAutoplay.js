@@ -176,18 +176,7 @@ export const useAutoplay = ({
         
         let jakR = null;
         for (const r of workState.regions) { if (r.pawns.jakub?.length > 0) { jakR = r; break; } }
-        if (jakR && jakR.pawns.jakub[0] && jakR.pawns.jakub[0].movedThisRound) {
-          RACES.forEach(race => {
-            const count = jakR.pawns[race]?.length || 0;
-            if (count > 0) {
-              const pts = count * SURVIVOR_BONUS_MULTIPLIER;
-              const playerIdx = workState.players.findIndex(p => p.generalOf === race);
-              if (playerIdx !== -1) {
-                workState.players[playerIdx].points += pts;
-                addLog(workState, `Rambo Survivor: ${race.toUpperCase()} gained ${pts} bonus points.`, { race, points: pts });
-              }
-            }
-          });
+        if (jakR && jakR.pawns.jakub[0]) {
           jakR.pawns.jakub[0].movedThisRound = false;
         }
 

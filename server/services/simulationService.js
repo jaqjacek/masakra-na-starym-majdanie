@@ -155,16 +155,31 @@ export function runDetailedSimulation(set, uploadedSets, uploadedEvents) {
         .sort((a, b) => b.val - a.val || RACES.indexOf(a.race) - RACES.indexOf(b.race));
       
       if (sortedAnger.length === 0) break;
-      const targetRace = sortedAnger[0].race;
-      
+
+      // Calculate dynamic movement range
       let extraRange = 0;
       RACES.forEach(race => { if ((jakub.anger[race] || 0) >= 10) extraRange += 1; });
       const calculatedRange = 1 + extraRange;
       
       const candidates = getRegionsInRange(regions, curR.id, calculatedRange);
-      const validCandidates = candidates.filter(rIdx => (regions[rIdx].pawns[targetRace]?.length || 0) > 0);
+
+      let targetRace = null;
+      let validCandidates = [];
+      let chosenPriorityIndex = -1;
+
+      // Search through races in sortedAnger order for first one with pawns in range
+      for (let i = 0; i < sortedAnger.length; i++) {
+        const race = sortedAnger[i].race;
+        const filtered = candidates.filter(rIdx => (regions[rIdx].pawns[race]?.length || 0) > 0);
+        if (filtered.length > 0) {
+          targetRace = race;
+          validCandidates = filtered;
+          chosenPriorityIndex = i;
+          break;
+        }
+      }
       
-      if (validCandidates.length > 0) {
+      if (targetRace && validCandidates.length > 0) {
         let bestRIdx = validCandidates[0];
         let maxCount = -1;
         validCandidates.forEach(rIdx => {
@@ -175,6 +190,19 @@ export function runDetailedSimulation(set, uploadedSets, uploadedEvents) {
           }
         });
         
+        // Award Rambo Survivor points before moving from curR (only when anger is 0)
+        RACES.forEach(race => {
+          const count = curR.pawns[race]?.length || 0;
+          if (count > 0 && (jakub.anger[race] || 0) === 0) {
+            const pts = count * 2;
+            const p = players.find(x => x.generalOf === race);
+            if (p) {
+              p.points += pts;
+              roundData.turns.push({ type: 'rambo_points', player: p.name, race, points: pts });
+            }
+          }
+        });
+
         const fromId = curR.id;
         regions[bestRIdx].pawns.jakub = curR.pawns.jakub;
         delete curR.pawns.jakub;
@@ -193,8 +221,6 @@ export function runDetailedSimulation(set, uploadedSets, uploadedEvents) {
       }
     }
     updateJakubDistance(regions);
-    let jakR_after = regions.find(r => r.pawns.jakub?.length > 0);
-    if (jakR_after && movedThisRound) { RACES.forEach(race => { const count = jakR_after.pawns[race]?.length || 0; if (count > 0) { const pts = count * 2; const p = players.find(x => x.generalOf === race); if (p) { p.points += pts; roundData.turns.push({ type: 'rambo_points', player: p.name, race, points: pts }); } } }); }
     jakub.range = 1; jakubSets.forEach(s => { const idx = setsData.heldSets.findIndex(x => x.id === s.id); const recycled = setsData.heldSets.splice(idx, 1)[0]; recycled.ownerId = null; recycled.used = false; setsData.discardPile.push(recycled); });
     
     // --- EVENT PHASE ---
@@ -353,16 +379,31 @@ export function runBasicSimulation(set, uploadedSets, uploadedEvents) {
         .sort((a, b) => b.val - a.val || RACES.indexOf(a.race) - RACES.indexOf(b.race));
       
       if (sortedAnger.length === 0) break;
-      const targetRace = sortedAnger[0].race;
-      
+
+      // Calculate dynamic movement range
       let extraRange = 0;
       RACES.forEach(race => { if ((jakub.anger[race] || 0) >= 10) extraRange += 1; });
       const calculatedRange = 1 + extraRange;
       
       const candidates = getRegionsInRange(regions, curR.id, calculatedRange);
-      const validCandidates = candidates.filter(rIdx => (regions[rIdx].pawns[targetRace]?.length || 0) > 0);
+
+      let targetRace = null;
+      let validCandidates = [];
+      let chosenPriorityIndex = -1;
+
+      // Search through races in sortedAnger order for first one with pawns in range
+      for (let i = 0; i < sortedAnger.length; i++) {
+        const race = sortedAnger[i].race;
+        const filtered = candidates.filter(rIdx => (regions[rIdx].pawns[race]?.length || 0) > 0);
+        if (filtered.length > 0) {
+          targetRace = race;
+          validCandidates = filtered;
+          chosenPriorityIndex = i;
+          break;
+        }
+      }
       
-      if (validCandidates.length > 0) {
+      if (targetRace && validCandidates.length > 0) {
         let bestRIdx = validCandidates[0];
         let maxCount = -1;
         validCandidates.forEach(rIdx => {
@@ -373,6 +414,19 @@ export function runBasicSimulation(set, uploadedSets, uploadedEvents) {
           }
         });
         
+        // Award Rambo Survivor points before moving from curR (only when anger is 0)
+        RACES.forEach(race => {
+          const count = curR.pawns[race]?.length || 0;
+          if (count > 0 && (jakub.anger[race] || 0) === 0) {
+            const pts = count * 2;
+            const p = players.find(x => x.generalOf === race);
+            if (p) {
+              p.points += pts;
+              analytics[race].ramboPoints += pts;
+            }
+          }
+        });
+
         regions[bestRIdx].pawns.jakub = curR.pawns.jakub;
         delete curR.pawns.jakub;
         jakub.range = calculatedRange;
@@ -381,13 +435,6 @@ export function runBasicSimulation(set, uploadedSets, uploadedEvents) {
       }
     }
     updateJakubDistance(regions);
-    let jakR_after = regions.find(r => r.pawns.jakub?.length > 0);
-    if (jakR_after && movedThisRound) {
-      RACES.forEach(race => {
-        const count = jakR_after.pawns[race]?.length || 0;
-        if (count > 0) { const pts = count * 2; const p = players.find(x => x.generalOf === race); if (p) { p.points += pts; analytics[race].ramboPoints += pts; } }
-      });
-    }
     jakub.range = 1; // Reset to 1 after Jakub's phase
     jakubSets.forEach(s => { const idx = setsData.heldSets.findIndex(x => x.id === s.id); const recycled = setsData.heldSets.splice(idx, 1)[0]; recycled.ownerId = null; recycled.used = false; setsData.discardPile.push(recycled); });
 
@@ -572,16 +619,31 @@ export function runFullSimulation(setsConfig, inputGameConfig, uploadedEvents) {
         .sort((a, b) => b.val - a.val || RACES.indexOf(a.race) - RACES.indexOf(b.race));
       
       if (sortedAnger.length === 0) break;
-      const targetRace = sortedAnger[0].race;
-      
+
+      // Calculate dynamic movement range
       let extraRange = 0;
       RACES.forEach(race => { if ((jakub.anger[race] || 0) >= 10) extraRange += 1; });
       const calculatedRange = 1 + extraRange;
       
       const candidates = getRegionsInRange(regions, curR.id, calculatedRange);
-      const validCandidates = candidates.filter(rIdx => (regions[rIdx].pawns[targetRace]?.length || 0) > 0);
+
+      let targetRace = null;
+      let validCandidates = [];
+      let chosenPriorityIndex = -1;
+
+      // Search through races in sortedAnger order for first one with pawns in range
+      for (let i = 0; i < sortedAnger.length; i++) {
+        const race = sortedAnger[i].race;
+        const filtered = candidates.filter(rIdx => (regions[rIdx].pawns[race]?.length || 0) > 0);
+        if (filtered.length > 0) {
+          targetRace = race;
+          validCandidates = filtered;
+          chosenPriorityIndex = i;
+          break;
+        }
+      }
       
-      if (validCandidates.length > 0) {
+      if (targetRace && validCandidates.length > 0) {
         let bestRIdx = validCandidates[0];
         let maxCount = -1;
         validCandidates.forEach(rIdx => {
@@ -592,6 +654,19 @@ export function runFullSimulation(setsConfig, inputGameConfig, uploadedEvents) {
           }
         });
         
+        // Award Rambo Survivor points before moving from curR (only when anger is 0)
+        RACES.forEach(race => {
+          const count = curR.pawns[race]?.length || 0;
+          if (count > 0 && (jakub.anger[race] || 0) === 0) {
+            const pts = count * 2;
+            const p = players.find(x => x.generalOf === race);
+            if (p) {
+              p.points += pts;
+              analytics[race].ramboPoints += pts;
+            }
+          }
+        });
+
         regions[bestRIdx].pawns.jakub = curR.pawns.jakub;
         delete curR.pawns.jakub;
         jakub.range = calculatedRange;
@@ -600,13 +675,6 @@ export function runFullSimulation(setsConfig, inputGameConfig, uploadedEvents) {
       }
     }
     updateJakubDistance(regions);
-    let jakR_after = regions.find(r => r.pawns.jakub?.length > 0);
-    if (jakR_after && movedThisRound) {
-      RACES.forEach(race => {
-        const count = jakR_after.pawns[race]?.length || 0;
-        if (count > 0) { const pts = count * 2; const p = players.find(x => x.generalOf === race); if (p) { p.points += pts; analytics[race].ramboPoints += pts; } }
-      });
-    }
     jakub.range = 1;
     jakubSets.forEach(s => { const idx = setsData.heldSets.findIndex(x => x.id === s.id); const recycled = setsData.heldSets.splice(idx, 1)[0]; recycled.ownerId = null; recycled.used = false; setsData.discardPile.push(recycled); });
     

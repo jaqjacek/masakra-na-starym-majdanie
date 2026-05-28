@@ -10,17 +10,21 @@ export class BardakScoring {
     return (dist <= 1) ? 0 : bCount;
   }
 
-  /**
-   * Searches for the best place to put a set for the Bardak race.
-   */
-  static findBestPlacement(regions, emptyRegions, placeableSets, calculatePlacementPoints) {
+  static findBestPlacement(regions, emptyRegions, placeableSets) {
     let best = null;
     placeableSets.forEach(set => {
       emptyRegions.forEach(region => {
-        const placementScores = calculatePlacementPoints(regions, region, set.content);
-        const pts = placementScores.bardak || 0;
-        if (!best || pts > best.pts) {
-          best = { set, region, pts, allScores: placementScores };
+        const dist = region.jakubDistance;
+        const pts = BardakScoring.calculate(dist, set.content.bardak || 0);
+        if (!best) {
+          best = { set, region, pts };
+        } else {
+          const bestDist = best.region.jakubDistance;
+          if (dist > bestDist) {
+            best = { set, region, pts };
+          } else if (dist === bestDist && pts > best.pts) {
+            best = { set, region, pts };
+          }
         }
       });
     });

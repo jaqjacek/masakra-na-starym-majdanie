@@ -1,5 +1,5 @@
-import { Scoring } from './Scoring';
-import { RACES } from '../constants/game';
+import { PlacementManager as SharedPlacementManager } from '../../shared/placementManager.js';
+import { RACES, RACE_TO_ABBR } from '../../shared/constants.js';
 
 export class PlacementManager {
   /**
@@ -13,46 +13,7 @@ export class PlacementManager {
    * @returns {Object|null} The best placement description or null
    */
   static findBestPlacement(regions, heldSets, playerId, generalOf, globalPawnPool, playLimits) {
-    const myHeld = heldSets.filter(s => s.ownerId === playerId);
-    const emptyR = regions.filter(r => !RACES.some(race => r.pawns[race]?.length > 0));
-    
-    // Count current pawns in play on the entire board
-    const currentOnBoard = {};
-    RACES.forEach(r => currentOnBoard[r] = 0);
-    regions.forEach(r => {
-      Object.entries(r.pawns).forEach(([tId, insts]) => {
-        if (currentOnBoard[tId] !== undefined) {
-          currentOnBoard[tId] += insts.length;
-        }
-      });
-    });
-
-    let best = null;
-
-    myHeld.forEach(set => {
-      // Check if placing this set violates global limits or play limits
-      let isPlaceable = true;
-      Object.entries(set.content).forEach(([tId, count]) => {
-        const remainingGlobal = globalPawnPool[tId] - currentOnBoard[tId];
-        const remainingPlay = playLimits[tId] - currentOnBoard[tId];
-        if (remainingGlobal < count || remainingPlay < count) {
-          isPlaceable = false;
-        }
-      });
-
-      if (!isPlaceable) return;
-
-      // Find the region that scores the highest for our general race
-      emptyR.forEach(region => {
-        const placementScores = Scoring.calculatePlacementPoints(regions, region, set.content);
-        const pts = placementScores[generalOf] || 0;
-        if (!best || pts > best.pts) {
-          best = { set, region, pts, allScores: placementScores };
-        }
-      });
-    });
-
-    return best;
+    return SharedPlacementManager.findBestPlacement(regions, heldSets, playerId, generalOf, globalPawnPool, playLimits);
   }
 
   /**
@@ -84,7 +45,8 @@ export class PlacementManager {
     const logSummary = [];
     workState.players.forEach(p => {
       if (p.generalOf) {
-        const racePts = best.allScores[p.generalOf] || 0;
+        const abbr = RACE_TO_ABBR[p.generalOf];
+        const racePts = best.allScores[abbr] || 0;
         if (racePts > 0) {
           p.points += racePts;
           logSummary.push(`${p.generalOf[0].toUpperCase()}:+${racePts}`);
@@ -132,44 +94,34 @@ export class PlacementManager {
     };
   }
 
-  /**
-   * Handles a player's turn pass, discarding/selling excess sets to Jakub and updating scores.
-   * @param {Object} curPlayer - The active player passing
-   * @param {Object} workState - The mutable work game state
-   * @param {number} maxHandSize - Maximum hand size allowed
-   * @param {Function} applySetToJakubAnger - Function to apply a set to Jakub's anger
-   * @returns {number} Count of excess sets sold
-   */
-  static executePass(curPlayer, workState, maxHandSize, applySetToJakubAnger) {
-    workState.passedPlayers.push(curPlayer.id);
+  static executePass(curPlayer, workState, _maxHandSize, applySetToJakubAnger) {
+    if (!workState.passedPlayers.includes(curPlayer.id)) {
+      workState.passedPlayers.push(curPlayer.id);
+    }
     const currentHand = (workState.sets.heldSets || []).filter(s => s.ownerId === curPlayer.id);
-    if (currentHand.length > maxHandSize) {
-      const excessCount = currentHand.length - maxHandSize;
-      const sorted = [...currentHand].sort((a, b) => (a.content[curPlayer.generalOf] || 0) - (b.content[curPlayer.generalOf] || 0));
-      const toDiscard = sorted.slice(0, excessCount);
-      
-      let jakub = null;
-      for (const r of workState.regions) {
-        if (r.pawns.jakub?.length > 0) {
-          jakub = r.pawns.jakub[0];
-          break;
+    const toSell = currentHand.filter(s => (s.content[curPlayer.generalOf] || 0) === 0);
+    
+    let jakub = null;
+    for (const r of workState.regions) {
+      if (r.pawns.jakub?.length > 0) {
+        jakub = r.pawns.jakub[0];
+        break;
+      }
+    }
+
+    toSell.forEach(s => {
+      const idx = workState.sets.heldSets.findIndex(h => h.id === s.id);
+      if (idx !== -1) {
+        workState.sets.heldSets[idx].ownerId = 'jakub';
+        if (jakub && applySetToJakubAnger) {
+          const result = applySetToJakubAnger(jakub, s.content);
+          jakub.anger = result.anger;
+          jakub.range = result.range;
         }
       }
+    });
 
-      toDiscard.forEach(s => {
-        const idx = workState.sets.heldSets.findIndex(h => h.id === s.id);
-        if (idx !== -1) {
-          workState.sets.heldSets[idx].ownerId = 'jakub';
-          if (jakub && applySetToJakubAnger) {
-            const result = applySetToJakubAnger(jakub, s.content);
-            jakub.anger = result.anger;
-            jakub.range = result.range;
-          }
-        }
-      });
-      curPlayer.points += excessCount;
-      return excessCount;
-    }
-    return 0;
+    curPlayer.points += toSell.length;
+    return toSell.length;
   }
 }

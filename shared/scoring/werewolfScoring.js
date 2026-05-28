@@ -28,17 +28,14 @@ export class WerewolfScoring {
     return pts;
   }
 
-  /**
-   * Searches for the best place to put a set for the Werewolf race.
-   */
-  static findBestPlacement(regions, emptyRegions, placeableSets, calculatePlacementPoints) {
+  static findBestPlacement(regions, emptyRegions, placeableSets) {
     let best = null;
     placeableSets.forEach(set => {
       emptyRegions.forEach(region => {
-        const placementScores = calculatePlacementPoints(regions, region, set.content);
-        const pts = placementScores.werewolf || 0;
+        const dist = region.jakubDistance;
+        const pts = WerewolfScoring.calculate(regions, region, dist, set.content.werewolf || 0);
         if (!best || pts > best.pts) {
-          best = { set, region, pts, allScores: placementScores };
+          best = { set, region, pts };
         }
       });
     });

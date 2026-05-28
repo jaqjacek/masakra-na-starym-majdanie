@@ -26,11 +26,11 @@ RUN npm install --omit=dev --legacy-peer-deps
 COPY --from=build /app/dist ./dist
 
 # Copy documentation
-COPY API_DOCS.md GAME_RULES.md ./
-COPY server/openapi.json ./server/
+COPY docs/ ./docs/
 
-# Copy the backend code and server configs
+# Copy the backend code, shared logic, and server configs
 COPY server/ ./server/
+COPY shared/ ./shared/
 COPY server_config.json ./
 COPY server_config.json ./server/configs/
 

@@ -3,7 +3,7 @@
   "info": {
     "title": "MASAKRA na Starym Majdanie API",
     "description": "Interactive API Documentation for the MASAKRA na Starym Majdanie Game Engine.",
-    "version": "1.9.0"
+    "version": "1.12.0"
   },
   "servers": [
     {
@@ -167,7 +167,13 @@
         "requestBody": {
           "content": {
             "application/json": {
-              "schema": { "type": "object", "properties": { "setsData": { "type": "object" } } }
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "setsData": { "type": "object", "description": "Optional custom sets data" },
+                  "eventsData": { "type": "array", "description": "Optional custom events list" }
+                }
+              }
             }
           }
         },
@@ -180,13 +186,26 @@
         "parameters": [
           { "name": "set", "in": "query", "required": false, "schema": { "type": "string" } }
         ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "setsData": { "type": "object", "description": "Optional custom sets data" },
+                  "eventsData": { "type": "array", "description": "Optional custom events list" }
+                }
+              }
+            }
+          }
+        },
         "responses": { "200": { "description": "Detailed simulation history" } }
       }
     },
     "/api/simulate/full": {
       "post": {
         "summary": "Run Simulation with Full Config",
-        "description": "Accepts complete JSON objects for both sets and game parameters. Supports both JSON body and multipart/form-data file uploads.",
+        "description": "Accepts complete JSON objects for sets, game, and events parameters. Supports both JSON body and multipart/form-data file uploads.",
         "requestBody": {
           "content": {
             "application/json": {
@@ -197,6 +216,10 @@
                   "game": { 
                     "type": "object", 
                     "description": "Game configuration parameters (rounds, draw amounts, etc.)"
+                  },
+                  "events": {
+                    "type": "array",
+                    "description": "Optional custom events list"
                   }
                 },
                 "required": ["sets"]
@@ -207,7 +230,8 @@
                 "type": "object",
                 "properties": {
                   "sets": { "type": "string", "format": "binary", "description": "JSON file with sets configuration" },
-                  "game": { "type": "string", "format": "binary", "description": "JSON file with game configuration" }
+                  "game": { "type": "string", "format": "binary", "description": "JSON file with game configuration" },
+                  "events": { "type": "string", "format": "binary", "description": "JSON file with custom events list" }
                 },
                 "required": ["sets"]
               }

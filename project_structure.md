@@ -36,12 +36,22 @@ This file maps the codebase for the **MASAKRA na Starym Majdanie** digital board
 - [bash/deploy_localy.sh](file:///C:/projects/ai/wedrowycz-gemini/bash/deploy_localy.sh) - Local deployment run and container tester script.
 - [bash/deploy_network.sh](file:///C:/projects/ai/wedrowycz-gemini/bash/deploy_network.sh) - Subnetwork binding configuration.
 
+## Shared Modules (`shared/`)
+- [shared/constants.js](file:///C:/projects/ai/wedrowycz-gemini/shared/constants.js) - Shared game constants.
+- [shared/generalSelectionManager.js](file:///C:/projects/ai/wedrowycz-gemini/shared/generalSelectionManager.js) - Strategic general selection manager rules.
+- [shared/placementManager.js](file:///C:/projects/ai/wedrowycz-gemini/shared/placementManager.js) - Pure search logic for best pawn placement.
+- **shared/scoring/** - Specialized point scoring calculations.
+  - [shared/scoring/scoring.js](file:///C:/projects/ai/wedrowycz-gemini/shared/scoring/scoring.js) - Main scoring entrypoint coordinator.
+  - [shared/scoring/vampireScoring.js](file:///C:/projects/ai/wedrowycz-gemini/shared/scoring/vampireScoring.js) - Vampire distance-based scoring math.
+  - [shared/scoring/werewolfScoring.js](file:///C:/projects/ai/wedrowycz-gemini/shared/scoring/werewolfScoring.js) - Werewolf neighbors-based scoring math.
+  - [shared/scoring/ghostScoring.js](file:///C:/projects/ai/wedrowycz-gemini/shared/scoring/ghostScoring.js) - Ghost edge-based scoring math.
+  - [shared/scoring/bardakScoring.js](file:///C:/projects/ai/wedrowycz-gemini/shared/scoring/bardakScoring.js) - Bardak distance-based scoring math.
+
 ## Backend Server (`server/`)
 - [server/server.js](file:///C:/projects/ai/wedrowycz-gemini/server/server.js) - Main Express server and Socket.io engine setup.
 - [server/boardManager.js](file:///C:/projects/ai/wedrowycz-gemini/server/boardManager.js) - Board setup, regions, and neighbor mapping logic.
 - [server/gameLogic.js](file:///C:/projects/ai/wedrowycz-gemini/server/gameLogic.js) - Turn phase transitions, state validation, and client action engines.
 - [server/setManager.js](file:///C:/projects/ai/wedrowycz-gemini/server/setManager.js) - Random set generation, pawn draw piles, and player hands logic.
-- [server/scoring.js](file:///C:/projects/ai/wedrowycz-gemini/server/scoring.js) - Multi-phase calculation of player victory scores.
 - [server/socketHandler.js](file:///C:/projects/ai/wedrowycz-gemini/server/socketHandler.js) - Event communication between clients and backend sockets.
 - [server/constants.js](file:///C:/projects/ai/wedrowycz-gemini/server/constants.js) - Global constant configurations.
 - [server/gameEventPhaseManager.js](file:///C:/projects/ai/wedrowycz-gemini/server/gameEventPhaseManager.js) - Game event phase sequencing and selection logic.
@@ -55,11 +65,6 @@ This file maps the codebase for the **MASAKRA na Starym Majdanie** digital board
   - [server/configs/events_default.json](file:///C:/projects/ai/wedrowycz-gemini/server/configs/events_default.json) - Dynamic in-game events definition schema.
 - **server/routes/** - REST controllers mapping:
   - `config.js`, `games.js`, `sets.js`, `simulation.js`.
-- **server/scorings/** - Specialized point scoring calculations per race.
-  - [server/scorings/vampireScoring.js](file:///C:/projects/ai/wedrowycz-gemini/server/scorings/vampireScoring.js) - Vampire distance-based scoring calculations.
-  - [server/scorings/werewolfScoring.js](file:///C:/projects/ai/wedrowycz-gemini/server/scorings/werewolfScoring.js) - Werewolf neighbors-based scoring calculations.
-  - [server/scorings/ghostScoring.js](file:///C:/projects/ai/wedrowycz-gemini/server/scorings/ghostScoring.js) - Ghost edge-based scoring calculations.
-  - [server/scorings/bardakScoring.js](file:///C:/projects/ai/wedrowycz-gemini/server/scorings/bardakScoring.js) - Bardak distance-based scoring calculations.
 - **server/services/** - Helper services such as game state simulation.
   - [server/services/simulationService.js](file:///C:/projects/ai/wedrowycz-gemini/server/services/simulationService.js) - Automated gameplay round simulator service.
   - [server/services/placementManager.js](file:///C:/projects/ai/wedrowycz-gemini/server/services/placementManager.js) - Pawn placement and passing simulation manager.
@@ -88,7 +93,6 @@ This file maps the codebase for the **MASAKRA na Starym Majdanie** digital board
   - `useGameInteraction.js` (Click events, drag-and-drop support, shortcuts)
   - `useAutoplay.js` (Automated ticks, time intervals, and phase transitions)
 - **src/logic/** - UI local helpers for scoring and graphics filters.
-  - [src/logic/Scoring.js](file:///C:/projects/ai/wedrowycz-gemini/src/logic/Scoring.js) - UI score calculations per race.
   - [src/logic/placementManager.js](file:///C:/projects/ai/wedrowycz-gemini/src/logic/placementManager.js) - Pawn placement and passing UI automation manager.
 - **src/strategies/** - AI movement policies (`jakubStrategy.js`).
 - **src/services/** - Sockets and fetch wrappers for API.

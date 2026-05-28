@@ -16,6 +16,7 @@ import { RACES } from '../constants/game';
 import { Board } from '../constants/board';
 import { PlacementManager } from '../logic/placementManager';
 import { applySetToJakubAnger, executeJakubStep } from '../strategies/jakubStrategy';
+import { GeneralSelectionManager } from '../../shared/generalSelectionManager.js';
 
 export const useAutoplay = ({ 
   gameId, 
@@ -117,7 +118,13 @@ export const useAutoplay = ({
       const curId = workState.playerOrder[workState.currentPlayerIndex];
       const curPlayer = workState.players.find(p => p.id === curId);
       if (!curPlayer.generalOf) {
-        const pick = workState.availableGenerals[0];
+        const hand = (workState.sets.heldSets || []).filter(s => s.ownerId === curId);
+        const pick = GeneralSelectionManager.chooseGeneral(
+          workState.availableGenerals,
+          hand,
+          workState.regions,
+          workState.sets.pawns
+        );
         curPlayer.generalOf = pick;
         workState.availableGenerals = workState.availableGenerals.filter(g => g !== pick);
         addLog(workState, `Player ${curId} chose General of ${pick}s`);
@@ -134,7 +141,7 @@ export const useAutoplay = ({
       const playLimits = workState.sets.pawnsInPlayLimit || globalPool;
       const best = PlacementManager.findBestPlacement(workState.regions, workState.sets.heldSets, curId, curPlayer.generalOf, globalPool, playLimits);
 
-      if (best && best.pts > 1) {
+      if (best) {
         const { logSummaryString, statusLogString } = PlacementManager.executePlacement(best, workState, PAWN_TYPES, playLimits);
         addLog(workState, `Player ${curId} placed Set ${best.set.id} [${logSummaryString}] | Board: ${statusLogString}`);
       } else {

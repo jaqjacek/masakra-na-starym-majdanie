@@ -2,8 +2,15 @@ import { useState, useEffect, useCallback } from 'react';
 import { PAWN_TYPES, STATUSES } from '../constants/pawnTypes';
 import { Board } from '../constants/board';
 import { RACES } from '../constants/game';
-import { Scoring } from '../logic/Scoring';
+import { Scoring } from '../../shared/scoring/scoring.js';
 import { applySetToJakubAnger } from '../strategies/jakubStrategy';
+
+const RACE_TO_ABBR = {
+  vampire: 'V',
+  werewolf: 'W',
+  ghost: 'G',
+  bardak: 'B'
+};
 
 export const useGameInteraction = ({
   gameId,
@@ -124,7 +131,8 @@ export const useGameInteraction = ({
       let logSummary = [];
       newState.players.forEach(p => {
         if (p.generalOf) {
-          const racePts = placementScores[p.generalOf] || 0;
+          const abbr = RACE_TO_ABBR[p.generalOf];
+          const racePts = placementScores[abbr] || 0;
           if (racePts > 0) {
             p.points += racePts;
             logSummary.push(`${p.generalOf[0].toUpperCase()}:+${racePts}`);

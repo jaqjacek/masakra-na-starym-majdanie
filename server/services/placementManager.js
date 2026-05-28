@@ -1,9 +1,6 @@
-import { Scoring } from '../scoring.js';
-import { RACES } from '../constants.js';
-import { VampireScoring } from '../scorings/vampireScoring.js';
-import { WerewolfScoring } from '../scorings/werewolfScoring.js';
-import { GhostScoring } from '../scorings/ghostScoring.js';
-import { BardakScoring } from '../scorings/bardakScoring.js';
+import { PlacementManager as SharedPlacementManager } from '../../shared/placementManager.js';
+import { Scoring } from '../../shared/scoring/scoring.js';
+import { RACES, RACE_TO_ABBR } from '../../shared/constants.js';
 
 export class PlacementManager {
   /**
@@ -17,49 +14,7 @@ export class PlacementManager {
    * @returns {Object|null} The best placement description or null
    */
   static findBestPlacement(regions, heldSets, playerId, generalOf, globalPawnPool, playLimits) {
-    const myHeld = heldSets.filter(s => s.ownerId === playerId);
-    const emptyRegions = regions.filter(r => !RACES.some(race => r.pawns[race]?.length > 0));
-    
-    // Count current pawns in play on the entire board
-    const currentOnBoard = {};
-    RACES.forEach(r => currentOnBoard[r] = 0);
-    regions.forEach(r => {
-      Object.entries(r.pawns).forEach(([tId, insts]) => {
-        if (currentOnBoard[tId] !== undefined) {
-          currentOnBoard[tId] += insts.length;
-        }
-      });
-    });
-
-    // Filter heldSets to sets that can be put on board (pawns are within globalPawnPool and play limits)
-    const placeableSets = myHeld.filter(set => {
-      let isPlaceable = true;
-      Object.entries(set.content).forEach(([tId, count]) => {
-        const remainingGlobal = globalPawnPool[tId] - currentOnBoard[tId];
-        const remainingPlay = playLimits[tId] - currentOnBoard[tId];
-        if (remainingGlobal < count || remainingPlay < count) {
-          isPlaceable = false;
-        }
-      });
-      return isPlaceable;
-    });
-
-    const calculatePlacementPoints = Scoring.calculatePlacementPoints.bind(Scoring);
-
-    if (generalOf === 'vampire') {
-      return VampireScoring.findBestPlacement(regions, emptyRegions, placeableSets, calculatePlacementPoints);
-    }
-    if (generalOf === 'werewolf') {
-      return WerewolfScoring.findBestPlacement(regions, emptyRegions, placeableSets, calculatePlacementPoints);
-    }
-    if (generalOf === 'ghost') {
-      return GhostScoring.findBestPlacement(regions, emptyRegions, placeableSets, calculatePlacementPoints);
-    }
-    if (generalOf === 'bardak') {
-      return BardakScoring.findBestPlacement(regions, emptyRegions, placeableSets, calculatePlacementPoints);
-    }
-
-    return null;
+    return SharedPlacementManager.findBestPlacement(regions, heldSets, playerId, generalOf, globalPawnPool, playLimits);
   }
 
   /**
@@ -88,7 +43,8 @@ export class PlacementManager {
     const pointGains = [];
     players.forEach(beneficiary => {
       if (beneficiary.generalOf) {
-        const gain = best.allScores[beneficiary.generalOf] || 0;
+        const abbr = RACE_TO_ABBR[beneficiary.generalOf];
+        const gain = best.allScores[abbr] || 0;
         beneficiary.points += gain;
         if (gain > 0) {
           pointGains.push({ player: beneficiary.name, race: beneficiary.generalOf, points: gain });
@@ -114,29 +70,15 @@ export class PlacementManager {
    * @param {number} maxHandSize - Maximum hand size allowed (e.g. 3)
    * @returns {number} Count of excess sets sold
    */
-  static executePass(player, heldSets, maxHandSize) {
+  static executePass(player, heldSets, _maxHandSize) {
     const myHeld = heldSets.filter(s => s.ownerId === player.id);
-    if (myHeld.length > maxHandSize) {
-      const excess = myHeld.length - maxHandSize;
-      
-      // Discard sets that give the least power or count for player's general
-      const sorted = [...myHeld].sort((a, b) => {
-        const countA = a.content[player.generalOf] || 0;
-        const countB = b.content[player.generalOf] || 0;
-        return countA - countB;
-      });
+    const toSell = myHeld.filter(s => (s.content[player.generalOf] || 0) === 0);
 
-      for (let i = 0; i < excess; i++) {
-        const set = sorted[i];
-        const match = heldSets.find(s => s.id === set.id);
-        if (match) {
-          match.ownerId = 'jakub';
-        }
-      }
+    toSell.forEach(s => {
+      s.ownerId = 'jakub';
+    });
 
-      player.points += excess;
-      return excess;
-    }
-    return 0;
+    player.points += toSell.length;
+    return toSell.length;
   }
 }

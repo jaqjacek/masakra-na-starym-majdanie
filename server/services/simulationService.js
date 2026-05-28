@@ -11,10 +11,9 @@ import {
 import { 
   createEmptyRegions, 
   getRegionsInRange, 
-  getBestTargetRegion,
   updateJakubDistance
 } from '../boardManager.js';
-import { Scoring } from '../scoring.js';
+import { Scoring } from '../../shared/scoring/scoring.js';
 import { PlacementManager } from './placementManager.js';
 import { 
   loadSetFile, 
@@ -26,8 +25,13 @@ import {
   getGameConfig
 } from '../gameLogic.js';
 import { GameEventPhaseManager } from '../gameEventPhaseManager.js';
+import { GeneralSelectionManager } from '../../shared/generalSelectionManager.js';
 
-export function runDetailedSimulation(set, uploadedSets) {
+export function runDetailedSimulation(set, uploadedSets, uploadedEvents) {
+  let simulationEvents = uploadedEvents ? {
+    drawn: [],
+    pool: JSON.parse(JSON.stringify(uploadedEvents))
+  } : null;
   const regions = createEmptyRegions();
   const players = JSON.parse(JSON.stringify(DEFAULT_PLAYERS));
   const globalConfig = getGlobalConfig();
@@ -64,8 +68,15 @@ export function runDetailedSimulation(set, uploadedSets) {
     const roundData = { round, generals: {}, turns: [], endPoints: {} };
     players.forEach(p => { const myHeld = setsData.heldSets.filter(s => s.ownerId === p.id); const needed = gameConfig.setupSetsPerPlayerPerRound - myHeld.length; for (let i = 0; i < needed; i++) { const s = drawSet(); if (s) { s.ownerId = p.id; setsData.heldSets.push(s); } } });
     for (let i = 0; i < gameConfig.jakubSetsPerRound; i++) { const s = drawSet(); if (s) { s.ownerId = 'jakub'; setsData.heldSets.push(s); } }
-    let availableGenerals = [...RACES].sort(() => Math.random() - 0.5);
-    playerOrder.forEach(id => { const p = players.find(x => x.id === id); p.generalOf = availableGenerals.pop(); roundData.generals[p.name] = p.generalOf; });
+    let availableGenerals = [...RACES];
+    playerOrder.forEach(id => {
+      const p = players.find(x => x.id === id);
+      const hand = setsData.heldSets.filter(s => s.ownerId === p.id);
+      const pick = GeneralSelectionManager.chooseGeneral(availableGenerals, hand, regions, setsData.pawns);
+      p.generalOf = pick;
+      availableGenerals = availableGenerals.filter(g => g !== pick);
+      roundData.generals[p.name] = p.generalOf;
+    });
     let passed = new Set();
     while (passed.size < players.length) {
       for (const id of playerOrder) {
@@ -74,7 +85,7 @@ export function runDetailedSimulation(set, uploadedSets) {
         const pool = { ...setsData.pawns };
         const playLimits = setsData.pawnsInPlayLimit || pool;
         const best = PlacementManager.findBestPlacement(regions, setsData.heldSets, p.id, p.generalOf, pool, playLimits);
-        if (best && best.pts > 1) {
+        if (best) {
           const pointGains = PlacementManager.executePlacement(best, regions, players, setsData.heldSets, setsData.discardPile);
           const onBoardStatus = {};
           RACES.forEach(race => {
@@ -111,27 +122,54 @@ export function runDetailedSimulation(set, uploadedSets) {
     let extraRange = 0; Object.values(jakub.anger).forEach(val => { if (val >= JAKUB_ANGER_THRESHOLD) extraRange += 1; }); jakub.range = Math.min(5, JAKUB_BASE_RANGE + extraRange);
     let continues = true;
     while (continues) {
-      continues = false; let curR = regions.find(r => r.pawns.jakub?.length > 0); const sortedAngerRaces = RACES.map(r => ({ race: r, val: jakub.anger[r] })).filter(a => a.val > 0).sort((a,b) => b.val - a.val || RACES.indexOf(a.race) - RACES.indexOf(b.race)).map(a => a.race);
-      if (sortedAngerRaces.length === 0) break;
-      let actionFound = false;
-      for (const race of sortedAngerRaces) {
-        const units = curR.pawns[race]?.length || 0;
-        if (units > 0) { 
-          const killCount = Math.min(units, jakub.anger[race]); 
-          const p = players.find(x => x.generalOf === race); 
-          if (p) p.points = Math.max(0, p.points - killCount); 
-          jakub.anger[race] = Math.max(0, jakub.anger[race] - killCount); 
-          curR.pawns[race].splice(0, killCount); 
-          if (curR.pawns[race].length === 0) delete curR.pawns[race]; 
-          continues = true; 
-          actionFound = true; 
-          roundData.turns.push({ type: 'jakub_attack', regionId: curR.id, race, killCount }); 
-          break; 
-        }
+      continues = false;
+      let curR = regions.find(r => r.pawns.jakub?.length > 0);
+      const sortedAnger = RACES
+        .map(race => ({ race, val: jakub.anger[race] || 0 }))
+        .filter(a => a.val > 0)
+        .sort((a, b) => b.val - a.val || RACES.indexOf(a.race) - RACES.indexOf(b.race));
+      
+      if (sortedAnger.length === 0) break;
+      const targetRace = sortedAnger[0].race;
+      
+      const units = curR.pawns[targetRace]?.length || 0;
+      if (units > 0) {
+        const killCount = Math.min(units, jakub.anger[targetRace]);
+        const p = players.find(x => x.generalOf === targetRace);
+        if (p) p.points = Math.max(0, p.points - killCount);
+        jakub.anger[targetRace] -= killCount;
+        curR.pawns[targetRace].splice(0, killCount);
+        if (curR.pawns[targetRace].length === 0) delete curR.pawns[targetRace];
+        continues = true;
+        roundData.turns.push({ type: 'jakub_attack', regionId: curR.id, race: targetRace, killCount });
+        continue;
       }
-      if (actionFound) continue;
-      const candidates = getRegionsInRange(regions, curR.id, jakub.range); const bestRIdx = getBestTargetRegion(candidates, sortedAngerRaces, regions);
-      if (bestRIdx !== null) { const fromId = curR.id; regions[bestRIdx].pawns.jakub = curR.pawns.jakub; delete curR.pawns.jakub; jakub.range = Math.max(0, jakub.range - 1); continues = true; roundData.turns.push({ type: 'jakub_move', from: fromId, to: regions[bestRIdx].id, remainingRange: jakub.range }); }
+      
+      let extraRange = 0;
+      RACES.forEach(race => { if ((jakub.anger[race] || 0) >= 10) extraRange += 1; });
+      const calculatedRange = 1 + extraRange;
+      
+      const candidates = getRegionsInRange(regions, curR.id, calculatedRange);
+      const validCandidates = candidates.filter(rIdx => (regions[rIdx].pawns[targetRace]?.length || 0) > 0);
+      
+      if (validCandidates.length > 0) {
+        let bestRIdx = validCandidates[0];
+        let maxCount = -1;
+        validCandidates.forEach(rIdx => {
+          const count = regions[rIdx].pawns[targetRace]?.length || 0;
+          if (count > maxCount) {
+            maxCount = count;
+            bestRIdx = rIdx;
+          }
+        });
+        
+        const fromId = curR.id;
+        regions[bestRIdx].pawns.jakub = curR.pawns.jakub;
+        delete curR.pawns.jakub;
+        jakub.range = calculatedRange;
+        continues = true;
+        roundData.turns.push({ type: 'jakub_move', from: fromId, to: regions[bestRIdx].id, remainingRange: calculatedRange });
+      }
     }
     updateJakubDistance(regions);
     let jakR_after = regions.find(r => r.pawns.jakub?.length > 0);
@@ -140,10 +178,20 @@ export function runDetailedSimulation(set, uploadedSets) {
     
     // --- EVENT PHASE ---
     if (round < gameConfig.totalRounds) {
-      const eventManager = new GameEventPhaseManager({ regions, players, sets: setsData, history: [], currentRound: round, totalRounds: gameConfig.totalRounds, phase: 'event_phase' });
+      const eventManager = new GameEventPhaseManager({ 
+        regions, 
+        players, 
+        sets: setsData, 
+        history: [], 
+        currentRound: round, 
+        totalRounds: gameConfig.totalRounds, 
+        phase: 'event_phase',
+        events: simulationEvents
+      });
       eventManager.executePhase();
-      // Transfer history from eventManager back to roundData if needed, or just keep it separate
-      // For simulation, we can just add the event to turns or a new field
+      if (!simulationEvents) {
+        simulationEvents = eventManager.gameData.events;
+      }
       const event = eventManager.gameData.events.drawn[eventManager.gameData.events.drawn.length - 1];
       roundData.event = event;
       roundData.turns.push({ type: 'event_drawn', eventId: event.id, title: event.title });
@@ -166,7 +214,11 @@ export function runDetailedSimulation(set, uploadedSets) {
   return gameHistory;
 }
 
-export function runBasicSimulation(set, uploadedSets) {
+export function runBasicSimulation(set, uploadedSets, uploadedEvents) {
+  let simulationEvents = uploadedEvents ? {
+    drawn: [],
+    pool: JSON.parse(JSON.stringify(uploadedEvents))
+  } : null;
   const regions = createEmptyRegions();
   const players = JSON.parse(JSON.stringify(DEFAULT_PLAYERS));
   const globalConfig = getGlobalConfig();
@@ -195,16 +247,22 @@ export function runBasicSimulation(set, uploadedSets) {
   };
   players.forEach(p => { for (let i = 0; i < gameConfig.initialSetsPerPlayer; i++) { const s = drawSet(); if (s) { s.ownerId = p.id; setsData.heldSets.push(s); } } });
   const analytics = {
-    vampire: { afterR1: 0, total: 0, finalBonus: 0, killed: 0, ramboPoints: 0 },
-    werewolf: { afterR1: 0, total: 0, finalBonus: 0, killed: 0, ramboPoints: 0 },
-    ghost: { afterR1: 0, total: 0, finalBonus: 0, killed: 0, ramboPoints: 0 },
-    bardak: { afterR1: 0, total: 0, finalBonus: 0, killed: 0, ramboPoints: 0 }
+    vampire: { afterR1: 0, total: 0, finalBonus: 0, killed: 0, ramboPoints: 0, setPlacement: 0 },
+    werewolf: { afterR1: 0, total: 0, finalBonus: 0, killed: 0, ramboPoints: 0, setPlacement: 0 },
+    ghost: { afterR1: 0, total: 0, finalBonus: 0, killed: 0, ramboPoints: 0, setPlacement: 0 },
+    bardak: { afterR1: 0, total: 0, finalBonus: 0, killed: 0, ramboPoints: 0, setPlacement: 0 }
   };
   for (let round = 1; round <= gameConfig.totalRounds; round++) {
     players.forEach(p => { const myHeld = setsData.heldSets.filter(s => s.ownerId === p.id); const needed = gameConfig.setupSetsPerPlayerPerRound - myHeld.length; for (let i = 0; i < needed; i++) { const s = drawSet(); if (s) { s.ownerId = p.id; setsData.heldSets.push(s); } } });
     for (let i = 0; i < gameConfig.jakubSetsPerRound; i++) { const s = drawSet(); if (s) { s.ownerId = 'jakub'; setsData.heldSets.push(s); } }
-    let availableGenerals = [...RACES].sort(() => Math.random() - 0.5);
-    playerOrder.forEach(id => { const p = players.find(x => x.id === id); p.generalOf = availableGenerals.pop(); });
+    let availableGenerals = [...RACES];
+    playerOrder.forEach(id => {
+      const p = players.find(x => x.id === id);
+      const hand = setsData.heldSets.filter(s => s.ownerId === p.id);
+      const pick = GeneralSelectionManager.chooseGeneral(availableGenerals, hand, regions, setsData.pawns);
+      p.generalOf = pick;
+      availableGenerals = availableGenerals.filter(g => g !== pick);
+    });
     let passed = new Set();
     while (passed.size < players.length) {
       for (const id of playerOrder) {
@@ -213,8 +271,13 @@ export function runBasicSimulation(set, uploadedSets) {
         const pool = { ...setsData.pawns };
         const playLimits = setsData.pawnsInPlayLimit || pool;
         const best = PlacementManager.findBestPlacement(regions, setsData.heldSets, p.id, p.generalOf, pool, playLimits);
-        if (best && best.pts > 1) {
-          PlacementManager.executePlacement(best, regions, players, setsData.heldSets, setsData.discardPile);
+        if (best) {
+          const pointGains = PlacementManager.executePlacement(best, regions, players, setsData.heldSets, setsData.discardPile);
+          pointGains.forEach(gain => {
+            if (analytics[gain.race]) {
+              analytics[gain.race].setPlacement += gain.points;
+            }
+          });
         } else {
           PlacementManager.executePass(p, setsData.heldSets, 3);
           passed.add(id);
@@ -236,21 +299,51 @@ export function runBasicSimulation(set, uploadedSets) {
 
     let continues = true;
     while (continues) {
-      continues = false; let curR = regions.find(r => r.pawns.jakub?.length > 0);
-      const sortedAngerRaces = RACES.map(r => ({ race: r, val: jakub.anger[r] })).filter(a => a.val > 0).sort((a,b) => b.val - a.val || RACES.indexOf(a.race) - RACES.indexOf(b.race)).map(a => a.race);
-      if (sortedAngerRaces.length === 0) break;
-      let actionFound = false;
-      for (const race of sortedAngerRaces) {
-        const units = curR.pawns[race]?.length || 0;
-        if (units > 0) { const killCount = Math.min(units, jakub.anger[race]); const p = players.find(x => x.generalOf === race); if (p) p.points = Math.max(0, p.points - killCount); analytics[race].killed += killCount; jakub.anger[race] -= killCount; curR.pawns[race].splice(0, killCount); if (curR.pawns[race].length === 0) delete curR.pawns[race]; continues = true; actionFound = true; break; }
+      continues = false;
+      let curR = regions.find(r => r.pawns.jakub?.length > 0);
+      const sortedAnger = RACES
+        .map(race => ({ race, val: jakub.anger[race] || 0 }))
+        .filter(a => a.val > 0)
+        .sort((a, b) => b.val - a.val || RACES.indexOf(a.race) - RACES.indexOf(b.race));
+      
+      if (sortedAnger.length === 0) break;
+      const targetRace = sortedAnger[0].race;
+      
+      const units = curR.pawns[targetRace]?.length || 0;
+      if (units > 0) {
+        const killCount = Math.min(units, jakub.anger[targetRace]);
+        const p = players.find(x => x.generalOf === targetRace);
+        if (p) p.points = Math.max(0, p.points - killCount);
+        analytics[targetRace].killed += killCount;
+        jakub.anger[targetRace] -= killCount;
+        curR.pawns[targetRace].splice(0, killCount);
+        if (curR.pawns[targetRace].length === 0) delete curR.pawns[targetRace];
+        continues = true;
+        continue;
       }
-      if (actionFound) continue;
-      const candidates = getRegionsInRange(regions, curR.id, jakub.range); const bestRIdx = getBestTargetRegion(candidates, sortedAngerRaces, regions);
-      if (bestRIdx !== null) { 
-        regions[bestRIdx].pawns.jakub = curR.pawns.jakub; 
-        delete curR.pawns.jakub; 
-        jakub.range = Math.max(0, jakub.range - 1); // Decrease range on move
-        continues = true; 
+      
+      let extraRange = 0;
+      RACES.forEach(race => { if ((jakub.anger[race] || 0) >= 10) extraRange += 1; });
+      const calculatedRange = 1 + extraRange;
+      
+      const candidates = getRegionsInRange(regions, curR.id, calculatedRange);
+      const validCandidates = candidates.filter(rIdx => (regions[rIdx].pawns[targetRace]?.length || 0) > 0);
+      
+      if (validCandidates.length > 0) {
+        let bestRIdx = validCandidates[0];
+        let maxCount = -1;
+        validCandidates.forEach(rIdx => {
+          const count = regions[rIdx].pawns[targetRace]?.length || 0;
+          if (count > maxCount) {
+            maxCount = count;
+            bestRIdx = rIdx;
+          }
+        });
+        
+        regions[bestRIdx].pawns.jakub = curR.pawns.jakub;
+        delete curR.pawns.jakub;
+        jakub.range = calculatedRange;
+        continues = true;
       }
     }
     updateJakubDistance(regions);
@@ -266,8 +359,20 @@ export function runBasicSimulation(set, uploadedSets) {
 
     // --- EVENT PHASE ---
     if (round < gameConfig.totalRounds) {
-      const eventManager = new GameEventPhaseManager({ regions, players, sets: setsData, history: [], currentRound: round, totalRounds: gameConfig.totalRounds, phase: 'event_phase' });
+      const eventManager = new GameEventPhaseManager({ 
+        regions, 
+        players, 
+        sets: setsData, 
+        history: [], 
+        currentRound: round, 
+        totalRounds: gameConfig.totalRounds, 
+        phase: 'event_phase',
+        events: simulationEvents
+      });
       eventManager.executePhase();
+      if (!simulationEvents) {
+        simulationEvents = eventManager.gameData.events;
+      }
     }
 
     if (round === 1) { players.forEach(p => { if (p.generalOf) analytics[p.generalOf].afterR1 = p.points; }); }
@@ -305,7 +410,11 @@ export function runBasicSimulation(set, uploadedSets) {
   return { analytics };
 }
 
-export function runFullSimulation(setsConfig, inputGameConfig) {
+export function runFullSimulation(setsConfig, inputGameConfig, uploadedEvents) {
+  let simulationEvents = uploadedEvents ? {
+    drawn: [],
+    pool: JSON.parse(JSON.stringify(uploadedEvents))
+  } : null;
   const regions = createEmptyRegions();
   const players = JSON.parse(JSON.stringify(DEFAULT_PLAYERS));
   const defaultConfig = getGameConfig();
@@ -335,10 +444,10 @@ export function runFullSimulation(setsConfig, inputGameConfig) {
   players.forEach(p => { for (let i = 0; i < initialDraw; i++) { const s = drawSet(); if (s) { s.ownerId = p.id; setsData.heldSets.push(s); } } });
 
   const analytics = {
-    vampire: { afterR1: 0, total: 0, finalBonus: 0, killed: 0, ramboPoints: 0 },
-    werewolf: { afterR1: 0, total: 0, finalBonus: 0, killed: 0, ramboPoints: 0 },
-    ghost: { afterR1: 0, total: 0, finalBonus: 0, killed: 0, ramboPoints: 0 },
-    bardak: { afterR1: 0, total: 0, finalBonus: 0, killed: 0, ramboPoints: 0 }
+    vampire: { afterR1: 0, total: 0, finalBonus: 0, killed: 0, ramboPoints: 0, setPlacement: 0 },
+    werewolf: { afterR1: 0, total: 0, finalBonus: 0, killed: 0, ramboPoints: 0, setPlacement: 0 },
+    ghost: { afterR1: 0, total: 0, finalBonus: 0, killed: 0, ramboPoints: 0, setPlacement: 0 },
+    bardak: { afterR1: 0, total: 0, finalBonus: 0, killed: 0, ramboPoints: 0, setPlacement: 0 }
   };
 
   for (let round = 1; round <= roundsToPlay; round++) {
@@ -349,8 +458,14 @@ export function runFullSimulation(setsConfig, inputGameConfig) {
     });
     for (let i = 0; i < jakubDraw; i++) { const s = drawSet(); if (s) { s.ownerId = 'jakub'; setsData.heldSets.push(s); } }
     
-    let availableGenerals = [...RACES].sort(() => Math.random() - 0.5);
-    playerOrder.forEach(id => { const p = players.find(x => x.id === id); p.generalOf = availableGenerals.pop(); });
+    let availableGenerals = [...RACES];
+    playerOrder.forEach(id => {
+      const p = players.find(x => x.id === id);
+      const hand = setsData.heldSets.filter(s => s.ownerId === p.id);
+      const pick = GeneralSelectionManager.chooseGeneral(availableGenerals, hand, regions, setsData.pawns);
+      p.generalOf = pick;
+      availableGenerals = availableGenerals.filter(g => g !== pick);
+    });
     
     let passed = new Set();
     while (passed.size < players.length) {
@@ -360,8 +475,13 @@ export function runFullSimulation(setsConfig, inputGameConfig) {
         const pool = { ...setsData.pawns };
         const playLimits = setsData.pawnsInPlayLimit || pool;
         const best = PlacementManager.findBestPlacement(regions, setsData.heldSets, p.id, p.generalOf, pool, playLimits);
-        if (best && best.pts > 1) {
-          PlacementManager.executePlacement(best, regions, players, setsData.heldSets, setsData.discardPile);
+        if (best) {
+          const pointGains = PlacementManager.executePlacement(best, regions, players, setsData.heldSets, setsData.discardPile);
+          pointGains.forEach(gain => {
+            if (analytics[gain.race]) {
+              analytics[gain.race].setPlacement += gain.points;
+            }
+          });
         } else {
           PlacementManager.executePass(p, setsData.heldSets, 3);
           passed.add(id);
@@ -385,21 +505,51 @@ export function runFullSimulation(setsConfig, inputGameConfig) {
 
     let continues = true;
     while (continues) {
-      continues = false; let curR = regions.find(r => r.pawns.jakub?.length > 0);
-      const sortedAngerRaces = RACES.map(r => ({ race: r, val: jakub.anger[r] })).filter(a => a.val > 0).sort((a,b) => b.val - a.val || RACES.indexOf(a.race) - RACES.indexOf(b.race)).map(a => a.race);
-      if (sortedAngerRaces.length === 0) break;
-      let actionFound = false;
-      for (const race of sortedAngerRaces) {
-        const units = curR.pawns[race]?.length || 0;
-        if (units > 0) { const killCount = Math.min(units, jakub.anger[race]); const p = players.find(x => x.generalOf === race); if (p) p.points = Math.max(0, p.points - killCount); analytics[race].killed += killCount; jakub.anger[race] -= killCount; curR.pawns[race].splice(0, killCount); if (curR.pawns[race].length === 0) delete curR.pawns[race]; continues = true; actionFound = true; break; }
+      continues = false;
+      let curR = regions.find(r => r.pawns.jakub?.length > 0);
+      const sortedAnger = RACES
+        .map(race => ({ race, val: jakub.anger[race] || 0 }))
+        .filter(a => a.val > 0)
+        .sort((a, b) => b.val - a.val || RACES.indexOf(a.race) - RACES.indexOf(b.race));
+      
+      if (sortedAnger.length === 0) break;
+      const targetRace = sortedAnger[0].race;
+      
+      const units = curR.pawns[targetRace]?.length || 0;
+      if (units > 0) {
+        const killCount = Math.min(units, jakub.anger[targetRace]);
+        const p = players.find(x => x.generalOf === targetRace);
+        if (p) p.points = Math.max(0, p.points - killCount);
+        analytics[targetRace].killed += killCount;
+        jakub.anger[targetRace] -= killCount;
+        curR.pawns[targetRace].splice(0, killCount);
+        if (curR.pawns[targetRace].length === 0) delete curR.pawns[targetRace];
+        continues = true;
+        continue;
       }
-      if (actionFound) continue;
-      const candidates = getRegionsInRange(regions, curR.id, jakub.range); const bestRIdx = getBestTargetRegion(candidates, sortedAngerRaces, regions);
-      if (bestRIdx !== null) { 
-        regions[bestRIdx].pawns.jakub = curR.pawns.jakub; 
-        delete curR.pawns.jakub; 
-        jakub.range = Math.max(0, jakub.range - 1);
-        continues = true; 
+      
+      let extraRange = 0;
+      RACES.forEach(race => { if ((jakub.anger[race] || 0) >= 10) extraRange += 1; });
+      const calculatedRange = 1 + extraRange;
+      
+      const candidates = getRegionsInRange(regions, curR.id, calculatedRange);
+      const validCandidates = candidates.filter(rIdx => (regions[rIdx].pawns[targetRace]?.length || 0) > 0);
+      
+      if (validCandidates.length > 0) {
+        let bestRIdx = validCandidates[0];
+        let maxCount = -1;
+        validCandidates.forEach(rIdx => {
+          const count = regions[rIdx].pawns[targetRace]?.length || 0;
+          if (count > maxCount) {
+            maxCount = count;
+            bestRIdx = rIdx;
+          }
+        });
+        
+        regions[bestRIdx].pawns.jakub = curR.pawns.jakub;
+        delete curR.pawns.jakub;
+        jakub.range = calculatedRange;
+        continues = true;
       }
     }
     updateJakubDistance(regions);
@@ -415,8 +565,20 @@ export function runFullSimulation(setsConfig, inputGameConfig) {
     
     // --- EVENT PHASE ---
     if (round < roundsToPlay) {
-      const eventManager = new GameEventPhaseManager({ regions, players, sets: setsData, history: [], currentRound: round, totalRounds: roundsToPlay, phase: 'event_phase' });
+      const eventManager = new GameEventPhaseManager({ 
+        regions, 
+        players, 
+        sets: setsData, 
+        history: [], 
+        currentRound: round, 
+        totalRounds: roundsToPlay, 
+        phase: 'event_phase',
+        events: simulationEvents
+      });
       eventManager.executePhase();
+      if (!simulationEvents) {
+        simulationEvents = eventManager.gameData.events;
+      }
       const event = eventManager.gameData.events.drawn[eventManager.gameData.events.drawn.length - 1];
       if (event) {
         // Apply any rambo-related analytics changes if needed, but events mostly affect anger and limits

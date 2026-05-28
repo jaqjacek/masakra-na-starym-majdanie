@@ -2,8 +2,8 @@
 
 # --- KONFIGURACJA ---
 REGISTRY="docker.jaqjacek.duckdns.org"
-IMAGE_NAME="wedrowycz-app"
-CONTAINER_NAME="wedrowycz_app"
+IMAGE_NAME="wedrowycz-masakra"
+CONTAINER_NAME="wedrowycz-masakra"
 PORT="7777"
 
 # Obsługa parametru --tag
@@ -15,11 +15,13 @@ while [[ "$#" -gt 0 ]]; do
     shift
 done
 
-# Jeśli tag nie został podany, pobierz z gita lub package.json
+# Jeśli tag nie został podany, pobierz z package.json lub gita
 if [ -z "$VERSION" ]; then
-    VERSION=$(git describe --tags --abbrev=0 2>/dev/null)
-    if [ -z "$VERSION" ]; then
-        VERSION=$(node -p "require('./package.json').version")
+    if [ -f "./package.json" ]; then
+        VERSION="v$(node -p "require('./package.json').version" 2>/dev/null)"
+    fi
+    if [ -z "$VERSION" -o "$VERSION" = "v" ]; then
+        VERSION=$(git describe --tags --abbrev=0 2>/dev/null)
     fi
 fi
 

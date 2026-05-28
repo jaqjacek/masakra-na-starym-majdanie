@@ -83,7 +83,7 @@
 - **Game Engine:** `server/gameLogic.js` (Phase transitions, move validation)
 - **Board/Regions:** `server/boardManager.js` (Map initialization, coordinate logic)
 - **Sets/Pawns:** `server/setManager.js` (Pawn generation, Set distribution)
-- **Scoring:** `server/scoring.js` (Final point calculation)
+- **Scoring:** `server/scoring/scoring.js` (Final point calculation)
 - **Persistence:** `server/games/{id}/` (JSON state storage)
 - **Config:** `server/configs/game_config.json`, `server/configs/set_default.json`
 

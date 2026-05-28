@@ -7,9 +7,9 @@ const upload = multer();
 
 router.post('/detailed', (req, res) => {
   const { set } = req.query;
-  const { setsData: uploadedSets } = req.body || {};
+  const { setsData: uploadedSets, eventsData: uploadedEvents } = req.body || {};
   try {
-    const gameHistory = runDetailedSimulation(set, uploadedSets);
+    const gameHistory = runDetailedSimulation(set, uploadedSets, uploadedEvents);
     res.json(gameHistory);
   } catch (err) {
     console.error(err);
@@ -19,9 +19,10 @@ router.post('/detailed', (req, res) => {
 
 router.post('/full', upload.fields([
   { name: 'sets', maxCount: 1 },
-  { name: 'game', maxCount: 1 }
+  { name: 'game', maxCount: 1 },
+  { name: 'events', maxCount: 1 }
 ]), (req, res) => {
-  let setsConfig, gameConfig;
+  let setsConfig, gameConfig, eventsConfig;
 
   // Handle multipart files
   if (req.files) {
@@ -39,16 +40,24 @@ router.post('/full', upload.fields([
         return res.status(400).json({ error: 'Invalid JSON in game file' });
       }
     }
+    if (req.files['events']) {
+      try {
+        eventsConfig = JSON.parse(req.files['events'][0].buffer.toString());
+      } catch (_err) {
+        return res.status(400).json({ error: 'Invalid JSON in events file' });
+      }
+    }
   }
 
   // Fallback to JSON body if files not provided (for backward compatibility)
   if (!setsConfig) setsConfig = req.body?.sets;
   if (!gameConfig) gameConfig = req.body?.game;
+  if (!eventsConfig) eventsConfig = req.body?.events;
 
   if (!setsConfig) return res.status(400).json({ error: 'Missing sets configuration' });
   
   try {
-    const result = runFullSimulation(setsConfig, gameConfig);
+    const result = runFullSimulation(setsConfig, gameConfig, eventsConfig);
     res.json(result);
   } catch (err) {
     console.error(err);
@@ -58,9 +67,9 @@ router.post('/full', upload.fields([
 
 router.post('/', (req, res) => {
   const { set } = req.query;
-  const { setsData: uploadedSets } = req.body || {};
+  const { setsData: uploadedSets, eventsData: uploadedEvents } = req.body || {};
   try {
-    const result = runBasicSimulation(set, uploadedSets);
+    const result = runBasicSimulation(set, uploadedSets, uploadedEvents);
     res.json(result);
   } catch (err) {
     console.error(err);
@@ -70,9 +79,9 @@ router.post('/', (req, res) => {
 
 router.post('/:gameId', (req, res) => {
   const { set } = req.query;
-  const { setsData: uploadedSets } = req.body || {};
+  const { setsData: uploadedSets, eventsData: uploadedEvents } = req.body || {};
   try {
-    const result = runBasicSimulation(set, uploadedSets);
+    const result = runBasicSimulation(set, uploadedSets, uploadedEvents);
     res.json(result);
   } catch (err) {
     console.error(err);

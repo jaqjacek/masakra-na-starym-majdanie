@@ -3,4 +3,7 @@ dist
 .git
 .gitignore
 .geminiignore
+.antigravitycli
+.gemini
 *.md
+!docs/**

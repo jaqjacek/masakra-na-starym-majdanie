@@ -569,6 +569,54 @@
   border: 1px solid rgba(255,255,255,0.1);
 }
 
+.recommendation-header-hint {
+  margin-left: 10px;
+  color: #aaa;
+  text-transform: none;
+  font-weight: normal;
+  font-size: 0.75rem;
+}
+
+.capitalize {
+  text-transform: capitalize;
+}
+
+.general-icon.large.portrait.recommended {
+  border: 3px solid #2ecc71 !important;
+  box-shadow: 0 0 15px rgba(46, 204, 113, 0.6);
+  animation: recommend-glow 1.5s infinite alternate;
+  position: relative;
+  transform: scale(1.05);
+  transition: all 0.3s ease-in-out;
+}
+
+@keyframes recommend-glow {
+  from {
+    box-shadow: 0 0 8px rgba(46, 204, 113, 0.4);
+  }
+  to {
+    box-shadow: 0 0 18px rgba(46, 204, 113, 0.8), inset 0 0 4px rgba(46, 204, 113, 0.3);
+  }
+}
+
+.recommendation-badge {
+  position: absolute;
+  bottom: -8px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #2ecc71;
+  color: #000;
+  font-size: 0.6rem;
+  font-weight: 900;
+  padding: 1px 6px;
+  border-radius: 10px;
+  border: 1.5px solid #fff;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.4);
+  pointer-events: none;
+  letter-spacing: 0.5px;
+  z-index: 10;
+}
+
 .points-tracker { display: flex; gap: 0.5rem; background: transparent; padding: 0.2rem 0; width: 100%; box-sizing: border-box; justify-content: center; }
 .player-point-item { 
   flex: 0 1 130px; display: flex; flex-direction: column; gap: 0.15rem; 

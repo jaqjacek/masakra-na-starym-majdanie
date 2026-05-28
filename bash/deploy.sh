@@ -4,7 +4,7 @@
 PROJECT_ID="TWOJ-PROJECT-ID"
 REGION="europe-central2"
 REPO_NAME="wedrowycz-repo"
-IMAGE_NAME="wedrowycz-app"
+IMAGE_NAME="wedrowycz-masakra"
 VERSION="v1.6.0"
 PORT="3001"
 
@@ -22,15 +22,15 @@ gcloud artifacts repositories create $REPO_NAME --repository-format=docker --loc
 echo "--- 4. Autoryzacja Dockera dla Google Cloud ---"
 gcloud auth configure-docker "$REGION-docker.pkg.dev" --quiet
 
-echo "--- 5. Budowanie obrazu Docker: wedrowycz ---"
-docker build -t wedrowycz .
+echo "--- 5. Budowanie obrazu Docker: wedrowycz-masakra ---"
+docker build -t wedrowycz-masakra .
 
 echo "--- 6. Tagowanie i wysyłanie obrazu (Push) ---"
-docker tag wedrowycz $IMAGE_URL
+docker tag wedrowycz-masakra $IMAGE_URL
 docker push $IMAGE_URL
 
 echo "--- 7. Wdrażanie na Google Cloud Run ---"
-gcloud run deploy wedrowycz_app \
+gcloud run deploy wedrowycz-masakra \
     --image $IMAGE_URL \
     --region $REGION \
     --platform managed \

@@ -31,6 +31,7 @@ import { useGameInteraction } from './hooks/useGameInteraction';
 import { PAWN_TYPES, SUMMARY_PAWN_IDS } from './constants/pawnTypes';
 import { RACES, INITIAL_STATE } from './constants/game';
 import { applySetToJakubAnger } from './strategies/jakubStrategy';
+import { GeneralSelectionManager } from '../shared/generalSelectionManager.js';
 import { TOTAL_GAME_ROUNDS, INITIAL_HAND_SIZE, JAKUB_INITIAL_SETS, SERVER_URL } from './constants/constants';
 
 function App() {
@@ -471,19 +472,36 @@ function App() {
             const curId = playerId || gameState.playerOrder[gameState.currentPlayerIndex];
             const player = gameState.players.find(p => p.id === curId);
             const hasGeneral = !!player?.generalOf;
+            const activePlayerHand = (gameState.sets?.heldSets || []).filter(s => s.ownerId === curId);
+            const recommendedGeneral = !hasGeneral && gameState.availableGenerals.length > 0
+              ? GeneralSelectionManager.chooseGeneral(gameState.availableGenerals, activePlayerHand, gameState.regions, gameState.sets?.pawns)
+              : null;
             
             return (
               <div className="generals-pool-wrapper">
-                <div className="generals-pool-header">{hasGeneral ? "General Chosen" : "Choose General"}</div>
+                <div className="generals-pool-header">
+                  {hasGeneral ? "General Chosen" : "Choose General"}
+                  {recommendedGeneral && (
+                    <span className="recommendation-header-hint">
+                      (Recommended: <span className="capitalize">{recommendedGeneral}</span> based on your current hand of sets)
+                    </span>
+                  )}
+                </div>
                 <div className="generals-pool-horizontal">
                   {gameState.availableGenerals.map(race => (
                     <div 
                       key={race} 
-                      className={`general-icon large portrait ${race} ${hasGeneral ? 'disabled' : ''}`} 
+                      className={`general-icon large portrait ${race} ${hasGeneral ? 'disabled' : ''} ${recommendedGeneral === race ? 'recommended' : ''}`} 
                       onMouseDown={(e) => !hasGeneral && handleGeneralMouseDown(race, e)}
                       onClick={() => !hasGeneral && handleSelectGeneral(race)}
-                      title={hasGeneral ? "You already have a general" : `Click to choose ${race}`}
-                    ></div>
+                      title={hasGeneral ? "You already have a general" : (recommendedGeneral === race ? `RECOMMENDED: Click to choose ${race}` : `Click to choose ${race}`)}
+                    >
+                      {recommendedGeneral === race && (
+                        <div className="recommendation-badge">
+                          <span>REC</span>
+                        </div>
+                      )}
+                    </div>
                   ))}
                 </div>
               </div>

@@ -2,8 +2,8 @@
 
 # --- KONFIGURACJA ---
 REGISTRY="docker.jaqjacek.duckdns.org"
-IMAGE_NAME="wedrowycz-app"
-CONTAINER_NAME="wedrowycz_app"
+IMAGE_NAME="wedrowycz-masakra"
+CONTAINER_NAME="wedrowycz-masakra"
 PORT="7777"
 
 FULL_IMAGE_NAME="$REGISTRY/$IMAGE_NAME:latest"

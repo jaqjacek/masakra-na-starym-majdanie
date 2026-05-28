@@ -176,7 +176,7 @@ export const useAutoplay = ({
         
         let jakR = null;
         for (const r of workState.regions) { if (r.pawns.jakub?.length > 0) { jakR = r; break; } }
-        if (jakR) {
+        if (jakR && jakR.pawns.jakub[0] && jakR.pawns.jakub[0].movedThisRound) {
           RACES.forEach(race => {
             const count = jakR.pawns[race]?.length || 0;
             if (count > 0) {
@@ -188,6 +188,7 @@ export const useAutoplay = ({
               }
             }
           });
+          jakR.pawns.jakub[0].movedThisRound = false;
         }
 
         Board.updateJakubDistance(workState.regions);

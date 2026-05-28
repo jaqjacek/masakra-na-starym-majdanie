@@ -64,41 +64,49 @@ export const executeJakubStep = (gameState) => {
 
   if (!jakub) return { newState: workState, actionTaken: false, log: "Jakub not found." };
 
-  // 1. Determine target race (highest anger, tie-broken V -> W -> G -> B)
+  // 1. Before move, kill everyone in his current region that he has anger towards.
+  // For every pawn killed this way, decrease proper anger.
+  let killedInfo = [];
+  RACES.forEach(race => {
+    const units = currentRegion.pawns[race]?.length || 0;
+    const angerVal = jakub.anger[race] || 0;
+    if (units > 0 && angerVal > 0) {
+      const playerIdx = workState.players.findIndex(p => p.generalOf === race);
+      if (playerIdx !== -1) {
+        workState.players[playerIdx].points = Math.max(0, workState.players[playerIdx].points - units);
+      }
+      
+      jakub.anger[race] = Math.max(0, angerVal - units);
+      delete currentRegion.pawns[race];
+      killedInfo.push({ race, count: units });
+    }
+  });
+
+  if (killedInfo.length > 0) {
+    const logStr = `Jakub targets his region at [${currentRegion.x},${currentRegion.y}] and kills everyone he is angry at: ` +
+      killedInfo.map(info => `${info.count} ${info.race}(s)`).join(', ') + '.';
+    return {
+      newState: workState,
+      actionTaken: true,
+      log: logStr,
+      metadata: { killedInfo }
+    };
+  }
+
+  // 2. If no targets left to kill in the current region, proceed to move.
+  // Determine priority list based on current anger (tie-broken V -> W -> G -> B)
   const sortedAnger = RACES
     .map(race => ({ race, val: jakub.anger[race] || 0 }))
     .filter(a => a.val > 0)
     .sort((a, b) => b.val - a.val || RACES.indexOf(a.race) - RACES.indexOf(b.race));
 
   if (sortedAnger.length === 0) {
-    return { newState: workState, actionTaken: false, log: "Jakub's anger is gone." };
+    return { newState: workState, actionTaken: false, log: "Jakub's anger is gone. Rampage ends." };
   }
 
   const targetRace = sortedAnger[0].race;
 
-  // 2. Try to KILL target race in current region
-  const units = currentRegion.pawns[targetRace]?.length || 0;
-  if (units > 0) {
-    const killCount = Math.min(units, jakub.anger[targetRace]);
-    const playerIdx = workState.players.findIndex(p => p.generalOf === targetRace);
-    if (playerIdx !== -1) {
-      workState.players[playerIdx].points = Math.max(0, workState.players[playerIdx].points - killCount);
-    }
-    
-    jakub.anger[targetRace] -= killCount;
-    currentRegion.pawns[targetRace].splice(0, killCount);
-    if (currentRegion.pawns[targetRace].length === 0) delete currentRegion.pawns[targetRace];
-
-    return { 
-      newState: workState, 
-      actionTaken: true, 
-      log: `Jakub targets ${targetRace} and kills ${killCount} unit(s) at [${currentRegion.x},${currentRegion.y}]. (-${killCount} pts)`,
-      metadata: { race: targetRace, points: -killCount }
-    };
-  }
-
-  // 3. Move search
-  // Calculate range: default 1 + 1 for every race that still has anger >= 10
+  // Calculate dynamic movement range: Range = 1 + (number of races with anger >= 10)
   let extraRange = 0;
   RACES.forEach(race => {
     if ((jakub.anger[race] || 0) >= 10) {
@@ -116,7 +124,7 @@ export const executeJakubStep = (gameState) => {
   );
 
   if (validCandidates.length === 0) {
-    // If no target in range then he just stops and his phase ends
+    // If no target in range, rampage ends
     return { 
       newState: workState, 
       actionTaken: false, 
@@ -139,8 +147,9 @@ export const executeJakubStep = (gameState) => {
   targetRegion.pawns.jakub = currentRegion.pawns.jakub;
   delete currentRegion.pawns.jakub;
   
-  // Update range to calculated range for metadata visibility
-  jakub.range = calculatedRange;
+  // Set the movedThisRound flag!
+  targetRegion.pawns.jakub[0].movedThisRound = true;
+  targetRegion.pawns.jakub[0].range = calculatedRange;
 
   return { 
     newState: workState, 

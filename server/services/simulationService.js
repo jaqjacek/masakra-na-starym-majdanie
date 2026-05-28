@@ -120,10 +120,35 @@ export function runDetailedSimulation(set, uploadedSets, uploadedEvents) {
     let jakR = regions.find(r => r.pawns.jakub?.length > 0); let jakub = jakR.pawns.jakub[0]; const jakubSets = setsData.heldSets.filter(s => s.ownerId === 'jakub');
     jakubSets.forEach(s => { Object.entries(s.content).forEach(([race, count]) => { if (jakub.anger[race] !== undefined) jakub.anger[race] += count; }); });
     let extraRange = 0; Object.values(jakub.anger).forEach(val => { if (val >= JAKUB_ANGER_THRESHOLD) extraRange += 1; }); jakub.range = Math.min(5, JAKUB_BASE_RANGE + extraRange);
+    let movedThisRound = false;
     let continues = true;
     while (continues) {
       continues = false;
       let curR = regions.find(r => r.pawns.jakub?.length > 0);
+      if (!curR) break;
+
+      // 1. Before move, kill everyone in his current region that he has anger towards.
+      let killedAny = false;
+      RACES.forEach(race => {
+        const units = curR.pawns[race]?.length || 0;
+        const angerVal = jakub.anger[race] || 0;
+        if (units > 0 && angerVal > 0) {
+          const p = players.find(x => x.generalOf === race);
+          if (p) p.points = Math.max(0, p.points - units);
+          
+          jakub.anger[race] = Math.max(0, angerVal - units);
+          delete curR.pawns[race];
+          killedAny = true;
+          roundData.turns.push({ type: 'jakub_attack', regionId: curR.id, race, killCount: units });
+        }
+      });
+
+      if (killedAny) {
+        continues = true;
+        continue;
+      }
+
+      // 2. If no targets left to kill in the current region, proceed to move.
       const sortedAnger = RACES
         .map(race => ({ race, val: jakub.anger[race] || 0 }))
         .filter(a => a.val > 0)
@@ -131,19 +156,6 @@ export function runDetailedSimulation(set, uploadedSets, uploadedEvents) {
       
       if (sortedAnger.length === 0) break;
       const targetRace = sortedAnger[0].race;
-      
-      const units = curR.pawns[targetRace]?.length || 0;
-      if (units > 0) {
-        const killCount = Math.min(units, jakub.anger[targetRace]);
-        const p = players.find(x => x.generalOf === targetRace);
-        if (p) p.points = Math.max(0, p.points - killCount);
-        jakub.anger[targetRace] -= killCount;
-        curR.pawns[targetRace].splice(0, killCount);
-        if (curR.pawns[targetRace].length === 0) delete curR.pawns[targetRace];
-        continues = true;
-        roundData.turns.push({ type: 'jakub_attack', regionId: curR.id, race: targetRace, killCount });
-        continue;
-      }
       
       let extraRange = 0;
       RACES.forEach(race => { if ((jakub.anger[race] || 0) >= 10) extraRange += 1; });
@@ -168,12 +180,13 @@ export function runDetailedSimulation(set, uploadedSets, uploadedEvents) {
         delete curR.pawns.jakub;
         jakub.range = calculatedRange;
         continues = true;
+        movedThisRound = true;
         roundData.turns.push({ type: 'jakub_move', from: fromId, to: regions[bestRIdx].id, remainingRange: calculatedRange });
       }
     }
     updateJakubDistance(regions);
     let jakR_after = regions.find(r => r.pawns.jakub?.length > 0);
-    if (jakR_after) { RACES.forEach(race => { const count = jakR_after.pawns[race]?.length || 0; if (count > 0) { const pts = count * 2; const p = players.find(x => x.generalOf === race); if (p) { p.points += pts; roundData.turns.push({ type: 'rambo_points', player: p.name, race, points: pts }); } } }); }
+    if (jakR_after && movedThisRound) { RACES.forEach(race => { const count = jakR_after.pawns[race]?.length || 0; if (count > 0) { const pts = count * 2; const p = players.find(x => x.generalOf === race); if (p) { p.points += pts; roundData.turns.push({ type: 'rambo_points', player: p.name, race, points: pts }); } } }); }
     jakub.range = 1; jakubSets.forEach(s => { const idx = setsData.heldSets.findIndex(x => x.id === s.id); const recycled = setsData.heldSets.splice(idx, 1)[0]; recycled.ownerId = null; recycled.used = false; setsData.discardPile.push(recycled); });
     
     // --- EVENT PHASE ---
@@ -297,10 +310,35 @@ export function runBasicSimulation(set, uploadedSets, uploadedEvents) {
     Object.values(jakub.anger).forEach(val => { if (val >= JAKUB_ANGER_THRESHOLD) extraRange += 1; });
     jakub.range = Math.min(5, JAKUB_BASE_RANGE + extraRange);
 
+    let movedThisRound = false;
     let continues = true;
     while (continues) {
       continues = false;
       let curR = regions.find(r => r.pawns.jakub?.length > 0);
+      if (!curR) break;
+
+      // 1. Before move, kill everyone in his current region that he has anger towards.
+      let killedAny = false;
+      RACES.forEach(race => {
+        const units = curR.pawns[race]?.length || 0;
+        const angerVal = jakub.anger[race] || 0;
+        if (units > 0 && angerVal > 0) {
+          const p = players.find(x => x.generalOf === race);
+          if (p) p.points = Math.max(0, p.points - units);
+          
+          analytics[race].killed += units;
+          jakub.anger[race] = Math.max(0, angerVal - units);
+          delete curR.pawns[race];
+          killedAny = true;
+        }
+      });
+
+      if (killedAny) {
+        continues = true;
+        continue;
+      }
+
+      // 2. If no targets left to kill in the current region, proceed to move.
       const sortedAnger = RACES
         .map(race => ({ race, val: jakub.anger[race] || 0 }))
         .filter(a => a.val > 0)
@@ -308,19 +346,6 @@ export function runBasicSimulation(set, uploadedSets, uploadedEvents) {
       
       if (sortedAnger.length === 0) break;
       const targetRace = sortedAnger[0].race;
-      
-      const units = curR.pawns[targetRace]?.length || 0;
-      if (units > 0) {
-        const killCount = Math.min(units, jakub.anger[targetRace]);
-        const p = players.find(x => x.generalOf === targetRace);
-        if (p) p.points = Math.max(0, p.points - killCount);
-        analytics[targetRace].killed += killCount;
-        jakub.anger[targetRace] -= killCount;
-        curR.pawns[targetRace].splice(0, killCount);
-        if (curR.pawns[targetRace].length === 0) delete curR.pawns[targetRace];
-        continues = true;
-        continue;
-      }
       
       let extraRange = 0;
       RACES.forEach(race => { if ((jakub.anger[race] || 0) >= 10) extraRange += 1; });
@@ -344,11 +369,12 @@ export function runBasicSimulation(set, uploadedSets, uploadedEvents) {
         delete curR.pawns.jakub;
         jakub.range = calculatedRange;
         continues = true;
+        movedThisRound = true;
       }
     }
     updateJakubDistance(regions);
     let jakR_after = regions.find(r => r.pawns.jakub?.length > 0);
-    if (jakR_after) {
+    if (jakR_after && movedThisRound) {
       RACES.forEach(race => {
         const count = jakR_after.pawns[race]?.length || 0;
         if (count > 0) { const pts = count * 2; const p = players.find(x => x.generalOf === race); if (p) { p.points += pts; analytics[race].ramboPoints += pts; } }
@@ -503,10 +529,35 @@ export function runFullSimulation(setsConfig, inputGameConfig, uploadedEvents) {
     Object.values(jakub.anger).forEach(val => { if (val >= JAKUB_ANGER_THRESHOLD) extraRange += 1; });
     jakub.range = Math.min(5, JAKUB_BASE_RANGE + extraRange);
 
+    let movedThisRound = false;
     let continues = true;
     while (continues) {
       continues = false;
       let curR = regions.find(r => r.pawns.jakub?.length > 0);
+      if (!curR) break;
+
+      // 1. Before move, kill everyone in his current region that he has anger towards.
+      let killedAny = false;
+      RACES.forEach(race => {
+        const units = curR.pawns[race]?.length || 0;
+        const angerVal = jakub.anger[race] || 0;
+        if (units > 0 && angerVal > 0) {
+          const p = players.find(x => x.generalOf === race);
+          if (p) p.points = Math.max(0, p.points - units);
+          
+          analytics[race].killed += units;
+          jakub.anger[race] = Math.max(0, angerVal - units);
+          delete curR.pawns[race];
+          killedAny = true;
+        }
+      });
+
+      if (killedAny) {
+        continues = true;
+        continue;
+      }
+
+      // 2. If no targets left to kill in the current region, proceed to move.
       const sortedAnger = RACES
         .map(race => ({ race, val: jakub.anger[race] || 0 }))
         .filter(a => a.val > 0)
@@ -514,19 +565,6 @@ export function runFullSimulation(setsConfig, inputGameConfig, uploadedEvents) {
       
       if (sortedAnger.length === 0) break;
       const targetRace = sortedAnger[0].race;
-      
-      const units = curR.pawns[targetRace]?.length || 0;
-      if (units > 0) {
-        const killCount = Math.min(units, jakub.anger[targetRace]);
-        const p = players.find(x => x.generalOf === targetRace);
-        if (p) p.points = Math.max(0, p.points - killCount);
-        analytics[targetRace].killed += killCount;
-        jakub.anger[targetRace] -= killCount;
-        curR.pawns[targetRace].splice(0, killCount);
-        if (curR.pawns[targetRace].length === 0) delete curR.pawns[targetRace];
-        continues = true;
-        continue;
-      }
       
       let extraRange = 0;
       RACES.forEach(race => { if ((jakub.anger[race] || 0) >= 10) extraRange += 1; });
@@ -550,11 +588,12 @@ export function runFullSimulation(setsConfig, inputGameConfig, uploadedEvents) {
         delete curR.pawns.jakub;
         jakub.range = calculatedRange;
         continues = true;
+        movedThisRound = true;
       }
     }
     updateJakubDistance(regions);
     let jakR_after = regions.find(r => r.pawns.jakub?.length > 0);
-    if (jakR_after) {
+    if (jakR_after && movedThisRound) {
       RACES.forEach(race => {
         const count = jakR_after.pawns[race]?.length || 0;
         if (count > 0) { const pts = count * 2; const p = players.find(x => x.generalOf === race); if (p) { p.points += pts; analytics[race].ramboPoints += pts; } }

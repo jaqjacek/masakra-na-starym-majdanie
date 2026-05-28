@@ -35,6 +35,30 @@ const ChartBox = ({ title, dataKeySuffix, data }) => (
   </div>
 );
 
+const ScoreDiffChartBox = ({ title, data }) => (
+  <div className="simulation-chart-box">
+    <h3>{title}</h3>
+    <div className="chart-wrapper small">
+      <ResponsiveContainer width="100%" height={300}>
+        <LineChart data={data}>
+          <CartesianGrid strokeDasharray="3 3" stroke="#444" />
+          <XAxis dataKey="game" stroke="#888" hide />
+          <YAxis stroke="#888" />
+          <Tooltip contentStyle={{ backgroundColor: '#2c3e50', border: '1px solid #444' }} />
+          <Line 
+            type="monotone" 
+            dataKey="scoreDiff" 
+            stroke="#9b59b6" 
+            strokeWidth={3} 
+            dot={false} 
+            name="Score Diff"
+          />
+        </LineChart>
+      </ResponsiveContainer>
+    </div>
+  </div>
+);
+
 const AdminSimulate = () => {
   const [data, setData] = useState([]);
   const [isSimulating, setIsSimulating] = useState(false);
@@ -73,6 +97,7 @@ const AdminSimulate = () => {
             gameEntry[`${race}_ramboPoints`] = result.analytics[race].ramboPoints;
             gameEntry[`${race}_setPlacement`] = result.analytics[race].setPlacement;
           });
+          gameEntry.scoreDiff = result.scoreDiff || 0;
           results.push(gameEntry);
         }
       } catch (err) { console.error(err); }
@@ -109,6 +134,7 @@ const AdminSimulate = () => {
             <ChartBox title="5. Rambo Survivor Bonus Points" dataKeySuffix="ramboPoints" data={data} />
             <ChartBox title="6. Pawns Killed by Jakub (Total)" dataKeySuffix="killed" data={data} />
             <ChartBox title="7. Set Placement Points (Total in Game)" dataKeySuffix="setPlacement" data={data} />
+            <ScoreDiffChartBox title="8. Score Difference Between Top and Lowest Players (Final)" data={data} />
           </div>
 
           <div className="custom-legend-row large">

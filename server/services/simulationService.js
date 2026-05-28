@@ -467,7 +467,11 @@ export function runBasicSimulation(set, uploadedSets, uploadedEvents) {
     else if (pick === 'bardak') addedPoints = BardakScoring.calculateFinal(regions);
     p.points += addedPoints; analytics[pick].finalBonus = addedPoints; analytics[pick].total = p.points;
   });
-  return { analytics };
+  const scores = players.map(p => p.points);
+  const maxScore = Math.max.apply(null, scores);
+  const minScore = Math.min.apply(null, scores);
+  const scoreDiff = maxScore - minScore;
+  return { analytics, scoreDiff };
 }
 
 export function runFullSimulation(setsConfig, inputGameConfig, uploadedEvents) {
@@ -693,5 +697,9 @@ export function runFullSimulation(setsConfig, inputGameConfig, uploadedEvents) {
     p.points += addedPoints; analytics[pick].finalBonus = addedPoints; analytics[pick].total = p.points;
   });
 
-  return { analytics };
+  const scores = players.map(p => p.points);
+  const maxScore = Math.max.apply(null, scores);
+  const minScore = Math.min.apply(null, scores);
+  const scoreDiff = maxScore - minScore;
+  return { analytics, scoreDiff };
 }

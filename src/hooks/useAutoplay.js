@@ -161,7 +161,15 @@ export const useAutoplay = ({
 
     if (workState.phase === 'jakub_phase') {
       const step = executeJakubStep(workState);
-      if (step.actionTaken) { addLog(step.newState, step.log, step.metadata || {}); updateGameWithSync(step.newState); }
+      if (step.actionTaken) { 
+        addLog(step.newState, step.log, step.metadata || {}); 
+        if (step.metadata && step.metadata.ramboPointsAwarded) {
+          step.metadata.ramboPointsAwarded.forEach(r => {
+            addLog(step.newState, `🔥 Rambo Survivor: ${r.player} (${r.race.toUpperCase()}) gained ${r.points} bonus points.`, { race: r.race, points: r.points });
+          });
+        }
+        updateGameWithSync(step.newState); 
+      }
       else {
         addLog(workState, `Jakub stops his rampage.`);
         let jakub = null;

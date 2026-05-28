@@ -154,6 +154,6 @@ export const executeJakubStep = (gameState) => {
   return { 
     newState: workState, 
     actionTaken: true, 
-    log: `Jakub moves to [${targetRegion.x},${targetRegion.y}] within range ${calculatedRange} to chase ${targetRace}.` 
+    log: `Jakub moves to [${targetRegion.x},${targetRegion.y}] within range ${calculatedRange} to chase ${targetRace.toUpperCase()}s (Anger: ${jakub.anger[targetRace] || 0} | Region contains ${maxCount} unit(s)).` 
   };
 };

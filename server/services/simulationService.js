@@ -181,7 +181,15 @@ export function runDetailedSimulation(set, uploadedSets, uploadedEvents) {
         jakub.range = calculatedRange;
         continues = true;
         movedThisRound = true;
-        roundData.turns.push({ type: 'jakub_move', from: fromId, to: regions[bestRIdx].id, remainingRange: calculatedRange });
+        roundData.turns.push({ 
+          type: 'jakub_move', 
+          from: fromId, 
+          to: regions[bestRIdx].id, 
+          remainingRange: calculatedRange, 
+          targetRace, 
+          targetAnger: jakub.anger[targetRace] || 0, 
+          targetUnitsCount: maxCount 
+        });
       }
     }
     updateJakubDistance(regions);

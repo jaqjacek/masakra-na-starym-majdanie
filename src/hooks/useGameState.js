@@ -8,11 +8,13 @@ const socket = io(SERVER_URL);
 
 const getTime = () => new Date().toLocaleTimeString();
 
-export const useGameState = (isAdminPath) => {
+export const useGameState = () => {
   const [currentPath, setCurrentPath] = useState(window.location.pathname);
   const [gameId, setGameId] = useState(null);
   const [playerId, setPlayerId] = useState(null);
   const [gameState, setGameState] = useState(INITIAL_STATE);
+
+  const isAdminPath = currentPath.startsWith('/admin');
 
   useEffect(() => {
     const handlePath = () => {
@@ -68,6 +70,7 @@ export const useGameState = (isAdminPath) => {
     setGameState,
     currentPath,
     setCurrentPath,
+    isAdminPath,
     updateGameWithSync,
     addLog
   };

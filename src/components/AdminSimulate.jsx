@@ -66,6 +66,7 @@ const AdminSimulate = () => {
           const gameEntry = { game: i };
           RACES.forEach(race => {
             gameEntry[`${race}_afterR1`] = result.analytics[race].afterR1;
+            gameEntry[`${race}_fewestPointsChoice`] = result.analytics[race].fewestPointsChoice || 0;
             gameEntry[`${race}_total`] = result.analytics[race].total;
             gameEntry[`${race}_finalBonus`] = result.analytics[race].finalBonus;
             gameEntry[`${race}_killed`] = result.analytics[race].killed;
@@ -102,11 +103,12 @@ const AdminSimulate = () => {
           
           <div className="charts-grid">
             <ChartBox title="1. Points After Round 1 (Early Game)" dataKeySuffix="afterR1" data={data} />
-            <ChartBox title="2. Total Points (Final Game Score)" dataKeySuffix="total" data={data} />
-            <ChartBox title="3. Final Phase Bonus Points" dataKeySuffix="finalBonus" data={data} />
-            <ChartBox title="4. Rambo Survivor Bonus Points" dataKeySuffix="ramboPoints" data={data} />
-            <ChartBox title="5. Pawns Killed by Jakub (Total)" dataKeySuffix="killed" data={data} />
-            <ChartBox title="6. Set Placement Points (Total in Game)" dataKeySuffix="setPlacement" data={data} />
+            <ChartBox title="2. General Selection by Player with Fewest Points" dataKeySuffix="fewestPointsChoice" data={data} />
+            <ChartBox title="3. Total Points (Final Game Score)" dataKeySuffix="total" data={data} />
+            <ChartBox title="4. Final Phase Bonus Points" dataKeySuffix="finalBonus" data={data} />
+            <ChartBox title="5. Rambo Survivor Bonus Points" dataKeySuffix="ramboPoints" data={data} />
+            <ChartBox title="6. Pawns Killed by Jakub (Total)" dataKeySuffix="killed" data={data} />
+            <ChartBox title="7. Set Placement Points (Total in Game)" dataKeySuffix="setPlacement" data={data} />
           </div>
 
           <div className="custom-legend-row large">

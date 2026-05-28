@@ -35,6 +35,8 @@ if [ "$(docker ps -aq -f name=$CONTAINER_NAME)" ]; then
 fi
 
 echo "--- 2. Wybrana wersja (Tag): $VERSION ---"
+echo "--- Czyszczenie danych gier w server/games ---"
+rm -rf server/games/*
 echo "--- 3. Budowanie obrazu: $IMAGE_NAME:$VERSION ---"
 docker build -t "$IMAGE_NAME:$VERSION" --no-cache .
 

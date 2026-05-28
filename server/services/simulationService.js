@@ -294,21 +294,24 @@ export function runBasicSimulation(set, uploadedSets, uploadedEvents) {
   };
   players.forEach(p => { for (let i = 0; i < gameConfig.initialSetsPerPlayer; i++) { const s = drawSet(); if (s) { s.ownerId = p.id; setsData.heldSets.push(s); } } });
   const analytics = {
-    vampire: { afterR1: 0, total: 0, finalBonus: 0, killed: 0, ramboPoints: 0, setPlacement: 0 },
-    werewolf: { afterR1: 0, total: 0, finalBonus: 0, killed: 0, ramboPoints: 0, setPlacement: 0 },
-    ghost: { afterR1: 0, total: 0, finalBonus: 0, killed: 0, ramboPoints: 0, setPlacement: 0 },
-    bardak: { afterR1: 0, total: 0, finalBonus: 0, killed: 0, ramboPoints: 0, setPlacement: 0 }
+    vampire: { afterR1: 0, total: 0, finalBonus: 0, killed: 0, ramboPoints: 0, setPlacement: 0, fewestPointsChoice: 0 },
+    werewolf: { afterR1: 0, total: 0, finalBonus: 0, killed: 0, ramboPoints: 0, setPlacement: 0, fewestPointsChoice: 0 },
+    ghost: { afterR1: 0, total: 0, finalBonus: 0, killed: 0, ramboPoints: 0, setPlacement: 0, fewestPointsChoice: 0 },
+    bardak: { afterR1: 0, total: 0, finalBonus: 0, killed: 0, ramboPoints: 0, setPlacement: 0, fewestPointsChoice: 0 }
   };
   for (let round = 1; round <= gameConfig.totalRounds; round++) {
     players.forEach(p => { const myHeld = setsData.heldSets.filter(s => s.ownerId === p.id); const needed = gameConfig.setupSetsPerPlayerPerRound - myHeld.length; for (let i = 0; i < needed; i++) { const s = drawSet(); if (s) { s.ownerId = p.id; setsData.heldSets.push(s); } } });
     for (let i = 0; i < gameConfig.jakubSetsPerRound; i++) { const s = drawSet(); if (s) { s.ownerId = 'jakub'; setsData.heldSets.push(s); } }
     let availableGenerals = [...RACES];
-    playerOrder.forEach(id => {
+    playerOrder.forEach((id, idx) => {
       const p = players.find(x => x.id === id);
       const hand = setsData.heldSets.filter(s => s.ownerId === p.id);
       const pick = GeneralSelectionManager.chooseGeneral(availableGenerals, hand, regions, setsData.pawns);
       p.generalOf = pick;
       availableGenerals = availableGenerals.filter(g => g !== pick);
+      if (idx === 0 && pick && analytics[pick]) {
+        analytics[pick].fewestPointsChoice += 1;
+      }
     });
     let passed = new Set();
     while (passed.size < players.length) {
@@ -501,10 +504,10 @@ export function runFullSimulation(setsConfig, inputGameConfig, uploadedEvents) {
   players.forEach(p => { for (let i = 0; i < initialDraw; i++) { const s = drawSet(); if (s) { s.ownerId = p.id; setsData.heldSets.push(s); } } });
 
   const analytics = {
-    vampire: { afterR1: 0, total: 0, finalBonus: 0, killed: 0, ramboPoints: 0, setPlacement: 0 },
-    werewolf: { afterR1: 0, total: 0, finalBonus: 0, killed: 0, ramboPoints: 0, setPlacement: 0 },
-    ghost: { afterR1: 0, total: 0, finalBonus: 0, killed: 0, ramboPoints: 0, setPlacement: 0 },
-    bardak: { afterR1: 0, total: 0, finalBonus: 0, killed: 0, ramboPoints: 0, setPlacement: 0 }
+    vampire: { afterR1: 0, total: 0, finalBonus: 0, killed: 0, ramboPoints: 0, setPlacement: 0, fewestPointsChoice: 0 },
+    werewolf: { afterR1: 0, total: 0, finalBonus: 0, killed: 0, ramboPoints: 0, setPlacement: 0, fewestPointsChoice: 0 },
+    ghost: { afterR1: 0, total: 0, finalBonus: 0, killed: 0, ramboPoints: 0, setPlacement: 0, fewestPointsChoice: 0 },
+    bardak: { afterR1: 0, total: 0, finalBonus: 0, killed: 0, ramboPoints: 0, setPlacement: 0, fewestPointsChoice: 0 }
   };
 
   for (let round = 1; round <= roundsToPlay; round++) {
@@ -516,12 +519,15 @@ export function runFullSimulation(setsConfig, inputGameConfig, uploadedEvents) {
     for (let i = 0; i < jakubDraw; i++) { const s = drawSet(); if (s) { s.ownerId = 'jakub'; setsData.heldSets.push(s); } }
     
     let availableGenerals = [...RACES];
-    playerOrder.forEach(id => {
+    playerOrder.forEach((id, idx) => {
       const p = players.find(x => x.id === id);
       const hand = setsData.heldSets.filter(s => s.ownerId === p.id);
       const pick = GeneralSelectionManager.chooseGeneral(availableGenerals, hand, regions, setsData.pawns);
       p.generalOf = pick;
       availableGenerals = availableGenerals.filter(g => g !== pick);
+      if (idx === 0 && pick && analytics[pick]) {
+        analytics[pick].fewestPointsChoice += 1;
+      }
     });
     
     let passed = new Set();

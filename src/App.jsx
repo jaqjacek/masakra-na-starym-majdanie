@@ -41,10 +41,9 @@ function App() {
   const [isScoringPopupOpen, setIsScoringPopupOpen] = useState(false);
 
   // 1. Basic state and sync
-  const isAdminPath = useMemo(() => window.location.pathname.startsWith('/admin'), []);
   const {
-    gameId, setGameId, playerId, gameState, setGameState, currentPath, updateGameWithSync, addLog
-  } = useGameState(isAdminPath);
+    gameId, setGameId, playerId, gameState, setGameState, currentPath, isAdminPath, updateGameWithSync, addLog
+  } = useGameState();
 
   // Toggle html class for scrolling
   useEffect(() => {

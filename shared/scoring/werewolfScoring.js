@@ -41,4 +41,12 @@ export class WerewolfScoring {
     });
     return best;
   }
+
+  static calculateFinal(regions) {
+    let count = 0;
+    regions.forEach(r => {
+      count += (r.pawns?.werewolf?.length || r.pawns?.W?.length || 0);
+    });
+    return count;
+  }
 }

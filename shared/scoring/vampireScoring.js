@@ -43,4 +43,14 @@ export class VampireScoring {
     });
     return best;
   }
+
+  static calculateFinal(regions) {
+    let regionsWithVampires = 0;
+    regions.forEach(r => {
+      if (r.pawns?.vampire?.length > 0 || r.pawns?.V?.length > 0) {
+        regionsWithVampires++;
+      }
+    });
+    return regionsWithVampires * 2;
+  }
 }

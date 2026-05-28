@@ -14,6 +14,10 @@ import {
   updateJakubDistance
 } from '../boardManager.js';
 import { Scoring } from '../../shared/scoring/scoring.js';
+import { VampireScoring } from '../../shared/scoring/vampireScoring.js';
+import { WerewolfScoring } from '../../shared/scoring/werewolfScoring.js';
+import { GhostScoring } from '../../shared/scoring/ghostScoring.js';
+import { BardakScoring } from '../../shared/scoring/bardakScoring.js';
 import { PlacementManager } from './placementManager.js';
 import { 
   loadSetFile, 
@@ -250,10 +254,10 @@ export function runDetailedSimulation(set, uploadedSets, uploadedEvents) {
   const finalScoringBreakdown = {};
   players.forEach(p => {
     const pick = p.generalOf; if (!pick) return; let addedPoints = 0;
-    if (pick === 'vampire') { let regionsWithVampires = 0; regions.forEach(r => { if (r.pawns[pick]?.length > 0) regionsWithVampires++; }); addedPoints = regionsWithVampires * 2; }
-    else if (pick === 'werewolf') { let count = 0; regions.forEach(r => count += (r.pawns[pick]?.length || 0)); addedPoints = count; }
-    else if (pick === 'ghost') { regions.forEach(r => { const myCount = r.pawns[pick]?.length || 0; if (myCount > 0) { let others = RACES.filter(race => race !== pick).map(race => r.pawns[race]?.length || 0); if (others.reduce((a,b)=>a+b,0) === 0) addedPoints += 2; else if (myCount > Math.max(...others)) addedPoints += 1; } }); }
-    else if (pick === 'bardak') { regions.forEach(r => { const myCount = r.pawns[pick]?.length || 0; if (myCount > 0) { let othersCounts = RACES.filter(race => race !== pick).map(race => r.pawns[race]?.length || 0); const maxOther = Math.max(...othersCounts); if (myCount > maxOther) addedPoints += 1; } }); }
+    if (pick === 'vampire') addedPoints = VampireScoring.calculateFinal(regions);
+    else if (pick === 'werewolf') addedPoints = WerewolfScoring.calculateFinal(regions);
+    else if (pick === 'ghost') addedPoints = GhostScoring.calculateFinal(regions);
+    else if (pick === 'bardak') addedPoints = BardakScoring.calculateFinal(regions);
     p.points += addedPoints; finalScoringBreakdown[p.name] = { race: pick, bonus: addedPoints, finalTotal: p.points };
   });
   gameHistory.finalScoring = finalScoringBreakdown;
@@ -462,30 +466,10 @@ export function runBasicSimulation(set, uploadedSets, uploadedEvents) {
   players.forEach(p => {
     const pick = p.generalOf; if (!pick) return;
     let addedPoints = 0;
-    if (pick === 'vampire') {
-      let regionsWithVampires = 0;
-      regions.forEach(r => { if (r.pawns[pick]?.length > 0) regionsWithVampires++; });
-      addedPoints = regionsWithVampires * 2;
-    }
-    else if (pick === 'werewolf') { let count = 0; regions.forEach(r => count += (r.pawns[pick]?.length || 0)); addedPoints = count; }
-    else if (pick === 'ghost') {
-      regions.forEach(r => {
-        const myCount = r.pawns[pick]?.length || 0;
-        if (myCount > 0) {
-          let others = RACES.filter(race => race !== pick).map(race => r.pawns[race]?.length || 0);
-          if (others.reduce((a,b)=>a+b,0) === 0) addedPoints += 2; else if (myCount > Math.max(...others)) addedPoints += 1;
-        }
-      });
-    } else if (pick === 'bardak') {
-      regions.forEach(r => {
-        const myCount = r.pawns[pick]?.length || 0;
-        if (myCount > 0) {
-          let othersCounts = RACES.filter(race => race !== pick).map(race => r.pawns[race]?.length || 0);
-          const maxOther = Math.max(...othersCounts);
-          if (myCount > maxOther) addedPoints += 1;
-        }
-      });
-    }
+    if (pick === 'vampire') addedPoints = VampireScoring.calculateFinal(regions);
+    else if (pick === 'werewolf') addedPoints = WerewolfScoring.calculateFinal(regions);
+    else if (pick === 'ghost') addedPoints = GhostScoring.calculateFinal(regions);
+    else if (pick === 'bardak') addedPoints = BardakScoring.calculateFinal(regions);
     p.points += addedPoints; analytics[pick].finalBonus = addedPoints; analytics[pick].total = p.points;
   });
   return { analytics };
@@ -708,30 +692,10 @@ export function runFullSimulation(setsConfig, inputGameConfig, uploadedEvents) {
   players.forEach(p => {
     const pick = p.generalOf; if (!pick) return;
     let addedPoints = 0;
-    if (pick === 'vampire') {
-      let regionsWithVampires = 0;
-      regions.forEach(r => { if (r.pawns[pick]?.length > 0) regionsWithVampires++; });
-      addedPoints = regionsWithVampires * 2;
-    }
-    else if (pick === 'werewolf') { let count = 0; regions.forEach(r => count += (r.pawns[pick]?.length || 0)); addedPoints = count; }
-    else if (pick === 'ghost') {
-      regions.forEach(r => {
-        const myCount = r.pawns[pick]?.length || 0;
-        if (myCount > 0) {
-          let others = RACES.filter(race => race !== pick).map(race => r.pawns[race]?.length || 0);
-          if (others.reduce((a,b)=>a+b,0) === 0) addedPoints += 2; else if (myCount > Math.max(...others)) addedPoints += 1;
-        }
-      });
-    } else if (pick === 'bardak') {
-      regions.forEach(r => {
-        const myCount = r.pawns[pick]?.length || 0;
-        if (myCount > 0) {
-          let othersCounts = RACES.filter(race => race !== pick).map(race => r.pawns[race]?.length || 0);
-          const maxOther = Math.max(...othersCounts);
-          if (myCount > maxOther) addedPoints += 1;
-        }
-      });
-    }
+    if (pick === 'vampire') addedPoints = VampireScoring.calculateFinal(regions);
+    else if (pick === 'werewolf') addedPoints = WerewolfScoring.calculateFinal(regions);
+    else if (pick === 'ghost') addedPoints = GhostScoring.calculateFinal(regions);
+    else if (pick === 'bardak') addedPoints = BardakScoring.calculateFinal(regions);
     p.points += addedPoints; analytics[pick].finalBonus = addedPoints; analytics[pick].total = p.points;
   });
 

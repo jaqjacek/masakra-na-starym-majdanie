@@ -60,4 +60,25 @@ export class GhostScoring {
     });
     return best;
   }
+
+  static calculateFinal(regions) {
+    const RACES = ['vampire', 'werewolf', 'ghost', 'bardak'];
+    let addedPoints = 0;
+    regions.forEach(r => {
+      const myCount = r.pawns?.ghost?.length || r.pawns?.G?.length || 0;
+      if (myCount > 0) {
+        let others = RACES.filter(race => race !== 'ghost').map(race => r.pawns[race]?.length || 0);
+        const othersTotal = others.reduce((a, b) => a + b, 0);
+        if (othersTotal === 0) {
+          addedPoints += 2;
+        } else {
+          const maxOther = Math.max(...others);
+          if (myCount > maxOther) {
+            addedPoints += 1;
+          }
+        }
+      }
+    });
+    return addedPoints;
+  }
 }

@@ -17,6 +17,10 @@ import { Board } from '../constants/board';
 import { PlacementManager } from '../logic/placementManager';
 import { applySetToJakubAnger, executeJakubStep } from '../strategies/jakubStrategy';
 import { GeneralSelectionManager } from '../../shared/generalSelectionManager.js';
+import { VampireScoring } from '../../shared/scoring/vampireScoring.js';
+import { WerewolfScoring } from '../../shared/scoring/werewolfScoring.js';
+import { GhostScoring } from '../../shared/scoring/ghostScoring.js';
+import { BardakScoring } from '../../shared/scoring/bardakScoring.js';
 
 export const useAutoplay = ({ 
   gameId, 
@@ -236,43 +240,11 @@ export const useAutoplay = ({
         if (!pick) return;
         let addedPoints = 0;
         
-        if (pick === 'vampire') {
-          let regionsWithVampires = 0;
-          workState.regions.forEach(r => {
-            if (r.pawns[pick]?.length > 0) regionsWithVampires++;
-          });
-          addedPoints = regionsWithVampires * 2;
-        }
-        else if (pick === 'werewolf') {
-          let count = 0;
-          workState.regions.forEach(r => {
-            count += (r.pawns[pick]?.length || 0);
-          });
-          addedPoints = count;
-        }
-        else if (pick === 'ghost') {
-          workState.regions.forEach(r => {
-            const myCount = r.pawns[pick]?.length || 0;
-            if (myCount > 0) {
-              let othersCounts = RACES.filter(race => race !== pick).map(race => r.pawns[race]?.length || 0);
-              const othersTotal = othersCounts.reduce((a, b) => a + b, 0);
-              if (othersTotal === 0) addedPoints += GHOST_FINAL_SCORING_BONUS;
-              else {
-                const maxOther = Math.max(...othersCounts);
-                if (myCount > maxOther) addedPoints += GHOST_FINAL_SCORING_MAX_OTHER_BONUS;
-              }
-            }
-          });
-        }        else if (pick === 'bardak') {
-          workState.regions.forEach(r => {
-            const myCount = r.pawns[pick]?.length || 0;
-            if (myCount > 0) {
-              let othersCounts = RACES.filter(race => race !== pick).map(race => r.pawns[race]?.length || 0);
-              const maxOther = Math.max(...othersCounts);
-              if (myCount > maxOther) addedPoints += 1;
-            }
-          });
-        }
+        if (pick === 'vampire') addedPoints = VampireScoring.calculateFinal(workState.regions);
+        else if (pick === 'werewolf') addedPoints = WerewolfScoring.calculateFinal(workState.regions);
+        else if (pick === 'ghost') addedPoints = GhostScoring.calculateFinal(workState.regions);
+        else if (pick === 'bardak') addedPoints = BardakScoring.calculateFinal(workState.regions);
+        
         curPlayer.points += addedPoints; 
         addLog(workState, `Final Scoring: Player ${curPlayer.id} (+${addedPoints} for ${pick}s)`);
       });

@@ -30,4 +30,20 @@ export class BardakScoring {
     });
     return best;
   }
+
+  static calculateFinal(regions) {
+    const RACES = ['vampire', 'werewolf', 'ghost', 'bardak'];
+    let addedPoints = 0;
+    regions.forEach(r => {
+      const myCount = r.pawns?.bardak?.length || r.pawns?.B?.length || 0;
+      if (myCount > 0) {
+        let othersCounts = RACES.filter(race => race !== 'bardak').map(race => r.pawns[race]?.length || 0);
+        const maxOther = Math.max(...othersCounts);
+        if (myCount > maxOther) {
+          addedPoints += 1;
+        }
+      }
+    });
+    return addedPoints;
+  }
 }

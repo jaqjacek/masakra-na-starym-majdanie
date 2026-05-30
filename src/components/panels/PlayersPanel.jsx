@@ -1,6 +1,19 @@
 import React from 'react';
 
-const PlayersPanel = ({ players, onUpdatePoints, currentPlayerId, onPlayerMouseUp, onGeneralClick, sets, passedPlayers = [] }) => {
+const PlayersPanel = ({ 
+  players, 
+  onUpdatePoints, 
+  currentPlayerId, 
+  onPlayerMouseUp, 
+  onGeneralClick, 
+  sets, 
+  passedPlayers = [],
+  manualPlayers = [],
+  onToggleManualPlayer,
+  onExecuteManualTurn,
+  currentTurnPlayerId,
+  phase
+}) => {
   const handleClick = (e, index) => {
     if (e.shiftKey) onUpdatePoints(index, 1);
     else if (e.ctrlKey) onUpdatePoints(index, -1);
@@ -63,15 +76,65 @@ const PlayersPanel = ({ players, onUpdatePoints, currentPlayerId, onPlayerMouseU
             </div>
 
             <div className="player-cell-bottom">
-              <div className="player-info-badge">
-                <span className="player-id-label">P{player.id}</span>
-                {ownedSetsCount > 0 && (
-                  <div className="owned-sets-badge" title={`${ownedSetsCount} sets in hand`}>
-                    {ownedSetsCount} Sets
-                  </div>
-                )}
+              <div className="player-info-badge" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '3px' }}>
+                  <span className="player-id-label">P{player.id}</span>
+                  {ownedSetsCount > 0 && (
+                    <div className="owned-sets-badge" title={`${ownedSetsCount} sets in hand`}>
+                      {ownedSetsCount} Sets
+                    </div>
+                  )}
+                </div>
+                <div 
+                  className="manual-toggle-container" 
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onToggleManualPlayer && onToggleManualPlayer(player.id);
+                  }}
+                  style={{ display: 'flex', alignItems: 'center', gap: '2px', cursor: 'pointer' }}
+                  title="Toggle Manual/AI Control"
+                >
+                  <input 
+                    type="checkbox" 
+                    id={`manual-chk-${player.id}`}
+                    checked={manualPlayers && manualPlayers.includes(player.id)}
+                    readOnly
+                    style={{ cursor: 'pointer', margin: 0, width: '11px', height: '11px' }}
+                  />
+                  <label 
+                    htmlFor={`manual-chk-${player.id}`}
+                    style={{ fontSize: '0.45rem', fontWeight: 'bold', color: manualPlayers && manualPlayers.includes(player.id) ? '#3498db' : '#888', cursor: 'pointer', userSelect: 'none' }}
+                  >
+                    MAN
+                  </label>
+                </div>
               </div>
             </div>
+
+            {player.id === currentTurnPlayerId && phase === 'player_phase' && manualPlayers && manualPlayers.includes(player.id) && (
+              <div className="manual-turn-actions" style={{ display: 'flex', gap: '4px', marginTop: '4px', width: '100%', justifyContent: 'center', zIndex: 20 }}>
+                <button 
+                  className="action-button next-btn" 
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onExecuteManualTurn && onExecuteManualTurn(player.id, 'next');
+                  }}
+                  style={{ padding: '2px 6px', fontSize: '0.55rem', fontWeight: 'bold' }}
+                >
+                  NEXT
+                </button>
+                <button 
+                  className="action-button pass-btn" 
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onExecuteManualTurn && onExecuteManualTurn(player.id, 'pass');
+                  }}
+                  style={{ padding: '2px 6px', fontSize: '0.55rem', fontWeight: 'bold', backgroundColor: '#c0392b' }}
+                >
+                  PASS
+                </button>
+              </div>
+            )}
 
             <button 
               className="player-switch-btn" 

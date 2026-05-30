@@ -26,7 +26,8 @@ export const useAutoplay = ({
   gameId, 
   gameState, 
   updateGameWithSync, 
-  addLog 
+  addLog,
+  manualPlayers
 }) => {
   const [isFullAutoplay, setIsFullAutoplay] = useState(false);
   const [isJakubAutoplay, setIsJakubAutoplay] = useState(false);
@@ -121,6 +122,13 @@ export const useAutoplay = ({
     if (workState.phase === 'player_phase') {
       const curId = workState.playerOrder[workState.currentPlayerIndex];
       const curPlayer = workState.players.find(p => p.id === curId);
+      
+      // Pause autoplay and wait for manual player turn
+      if (manualPlayers && manualPlayers.includes(curId) && !workState.passedPlayers.includes(curId)) {
+        setIsFullAutoplay(false);
+        return;
+      }
+
       if (!curPlayer.generalOf) {
         const hand = (workState.sets.heldSets || []).filter(s => s.ownerId === curId);
         const pick = GeneralSelectionManager.chooseGeneral(
@@ -266,7 +274,7 @@ export const useAutoplay = ({
       updateGameWithSync(workState);
       return;
     }
-  }, [isFullAutoplay, isJakubAutoplay, gameId, gameState, updateGameWithSync, addLog, drawSet]);
+  }, [isFullAutoplay, isJakubAutoplay, gameId, gameState, updateGameWithSync, addLog, drawSet, manualPlayers]);
 
   useEffect(() => {
     const timer = setInterval(() => { 

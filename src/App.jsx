@@ -32,13 +32,21 @@ import { PAWN_TYPES, SUMMARY_PAWN_IDS } from './constants/pawnTypes';
 import { RACES, INITIAL_STATE } from './constants/game';
 import { applySetToJakubAnger } from './strategies/jakubStrategy';
 import { GeneralSelectionManager } from '../shared/generalSelectionManager.js';
-import { TOTAL_GAME_ROUNDS, INITIAL_HAND_SIZE, JAKUB_INITIAL_SETS, SERVER_URL } from './constants/constants';
+import { TOTAL_GAME_ROUNDS, INITIAL_HAND_SIZE, JAKUB_INITIAL_SETS, SERVER_URL, MAX_HAND_SIZE } from './constants/constants';
+import { PlacementManager } from './logic/placementManager';
 
 function App() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isSetsPanelOpen, setIsSetsPanelOpen] = useState(false);
   const [isEventsPanelOpen, setIsEventsPanelOpen] = useState(false);
   const [isScoringPopupOpen, setIsScoringPopupOpen] = useState(false);
+  const [manualPlayers, setManualPlayers] = useState([]);
+
+  const handleToggleManualPlayer = useCallback((id) => {
+    setManualPlayers(prev => 
+      prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]
+    );
+  }, []);
 
   // 1. Basic state and sync
   const {
@@ -114,7 +122,7 @@ function App() {
   const {
     isFullAutoplay, setIsFullAutoplay, isJakubAutoplay, setIsJakubAutoplay,
     autoplaySpeed, setAutoplaySpeed, findAndRemoveSetById
-  } = useAutoplay({ gameId, gameState, updateGameWithSync, addLog });
+  } = useAutoplay({ gameId, gameState, updateGameWithSync, addLog, manualPlayers });
 
   const advanceTurn = useCallback((state) => {
     if (state.passedPlayers.length >= state.players.length) return;
@@ -126,6 +134,60 @@ function App() {
     }
     state.currentPlayerIndex = nextIdx;
   }, []);
+
+  const handleExecuteManualTurn = useCallback(async (playerId, action) => {
+    const workState = JSON.parse(JSON.stringify(gameState));
+    const curPlayer = workState.players.find(p => p.id === playerId);
+    if (!curPlayer) return;
+
+    if (action === 'next') {
+      const globalPool = { ...workState.sets.pawns };
+      const playLimits = workState.sets.pawnsInPlayLimit || globalPool;
+      
+      if (!curPlayer.generalOf) {
+        const hand = (workState.sets.heldSets || []).filter(s => s.ownerId === playerId);
+        const pick = GeneralSelectionManager.chooseGeneral(
+          workState.availableGenerals,
+          hand,
+          workState.regions,
+          workState.sets.pawns
+        );
+        curPlayer.generalOf = pick;
+        workState.availableGenerals = workState.availableGenerals.filter(g => g !== pick);
+        addLog(workState, `Player ${playerId} chose General of ${pick}s`);
+      }
+
+      const best = PlacementManager.findBestPlacement(workState.regions, workState.sets.heldSets, playerId, curPlayer.generalOf, globalPool, playLimits);
+      if (best) {
+        const { logSummaryString, statusLogString } = PlacementManager.executePlacement(best, workState, PAWN_TYPES, playLimits);
+        addLog(workState, `Player ${playerId} placed Set ${best.set.id} [${logSummaryString}] | Board: ${statusLogString}`);
+      } else {
+        const excess = PlacementManager.executePass(curPlayer, workState, MAX_HAND_SIZE, applySetToJakubAnger);
+        if (excess > 0) {
+          addLog(workState, `Player ${playerId} passed and sold ${excess} excess set(s). Jakub Anger updated.`, { race: curPlayer.generalOf, points: excess });
+        } else {
+          addLog(workState, `Player ${playerId} passed.`);
+        }
+      }
+      advanceTurn(workState);
+    } else if (action === 'pass') {
+      const excess = PlacementManager.executePass(curPlayer, workState, MAX_HAND_SIZE, applySetToJakubAnger);
+      if (excess > 0) {
+        addLog(workState, `Player ${playerId} passed and sold ${excess} excess set(s). Jakub Anger updated.`, { race: curPlayer.generalOf, points: excess });
+      } else {
+        addLog(workState, `Player ${playerId} passed.`);
+      }
+      advanceTurn(workState);
+    }
+
+    if (workState.passedPlayers.length === workState.players.length) {
+      workState.phase = 'jakub_phase';
+      addLog(workState, `--- Start of Jakub Phase ---`);
+    }
+
+    updateGameWithSync(workState);
+    setIsFullAutoplay(true);
+  }, [gameState, updateGameWithSync, addLog, advanceTurn, setIsFullAutoplay]);
 
   // 4. Interaction logic
   const {
@@ -432,6 +494,11 @@ function App() {
             onGeneralClick={handleDeselectGeneral}
             sets={gameState.sets} 
             passedPlayers={gameState.passedPlayers || []}
+            manualPlayers={manualPlayers}
+            onToggleManualPlayer={handleToggleManualPlayer}
+            onExecuteManualTurn={handleExecuteManualTurn}
+            currentTurnPlayerId={gameState.playerOrder && gameState.playerOrder[gameState.currentPlayerIndex]}
+            phase={gameState.phase}
           />
 
           {gameState.phase === 'setup' && (

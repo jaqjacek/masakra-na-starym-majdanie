@@ -3,7 +3,7 @@
   "info": {
     "title": "MASAKRA na Starym Majdanie API",
     "description": "Interactive API Documentation for the MASAKRA na Starym Majdanie Game Engine.",
-    "version": "1.12.0"
+    "version": "1.13.0"
   },
   "servers": [
     {

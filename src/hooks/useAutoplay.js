@@ -122,17 +122,17 @@ export const useAutoplay = ({
 
     if (workState.phase === 'player_phase') {
       const curId = workState.playerOrder[workState.currentPlayerIndex];
-      const curPlayer = workState.players.find(p => p.id === curId);
+      const curPlayer = workState.players.find(p => p.id !== null && p.id !== undefined && String(p.id) === String(curId));
       
       // Pause autoplay and wait for manual player turn
-      const isManual = (manualPlayers && manualPlayers.includes(curId)) || curId === playerId;
-      if (isManual && !workState.passedPlayers.includes(curId)) {
+      const isManual = (manualPlayers && manualPlayers.some(id => String(id) === String(curId))) || (playerId !== null && playerId !== undefined && String(curId) === String(playerId));
+      if (isManual && !workState.passedPlayers.some(id => String(id) === String(curId))) {
         setIsFullAutoplay(false);
         return;
       }
 
       if (!curPlayer.generalOf) {
-        const hand = (workState.sets.heldSets || []).filter(s => s.ownerId === curId);
+        const hand = (workState.sets.heldSets || []).filter(s => s.ownerId !== null && s.ownerId !== undefined && String(s.ownerId) === String(curId));
         const pick = GeneralSelectionManager.chooseGeneral(
           workState.availableGenerals,
           hand,
@@ -146,7 +146,7 @@ export const useAutoplay = ({
         updateGameWithSync(workState);
         return;
       }
-      if (workState.passedPlayers.includes(curId)) {
+      if (workState.passedPlayers.some(id => String(id) === String(curId))) {
         workState.currentPlayerIndex = (workState.currentPlayerIndex + 1) % workState.playerOrder.length;
         updateGameWithSync(workState);
         return;

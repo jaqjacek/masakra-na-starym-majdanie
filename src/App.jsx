@@ -137,7 +137,7 @@ function App() {
 
   const handleExecuteManualTurn = useCallback(async (playerId, action) => {
     const workState = JSON.parse(JSON.stringify(gameState));
-    const curPlayer = workState.players.find(p => p.id === playerId);
+    const curPlayer = workState.players.find(p => p.id !== null && p.id !== undefined && String(p.id) === String(playerId));
     if (!curPlayer) return;
 
     if (action === 'next') {
@@ -145,7 +145,7 @@ function App() {
       const playLimits = workState.sets.pawnsInPlayLimit || globalPool;
       
       if (!curPlayer.generalOf) {
-        const hand = (workState.sets.heldSets || []).filter(s => s.ownerId === playerId);
+        const hand = (workState.sets.heldSets || []).filter(s => s.ownerId !== null && s.ownerId !== undefined && String(s.ownerId) === String(playerId));
         const pick = GeneralSelectionManager.chooseGeneral(
           workState.availableGenerals,
           hand,
@@ -260,7 +260,7 @@ function App() {
 
     let distributionCount = 0;
     workState.players.forEach(player => {
-      const myHeld = (workState.sets.heldSets || []).filter(s => s.ownerId === player.id);
+      const myHeld = (workState.sets.heldSets || []).filter(s => s.ownerId !== null && s.ownerId !== undefined && String(s.ownerId) === String(player.id));
       const needed = INITIAL_HAND_SIZE - myHeld.length;
       for (let i = 0; i < needed; i++) {
         const set = draw(workState);
@@ -350,7 +350,7 @@ function App() {
     const workState = JSON.parse(JSON.stringify(gameState));
     // If we have a playerId in URL, we assign specifically to that player
     const targetId = playerId || workState.playerOrder[workState.currentPlayerIndex];
-    const playerIdx = workState.players.findIndex(p => p.id === targetId);
+    const playerIdx = workState.players.findIndex(p => p.id !== null && p.id !== undefined && String(p.id) === String(targetId));
     
     if (playerIdx !== -1) {
       const player = workState.players[playerIdx];
@@ -367,7 +367,7 @@ function App() {
 
   const handleDeselectGeneral = useCallback((targetPlayerId) => {
     const workState = JSON.parse(JSON.stringify(gameState));
-    const playerIdx = workState.players.findIndex(p => p.id === targetPlayerId);
+    const playerIdx = workState.players.findIndex(p => p.id !== null && p.id !== undefined && String(p.id) === String(targetPlayerId));
     
     if (playerIdx !== -1 && workState.players[playerIdx].generalOf) {
       const race = workState.players[playerIdx].generalOf;

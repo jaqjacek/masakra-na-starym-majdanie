@@ -22,7 +22,7 @@ const PlayersPanel = ({
   const handleSelectPlayer = (e, id) => {
     e.stopPropagation();
     const url = new URL(window.location.href);
-    if (currentPlayerId === id) {
+    if (currentPlayerId !== null && currentPlayerId !== undefined && String(currentPlayerId) === String(id)) {
       url.searchParams.delete('player');
     } else {
       url.searchParams.set('player', id);
@@ -33,8 +33,8 @@ const PlayersPanel = ({
   return (
     <div className="points-tracker">
       {players.map((player, index) => {
-        const isMe = player.id === currentPlayerId;
-        const isPassed = passedPlayers.includes(player.id);
+        const isMe = currentPlayerId !== null && currentPlayerId !== undefined && String(player.id) === String(currentPlayerId);
+        const isPassed = passedPlayers.some(id => String(id) === String(player.id));
         const displayName = `${player.id}:${player.name || ''}`;
         
         // Calculate sets in player's hand
@@ -42,7 +42,7 @@ const PlayersPanel = ({
         if (sets) {
           // Check both migration compatibility and new heldSets structure
           const hand = sets.heldSets || sets.items || [];
-          ownedSetsCount = hand.filter(s => s.ownerId === player.id && !s.used).length;
+          ownedSetsCount = hand.filter(s => s.ownerId !== null && s.ownerId !== undefined && String(s.ownerId) === String(player.id) && !s.used).length;
         }
         
         return (
@@ -97,13 +97,13 @@ const PlayersPanel = ({
                   <input 
                     type="checkbox" 
                     id={`manual-chk-${player.id}`}
-                    checked={manualPlayers.includes(player.id) || player.id === currentPlayerId}
+                    checked={manualPlayers.some(id => String(id) === String(player.id)) || (currentPlayerId !== null && currentPlayerId !== undefined && String(player.id) === String(currentPlayerId))}
                     readOnly
                     style={{ cursor: 'pointer', margin: 0, width: '11px', height: '11px' }}
                   />
                   <label 
                     htmlFor={`manual-chk-${player.id}`}
-                    style={{ fontSize: '0.45rem', fontWeight: 'bold', color: manualPlayers && manualPlayers.includes(player.id) ? '#3498db' : '#888', cursor: 'pointer', userSelect: 'none' }}
+                    style={{ fontSize: '0.45rem', fontWeight: 'bold', color: (manualPlayers && manualPlayers.some(id => String(id) === String(player.id))) ? '#3498db' : '#888', cursor: 'pointer', userSelect: 'none' }}
                   >
                     MAN
                   </label>
@@ -111,7 +111,7 @@ const PlayersPanel = ({
               </div>
             </div>
 
-            {player.id === currentTurnPlayerId && phase === 'player_phase' && (manualPlayers.includes(player.id) || player.id === currentPlayerId) && (
+            {currentTurnPlayerId !== null && currentTurnPlayerId !== undefined && String(player.id) === String(currentTurnPlayerId) && phase === 'player_phase' && (manualPlayers.some(id => String(id) === String(player.id)) || (currentPlayerId !== null && currentPlayerId !== undefined && String(player.id) === String(currentPlayerId))) && (
               <div className="manual-turn-actions" style={{ display: 'flex', gap: '4px', marginTop: '4px', width: '100%', justifyContent: 'center', zIndex: 20 }}>
                 <button 
                   className="action-button next-btn" 

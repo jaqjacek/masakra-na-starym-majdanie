@@ -17,7 +17,7 @@ export class PlacementManager {
    * @returns {Object|null} The best placement description or null
    */
   static findBestPlacement(regions, heldSets, playerId, generalOf, globalPawnPool, playLimits) {
-    const myHeld = heldSets.filter(s => s.ownerId === playerId);
+    const myHeld = heldSets.filter(s => s.ownerId !== null && s.ownerId !== undefined && String(s.ownerId) === String(playerId));
     const emptyRegions = regions.filter(r => !RACES.some(race => r.pawns[race]?.length > 0));
     
     // Count current pawns in play on the entire board

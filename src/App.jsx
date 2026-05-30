@@ -122,7 +122,7 @@ function App() {
   const {
     isFullAutoplay, setIsFullAutoplay, isJakubAutoplay, setIsJakubAutoplay,
     autoplaySpeed, setAutoplaySpeed, findAndRemoveSetById
-  } = useAutoplay({ gameId, gameState, updateGameWithSync, addLog, manualPlayers });
+  } = useAutoplay({ gameId, gameState, updateGameWithSync, addLog, manualPlayers, playerId });
 
   const advanceTurn = useCallback((state) => {
     if (state.passedPlayers.length >= state.players.length) return;

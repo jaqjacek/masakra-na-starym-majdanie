@@ -27,7 +27,8 @@ export const useAutoplay = ({
   gameState, 
   updateGameWithSync, 
   addLog,
-  manualPlayers
+  manualPlayers,
+  playerId
 }) => {
   const [isFullAutoplay, setIsFullAutoplay] = useState(false);
   const [isJakubAutoplay, setIsJakubAutoplay] = useState(false);
@@ -124,7 +125,8 @@ export const useAutoplay = ({
       const curPlayer = workState.players.find(p => p.id === curId);
       
       // Pause autoplay and wait for manual player turn
-      if (manualPlayers && manualPlayers.includes(curId) && !workState.passedPlayers.includes(curId)) {
+      const isManual = (manualPlayers && manualPlayers.includes(curId)) || curId === playerId;
+      if (isManual && !workState.passedPlayers.includes(curId)) {
         setIsFullAutoplay(false);
         return;
       }
@@ -274,7 +276,7 @@ export const useAutoplay = ({
       updateGameWithSync(workState);
       return;
     }
-  }, [isFullAutoplay, isJakubAutoplay, gameId, gameState, updateGameWithSync, addLog, drawSet, manualPlayers]);
+  }, [isFullAutoplay, isJakubAutoplay, gameId, gameState, updateGameWithSync, addLog, drawSet, manualPlayers, playerId]);
 
   useEffect(() => {
     const timer = setInterval(() => { 

@@ -97,7 +97,7 @@ const PlayersPanel = ({
                   <input 
                     type="checkbox" 
                     id={`manual-chk-${player.id}`}
-                    checked={manualPlayers && manualPlayers.includes(player.id)}
+                    checked={manualPlayers.includes(player.id) || player.id === currentPlayerId}
                     readOnly
                     style={{ cursor: 'pointer', margin: 0, width: '11px', height: '11px' }}
                   />
@@ -111,7 +111,7 @@ const PlayersPanel = ({
               </div>
             </div>
 
-            {player.id === currentTurnPlayerId && phase === 'player_phase' && manualPlayers && manualPlayers.includes(player.id) && (
+            {player.id === currentTurnPlayerId && phase === 'player_phase' && (manualPlayers.includes(player.id) || player.id === currentPlayerId) && (
               <div className="manual-turn-actions" style={{ display: 'flex', gap: '4px', marginTop: '4px', width: '100%', justifyContent: 'center', zIndex: 20 }}>
                 <button 
                   className="action-button next-btn" 

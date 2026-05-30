@@ -46,7 +46,7 @@ export class PlacementManager {
         const abbr = RACE_TO_ABBR[beneficiary.generalOf];
         const gain = best.allScores[abbr] || 0;
         beneficiary.points += gain;
-        if (gain > 0) {
+        if (gain !== 0) {
           pointGains.push({ player: beneficiary.name, race: beneficiary.generalOf, points: gain });
         }
       }

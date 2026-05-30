@@ -47,9 +47,10 @@ export class PlacementManager {
       if (p.generalOf) {
         const abbr = RACE_TO_ABBR[p.generalOf];
         const racePts = best.allScores[abbr] || 0;
-        if (racePts > 0) {
+        if (racePts !== 0) {
           p.points += racePts;
-          logSummary.push(`${p.generalOf[0].toUpperCase()}:+${racePts}`);
+          const sign = racePts > 0 ? '+' : '';
+          logSummary.push(`${p.generalOf[0].toUpperCase()}:${sign}${racePts}`);
         }
       }
     });

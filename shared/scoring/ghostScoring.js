@@ -22,7 +22,7 @@ export class GhostScoring {
       perPawn -= 1;
     }
     
-    return Math.max(0, perPawn) * gCount;
+    return perPawn * gCount;
   }
 
   static findBestPlacement(regions, emptyRegions, placeableSets) {

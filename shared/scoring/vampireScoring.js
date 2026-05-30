@@ -11,7 +11,7 @@ export class VampireScoring {
    */
   static calculate(dist, vCount) {
     if (vCount <= 0) return 0;
-    return Math.max(0, 4 - dist) * vCount;
+    return (4 - dist) * vCount;
   }
 
   static findBestPlacement(regions, emptyRegions, placeableSets) {

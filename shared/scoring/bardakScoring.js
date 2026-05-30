@@ -7,7 +7,7 @@ export class BardakScoring {
    */
   static calculate(dist, bCount) {
     if (bCount <= 0) return 0;
-    return (dist <= 1) ? 0 : bCount;
+    return (dist <= 1) ? -bCount : bCount;
   }
 
   static findBestPlacement(regions, emptyRegions, placeableSets) {

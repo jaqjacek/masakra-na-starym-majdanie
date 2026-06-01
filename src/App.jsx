@@ -396,7 +396,6 @@ function App() {
         setIsSetsPanelOpen={setIsSetsPanelOpen}
         isEventsPanelOpen={isEventsPanelOpen}
         setIsEventsPanelOpen={setIsEventsPanelOpen}
-        playerId={playerId}
         onManualDrawSets={handleManualDrawSets}
         onGoToPlayerPhase={handleGoToPlayerPhase}
         onExecuteManualTurn={handleExecuteManualTurn}

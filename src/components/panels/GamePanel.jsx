@@ -16,7 +16,6 @@ const GamePanel = ({
   setIsSetsPanelOpen,
   isEventsPanelOpen,
   setIsEventsPanelOpen,
-  playerId,
   onManualDrawSets,
   onGoToPlayerPhase,
   onExecuteManualTurn,
@@ -57,7 +56,7 @@ const GamePanel = ({
             {gameState.phase === 'player_phase' && (
               <>
                 {gameState.passedPlayers.length < gameState.players.length ? (() => {
-                  const curId = playerId || gameState.playerOrder[gameState.currentPlayerIndex];
+                  const curId = gameState.playerOrder[gameState.currentPlayerIndex];
                   const isPassed = gameState.passedPlayers.some(id => String(id) === String(curId));
                   return (
                     <div style={{ display: 'flex', gap: '6px' }}>

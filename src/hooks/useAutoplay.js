@@ -112,12 +112,58 @@ export const useAutoplay = ({
           }
         }
       }
-      workState.phase = 'player_phase';
+      workState.phase = 'general_phase';
       workState.currentPlayerIndex = 0;
       workState.passedPlayers = [];
-      addLog(workState, `--- Start of Player Phase (Round ${workState.currentRound}) ---`);
+      addLog(workState, `--- Start of General Phase ---`);
       updateGameWithSync(workState);
       return;
+    }
+
+    if (workState.phase === 'general_phase') {
+      const allChosen = workState.players.every(p => p.generalOf);
+      if (allChosen) {
+        workState.phase = 'player_phase';
+        workState.currentPlayerIndex = 0;
+        workState.passedPlayers = [];
+        addLog(workState, `--- Start of Player Phase (Round ${workState.currentRound}) ---`);
+        updateGameWithSync(workState);
+        return;
+      }
+
+      const curId = workState.playerOrder[workState.currentPlayerIndex];
+      const curPlayer = workState.players.find(p => p.id !== null && p.id !== undefined && String(p.id) === String(curId));
+
+      if (curPlayer) {
+        if (curPlayer.generalOf) {
+          // Already has a general, just advance to the next player
+          workState.currentPlayerIndex = (workState.currentPlayerIndex + 1) % workState.playerOrder.length;
+          updateGameWithSync(workState);
+          return;
+        }
+
+        // Pause autoplay if this is a manual player's turn to choose a general
+        const isManual = (manualPlayers && manualPlayers.some(id => String(id) === String(curId))) || (playerId !== null && playerId !== undefined && String(curId) === String(playerId));
+        if (isManual) {
+          setIsFullAutoplay(false);
+          return;
+        }
+
+        // Otherwise, choose strategically for the AI player
+        const hand = (workState.sets.heldSets || []).filter(s => s.ownerId !== null && s.ownerId !== undefined && String(s.ownerId) === String(curId));
+        const pick = GeneralSelectionManager.chooseGeneral(
+          workState.availableGenerals,
+          hand,
+          workState.regions,
+          workState.sets.pawns
+        );
+        curPlayer.generalOf = pick;
+        workState.availableGenerals = workState.availableGenerals.filter(g => g !== pick);
+        addLog(workState, `Player ${curId} chose General of ${pick}s`);
+        workState.currentPlayerIndex = (workState.currentPlayerIndex + 1) % workState.playerOrder.length;
+        updateGameWithSync(workState);
+        return;
+      }
     }
 
     if (workState.phase === 'player_phase') {

@@ -111,7 +111,11 @@ const PlayersPanel = ({
               </div>
             </div>
 
-            {currentTurnPlayerId !== null && currentTurnPlayerId !== undefined && String(player.id) === String(currentTurnPlayerId) && phase === 'player_phase' && (manualPlayers.some(id => String(id) === String(player.id)) || (currentPlayerId !== null && currentPlayerId !== undefined && String(player.id) === String(currentPlayerId))) && (
+            {currentTurnPlayerId !== null && currentTurnPlayerId !== undefined && String(player.id) === String(currentTurnPlayerId) && phase === 'player_phase' && (
+              (currentPlayerId !== null && currentPlayerId !== undefined) ||
+              manualPlayers.some(id => String(id) === String(player.id)) ||
+              (currentPlayerId !== null && currentPlayerId !== undefined && String(player.id) === String(currentPlayerId))
+            ) && (
               <div className="manual-turn-actions" style={{ display: 'flex', gap: '4px', marginTop: '4px', width: '100%', justifyContent: 'center', zIndex: 20 }}>
                 <button 
                   className="action-button next-btn" 

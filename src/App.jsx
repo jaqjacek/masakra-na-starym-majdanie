@@ -309,18 +309,6 @@ function App() {
     updateGameWithSync(workState);
   }, [gameState, addLog, updateGameWithSync]);
 
-  const handlePass = useCallback(() => {
-    const workState = JSON.parse(JSON.stringify(gameState));
-    const curId = playerId || workState.playerOrder[workState.currentPlayerIndex];
-    if (!workState.passedPlayers.includes(curId)) {
-      workState.passedPlayers.push(curId);
-      addLog(workState, `Player ${curId} passed.`);
-      
-      advanceTurn(workState);
-      updateGameWithSync(workState);
-    }
-  }, [gameState, playerId, addLog, updateGameWithSync, advanceTurn]);
-
   const handleGoToJakubPhase = useCallback(async () => {
     const workState = JSON.parse(JSON.stringify(gameState));
     workState.phase = 'jakub_phase';
@@ -411,7 +399,7 @@ function App() {
         playerId={playerId}
         onManualDrawSets={handleManualDrawSets}
         onGoToPlayerPhase={handleGoToPlayerPhase}
-        onPass={handlePass}
+        onExecuteManualTurn={handleExecuteManualTurn}
         onGoToJakubPhase={handleGoToJakubPhase}
         onExecuteEventPhase={handleExecuteEventPhase}
         onOpenScoring={() => setIsScoringPopupOpen(true)}
@@ -496,9 +484,6 @@ function App() {
             passedPlayers={gameState.passedPlayers || []}
             manualPlayers={manualPlayers}
             onToggleManualPlayer={handleToggleManualPlayer}
-            onExecuteManualTurn={handleExecuteManualTurn}
-            currentTurnPlayerId={gameState.playerOrder && gameState.playerOrder[gameState.currentPlayerIndex]}
-            phase={gameState.phase}
           />
 
           {gameState.phase === 'setup' && (

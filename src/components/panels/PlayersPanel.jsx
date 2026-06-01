@@ -9,10 +9,7 @@ const PlayersPanel = ({
   sets, 
   passedPlayers = [],
   manualPlayers = [],
-  onToggleManualPlayer,
-  onExecuteManualTurn,
-  currentTurnPlayerId,
-  phase
+  onToggleManualPlayer
 }) => {
   const handleClick = (e, index) => {
     if (e.shiftKey) onUpdatePoints(index, 1);
@@ -110,35 +107,6 @@ const PlayersPanel = ({
                 </div>
               </div>
             </div>
-
-            {currentTurnPlayerId !== null && currentTurnPlayerId !== undefined && String(player.id) === String(currentTurnPlayerId) && phase === 'player_phase' && (
-              (currentPlayerId !== null && currentPlayerId !== undefined) ||
-              manualPlayers.some(id => String(id) === String(player.id)) ||
-              (currentPlayerId !== null && currentPlayerId !== undefined && String(player.id) === String(currentPlayerId))
-            ) && (
-              <div className="manual-turn-actions" style={{ display: 'flex', gap: '4px', marginTop: '4px', width: '100%', justifyContent: 'center', zIndex: 20 }}>
-                <button 
-                  className="action-button next-btn" 
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onExecuteManualTurn && onExecuteManualTurn(player.id, 'next');
-                  }}
-                  style={{ padding: '2px 6px', fontSize: '0.55rem', fontWeight: 'bold' }}
-                >
-                  NEXT
-                </button>
-                <button 
-                  className="action-button pass-btn" 
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onExecuteManualTurn && onExecuteManualTurn(player.id, 'pass');
-                  }}
-                  style={{ padding: '2px 6px', fontSize: '0.55rem', fontWeight: 'bold', backgroundColor: '#c0392b' }}
-                >
-                  PASS
-                </button>
-              </div>
-            )}
 
             <button 
               className="player-switch-btn" 

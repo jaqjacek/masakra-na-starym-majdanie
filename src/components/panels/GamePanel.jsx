@@ -19,7 +19,7 @@ const GamePanel = ({
   playerId,
   onManualDrawSets,
   onGoToPlayerPhase,
-  onPass,
+  onExecuteManualTurn,
   onGoToJakubPhase,
   onExecuteEventPhase,
   onOpenScoring,
@@ -56,15 +56,28 @@ const GamePanel = ({
 
             {gameState.phase === 'player_phase' && (
               <>
-                {gameState.passedPlayers.length < gameState.players.length ? (
-                  <button 
-                    className="action-button pass-btn" 
-                    onClick={onPass}
-                    disabled={gameState.passedPlayers.includes(playerId || gameState.playerOrder[gameState.currentPlayerIndex])}
-                  >
-                    PASS
-                  </button>
-                ) : (
+                {gameState.passedPlayers.length < gameState.players.length ? (() => {
+                  const curId = playerId || gameState.playerOrder[gameState.currentPlayerIndex];
+                  const isPassed = gameState.passedPlayers.some(id => String(id) === String(curId));
+                  return (
+                    <div style={{ display: 'flex', gap: '6px' }}>
+                      <button 
+                        className="action-button next-btn" 
+                        onClick={() => onExecuteManualTurn && onExecuteManualTurn(curId, 'next')}
+                        disabled={isPassed}
+                      >
+                        NEXT
+                      </button>
+                      <button 
+                        className="action-button pass-btn" 
+                        onClick={() => onExecuteManualTurn && onExecuteManualTurn(curId, 'pass')}
+                        disabled={isPassed}
+                      >
+                        PASS
+                      </button>
+                    </div>
+                  );
+                })() : (
                   <button className="action-button next-btn jakub-trigger" onClick={onGoToJakubPhase}>GO TO JAKUB PHASE</button>
                 )}
               </>

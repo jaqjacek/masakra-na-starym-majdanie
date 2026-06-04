@@ -1,7 +1,7 @@
 export const VERSION_INFO = {
-  branch: "ai",
-  tag: "v1.13.0",
-  hash: "c2860db",
-  date: "2026-05-30",
-  time: "13:07"
+  branch: "main",
+  tag: "v1.14.0",
+  hash: "55f662c",
+  date: "2026-06-04",
+  time: "11:26"
 };

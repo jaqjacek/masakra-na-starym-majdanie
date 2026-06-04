@@ -11,6 +11,7 @@ const __dirname = path.dirname(__filename);
 
 export const GAMES_DIR = path.join(__dirname, 'games');
 export const SETS_DIR = path.join(__dirname, 'sets');
+export const EVENTS_DIR = path.join(__dirname, 'events');
 export const CONFIGS_DIR = path.join(__dirname, 'configs');
 export const CONFIG_FILE = path.join(CONFIGS_DIR, 'server_config.json');
 export const BOARD_DEFAULT_FILE = path.join(CONFIGS_DIR, 'board_default.json');
@@ -18,6 +19,7 @@ export const GAME_CONFIG_FILE = path.join(CONFIGS_DIR, 'game_config.json');
 
 if (!fs.existsSync(GAMES_DIR)) fs.mkdirSync(GAMES_DIR);
 if (!fs.existsSync(SETS_DIR)) fs.mkdirSync(SETS_DIR);
+if (!fs.existsSync(EVENTS_DIR)) fs.mkdirSync(EVENTS_DIR);
 if (!fs.existsSync(CONFIGS_DIR)) fs.mkdirSync(CONFIGS_DIR);
 
 export const getGlobalConfig = () => {
@@ -123,7 +125,7 @@ export const saveFullState = (gameId, data) => {
     fs.writeFileSync(path.join(gamePath, 'history.log'), logContent);
   }
   const meta = {}; 
-  const keys = ['phase', 'currentRound', 'totalRounds', 'currentPlayerIndex', 'playerOrder', 'passedPlayers', 'availableGenerals', 'setName', 'gameStatus', 'jakubAngerIncreased', 'jakubTurnExecuted', 'events', '_lastLoggedPhase'];
+  const keys = ['phase', 'currentRound', 'totalRounds', 'currentPlayerIndex', 'playerOrder', 'passedPlayers', 'availableGenerals', 'setName', 'gameStatus', 'jakubAngerIncreased', 'jakubTurnExecuted', 'events', '_lastLoggedPhase', 'turnActionExecuted'];
   
   // Log phase transition if it changed
   if (data.phase && data._lastLoggedPhase !== data.phase) {

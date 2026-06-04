@@ -23,7 +23,8 @@ export const useGameInteraction = ({
   updateGameWithSync,
   addLog,
   findAndRemoveSetById,
-  advanceTurn
+  advanceTurn,
+  manualPlayers = []
 }) => {
   const [activePawn, setActivePawn] = useState(null); 
   const [activeSet, setActiveSet] = useState(null); 
@@ -165,13 +166,19 @@ export const useGameInteraction = ({
 
       addLog(newState, `Manual: Set ${activeSet.set.id} placed [${logSummary.join(', ')}] | Board: ${statusLog}`);
       
-      if (advanceTurn) advanceTurn(newState);
+      const curId = playerId || newState.playerOrder[newState.currentPlayerIndex];
+      const isManual = (manualPlayers && manualPlayers.some(id => String(id) === String(curId))) || (playerId !== null && playerId !== undefined && String(curId) === String(playerId));
+      if (isManual) {
+        newState.turnActionExecuted = true;
+      } else {
+        if (advanceTurn) advanceTurn(newState);
+      }
 
       updateGameWithSync(newState);
       setActiveSet(null);
       setValidMoveTargets([]);
     }
-  }, [activePawn, activeSet, gameState, gameId, validMoveTargets, availablePool, placementPool, updateGameWithSync, addLog, findAndRemoveSetById, advanceTurn]);
+  }, [activePawn, activeSet, gameState, gameId, validMoveTargets, availablePool, placementPool, updateGameWithSync, addLog, findAndRemoveSetById, advanceTurn, manualPlayers, playerId]);
 
   const handlePlayerMouseUp = useCallback((targetPlayerId) => {
     if (activeSet && !playerId) { 
@@ -194,28 +201,43 @@ export const useGameInteraction = ({
     if (activeSet) {
       e.stopPropagation();
       const newState = JSON.parse(JSON.stringify(gameState));
-      const curId = playerId || newState.playerOrder[newState.currentPlayerIndex];
-      const playerIdx = newState.players.findIndex(p => p.id === curId);
+      const ownerId = activeSet.set.ownerId;
+      const playerIdx = ownerId ? newState.players.findIndex(p => String(p.id) === String(ownerId)) : -1;
       
-      if (playerIdx !== -1) {
-        const s = findAndRemoveSetById(newState, activeSet.set.id);
-        if (s) {
+      const s = findAndRemoveSetById(newState, activeSet.set.id);
+      if (s) {
+        if (playerIdx !== -1) {
           newState.players[playerIdx].points += 1;
-          s.ownerId = 'jakub';
-          if (!newState.sets.heldSets) newState.sets.heldSets = [];
-          newState.sets.heldSets.push(s);
-          
-          // Automatically update Jakub Anger
-          let jakub = null;
-          for (const r of newState.regions) { if (r.pawns.jakub?.length > 0) { jakub = r.pawns.jakub[0]; break; } }
-          if (jakub) {
-            const result = applySetToJakubAnger(jakub, s.content);
-            jakub.anger = result.anger;
-            jakub.range = result.range;
-            addLog(newState, `Player ${curId} gave Set ${s.id} to Jakub. Anger updated | Range: ${jakub.range}`);
+        }
+        s.ownerId = 'jakub';
+        if (!newState.sets.heldSets) newState.sets.heldSets = [];
+        newState.sets.heldSets.push(s);
+        
+        // Automatically update Jakub Anger
+        let jakub = null;
+        for (const r of newState.regions) { if (r.pawns.jakub?.length > 0) { jakub = r.pawns.jakub[0]; break; } }
+        if (jakub) {
+          const result = applySetToJakubAnger(jakub, s.content);
+          jakub.anger = result.anger;
+          jakub.range = result.range;
+          if (playerIdx !== -1) {
+            addLog(newState, `Player ${ownerId} gave Set ${s.id} to Jakub. Anger updated | Range: ${jakub.range}`);
           } else {
-            addLog(newState, `Player ${curId} gave Set ${s.id} to Jakub for 1 pt.`);
+            addLog(newState, `Set ${s.id} given to Jakub. Anger updated | Range: ${jakub.range}`);
           }
+        } else {
+          if (playerIdx !== -1) {
+            addLog(newState, `Player ${ownerId} gave Set ${s.id} to Jakub for 1 pt.`);
+          } else {
+            addLog(newState, `Set ${s.id} given to Jakub.`);
+          }
+        }
+        
+        const curId = playerId || newState.playerOrder[newState.currentPlayerIndex];
+        const isManual = (manualPlayers && manualPlayers.some(id => String(id) === String(curId))) || (playerId !== null && playerId !== undefined && String(curId) === String(playerId));
+        if (isManual) {
+          newState.turnActionExecuted = true;
+        } else {
           if (advanceTurn) advanceTurn(newState);
         }
         updateGameWithSync(newState);
@@ -223,7 +245,7 @@ export const useGameInteraction = ({
       setActiveSet(null);
       setValidMoveTargets([]);
     }
-  }, [activeSet, gameState, playerId, updateGameWithSync, addLog, findAndRemoveSetById, advanceTurn]);
+  }, [activeSet, gameState, playerId, updateGameWithSync, addLog, findAndRemoveSetById, advanceTurn, manualPlayers]);
 
   return {
     activePawn,

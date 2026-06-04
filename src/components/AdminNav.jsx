@@ -23,6 +23,12 @@ const AdminNav = ({ currentPath }) => {
           Manage Sets
         </button>
         <button 
+          className={`nav-link-btn ${currentPath === '/admin/events' ? 'active' : ''}`}
+          onClick={() => navigate('/admin/events')}
+        >
+          Manage Events
+        </button>
+        <button 
           className={`nav-link-btn ${currentPath === '/admin/simulate' ? 'active' : ''}`}
           onClick={() => navigate('/admin/simulate')}
         >

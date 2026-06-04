@@ -65,15 +65,15 @@ export class PlacementManager {
     // Discard the used set
     const usedSetId = best.set.id;
     let usedSet = null;
-    let idx = (workState.sets.drawPile || []).findIndex(s => s.id == usedSetId);
+    let idx = (workState.sets.drawPile || []).findIndex(s => String(s.id) === String(usedSetId));
     if (idx !== -1) {
       usedSet = workState.sets.drawPile.splice(idx, 1)[0];
     } else {
-      idx = (workState.sets.heldSets || []).findIndex(s => s.id == usedSetId);
+      idx = (workState.sets.heldSets || []).findIndex(s => String(s.id) === String(usedSetId));
       if (idx !== -1) {
         usedSet = workState.sets.heldSets.splice(idx, 1)[0];
       } else {
-        idx = (workState.sets.discardPile || []).findIndex(s => s.id == usedSetId);
+        idx = (workState.sets.discardPile || []).findIndex(s => String(s.id) === String(usedSetId));
         if (idx !== -1) {
           usedSet = workState.sets.discardPile.splice(idx, 1)[0];
         }
@@ -99,7 +99,7 @@ export class PlacementManager {
     if (!workState.passedPlayers.includes(curPlayer.id)) {
       workState.passedPlayers.push(curPlayer.id);
     }
-    const currentHand = (workState.sets.heldSets || []).filter(s => s.ownerId === curPlayer.id);
+    const currentHand = (workState.sets.heldSets || []).filter(s => String(s.ownerId) === String(curPlayer.id));
     const toSell = currentHand.filter(s => (s.content[curPlayer.generalOf] || 0) === 0);
     
     let jakub = null;
@@ -111,7 +111,7 @@ export class PlacementManager {
     }
 
     toSell.forEach(s => {
-      const idx = workState.sets.heldSets.findIndex(h => h.id === s.id);
+      const idx = workState.sets.heldSets.findIndex(h => String(h.id) === String(s.id));
       if (idx !== -1) {
         workState.sets.heldSets[idx].ownerId = 'jakub';
         if (jakub && applySetToJakubAnger) {

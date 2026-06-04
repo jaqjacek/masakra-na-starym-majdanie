@@ -37,6 +37,7 @@ router.post('/:gameId/event-phase', (req, res) => {
       data.passedPlayers = [];
       data.currentPlayerIndex = 0;
       data.playerOrder = [...data.players].sort((a, b) => a.points - b.points).map(p => p.id);
+      data.turnActionExecuted = false;
     } else {
       data.phase = 'final_scoring';
     }

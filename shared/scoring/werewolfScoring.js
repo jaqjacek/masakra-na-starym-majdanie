@@ -23,8 +23,6 @@ export class WerewolfScoring {
     let pts = Math.floor(totalW / 3) + 1;
     if (dist <= 1) {
       pts += 1;
-    } else if (dist >= 4) {
-      pts -= (dist - 3);
     }
     
     return pts;

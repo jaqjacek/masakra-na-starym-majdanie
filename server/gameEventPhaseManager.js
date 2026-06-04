@@ -127,6 +127,12 @@ export class GameEventPhaseManager {
     } else if (event.type === 'support') {
       const effectLog = EventEffectManager.applySupportEffect(this.gameData, event.value);
       this.addLog(effectLog);
+    } else if (event.type === 'move') {
+      const effectLog = EventEffectManager.applyMoveEffect(this.gameData, event.value);
+      this.addLog(effectLog);
+    } else if (event.type === 'transformation') {
+      const effectLog = EventEffectManager.applyTransformationEffect(this.gameData, event.value);
+      this.addLog(effectLog);
     }
   }
 

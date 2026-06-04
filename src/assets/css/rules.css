@@ -98,7 +98,7 @@
   font-size: 1.2rem;
 }
 
-.general-placeholder {
+.rulebook-wrapper .general-placeholder {
   width: 100px;
   height: 100px;
   background-color: #ddd;
@@ -175,7 +175,7 @@
   flex: 1;
 }
 
-.general-placeholder::after {
+.rulebook-wrapper .general-placeholder::after {
   content: 'IKONA';
   font-size: 0.6rem;
   color: #666;

@@ -132,3 +132,98 @@
   box-shadow: 0 0 5px rgba(0,0,0,0.5);
 }
 
+/* Tooltip styles */
+.event-name-tooltip-trigger {
+  position: relative;
+  cursor: help;
+  border-bottom: 1px dotted #f1c40f;
+  color: #f1c40f;
+  font-weight: bold;
+}
+
+.event-name-tooltip-content {
+  visibility: hidden;
+  width: 320px;
+  background-color: #2c3e50;
+  color: #fff;
+  text-align: left;
+  border: 1px solid #f1c40f;
+  border-radius: 6px;
+  padding: 8px 12px;
+  position: absolute;
+  z-index: 10;
+  bottom: 125%; /* Position above the text */
+  left: 50%;
+  margin-left: -160px;
+  opacity: 0;
+  transition: opacity 0.3s;
+  font-size: 0.9rem;
+  font-weight: normal;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+  pointer-events: none;
+  white-space: normal;
+}
+
+.event-name-tooltip-trigger:hover .event-name-tooltip-content {
+  visibility: visible;
+  opacity: 1;
+}
+
+/* Admin Events styles */
+.admin-events-list {
+  background: rgba(0,0,0,0.25);
+  border-radius: 12px;
+  padding: 1.5rem;
+  border: 1px solid #444;
+  margin-top: 1rem;
+}
+
+.events-table-header {
+  display: grid;
+  grid-template-columns: 80px 250px 200px 1fr;
+  font-weight: bold;
+  padding: 0.8rem;
+  border-bottom: 2px solid #555;
+  color: #3498db;
+  font-size: 1.1rem;
+}
+
+.events-table-row {
+  display: grid;
+  grid-template-columns: 80px 250px 200px 1fr;
+  padding: 0.8rem;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+  align-items: center;
+  transition: background-color 0.2s;
+}
+
+.events-table-row:hover {
+  background: rgba(255,255,255,0.03);
+}
+
+.events-table-row input[type="checkbox"] {
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+}
+
+.event-type-badge {
+  padding: 0.3rem 0.6rem;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  font-weight: bold;
+  text-transform: uppercase;
+  width: fit-content;
+  background: #34495e;
+  color: #ecf0f1;
+}
+
+.event-type-badge.move { background: #2980b9; }
+.event-type-badge.anger-plus { background: #c0392b; }
+.event-type-badge.anger-minus { background: #27ae60; }
+.event-type-badge.transformation { background: #8e44ad; }
+.event-type-badge.pawnsTotal-plus { background: #d35400; }
+.event-type-badge.pawnsTotal-minus { background: #7f8c8d; }
+.event-type-badge.wipe-sectors { background: #b71c1c; }
+.event-type-badge.support { background: #f39c12; color: #2c3e50; }
+

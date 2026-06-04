@@ -11,6 +11,7 @@ import configRouter from './routes/config.js';
 import setsRouter from './routes/sets.js';
 import gamesRouter from './routes/games.js';
 import simulationRouter from './routes/simulation.js';
+import eventsRouter from './routes/events.js';
 
 // Socket Handler
 import { setupSocketHandlers } from './socketHandler.js';
@@ -63,6 +64,7 @@ app.use('/api/config', configRouter);
 app.use('/api/sets', setsRouter);
 app.use('/api/map', gamesRouter);
 app.use('/api/simulate', simulationRouter);
+app.use('/api/events', eventsRouter);
 
 // Socket Logic
 setupSocketHandlers(io);

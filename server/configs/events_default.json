@@ -1,4 +1,14 @@
 [
+  { "id": 33, "type": "move", "value": "charge", "title": "Charge!", "description": "Every pawn on border sectors charges 1 sector closer to the center." },
+  { "id": 34, "type": "move", "value": "mental_force_field", "title": "Mental Force Field", "description": "Pawns at distance 1 from Jakub are pushed further away. Epicenter pawns do not move. Pushed out of board pawns are killed (-1 pts to general)." },
+  { "id": 35, "type": "move", "value": "bardak_cowardice", "title": "Bardak Cowardice", "description": "Lonely Bardaks fleeing. Move them to adjacent sectors with the most other pawns. If tied (V->W->G) or empty, they desert the board (-1 pts to general)." },
+  { "id": 36, "type": "move", "value": "jakubs_gravity", "title": "Jakub's Gravity", "description": "Every pawn at distance 3 or more from Jakub is pulled 1 sector closer to him." },
+  { "id": 37, "type": "move", "value": "crimson_convergence", "title": "Crimson Convergence", "description": "All Vampires on the board migrate directly to the sector containing Jakub." },
+  { "id": 38, "type": "move", "value": "alphas_call", "title": "Alpha's Call", "description": "Lonely Werewolves are pulled 1 sector closer to the largest pack of Werewolves." },
+  { "id": 39, "type": "move", "value": "lunar_alignment", "title": "Lunar Alignment", "description": "Lonely Werewolves are pulled 1 sector closer to the nearest Werewolf pack." },
+  { "id": 40, "type": "transformation", "value": "vampire_bite", "title": "Vampire Bite", "description": "In every sector with at least one Vampire and one Bardak, a Vampire bites a Bardak, transforming them. If any transformation occurs, Jakub's anger towards Bardaks drops to 0." },
+  { "id": 41, "type": "transformation", "value": "werewolf_bite_row", "title": "Pack Infection (Rows)", "description": "Finds row with most Werewolves and at least 1 Bardak. Up to Werewolf count are transformed, remaining flee to Jakub. Werewolves are redistributed. If no match, Werewolf anger drops to 0 and Bardak anger increases by 5." },
+  { "id": 42, "type": "transformation", "value": "werewolf_bite_column", "title": "Pack Infection (Columns)", "description": "Finds column with most Werewolves and at least 1 Bardak. Up to Werewolf count are transformed, remaining flee to Jakub. Werewolves are redistributed. If no match, Werewolf anger drops to 0 and Bardak anger increases by 5." },
   { "id": 1, "type": "anger-plus", "value": { "V": 3 }, "title": "Bloody Moon", "description": "Vampires are agitated. Jakub's anger towards Vampires increases by 3." },
   { "id": 2, "type": "anger-plus", "value": { "W": 3 }, "title": "Full Moon", "description": "Werewolves are howling. Jakub's anger towards Werewolves increases by 3." },
   { "id": 3, "type": "anger-plus", "value": { "G": 3 }, "title": "Cold Breeze", "description": "Ghosts are restless. Jakub's anger towards Ghosts increases by 3." },
@@ -27,5 +37,9 @@
   { "id": 26, "type": "wipe-sectors", "value": [{ "x": 2, "y": 2 }, { "x": 2, "y": 3 }, { "x": 3, "y": 2 }, { "x": 3, "y": 3 }], "title": "Center board Cleansing", "description": "Jakub focuses his wrath on the heart of the board. All pawns in the 4 central regions are eliminated." },
   { "id": 27, "type": "support", "value": 1, "title": "Supply Drop", "description": "A mysterious benefactor sends supplies. Each player receives 1 extra set." },
   { "id": 28, "type": "support", "value": 2, "title": "Logistics Mastery", "description": "Improved supply lines. Each player receives 2 extra sets." },
-  { "id": 29, "type": "generic", "title": "Quiet Night", "description": "Nothing happens tonight." }
+  { "id": 29, "type": "generic", "title": "Quiet Night", "description": "Nothing happens tonight." },
+  { "id": 30, "type": "move", "value": { "from": { "x": 0, "y": 0 }, "to": { "x": 2, "y": 2 } }, "title": "Tactical Relocation", "description": "Local skirmish shifts. Move all pawns from (0,0) to (2,2)." },
+  { "id": 31, "type": "move", "value": { "from": { "x": 5, "y": 5 }, "to": { "x": 3, "y": 3 } }, "title": "Sudden Panic", "description": "Fleeing the outskirts. Move all pawns from (5,5) to (3,3)." },
+  { "id": 32, "type": "move", "value": { "from": { "x": 0, "y": 5 }, "to": { "x": 1, "y": 4 } }, "title": "Whirlwind", "description": "A mystical wind blows. Move all pawns from (0,5) to (1,4)." },
+  { "id": 43, "type": "transformation", "value": "give_up_ghost", "title": "Give up the Ghost", "description": "Look for any border sector with only Bardaks. One of those Bardaks ('wyzionoł ducha') is transformed into a Ghost. Decreases Bardak total count, increases Ghost total count. If any transformation occurred, Jakub's anger towards Bardaks drops to 0. If no transformation occurred, anger for Bardaks increases by 5." }
 ]

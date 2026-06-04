@@ -84,9 +84,13 @@ const AdminSets = () => {
   };
 
   const setAsDefault = async () => {
-    if (!selectedSet) return;
+    if (!selectedSet || !loadedSetData) return;
     try {
-      const res = await fetch(`${SERVER_URL}/api/sets/default/${selectedSet}`, { method: 'POST' });
+      const res = await fetch(`${SERVER_URL}/api/sets/default/${selectedSet}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ setsData: loadedSetData })
+      });
       const data = await res.json();
       alert(data.message);
     } catch (_err) { alert('Failed to set default'); }
@@ -108,6 +112,22 @@ const AdminSets = () => {
     const targetSet = piles.find(s => s.id === setId);
     if (targetSet) {
       targetSet.content[race] = (targetSet.content[race] || 0) + 1;
+      const powerMap = newData.power || { vampire: 3, werewolf: 2, ghost: 1, bardak: 1 };
+      targetSet.power = Object.entries(targetSet.content).reduce((sum, [r, c]) => sum + (powerMap[r] || 0) * c, 0);
+      setLoadedSetData(newData);
+    }
+  };
+
+  const handleRemovePawn = (setId, race) => {
+    if (!isEditMode) return;
+    const newData = JSON.parse(JSON.stringify(loadedSetData));
+    const piles = [...(newData.drawPile || []), ...(newData.heldSets || []), ...(newData.discardPile || [])];
+    const targetSet = piles.find(s => s.id === setId);
+    if (targetSet && targetSet.content[race] > 0) {
+      targetSet.content[race] -= 1;
+      if (targetSet.content[race] === 0) {
+        delete targetSet.content[race];
+      }
       const powerMap = newData.power || { vampire: 3, werewolf: 2, ghost: 1, bardak: 1 };
       targetSet.power = Object.entries(targetSet.content).reduce((sum, [r, c]) => sum + (powerMap[r] || 0) * c, 0);
       setLoadedSetData(newData);
@@ -237,6 +257,7 @@ const AdminSets = () => {
                   onPawnDragStart={onPawnDragStart} 
                   onPawnDrop={onPawnDrop}
                   onClonePawn={handleClonePawn}
+                  onRemovePawn={handleRemovePawn}
                 />
               ))}
             </div>
@@ -249,7 +270,7 @@ const AdminSets = () => {
   );
 };
 
-const EditableSet = ({ set, isEditMode, onPawnDragStart, onPawnDrop, onClonePawn }) => {
+const EditableSet = ({ set, isEditMode, onPawnDragStart, onPawnDrop, onClonePawn, onRemovePawn }) => {
   const racePriority = { vampire: 0, werewolf: 1, ghost: 2, bardak: 3 };
   const allPawns = [];
   Object.entries(set.content).forEach(([race, count]) => { for (let i = 0; i < count; i++) allPawns.push(race); });
@@ -265,8 +286,14 @@ const EditableSet = ({ set, isEditMode, onPawnDragStart, onPawnDrop, onClonePawn
             className={`set-icon ${race} ${isEditMode ? 'draggable' : ''}`} 
             draggable={isEditMode} 
             onDragStart={() => isEditMode && onPawnDragStart(race, set.id)}
-            onClick={(e) => { if (e.shiftKey) onClonePawn(set.id, race); }}
-            title={isEditMode ? "Drag to move | Shift+Click to clone" : ""}
+            onClick={(e) => { 
+              if (e.shiftKey) {
+                onClonePawn(set.id, race);
+              } else if (e.ctrlKey || e.metaKey) {
+                onRemovePawn(set.id, race);
+              }
+            }}
+            title={isEditMode ? "Drag to move | Shift+Click to clone | Ctrl+Click to remove" : ""}
           ></div>
         ))}
       </div>

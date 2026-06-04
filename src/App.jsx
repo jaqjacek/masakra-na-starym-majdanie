@@ -14,6 +14,7 @@ import SetsPanel from './components/panels/SetsPanel';
 import PlayersPanel from './components/panels/PlayersPanel';
 import AdminSets from './components/AdminSets';
 import AdminSimulate from './components/AdminSimulate';
+import AdminEvents from './components/AdminEvents';
 import AdminNav from './components/AdminNav';
 import GameRulesPage from './components/docs/GameRulesPage';
 import HistoryPanel from './components/panels/HistoryPanel';
@@ -121,7 +122,8 @@ function App() {
   // 3. Autoplay logic
   const {
     isFullAutoplay, setIsFullAutoplay, isJakubAutoplay, setIsJakubAutoplay,
-    autoplaySpeed, setAutoplaySpeed, findAndRemoveSetById
+    autoplaySpeed, setAutoplaySpeed, findAndRemoveSetById,
+    autoplayEventPopup
   } = useAutoplay({ gameId, gameState, updateGameWithSync, addLog, manualPlayers, playerId });
 
   const advanceTurn = useCallback((state) => {
@@ -139,6 +141,18 @@ function App() {
     const workState = JSON.parse(JSON.stringify(gameState));
     const curPlayer = workState.players.find(p => p.id !== null && p.id !== undefined && String(p.id) === String(playerId));
     if (!curPlayer) return;
+
+    if (workState.turnActionExecuted) {
+      workState.turnActionExecuted = false;
+      advanceTurn(workState);
+      if (workState.passedPlayers.length === workState.players.length) {
+        workState.phase = 'jakub_phase';
+        addLog(workState, `--- Start of Jakub Phase ---`);
+      }
+      updateGameWithSync(workState);
+      setIsFullAutoplay(true);
+      return;
+    }
 
     if (action === 'next') {
       const globalPool = { ...workState.sets.pawns };
@@ -195,7 +209,7 @@ function App() {
     handleBagMouseDown, handleJakubMouseDownFromPanel, handleSetMouseDown, handleGeneralMouseDown,
     handlePawnMouseDown, handleRegionMouseUp, handlePlayerMouseUp, handleJakubMouseUp
   } = useGameInteraction({
-    gameId, playerId, gameState, availablePool, placementPool, counters, isJakubOnBoard, updateGameWithSync, addLog, findAndRemoveSetById, advanceTurn
+    gameId, playerId, gameState, availablePool, placementPool, counters, isJakubOnBoard, updateGameWithSync, addLog, findAndRemoveSetById, advanceTurn, manualPlayers
   });
 
   // 5. Specific handlers
@@ -277,6 +291,16 @@ function App() {
     // Find Jakub to update his stats
     let jakubRegionObj = workState.regions.find(r => r.pawns.jakub?.length > 0);
     let jakub = jakubRegionObj ? jakubRegionObj.pawns.jakub[0] : null;
+
+    // Clear any existing sets belonging to Jakub before drawing new ones!
+    const existingJakubSets = (workState.sets.heldSets || []).filter(s => s.ownerId === 'jakub');
+    existingJakubSets.forEach(s => {
+      s.ownerId = null;
+      s.used = false;
+      if (!workState.sets.discardPile) workState.sets.discardPile = [];
+      workState.sets.discardPile.push(s);
+    });
+    workState.sets.heldSets = (workState.sets.heldSets || []).filter(s => s.ownerId !== 'jakub');
 
     for (let i = 0; i < JAKUB_INITIAL_SETS; i++) {
       const set = draw(workState);
@@ -369,11 +393,12 @@ function App() {
   }, [gameState, updateGameWithSync, addLog]);
 
   // 6. Filtering
-  const jakubsSets = gameState.sets ? (gameState.sets.heldSets || []).filter(s => s.ownerId === 'jakub') : [];
+  const jakubsSets = gameState.sets ? (gameState.sets.heldSets || []).filter(s => String(s.ownerId) === 'jakub') : [];
 
   // 7. Render logic
   if (currentPath === '/docs/game') return <GameRulesPage />;
   if (currentPath === '/admin/sets') return <div className="app-container"><AdminNav currentPath={currentPath} /><AdminSets /></div>;
+  if (currentPath === '/admin/events') return <div className="app-container"><AdminNav currentPath={currentPath} /><AdminEvents /></div>;
   if (currentPath === '/admin/simulate') return <div className="app-container"><AdminNav currentPath={currentPath} /><AdminSimulate /></div>;
   if (isAdminPath) return <div className="app-container"><AdminNav currentPath={currentPath} /><div className="admin-page-content"><p>Please select an Admin section.</p></div></div>;
   if (!gameId) return <LandingPage onGoToGame={(id) => { if (id) window.location.href = `/game/${id}`; }} />;
@@ -464,7 +489,74 @@ function App() {
           </div>
         </div>
         <div className="main-game-area">
-          {gameState.regions && <BoardComponent regions={gameState.regions} onRegionMouseUp={handleRegionMouseUp} onRemovePawn={handleRegionRemove} onAddPawn={handleRegionAdd} onPawnMouseDown={handlePawnMouseDown} setHoveredPawn={setHoveredPawn} validMoveTargets={validMoveTargets} />}
+          {gameState.regions && (
+            <BoardComponent 
+              regions={gameState.regions} 
+              onRegionMouseUp={handleRegionMouseUp} 
+              onRemovePawn={handleRegionRemove} 
+              onAddPawn={handleRegionAdd} 
+              onPawnMouseDown={handlePawnMouseDown} 
+              setHoveredPawn={setHoveredPawn} 
+              validMoveTargets={validMoveTargets}
+            >
+              {autoplayEventPopup && (
+                <div className="autoplay-event-popup-wrapper">
+                  <div className="autoplay-event-popup-glow"></div>
+                  <div className="autoplay-event-badge">⚠️ BOARD EVENT ACTIVE</div>
+                  <h2 className="autoplay-event-title">{autoplayEventPopup.event.title}</h2>
+                  <div className="autoplay-event-divider"></div>
+                  <p className="autoplay-event-description">{autoplayEventPopup.event.description}</p>
+                  <div className="autoplay-event-footer">
+                    <div className="autoplay-event-ticks-container">
+                      {Array.from({ length: 6 }).map((_, idx) => (
+                        <div 
+                          key={idx} 
+                          className={`autoplay-event-tick-dot ${idx < autoplayEventPopup.ticksLeft ? 'active' : ''}`}
+                        />
+                      ))}
+                    </div>
+                    <span className="autoplay-event-countdown-text">
+                      Resuming autoplay in {autoplayEventPopup.ticksLeft} ticks...
+                    </span>
+                  </div>
+                </div>
+              )}
+
+              {gameState.phase === 'setup' && (
+                <div className="setup-summary-wrapper">
+                  <div className="setup-summary-header">Game Setup: {gameState.setName || 'Random'}</div>
+                  <div className="setup-limits-grid">
+                    <div className="setup-limit-section">
+                      <h4>Total Pawn Pool</h4>
+                      <div className="setup-limit-list">
+                        {RACES.map(race => (
+                          <div key={race} className="setup-limit-item">
+                            <div className={`set-icon ${race}`}></div>
+                            <span>{gameState.sets?.pawns?.[race] || 0}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                    <div className="setup-limit-section">
+                      <h4>Pawn Play Limits</h4>
+                      <div className="setup-limit-list">
+                        {RACES.map(race => (
+                          <div key={race} className="setup-limit-item">
+                            <div className={`set-icon ${race}`}></div>
+                            <span>{gameState.sets?.pawnsInPlayLimit?.[race] || gameState.sets?.pawns?.[race] || 0}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="setup-hint" style={{ marginTop: '1.5rem', color: '#888', fontSize: '0.8rem' }}>
+                    Waiting for host to click "DRAW SETS" in the top bar...
+                  </div>
+                </div>
+              )}
+
+            </BoardComponent>
+          )}
           <GameHeader 
             counters={counters} 
             maxPool={gameState.sets?.pawns || {}} 
@@ -484,39 +576,6 @@ function App() {
             manualPlayers={manualPlayers}
             onToggleManualPlayer={handleToggleManualPlayer}
           />
-
-          {gameState.phase === 'setup' && (
-            <div className="setup-summary-wrapper">
-              <div className="setup-summary-header">Game Setup: {gameState.setName || 'Random'}</div>
-              <div className="setup-limits-grid">
-                <div className="setup-limit-section">
-                  <h4>Total Pawn Pool</h4>
-                  <div className="setup-limit-list">
-                    {RACES.map(race => (
-                      <div key={race} className="setup-limit-item">
-                        <div className={`set-icon ${race}`}></div>
-                        <span>{gameState.sets?.pawns?.[race] || 0}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-                <div className="setup-limit-section">
-                  <h4>Pawn Play Limits</h4>
-                  <div className="setup-limit-list">
-                    {RACES.map(race => (
-                      <div key={race} className="setup-limit-item">
-                        <div className={`set-icon ${race}`}></div>
-                        <span>{gameState.sets?.pawnsInPlayLimit?.[race] || gameState.sets?.pawns?.[race] || 0}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-              <div className="setup-hint" style={{ marginTop: '1.5rem', color: '#888', fontSize: '0.8rem' }}>
-                Waiting for host to click "DRAW SETS" in the top bar...
-              </div>
-            </div>
-          )}
 
           {gameState.phase === 'general_phase' && (() => {
             const curId = playerId || gameState.playerOrder[gameState.currentPlayerIndex];
@@ -551,7 +610,7 @@ function App() {
             <div className="player-hand-section always-visible">
               <div className="player-hand-header">Player {playerId} Hand</div>
               <SetsPanel 
-                sets={(gameState.sets?.heldSets || []).filter(s => s.ownerId === playerId)}
+                sets={(gameState.sets?.heldSets || []).filter(s => String(s.ownerId) === String(playerId))}
                 onSetMouseDown={handleSetMouseDown}
                 hideTabs={true}
               />

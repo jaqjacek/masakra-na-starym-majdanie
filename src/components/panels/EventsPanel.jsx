@@ -30,7 +30,7 @@ const EventsPanel = ({ events, onClose }) => {
                 onMouseEnter={() => setHoveredEvent(event)}
                 onMouseLeave={() => setHoveredEvent(null)}
               >
-                <div className="event-icon drawn">E</div>
+                <div className={`event-icon drawn event-${event.type}`}>E</div>
                 <span>{event.id}</span>
               </div>
             ))}
@@ -47,7 +47,7 @@ const EventsPanel = ({ events, onClose }) => {
                 onMouseEnter={() => setHoveredEvent(event)}
                 onMouseLeave={() => setHoveredEvent(null)}
               >
-                <div className="event-icon">E</div>
+                <div className={`event-icon event-${event.type}`}>E</div>
                 <span>{event.id}</span>
               </div>
             ))}

@@ -88,20 +88,76 @@
 }
 
 .event-icon.drawn {
-  background: #a0522d; /* sienna/brownish to distinguish? */
-  background: #d2b48c; /* beige as requested */
   opacity: 0.7;
 }
 
-.event-icon span {
+.event-icon-container span {
   position: absolute;
   bottom: -2px;
   right: -2px;
-  background: rgba(0,0,0,0.8);
+  background: rgba(0,0,0,0.85);
   color: #fff;
-  font-size: 0.6rem;
-  padding: 1px 3px;
+  font-size: 0.65rem;
+  padding: 1px 4px;
   border-radius: 2px;
+  font-family: monospace;
+  font-weight: bold;
+  z-index: 10;
+}
+
+/* Event Type Color Customization */
+.event-icon.event-anger-plus {
+  background: #c0392b;
+  color: #fff;
+  border-color: #e74c3c;
+}
+
+.event-icon.event-anger-minus {
+  background: #2980b9;
+  color: #fff;
+  border-color: #3498db;
+}
+
+.event-icon.event-pawnsTotal-plus {
+  background: #27ae60;
+  color: #fff;
+  border-color: #2ecc71;
+}
+
+.event-icon.event-pawnsTotal-minus {
+  background: #d35400;
+  color: #fff;
+  border-color: #e67e22;
+}
+
+.event-icon.event-wipe-sectors {
+  background: #8e44ad;
+  color: #fff;
+  border-color: #9b59b6;
+}
+
+.event-icon.event-support {
+  background: #f1c40f;
+  color: #2c3e50;
+  border-color: #f39c12;
+}
+
+.event-icon.event-move {
+  background: #16a085;
+  color: #fff;
+  border-color: #1abc9c;
+}
+
+.event-icon.event-generic {
+  background: #7f8c8d;
+  color: #fff;
+  border-color: #95a5a6;
+}
+
+.event-icon.event-transformation {
+  background: #e84393;
+  color: #fff;
+  border-color: #fd79a8;
 }
 
 .event-popup-desc {

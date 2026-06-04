@@ -58,6 +58,16 @@ const GamePanel = ({
                 {gameState.passedPlayers.length < gameState.players.length ? (() => {
                   const curId = gameState.playerOrder[gameState.currentPlayerIndex];
                   const isPassed = gameState.passedPlayers.some(id => String(id) === String(curId));
+                  if (gameState.turnActionExecuted) {
+                    return (
+                      <button 
+                        className="action-button next-btn" 
+                        onClick={() => onExecuteManualTurn && onExecuteManualTurn(curId, 'next')}
+                      >
+                        NEXT
+                      </button>
+                    );
+                  }
                   return (
                     <div style={{ display: 'flex', gap: '6px' }}>
                       <button 

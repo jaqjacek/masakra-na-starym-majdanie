@@ -1,14 +1,14 @@
 {
   "pawns": {
-    "bardak": 80,
+    "vampire": 12,
+    "werewolf": 21,
     "ghost": 30,
-    "werewolf": 20,
-    "vampire": 10
+    "bardak": 70
   },
   "pawnsInPlayLimit": {
     "vampire": 8,
-    "werewolf": 15,
-    "ghost": 25,
+    "werewolf": 16,
+    "ghost": 26,
     "bardak": 40
   },
   "power": {
@@ -23,10 +23,11 @@
       "id": 1,
       "content": {
         "werewolf": 1,
-        "vampire": 1
+        "vampire": 1,
+        "bardak": 1
       },
       "used": false,
-      "power": 5,
+      "power": 6,
       "ownerId": null
     },
     {
@@ -56,10 +57,10 @@
       "content": {
         "vampire": 1,
         "ghost": 1,
-        "bardak": 2
+        "bardak": 1
       },
       "used": false,
-      "power": 6,
+      "power": 5,
       "ownerId": null
     },
     {
@@ -98,30 +99,34 @@
     {
       "id": 8,
       "content": {
-        "ghost": 2,
-        "vampire": 1
+        "ghost": 1,
+        "vampire": 1,
+        "werewolf": 1,
+        "bardak": 1
       },
       "used": false,
-      "power": 5,
+      "power": 7,
       "ownerId": null
     },
     {
       "id": 9,
       "content": {
+        "ghost": 1,
         "vampire": 1,
-        "ghost": 1
+        "werewolf": 1
       },
       "used": false,
-      "power": 4,
+      "power": 6,
       "ownerId": null
     },
     {
       "id": 10,
       "content": {
-        "vampire": 1
+        "vampire": 2,
+        "bardak": 1
       },
       "used": false,
-      "power": 3,
+      "power": 7,
       "ownerId": null
     },
     {
@@ -194,11 +199,12 @@
       "id": 17,
       "content": {
         "werewolf": 1,
-        "bardak": 3,
-        "ghost": 1
+        "bardak": 1,
+        "ghost": 1,
+        "vampire": 1
       },
       "used": false,
-      "power": 6,
+      "power": 7,
       "ownerId": null
     },
     {
@@ -225,11 +231,11 @@
     {
       "id": 20,
       "content": {
-        "bardak": 4,
+        "bardak": 3,
         "werewolf": 1
       },
       "used": false,
-      "power": 6,
+      "power": 5,
       "ownerId": null
     },
     {
@@ -256,64 +262,50 @@
       "id": 23,
       "content": {
         "bardak": 1,
-        "werewolf": 1
+        "ghost": 1
       },
       "used": false,
-      "power": 3,
+      "power": 2,
       "ownerId": null
     },
     {
       "id": 24,
       "content": {
-        "werewolf": 1
+        "werewolf": 2,
+        "bardak": 1
       },
       "used": false,
-      "power": 2,
+      "power": 5,
       "ownerId": null
     },
     {
       "id": 25,
       "content": {
-        "werewolf": 1
+        "werewolf": 2,
+        "bardak": 1
       },
       "used": false,
-      "power": 2,
+      "power": 5,
       "ownerId": null
     },
     {
       "id": 26,
       "content": {
-        "werewolf": 1
+        "werewolf": 1,
+        "bardak": 2
       },
       "used": false,
-      "power": 2,
+      "power": 4,
       "ownerId": null
     },
     {
       "id": 27,
       "content": {
-        "werewolf": 1
+        "werewolf": 1,
+        "bardak": 2
       },
       "used": false,
-      "power": 2,
-      "ownerId": null
-    },
-    {
-      "id": 28,
-      "content": {
-        "werewolf": 1
-      },
-      "used": false,
-      "power": 2,
-      "ownerId": null
-    },
-    {
-      "id": 29,
-      "content": {
-        "werewolf": 1
-      },
-      "used": false,
-      "power": 2,
+      "power": 4,
       "ownerId": null
     },
     {
@@ -340,20 +332,20 @@
       "id": 32,
       "content": {
         "ghost": 1,
-        "bardak": 4
+        "bardak": 3
       },
       "used": false,
-      "power": 5,
+      "power": 4,
       "ownerId": null
     },
     {
       "id": 33,
       "content": {
-        "bardak": 4,
+        "bardak": 3,
         "ghost": 1
       },
       "used": false,
-      "power": 5,
+      "power": 4,
       "ownerId": null
     },
     {
@@ -369,83 +361,29 @@
     {
       "id": 35,
       "content": {
-        "bardak": 4,
+        "bardak": 3,
         "ghost": 1
-      },
-      "used": false,
-      "power": 5,
-      "ownerId": null
-    },
-    {
-      "id": 36,
-      "content": {
-        "bardak": 5
-      },
-      "used": false,
-      "power": 5,
-      "ownerId": null
-    },
-    {
-      "id": 37,
-      "content": {
-        "bardak": 4
       },
       "used": false,
       "power": 4,
       "ownerId": null
     },
     {
+      "id": 36,
+      "content": {
+        "bardak": 3
+      },
+      "used": false,
+      "power": 3,
+      "ownerId": null
+    },
+    {
       "id": 38,
       "content": {
-        "bardak": 2
+        "bardak": 3
       },
       "used": false,
-      "power": 2,
-      "ownerId": null
-    },
-    {
-      "id": 39,
-      "content": {
-        "bardak": 2
-      },
-      "used": false,
-      "power": 2,
-      "ownerId": null
-    },
-    {
-      "id": 40,
-      "content": {
-        "bardak": 2
-      },
-      "used": false,
-      "power": 2,
-      "ownerId": null
-    },
-    {
-      "id": 41,
-      "content": {
-        "bardak": 1
-      },
-      "used": false,
-      "power": 1,
-      "ownerId": null
-    },
-    {
-      "id": 42,
-      "content": {
-        "bardak": 1
-      },
-      "used": false,
-      "power": 1,
-      "ownerId": null
-    },
-    {
-      "id": 43,
-      "content": {
-        "bardak": 1
-      },
-      "used": false,
-      "power": 1,
+      "power": 3,
       "ownerId": null
     }
   ],

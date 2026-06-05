@@ -1,0 +1,30 @@
+[
+  {
+    "id": 40,
+    "type": "transformation",
+    "value": "vampire_bite",
+    "title": "Ugryzienie Wampira",
+    "description": "W każdym sektorze z co najmniej jednym Wampirem i jednym Bardakiem, Wampir gryzie Bardaka, przekształcając go. Jeśli dojdzie do jakiejkolwiek transformacji, Furia Jakuba wobec Bardaków spada do 0."
+  },
+  {
+    "id": 41,
+    "type": "transformation",
+    "value": "werewolf_bite_row",
+    "title": "Zakażenie Watahy (Rzędy)",
+    "description": "Znajduje rząd z największą liczbą Wilkołaków i co najmniej 1 Bardakiem. Wilkołaki zarażają do tylu Bardaków, ile wynosi ich liczba; pozostali Bardacy uciekają do Jakuba. Wilkołaki są redystrybuowane. W przypadku braku dopasowania, Furia Jakuba na Wilkołaki spada do 0, a na Bardaków rośnie o 5."
+  },
+  {
+    "id": 42,
+    "type": "transformation",
+    "value": "werewolf_bite_column",
+    "title": "Zakażenie Watahy (Kolumny)",
+    "description": "Znajduje kolumnę z największą liczbą Wilkołaków i co najmniej 1 Bardakiem. Wilkołaki zarażają do tylu Bardaków, ile wynosi ich liczba; pozostali Bardacy uciekają do Jakuba. Wilkołaki są redystrybuowane. W przypadku braku dopasowania, Furia Jakuba na Wilkołaki spada do 0, a na Bardaków rośnie o 5."
+  },
+  {
+    "id": 43,
+    "type": "transformation",
+    "value": "give_up_ghost",
+    "title": "Wyzionąć Ducha",
+    "description": "Szuka dowolnego sektora granicznego, w którym stoją tylko Bardaki. Jeden z tych Bardaków ('wyzionął ducha') ulega przemianie w Ducha. Zmniejsza to liczbę Bardaków na planszy, a zwiększa liczbę Duchów. Jeśli dojdzie do transformacji, Furia Jakuba na Bardaków spada do 0. W przeciwnym wypadku Furia rośnie o 5."
+  }
+]

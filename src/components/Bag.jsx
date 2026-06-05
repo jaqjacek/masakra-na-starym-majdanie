@@ -11,7 +11,7 @@ const Bag = ({ type, onMouseDown, disabled, availableCount, onBoard, limit }) =>
     >
       <div 
         className="bag"
-        title={disabled ? `${type.name} is already on the map` : `Available: ${availableCount}`}
+        title={disabled ? `${type.name} znajduje się już na planszy` : `Dostępne: ${availableCount}`}
       >
         <div className={`pawn-preview ${type.id}`}></div>
         <div className="bag-count-badge">{availableCount}</div>

@@ -1,10 +1,10 @@
 export const RACES = ['vampire', 'werewolf', 'ghost', 'bardak'];
 
 export const DEFAULT_PLAYERS = [
-  { id: 1, name: '1', points: 10, generalOf: null },
-  { id: 2, name: '2', points: 10, generalOf: null },
-  { id: 3, name: '3', points: 10, generalOf: null },
-  { id: 4, name: '4', points: 10, generalOf: null }
+  { id: 1, name: '1', points: 20, generalOf: null },
+  { id: 2, name: '2', points: 20, generalOf: null },
+  { id: 3, name: '3', points: 20, generalOf: null },
+  { id: 4, name: '4', points: 20, generalOf: null }
 ];
 
 export const PAWN_CONSTRAINTS = {

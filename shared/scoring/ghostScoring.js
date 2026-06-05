@@ -29,7 +29,7 @@ export class GhostScoring {
     let best = null;
     const jakubRegion = regions.find(r => r.pawns.jakub?.length > 0);
     const jakub = jakubRegion?.pawns.jakub[0];
-    const jakubRange = jakub ? jakub.range : 0;
+    const jakubRange = jakub ? (jakub.range !== undefined ? Math.max(1, jakub.range) : 1) : 0;
     
     placeableSets.forEach(set => {
       emptyRegions.forEach(region => {

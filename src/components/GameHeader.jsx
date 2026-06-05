@@ -9,7 +9,7 @@ const GameHeader = ({ counters, maxPool, pawnsInPlayLimit, playerOrder = [], cur
     <div className="game-status-horizontal">
       <div className="pawn-pool-counters">
         {SUMMARY_PAWN_IDS.map(id => (
-          <div key={id} className="status-item race-summary" title={`${id} pool (Total: ${maxPool[id] || 0}, In Play Limit: ${limits[id] || 0})`}>
+          <div key={id} className="status-item race-summary" title={`Pula: ${id === 'vampire' ? 'Wampiry' : id === 'werewolf' ? 'Wilkołaki' : id === 'ghost' ? 'Duchy' : 'Bardaki'} (Suma: ${maxPool[id] || 0}, Limit w grze: ${limits[id] || 0})`}>
             <div className={`set-icon ${id}`}></div>
             <span>{counters.onBoard[id] || 0}/{limits[id] || 0}</span>
           </div>
@@ -17,7 +17,7 @@ const GameHeader = ({ counters, maxPool, pawnsInPlayLimit, playerOrder = [], cur
       </div>
 
       <div className="player-order-track">
-        <span className="order-label">TURN:</span>
+        <span className="order-label">TURA:</span>
         {playerOrder.map((pid) => {
           const isCurrent = pid === currentActiveId;
           const isPassed = passedPlayers.includes(pid);

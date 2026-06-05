@@ -147,7 +147,7 @@ function App() {
       advanceTurn(workState);
       if (workState.passedPlayers.length === workState.players.length) {
         workState.phase = 'jakub_phase';
-        addLog(workState, `--- Start of Jakub Phase ---`);
+        addLog(workState, `--- Start Fazy Jakuba ---`);
       }
       updateGameWithSync(workState);
       setIsFullAutoplay(true);
@@ -168,35 +168,35 @@ function App() {
         );
         curPlayer.generalOf = pick;
         workState.availableGenerals = workState.availableGenerals.filter(g => g !== pick);
-        addLog(workState, `Player ${playerId} chose General of ${pick}s`);
+        addLog(workState, `Gracz ${playerId} wybrał Generała bandy: ${pick === 'V' ? 'Wampiry' : pick === 'W' ? 'Wilkołaki' : pick === 'G' ? 'Duchy' : 'Bardaki'}`);
       }
 
       const best = PlacementManager.findBestPlacement(workState.regions, workState.sets.heldSets, playerId, curPlayer.generalOf, globalPool, playLimits);
       if (best) {
         const { logSummaryString, statusLogString } = PlacementManager.executePlacement(best, workState, PAWN_TYPES, playLimits);
-        addLog(workState, `Player ${playerId} placed Set ${best.set.id} [${logSummaryString}] | Board: ${statusLogString}`);
+        addLog(workState, `Gracz ${playerId} wystawił Zestaw ${best.set.id} [${logSummaryString}] | Plansza: ${statusLogString}`);
       } else {
         const excess = PlacementManager.executePass(curPlayer, workState, MAX_HAND_SIZE, applySetToJakubAnger);
         if (excess > 0) {
-          addLog(workState, `Player ${playerId} passed and sold ${excess} excess set(s). Jakub Anger updated.`, { race: curPlayer.generalOf, points: excess });
+          addLog(workState, `Gracz ${playerId} spasował i podkablował ${excess} nadmiarowych zestawów. Furia Jakuba zaktualizowana.`, { race: curPlayer.generalOf, points: excess });
         } else {
-          addLog(workState, `Player ${playerId} passed.`);
+          addLog(workState, `Gracz ${playerId} spasował.`);
         }
       }
       advanceTurn(workState);
     } else if (action === 'pass') {
       const excess = PlacementManager.executePass(curPlayer, workState, MAX_HAND_SIZE, applySetToJakubAnger);
       if (excess > 0) {
-        addLog(workState, `Player ${playerId} passed and sold ${excess} excess set(s). Jakub Anger updated.`, { race: curPlayer.generalOf, points: excess });
+        addLog(workState, `Gracz ${playerId} spasował i podkablował ${excess} nadmiarowych zestawów. Furia Jakuba zaktualizowana.`, { race: curPlayer.generalOf, points: excess });
       } else {
-        addLog(workState, `Player ${playerId} passed.`);
+        addLog(workState, `Gracz ${playerId} spasował.`);
       }
       advanceTurn(workState);
     }
 
     if (workState.passedPlayers.length === workState.players.length) {
       workState.phase = 'jakub_phase';
-      addLog(workState, `--- Start of Jakub Phase ---`);
+      addLog(workState, `--- Start Fazy Jakuba ---`);
     }
 
     updateGameWithSync(workState);
@@ -262,7 +262,7 @@ function App() {
       if (state.sets.drawPile.length === 0 && state.sets.discardPile.length > 0) {
         state.sets.drawPile = [...state.sets.discardPile];
         state.sets.discardPile = [];
-        addLog(state, "Reshuffling discard pile into draw pile.");
+        addLog(state, "Przetasowywanie stosu odrzuconego do talii dobierania.");
       }
     };
     const draw = (state) => {
@@ -286,7 +286,7 @@ function App() {
         }
       }
     });
-    if (distributionCount > 0) addLog(workState, `Round ${workState.currentRound}: Refilled player hands to ${INITIAL_HAND_SIZE}.`);
+    if (distributionCount > 0) addLog(workState, `Runda ${workState.currentRound}: Uzupełniono ręce graczy do ${INITIAL_HAND_SIZE} zestawów.`);
     
     // Find Jakub to update his stats
     let jakubRegionObj = workState.regions.find(r => r.pawns.jakub?.length > 0);
@@ -314,9 +314,9 @@ function App() {
           const result = applySetToJakubAnger(jakub, set.content);
           jakub.anger = result.anger;
           jakub.range = result.range;
-          addLog(workState, `Jakub claimed Set ${set.id}. Anger/Range updated immediately.`);
+          addLog(workState, `Jakub przejął Zestaw ${set.id}. Furia/Zasięg zaktualizowane natychmiast.`);
         } else {
-          addLog(workState, `Jakub claimed Set ${set.id} from pool.`);
+          addLog(workState, `Jakub przejął Zestaw ${set.id} z puli.`);
         }
       }
     }
@@ -329,7 +329,7 @@ function App() {
     workState.phase = 'player_phase';
     workState.currentPlayerIndex = 0;
     workState.passedPlayers = [];
-    addLog(workState, `--- Start of Player Phase (Round ${workState.currentRound}) ---`);
+    addLog(workState, `--- Start Fazy Graczy (Runda ${workState.currentRound}) ---`);
     updateGameWithSync(workState);
   }, [gameState, addLog, updateGameWithSync]);
 
@@ -337,7 +337,7 @@ function App() {
     const workState = JSON.parse(JSON.stringify(gameState));
     workState.phase = 'jakub_phase';
     workState.jakubAngerIncreased = false;
-    addLog(workState, `--- Jakub's Rampage Begins ---`);
+    addLog(workState, `--- Łowy Jakuba Rozpoczęte ---`);
     updateGameWithSync(workState);
     setIsJakubAutoplay(true); // Automatically run ONLY the Jakub phase
   }, [gameState, addLog, updateGameWithSync, setIsJakubAutoplay]);
@@ -370,7 +370,7 @@ function App() {
 
       player.generalOf = race;
       workState.availableGenerals = workState.availableGenerals.filter(r => r !== race);
-      addLog(workState, `Player ${player.id} chose General of ${race}s`);
+      addLog(workState, `Gracz ${player.id} wybrał Generała bandy: ${race === 'V' ? 'Wampiry' : race === 'W' ? 'Wilkołaki' : race === 'G' ? 'Duchy' : 'Bardaki'}`);
       
       advanceTurn(workState);
       updateGameWithSync(workState);
@@ -387,7 +387,7 @@ function App() {
       if (!workState.availableGenerals.includes(race)) {
         workState.availableGenerals.push(race);
       }
-      addLog(workState, `Player ${targetPlayerId} resigned from being General of ${race}s`);
+      addLog(workState, `Gracz ${targetPlayerId} zrezygnował z bycia Generałem bandy: ${race === 'V' ? 'Wampiry' : race === 'W' ? 'Wilkołaki' : race === 'G' ? 'Duchy' : 'Bardaki'}`);
       updateGameWithSync(workState);
     }
   }, [gameState, updateGameWithSync, addLog]);
@@ -485,6 +485,7 @@ function App() {
               isJakubOnBoard={isJakubOnBoard} 
               sets={jakubsSets}
               onMouseUp={handleJakubMouseUp}
+              isDraggingSet={!!activeSet}
             />
           </div>
         </div>

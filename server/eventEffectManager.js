@@ -9,6 +9,13 @@ export class EventEffectManager {
     'B': 'bardak'
   };
 
+  static RACE_MAP_PL = {
+    'vampire': 'Wampiry',
+    'werewolf': 'Wilkołaki',
+    'ghost': 'Duchy',
+    'bardak': 'Bardaki'
+  };
+
   /**
    * Applies the effect of an event to Jakub's anger and returns a log of changes.
    * @param {Object} jakubInterface - Interface from GameEventPhaseManager.
@@ -38,7 +45,8 @@ export class EventEffectManager {
       }
 
       if (oldAnger !== newAnger) {
-        logs.push(`${raceName}: ${oldAnger} -> ${newAnger}`);
+        const racePl = this.RACE_MAP_PL[raceName] || raceName;
+        logs.push(`${racePl}: ${oldAnger} -> ${newAnger}`);
       }
     });
 
@@ -53,7 +61,7 @@ export class EventEffectManager {
     const newRange = Math.min(5, 1 + extraRange);
     jakubInterface.setRange(newRange);
 
-    return logs.length > 0 ? `Anger changes: ${logs.join(', ')} (Range updated to ${newRange})` : "No anger changes occurred.";
+    return logs.length > 0 ? `Zmiany furii: ${logs.join(', ')} (Zasięg zaktualizowany do ${newRange})` : "Brak zmian furii.";
   }
 
   /**
@@ -85,11 +93,12 @@ export class EventEffectManager {
       }
 
       if (oldLimit !== newLimit) {
-        logs.push(`${raceName}: ${oldLimit} -> ${newLimit}`);
+        const racePl = this.RACE_MAP_PL[raceName] || raceName;
+        logs.push(`${racePl}: ${oldLimit} -> ${newLimit}`);
       }
     });
 
-    return logs.length > 0 ? `Pawn limit changes: ${logs.join(', ')}` : "No pawn limit changes occurred.";
+    return logs.length > 0 ? `Zmiany limitu pionków: ${logs.join(', ')}` : "Brak zmian limitu pionków.";
   }
 
   /**
@@ -123,14 +132,15 @@ export class EventEffectManager {
 
         // Remove pawns
         delete region.pawns[raceId];
-        logs.push(`${count} ${raceId}s at (${target.x},${target.y})`);
+        const racePl = this.RACE_MAP_PL[raceId] || raceId;
+        logs.push(`${count} x ${racePl} na (${target.x},${target.y})`);
       });
     });
 
-    if (logs.length === 0) return "Wipe sectors: No pawns were affected.";
+    if (logs.length === 0) return "Czystka sektorów: nie usunięto żadnych pionków.";
 
-    const penaltyLogs = Object.entries(penaltyMap).map(([name, lost]) => `${name}: -${lost} pts`);
-    return `Wipe sectors: Removed ${logs.join(', ')}. Penalties: ${penaltyLogs.join(', ')}`;
+    const penaltyLogs = Object.entries(penaltyMap).map(([name, lost]) => `${name}: -${lost} pkt`);
+    return `Czystka sektorów: Usunięto ${logs.join(', ')}. Kary: ${penaltyLogs.join(', ')}`;
   }
 
   /**
@@ -172,8 +182,8 @@ export class EventEffectManager {
     });
 
     return totalDistributed > 0 
-      ? `Support: Distributed ${count} extra set(s) to each player (Total: ${totalDistributed}).`
-      : "Support: No sets available to distribute.";
+      ? `Wsparcie: Rozdano po ${count} dodatkowym zestawie każdemu graczowi (Suma: ${totalDistributed}).`
+      : "Wsparcie: Brak dostępnych zestawów do rozdania.";
   }
 
   /**
@@ -206,6 +216,15 @@ export class EventEffectManager {
     if (value === 'lunar_alignment') {
       return this.applyLunarAlignmentEffect(gameData);
     }
+    if (value === 'corners_to_center') {
+      return this.applyCornersToCenterEffect(gameData);
+    }
+    if (value === 'center_to_corners') {
+      return this.applyCenterToCornersEffect(gameData);
+    }
+    if (value === 'jakubs_tornado') {
+      return this.applyJakubsTornadoEffect(gameData);
+    }
 
     if (!value.from || !value.to) return "";
 
@@ -214,7 +233,7 @@ export class EventEffectManager {
     const regionTo = gameData.regions.find(r => r.x === to.x && r.y === to.y);
 
     if (!regionFrom || !regionTo) {
-      return `Move Event: Invalid sectors specified (From: (${from.x},${from.y}) or To: (${to.x},${to.y}) not found).`;
+      return `Ruch: Nieprawidłowe sektory (Nie znaleziono źródła (${from.x},${from.y}) lub celu (${to.x},${to.y})).`;
     }
 
     const movedLogs = [];
@@ -232,15 +251,16 @@ export class EventEffectManager {
       regionTo.pawns[raceId].push(...instances);
       delete regionFrom.pawns[raceId];
 
-      movedLogs.push(`${count} ${raceId}s`);
+      const racePl = this.RACE_MAP_PL[raceId] || raceId;
+      movedLogs.push(`${count} x ${racePl}`);
       totalMoved += count;
     });
 
     if (totalMoved === 0) {
-      return `Move Event: No pawns found at (${from.x},${from.y}) to move to (${to.x},${to.y}).`;
+      return `Ruch: Nie znaleziono pionków na (${from.x},${from.y}) do przeniesienia na (${to.x},${to.y}).`;
     }
 
-    return `Move Event: Moved ${movedLogs.join(', ')} from (${from.x},${from.y}) to (${to.x},${to.y}).`;
+    return `Ruch: Przeniesiono ${movedLogs.join(', ')} z (${from.x},${from.y}) na (${to.x},${to.y}).`;
   }
 
   /**
@@ -305,10 +325,10 @@ export class EventEffectManager {
     });
 
     if (totalMoved === 0) {
-      return "Charge Event: No pawns were on the border sectors to charge.";
+      return "Szarża: Brak pionków na sektorach granicznych.";
     }
 
-    return `Charge Event: Moved ${totalMoved} pawns from border sectors ${borderCoordinatesLog.join(', ')} closer to the center.`;
+    return `Szarża: Przeniesiono ${totalMoved} pionków z sektorów granicznych ${borderCoordinatesLog.join(', ')} bliżej środka.`;
   }
 
   /**
@@ -324,7 +344,7 @@ export class EventEffectManager {
 
     const jakubRegion = gameData.regions.find(r => r.pawns.jakub && r.pawns.jakub.length > 0);
     if (!jakubRegion) {
-      return "Mental Force Field Event: Jakub is not on the board.";
+      return "Pole Siłowe: Jakub nie jest na planszy.";
     }
 
     const jx = jakubRegion.x;
@@ -361,14 +381,16 @@ export class EventEffectManager {
               raceId: raceId,
               instances: [...instances]
             });
-            movedLogs.push(`${count} ${raceId}s at (${region.x},${region.y}) -> (${destX},${destY})`);
+            const racePl = this.RACE_MAP_PL[raceId] || raceId;
+            movedLogs.push(`${count} x ${racePl} na (${region.x},${region.y}) -> (${destX},${destY})`);
           } else {
             killsToMake.push({
               fromRegion: region,
               raceId: raceId,
               instances: [...instances]
             });
-            killedLogs.push(`${count} ${raceId}s at (${region.x},${region.y}) (killed)`);
+            const racePl = this.RACE_MAP_PL[raceId] || raceId;
+            killedLogs.push(`${count} x ${racePl} na (${region.x},${region.y}) (zabity)`);
           }
         } else {
           killsToMake.push({
@@ -376,7 +398,8 @@ export class EventEffectManager {
             raceId: raceId,
             instances: [...instances]
           });
-          killedLogs.push(`${count} ${raceId}s at (${region.x},${region.y}) (killed)`);
+          const racePl = this.RACE_MAP_PL[raceId] || raceId;
+          killedLogs.push(`${count} x ${racePl} na (${region.x},${region.y}) (zabity)`);
         }
         totalAffected += count;
       });
@@ -404,22 +427,22 @@ export class EventEffectManager {
     });
 
     if (totalAffected === 0) {
-      return "Mental Force Field Event: No pawns were at distance 1 from Jakub.";
+      return "Pole Siłowe: Brak pionków w odległości 1 od Jakuba.";
     }
 
     const logs = [];
     if (movedLogs.length > 0) {
-      logs.push(`Moved: ${movedLogs.join(', ')}`);
+      logs.push(`Przeniesiono: ${movedLogs.join(', ')}`);
     }
     if (killedLogs.length > 0) {
-      logs.push(`Killed: ${killedLogs.join(', ')}`);
+      logs.push(`Zabito: ${killedLogs.join(', ')}`);
     }
     if (Object.keys(penaltyMap).length > 0) {
-      const penaltyLogs = Object.entries(penaltyMap).map(([name, lost]) => `${name}: -${lost} pts`);
-      logs.push(`Penalties: ${penaltyLogs.join(', ')}`);
+      const penaltyLogs = Object.entries(penaltyMap).map(([name, lost]) => `${name}: -${lost} pkt`);
+      logs.push(`Kary: ${penaltyLogs.join(', ')}`);
     }
 
-    return `Mental Force Field Event: ${logs.join('. ')}`;
+    return `Pole Siłowe: ${logs.join('. ')}`;
   }
 
   /**
@@ -512,11 +535,11 @@ export class EventEffectManager {
             winner.pawns.bardak = [];
           }
           winner.pawns.bardak.push(...bardaksToMove);
-          movedLogs.push(`${count} Bardaks at (${region.x},${region.y}) -> (${winner.x},${winner.y})`);
+          movedLogs.push(`${count} x Bardaków na (${region.x},${region.y}) -> (${winner.x},${winner.y})`);
           totalMoved += count;
         } else {
           // Runaway from battlefield
-          runawayLogs.push(`${count} Bardaks at (${region.x},${region.y})`);
+          runawayLogs.push(`${count} x Bardaków na (${region.x},${region.y})`);
           totalRunaway += count;
 
           // Deduct points from Bardak general
@@ -530,21 +553,21 @@ export class EventEffectManager {
     });
 
     if (totalMoved === 0 && totalRunaway === 0) {
-      return "Bardak Cowardice Event: No sectors with lonely Bardaks were found.";
+      return "Tchórzostwo Bardaków: Nie znaleziono sektorów z samotnymi Bardakami.";
     }
 
     const logs = [];
     if (movedLogs.length > 0) {
-      logs.push(`Fled: ${movedLogs.join(', ')}`);
+      logs.push(`Uciekli: ${movedLogs.join(', ')}`);
     }
     if (runawayLogs.length > 0) {
-      logs.push(`Deserted: ${runawayLogs.join(', ')}`);
+      logs.push(`Zdezerterowali: ${runawayLogs.join(', ')}`);
     }
     if (totalPenalties > 0) {
-      logs.push(`Penalties: Bardak general lost ${totalPenalties} pts`);
+      logs.push(`Kary: Generał Bardaków stracił ${totalPenalties} pkt`);
     }
 
-    return `Bardak Cowardice Event: ${logs.join('. ')}`;
+    return `Tchórzostwo Bardaków: ${logs.join('. ')}`;
   }
 
   /**
@@ -558,7 +581,7 @@ export class EventEffectManager {
 
     const jakubRegion = gameData.regions.find(r => r.pawns.jakub && r.pawns.jakub.length > 0);
     if (!jakubRegion) {
-      return "Jakub's Gravity Event: Jakub is not on the board.";
+      return "Grawitacja Jakuba: Jakub nie jest na planszy.";
     }
 
     const jx = jakubRegion.x;
@@ -593,7 +616,8 @@ export class EventEffectManager {
             raceId: raceId,
             instances: [...instances]
           });
-          movedLogs.push(`${count} ${raceId}s at (${region.x},${region.y}) -> (${destX},${destY})`);
+          const racePl = this.RACE_MAP_PL[raceId] || raceId;
+          movedLogs.push(`${count} x ${racePl} na (${region.x},${region.y}) -> (${destX},${destY})`);
           totalMoved += count;
         }
       });
@@ -610,10 +634,10 @@ export class EventEffectManager {
     });
 
     if (totalMoved === 0) {
-      return "Jakub's Gravity Event: No pawns were at distance 3 or more from Jakub.";
+      return "Grawitacja Jakuba: Brak pionków w odległości 3 lub więcej od Jakuba.";
     }
 
-    return `Jakub's Gravity Event: Pulled ${totalMoved} pawns closer to Jakub: ${movedLogs.join(', ')}`;
+    return `Grawitacja Jakuba: Przyciągnięto ${totalMoved} pionków bliżej Jakuba: ${movedLogs.join(', ')}`;
   }
 
   /**
@@ -627,7 +651,7 @@ export class EventEffectManager {
 
     const jakubRegion = gameData.regions.find(r => r.pawns.jakub && r.pawns.jakub.length > 0);
     if (!jakubRegion) {
-      return "Crimson Convergence Event: Jakub is not on the board.";
+      return "Purpurowa Zbieżność: Jakub nie jest na planszy.";
     }
 
     const movesToMake = [];
@@ -660,10 +684,10 @@ export class EventEffectManager {
     });
 
     if (totalMoved === 0) {
-      return "Crimson Convergence Event: No Vampires were found on the board outside of Jakub's sector.";
+      return "Purpurowa Zbieżność: Brak Wampirów na planszy poza sektorem Jakuba.";
     }
 
-    return `Crimson Convergence Event: Relocated ${totalMoved} Vampires from sectors ${sourceSectorsLog.join(', ')} to Jakub's sector at (${jakubRegion.x},${jakubRegion.y}).`;
+    return `Purpurowa Zbieżność: Przeniesiono ${totalMoved} Wampirów z sektorów ${sourceSectorsLog.join(', ')} do sektora Jakuba na (${jakubRegion.x},${jakubRegion.y}).`;
   }
 
   /**
@@ -694,7 +718,7 @@ export class EventEffectManager {
     });
 
     if (maxWerewolves === 0) {
-      return "Alpha's Call Event: No Werewolves were found on the board.";
+      return "Zew Alfy: Brak Wilkołaków na planszy.";
     }
 
     let targetRegion = targetCandidates[0];
@@ -761,10 +785,10 @@ export class EventEffectManager {
     });
 
     if (totalMoved === 0) {
-      return `Alpha's Call Event: Main pack is at (${tx},${ty}) [${maxWerewolves} Werewolves], but no lonely Werewolves were found to pull.`;
+      return `Zew Alfy: Główna wataha znajduje się na (${tx},${ty}) [Wilkołaki: ${maxWerewolves}], ale nie znaleziono samotnych Wilkołaków do przyciągnięcia.`;
     }
 
-    return `Alpha's Call Event: Main pack is at (${tx},${ty}) [${maxWerewolves} Werewolves]. Pulled ${totalMoved} lonely Werewolves closer: ${movedLogs.join(', ')}.`;
+    return `Zew Alfy: Główna wataha znajduje się na (${tx},${ty}) [Wilkołaki: ${maxWerewolves}]. Przyciągnięto ${totalMoved} samotnych Wilkołaków bliżej: ${movedLogs.join(', ')}.`;
   }
 
   /**
@@ -793,11 +817,11 @@ export class EventEffectManager {
     });
 
     if (lonelyRegions.length === 0) {
-      return "Lunar Alignment Event: No lonely Werewolves were found on the board.";
+      return "Koniunkcja Księżyców: Brak samotnych Wilkołaków na planszy.";
     }
 
     if (packRegions.length === 0) {
-      return "Lunar Alignment Event: No Werewolf packs (2+ Werewolves in a sector) were found to draw lonely units.";
+      return "Koniunkcja Księżyców: Brak watah Wilkołaków (2+ Wilkołaków w sektorze) do przyciągnięcia samotnych jednostek.";
     }
 
     const movesToMake = [];
@@ -845,7 +869,7 @@ export class EventEffectManager {
           toRegion: destRegion,
           werewolfInstance: region.pawns.werewolf[0]
         });
-        movedLogs.push(`(${region.x},${region.y}) -> (${destX},${destY}) toward pack at (${targetPack.x},${targetPack.y})`);
+        movedLogs.push(`(${region.x},${region.y}) -> (${destX},${destY}) w kierunku watahy na (${targetPack.x},${targetPack.y})`);
         totalMoved++;
       }
     });
@@ -870,10 +894,219 @@ export class EventEffectManager {
     });
 
     if (totalMoved === 0) {
-      return "Lunar Alignment Event: Couldn't relocate any lonely Werewolves closer to packs.";
+      return "Koniunkcja Księżyców: Nie udało się przyciągnąć żadnych samotnych Wilkołaków bliżej watah.";
     }
 
-    return `Lunar Alignment Event: Consolidated ${totalMoved} lonely Werewolves closer to established packs: ${movedLogs.join(', ')}.`;
+    return `Koniunkcja Księżyców: Skonsolidowano ${totalMoved} samotnych Wilkołaków bliżej watah: ${movedLogs.join(', ')}.`;
+  }
+
+  /**
+   * Moves all pawns from border corners 2 steps closer to the center.
+   */
+  static applyCornersToCenterEffect(gameData) {
+    if (!gameData || !gameData.regions) return "";
+
+    const corners = [
+      { from: { x: 0, y: 0 }, to: { x: 2, y: 2 } },
+      { from: { x: 0, y: 5 }, to: { x: 2, y: 3 } },
+      { from: { x: 5, y: 0 }, to: { x: 3, y: 2 } },
+      { from: { x: 5, y: 5 }, to: { x: 3, y: 3 } }
+    ];
+
+    const movesToMake = [];
+    const logs = [];
+    let totalMoved = 0;
+
+    corners.forEach(({ from, to }) => {
+      const regionFrom = gameData.regions.find(r => r.x === from.x && r.y === from.y);
+      const regionTo = gameData.regions.find(r => r.x === to.x && r.y === to.y);
+      if (!regionFrom || !regionTo) return;
+
+      Object.entries(regionFrom.pawns).forEach(([raceId, instances]) => {
+        if (raceId === 'jakub') return; // Don't move Jakub
+        const count = instances.length;
+        if (count === 0) return;
+
+        movesToMake.push({
+          fromRegion: regionFrom,
+          toRegion: regionTo,
+          raceId,
+          instances: [...instances]
+        });
+        const racePl = this.RACE_MAP_PL[raceId] || raceId;
+        logs.push(`${count} x ${racePl} z (${from.x},${from.y}) -> (${to.x},${to.y})`);
+        totalMoved += count;
+      });
+    });
+
+    movesToMake.forEach(move => {
+      const { fromRegion, toRegion, raceId, instances } = move;
+      delete fromRegion.pawns[raceId];
+      if (!toRegion.pawns[raceId]) {
+        toRegion.pawns[raceId] = [];
+      }
+      toRegion.pawns[raceId].push(...instances);
+    });
+
+    if (totalMoved === 0) {
+      return "Taktyczne Przeniesienie: Brak pionków w narożnikach planszy.";
+    }
+
+    return `Taktyczne Przeniesienie: Przeniesiono pionki z narożników bliżej środka: ${logs.join(', ')}.`;
+  }
+
+  /**
+   * Moves all pawns from center 4 fields out to the respective corners.
+   */
+  static applyCenterToCornersEffect(gameData) {
+    if (!gameData || !gameData.regions) return "";
+
+    const paths = [
+      { from: { x: 2, y: 2 }, to: { x: 0, y: 0 } },
+      { from: { x: 2, y: 3 }, to: { x: 0, y: 5 } },
+      { from: { x: 3, y: 2 }, to: { x: 5, y: 0 } },
+      { from: { x: 3, y: 3 }, to: { x: 5, y: 5 } }
+    ];
+
+    const movesToMake = [];
+    const logs = [];
+    let totalMoved = 0;
+
+    paths.forEach(({ from, to }) => {
+      const regionFrom = gameData.regions.find(r => r.x === from.x && r.y === from.y);
+      const regionTo = gameData.regions.find(r => r.x === to.x && r.y === to.y);
+      if (!regionFrom || !regionTo) return;
+
+      Object.entries(regionFrom.pawns).forEach(([raceId, instances]) => {
+        if (raceId === 'jakub') return; // Don't move Jakub
+        const count = instances.length;
+        if (count === 0) return;
+
+        movesToMake.push({
+          fromRegion: regionFrom,
+          toRegion: regionTo,
+          raceId,
+          instances: [...instances]
+        });
+        const racePl = this.RACE_MAP_PL[raceId] || raceId;
+        logs.push(`${count} x ${racePl} z (${from.x},${from.y}) -> (${to.x},${to.y})`);
+        totalMoved += count;
+      });
+    });
+
+    movesToMake.forEach(move => {
+      const { fromRegion, toRegion, raceId, instances } = move;
+      delete fromRegion.pawns[raceId];
+      if (!toRegion.pawns[raceId]) {
+        toRegion.pawns[raceId] = [];
+      }
+      toRegion.pawns[raceId].push(...instances);
+    });
+
+    if (totalMoved === 0) {
+      return "Niezapowiedziana Panika: Brak pionków w centrum planszy.";
+    }
+
+    return `Niezapowiedziana Panika: Rozproszono pionki z centrum do narożników: ${logs.join(', ')}.`;
+  }
+
+  /**
+   * Moves Jakub to the region with the most pawns (ties broken by band hierarchy).
+   * If there is an unresolved tie or no pawns on the board, he doesn't move and gains +2 fury to all bands.
+   */
+  static applyJakubsTornadoEffect(gameData) {
+    if (!gameData || !gameData.regions) return "";
+
+    const jakubRegion = gameData.regions.find(r => r.pawns.jakub && r.pawns.jakub.length > 0);
+    if (!jakubRegion) {
+      return "Trąba Powietrzna: Jakub nie jest na planszy.";
+    }
+    const jakubPawn = jakubRegion.pawns.jakub[0];
+
+    // Count pawns in each region (excluding Jakub)
+    const candidates = gameData.regions.map(region => {
+      const vCount = region.pawns.vampire?.length || 0;
+      const wCount = region.pawns.werewolf?.length || 0;
+      const gCount = region.pawns.ghost?.length || 0;
+      const bCount = region.pawns.bardak?.length || 0;
+      const total = vCount + wCount + gCount + bCount;
+      return { region, total, vampire: vCount, werewolf: wCount, ghost: gCount, bardak: bCount };
+    }).filter(c => c.total > 0);
+
+    const compareCandidates = (a, b) => {
+      if (b.total !== a.total) return b.total - a.total;
+      if (b.vampire !== a.vampire) return b.vampire - a.vampire;
+      if (b.werewolf !== a.werewolf) return b.werewolf - a.werewolf;
+      if (b.ghost !== a.ghost) return b.ghost - a.ghost;
+      if (b.bardak !== a.bardak) return b.bardak - a.bardak;
+      return 0;
+    };
+
+    if (candidates.length === 0) {
+      return this.applyJakubTornadoFuryIncrease(jakubPawn, jakubRegion, "brak pionków na planszy");
+    }
+
+    candidates.sort(compareCandidates);
+
+    const best = candidates[0];
+    let hasTie = false;
+    if (candidates.length > 1) {
+      if (compareCandidates(best, candidates[1]) === 0) {
+        hasTie = true;
+      }
+    }
+
+    if (hasTie) {
+      return this.applyJakubTornadoFuryIncrease(jakubPawn, jakubRegion, "remis w liczbie i składzie pionków");
+    }
+
+    if (best.region.id !== jakubRegion.id) {
+      // Move Jakub
+      jakubRegion.pawns.jakub = [];
+      delete jakubRegion.pawns.jakub;
+
+      if (!best.region.pawns.jakub) {
+        best.region.pawns.jakub = [];
+      }
+      best.region.pawns.jakub.push(jakubPawn);
+
+      return `Trąba Powietrzna: Jakub przenosi się z (${jakubRegion.x},${jakubRegion.y}) do sektora (${best.region.x},${best.region.y}), ponieważ zawiera on najwięcej pionków (Suma: ${best.total}, Skład: Wampiry: ${best.vampire}, Wilkołaki: ${best.werewolf}, Duchy: ${best.ghost}, Bardaki: ${best.bardak}).`;
+    } else {
+      return `Trąba Powietrzna: Jakub pozostaje w swoim sektorze (${jakubRegion.x},${jakubRegion.y}), ponieważ zawiera on najwięcej pionków (Suma: ${best.total}).`;
+    }
+  }
+
+  static applyJakubTornadoFuryIncrease(jakubPawn, jakubRegion, reason) {
+    const oldAngers = {
+      vampire: jakubPawn.anger.vampire || 0,
+      werewolf: jakubPawn.anger.werewolf || 0,
+      ghost: jakubPawn.anger.ghost || 0,
+      bardak: jakubPawn.anger.bardak || 0
+    };
+
+    jakubPawn.anger.vampire = oldAngers.vampire + 2;
+    jakubPawn.anger.werewolf = oldAngers.werewolf + 2;
+    jakubPawn.anger.ghost = oldAngers.ghost + 2;
+    jakubPawn.anger.bardak = oldAngers.bardak + 2;
+
+    // Recalculate Range
+    let extraRange = 0;
+    Object.values(jakubPawn.anger).forEach(val => {
+      if (val >= 10) {
+        extraRange += 1;
+      }
+    });
+    const newRange = Math.min(5, 1 + extraRange);
+    jakubPawn.range = newRange;
+
+    const furyLogs = [
+      `Wampiry: ${oldAngers.vampire} -> ${jakubPawn.anger.vampire}`,
+      `Wilkołaki: ${oldAngers.werewolf} -> ${jakubPawn.anger.werewolf}`,
+      `Duchy: ${oldAngers.ghost} -> ${jakubPawn.anger.ghost}`,
+      `Bardaki: ${oldAngers.bardak} -> ${jakubPawn.anger.bardak}`
+    ];
+
+    return `Trąba Powietrzna: Jakub nie rusza się z (${jakubRegion.x},${jakubRegion.y}) (${reason}) i wścieka się. Zmiany furii: ${furyLogs.join(', ')} (Zasięg zaktualizowany do ${newRange}).`;
   }
 
   /**
@@ -917,8 +1150,9 @@ export class EventEffectManager {
       }
     });
 
+    const targetRacePl = this.RACE_MAP_PL[targetRace] || targetRace;
     if (totalBardaksOnBoard === 0) {
-      return `Transformation Event: No Bardaks were found on the board to transform into ${targetRace}s.`;
+      return `Transformacja: Brak Bardaków na planszy do przemiany w ${targetRacePl}.`;
     }
 
     // Determine how many to transform
@@ -964,7 +1198,7 @@ export class EventEffectManager {
       toTransform -= numInRegion;
     }
 
-    return `Transformation Event: Transformed ${transformedCount} Bardaks into ${targetRace}s: ${transformationLogs.join(', ')}. Bardak total pool decreased by ${transformedCount}, ${targetRace} pool increased by ${transformedCount}.`;
+    return `Transformacja: Przemieniono ${transformedCount} Bardaków w ${targetRacePl}: ${transformationLogs.join(', ')}. Ogólna pula Bardaków zmniejszona o ${transformedCount}, pula ${targetRacePl} zwiększona o ${transformedCount}.`;
   }
 
   /**
@@ -1016,7 +1250,7 @@ export class EventEffectManager {
     });
 
     if (transformedCount === 0) {
-      return "Vampire Bite Event: No sectors contained both Vampires and Bardaks. No transformations occurred.";
+      return "Ugryzienie Wampira: Brak sektorów zawierających jednocześnie Wampiry i Bardaków. Brak transformacji.";
     }
 
     // Jakub pity effect
@@ -1037,10 +1271,10 @@ export class EventEffectManager {
       const newRange = Math.min(5, 1 + extraRange);
       jakub.range = newRange;
 
-      angerResetLog = `. Jakub took pity on the Bardaks: Anger towards Bardaks reset from ${oldAnger} to 0 (Jakub's Range updated to ${newRange})`;
+      angerResetLog = `. Jakub ulitował się nad Bardakami: Furia wobec Bardaków zresetowana z ${oldAnger} do 0 (Zasięg Jakuba zaktualizowany do ${newRange})`;
     }
 
-    return `Vampire Bite Event: Transformed 1 Bardak into a Vampire in sectors ${affectedRegions.join(', ')} (Total: ${transformedCount})${angerResetLog}.`;
+    return `Ugryzienie Wampira: Przemieniono 1 Bardaka w Wampira w sektorach ${affectedRegions.join(', ')} (Suma: ${transformedCount})${angerResetLog}.`;
   }
 
   /**
@@ -1063,7 +1297,7 @@ export class EventEffectManager {
 
     const jakubRegion = gameData.regions.find(r => r.pawns.jakub && r.pawns.jakub.length > 0);
     if (!jakubRegion) {
-      return `Pack Infection (${type === 'row' ? 'Rows' : 'Columns'}) Event: Jakub is not on the board.`;
+      return `Zakażenie Watahy (${type === 'row' ? 'Wiersze' : 'Kolumny'}): Jakub nie jest na planszy.`;
     }
 
     const jx = jakubRegion.x;
@@ -1118,7 +1352,7 @@ export class EventEffectManager {
       jakub.anger.bardak = (oldBardakAnger) + 5;
       updateRange(jakub);
 
-      return `Pack Infection (${type === 'row' ? 'Rows' : 'Columns'}) Event: No matching lines contained both Werewolves and Bardaks. Werewolf anger reset to 0 (was ${oldWerewolfAnger}), Bardak anger increased to ${jakub.anger.bardak} (was ${oldBardakAnger}). Jakub's Range updated to ${jakub.range}.`;
+      return `Zakażenie Watahy (${type === 'row' ? 'Wiersze' : 'Kolumny'}): Brak linii zawierających jednocześnie Wilkołaki i Bardaków. Furia Wilkołaków zresetowana do 0 (było ${oldWerewolfAnger}), furia Bardaków zwiększona do ${jakub.anger.bardak} (było ${oldBardakAnger}). Zasięg Jakuba zaktualizowany do ${jakub.range}.`;
     }
 
     // Find winning candidate
@@ -1217,8 +1451,8 @@ export class EventEffectManager {
     jakub.anger.bardak = 0;
     updateRange(jakub);
 
-    const lineName = type === 'row' ? `Row ${winner.index}` : `Column ${winner.index}`;
-    return `Pack Infection (${type === 'row' ? 'Rows' : 'Columns'}) Event: Winner is ${lineName} with ${wCount} Werewolves. Transformed ${numToTransform} Bardaks. ${fleeingCount} Bardaks fled to Jakub at (${jx},${jy}). Distributed ${totalW} Werewolves evenly. Anger towards Bardaks reset from ${oldAnger} to 0 (Jakub's Range updated to ${jakub.range}).`;
+    const lineName = type === 'row' ? `Wiersz ${winner.index}` : `Kolumna ${winner.index}`;
+    return `Zakażenie Watahy (${type === 'row' ? 'Wiersze' : 'Kolumny'}): Wybrana linia to ${lineName} z liczbą Wilkołaków: ${wCount}. Przemieniono ${numToTransform} Bardaków. ${fleeingCount} Bardaków uciekło do Jakuba na (${jx},${jy}). Rozdzielono ${totalW} Wilkołaków równomiernie. Furia wobec Bardaków zresetowana z ${oldAnger} do 0 (Zasięg Jakuba zaktualizowany do ${jakub.range}).`;
   }
 
   /**
@@ -1298,18 +1532,18 @@ export class EventEffectManager {
       if (transformedCount > 0) {
         jakub.anger.bardak = 0;
         updateRange(jakub);
-        angerLog = `. Jakub took pity on the Bardaks: Anger towards Bardaks reset from ${oldAnger} to 0 (Jakub's Range updated to ${jakub.range})`;
+        angerLog = `. Jakub ulitował się nad Bardakami: Furia wobec Bardaków zresetowana z ${oldAnger} do 0 (Zasięg Jakuba zaktualizowany do ${jakub.range})`;
       } else {
         jakub.anger.bardak = oldAnger + 5;
         updateRange(jakub);
-        angerLog = `. Bardaks failed to die properly: Anger towards Bardaks increased from ${oldAnger} to ${jakub.anger.bardak} (Jakub's Range updated to ${jakub.range})`;
+        angerLog = `. Bardakom nie udało się wyzionąć ducha: Furia wobec Bardaków zwiększona z ${oldAnger} do ${jakub.anger.bardak} (Zasięg Jakuba zaktualizowany do ${jakub.range})`;
       }
     }
 
     if (transformedCount === 0) {
-      return `Give up the Ghost Event: No border sectors contained only Bardaks. No transformations occurred${angerLog}.`;
+      return `Wyzionąć Ducha: Brak sektorów granicznych zawierających wyłącznie Bardaków. Brak transformacji${angerLog}.`;
     }
 
-    return `Give up the Ghost Event: Transformed 1 Bardak into a Ghost in border sectors ${affectedRegions.join(', ')} (Total: ${transformedCount})${angerLog}.`;
+    return `Wyzionąć Ducha: Przemieniono 1 Bardaka w Ducha w sektorach granicznych ${affectedRegions.join(', ')} (Suma: ${transformedCount})${angerLog}.`;
   }
 }

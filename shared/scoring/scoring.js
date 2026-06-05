@@ -22,7 +22,7 @@ export class Scoring {
       : Scoring.getChebyshevDistance(targetRegion, jakubRegion);
     
     const jakub = jakubRegion?.pawns.jakub[0];
-    const jakubRange = jakub ? jakub.range : 0;
+    const jakubRange = jakub ? (jakub.range !== undefined ? Math.max(1, jakub.range) : 1) : 0;
 
     return {
       V: VampireScoring.calculate(dist, setContent.vampire || 0),

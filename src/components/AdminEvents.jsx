@@ -10,6 +10,8 @@ const AdminEvents = () => {
   const [selectedList, setSelectedList] = useState('');
   const [activeIds, setActiveIds] = useState(new Set());
   const [hasChanges, setHasChanges] = useState(false);
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [newListName, setNewListName] = useState('');
 
   // Fetch all created event lists
   const fetchEventLists = async () => {
@@ -78,8 +80,14 @@ const AdminEvents = () => {
     setHasChanges(true);
   };
 
-  const handleCreateList = async () => {
-    const name = window.prompt('Enter name for the new event list (alphanumeric, underscores only):');
+  const handleCreateListClick = () => {
+    setNewListName('');
+    setShowCreateModal(true);
+  };
+
+  const handleCreateListSubmit = async (e) => {
+    if (e) e.preventDefault();
+    const name = newListName.trim();
     if (!name) return;
     try {
       const response = await fetch(`${SERVER_URL}/api/events/create`, {
@@ -92,6 +100,8 @@ const AdminEvents = () => {
         alert(result.message);
         await fetchEventLists();
         setSelectedList(result.name);
+        setShowCreateModal(false);
+        setNewListName('');
       } else {
         alert(result.error || 'Failed to create list');
       }
@@ -169,7 +179,7 @@ const AdminEvents = () => {
         )}
         <button 
           className="action-button download-btn" 
-          onClick={handleCreateList}
+          onClick={handleCreateListClick}
         >
           Create New List
         </button>
@@ -218,6 +228,63 @@ const AdminEvents = () => {
         </div>
       )}
       <Footer versionInfo={VERSION_INFO} />
+
+      {showCreateModal && (
+        <div className="scoring-modal-overlay" onClick={() => setShowCreateModal(false)}>
+          <div className="scoring-modal-content" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '450px' }}>
+            <button className="modal-close-x" onClick={() => setShowCreateModal(false)}>×</button>
+            <h3 style={{ margin: '0 0 1.5rem 0', color: '#3e2723', textAlign: 'center', fontFamily: 'inherit' }}>
+              Create New Event List
+            </h3>
+            <form onSubmit={handleCreateListSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                <label style={{ fontWeight: 'bold', color: '#3e2723' }}>
+                  List Name:
+                </label>
+                <input
+                  type="text"
+                  value={newListName}
+                  onChange={(e) => setNewListName(e.target.value)}
+                  placeholder="e.g. custom_events"
+                  pattern="^[a-zA-Z0-9_]+$"
+                  title="Alphanumeric characters and underscores only"
+                  required
+                  autoFocus
+                  style={{
+                    padding: '0.8rem',
+                    fontSize: '1rem',
+                    borderRadius: '6px',
+                    border: '2px solid #3e2723',
+                    background: 'rgba(255, 255, 255, 0.85)',
+                    color: '#3e2723',
+                    outline: 'none',
+                  }}
+                />
+                <small style={{ color: '#5d4037', fontSize: '0.8rem' }}>
+                  Use alphanumeric characters and underscores only.
+                </small>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.8rem', marginTop: '0.5rem' }}>
+                <button
+                  type="button"
+                  className="action-button"
+                  style={{ backgroundColor: '#7f8c8d', fontSize: '1.1rem', padding: '0.6rem 1.2rem', cursor: 'pointer' }}
+                  onClick={() => setShowCreateModal(false)}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="action-button"
+                  style={{ backgroundColor: '#27ae60', fontSize: '1.1rem', padding: '0.6rem 1.2rem', cursor: 'pointer' }}
+                >
+                  Create
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

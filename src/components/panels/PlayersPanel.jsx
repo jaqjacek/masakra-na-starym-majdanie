@@ -100,7 +100,7 @@ const PlayersPanel = ({
                   />
                   <label 
                     htmlFor={`manual-chk-${player.id}`}
-                    style={{ fontSize: '0.45rem', fontWeight: 'bold', color: (manualPlayers && manualPlayers.some(id => String(id) === String(player.id))) ? '#3498db' : '#888', cursor: 'pointer', userSelect: 'none' }}
+                    style={{ fontSize: '0.45rem', fontWeight: 'bold', color: (manualPlayers && manualPlayers.some(id => String(id) === String(player.id))) ? '#d35400' : '#5d4037', cursor: 'pointer', userSelect: 'none' }}
                   >
                     MAN
                   </label>

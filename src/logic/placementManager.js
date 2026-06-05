@@ -41,17 +41,26 @@ export class PlacementManager {
       }
     });
 
-    // Update player scores based on general points
-    const logSummary = [];
+    const playerGains = {};
     workState.players.forEach(p => {
       if (p.generalOf) {
         const abbr = RACE_TO_ABBR[p.generalOf];
         const racePts = best.allScores[abbr] || 0;
         if (racePts !== 0) {
           p.points += racePts;
-          const sign = racePts > 0 ? '+' : '';
-          logSummary.push(`${p.generalOf[0].toUpperCase()}:${sign}${racePts}`);
+          playerGains[p.generalOf] = racePts;
         }
+      }
+    });
+
+    const RACES_ORDER = ['vampire', 'werewolf', 'ghost', 'bardak'];
+    const logSummary = [];
+    RACES_ORDER.forEach(race => {
+      if (playerGains[race] !== undefined) {
+        const racePts = playerGains[race];
+        const abbr = RACE_TO_ABBR[race];
+        const sign = racePts > 0 ? '+' : '';
+        logSummary.push(`${abbr}:${sign}${racePts}`);
       }
     });
 

@@ -129,15 +129,25 @@ export const useGameInteraction = ({
       const targetRegion = newState.regions[toIndex];
       const placementScores = Scoring.calculatePlacementPoints(newState.regions, targetRegion, activeSet.set.content);
       
-      let logSummary = [];
+      const playerGains = {};
       newState.players.forEach(p => {
         if (p.generalOf) {
           const abbr = RACE_TO_ABBR[p.generalOf];
           const racePts = placementScores[abbr] || 0;
-          if (racePts > 0) {
+          if (racePts !== 0) {
             p.points += racePts;
-            logSummary.push(`${p.generalOf[0].toUpperCase()}:+${racePts}`);
+            playerGains[p.generalOf] = racePts;
           }
+        }
+      });
+
+      const RACES_ORDER = ['vampire', 'werewolf', 'ghost', 'bardak'];
+      const logSummary = [];
+      RACES_ORDER.forEach(race => {
+        if (playerGains[race] !== undefined) {
+          const racePts = playerGains[race];
+          const abbr = RACE_TO_ABBR[race];
+          logSummary.push(`${abbr}:${racePts > 0 ? '+' : ''}${racePts}`);
         }
       });
 
@@ -164,7 +174,7 @@ export const useGameInteraction = ({
         return `${race[0].toUpperCase()}:${count}/${limit}`;
       }).join(' ');
 
-      addLog(newState, `Manual: Set ${activeSet.set.id} placed [${logSummary.join(', ')}] | Board: ${statusLog}`);
+      addLog(newState, `Ręcznie: Zestaw ${activeSet.set.id} wystawiony w sektorze [${targetRegion.x},${targetRegion.y}] [${logSummary.join(', ')}] | Plansza: ${statusLog}`);
       
       const curId = playerId || newState.playerOrder[newState.currentPlayerIndex];
       const isManual = (manualPlayers && manualPlayers.some(id => String(id) === String(curId))) || (playerId !== null && playerId !== undefined && String(curId) === String(playerId));
@@ -183,7 +193,7 @@ export const useGameInteraction = ({
   const handlePlayerMouseUp = useCallback((targetPlayerId) => {
     if (activeSet && !playerId) { 
       const newState = JSON.parse(JSON.stringify(gameState)); const s = findAndRemoveSetById(newState, activeSet.set.id);
-      if (s) { s.ownerId = targetPlayerId; if (!newState.sets.heldSets) newState.sets.heldSets = []; newState.sets.heldSets.push(s); addLog(newState, `Manual: Distributed Set ${s.id} to Player ${targetPlayerId}`); updateGameWithSync(newState); }
+      if (s) { s.ownerId = targetPlayerId; if (!newState.sets.heldSets) newState.sets.heldSets = []; newState.sets.heldSets.push(s); addLog(newState, `Ręcznie: Rozdano Zestaw ${s.id} Graczowi ${targetPlayerId}`); updateGameWithSync(newState); }
       setActiveSet(null);
     }
     if (activeGeneral && !playerId) { 
@@ -221,15 +231,15 @@ export const useGameInteraction = ({
           jakub.anger = result.anger;
           jakub.range = result.range;
           if (playerIdx !== -1) {
-            addLog(newState, `Player ${ownerId} gave Set ${s.id} to Jakub. Anger updated | Range: ${jakub.range}`);
+            addLog(newState, `Gracz ${ownerId} podkablował Jakubowi zestawem ${s.id}. Furia zaktualizowana | Range: ${jakub.range}`);
           } else {
-            addLog(newState, `Set ${s.id} given to Jakub. Anger updated | Range: ${jakub.range}`);
+            addLog(newState, `Zestaw ${s.id} został podkablowany Jakubowi. Furia zaktualizowana | Range: ${jakub.range}`);
           }
         } else {
           if (playerIdx !== -1) {
-            addLog(newState, `Player ${ownerId} gave Set ${s.id} to Jakub for 1 pt.`);
+            addLog(newState, `Gracz ${ownerId} podkablował Jakubowi zestawem ${s.id} za 1 pkt.`);
           } else {
-            addLog(newState, `Set ${s.id} given to Jakub.`);
+            addLog(newState, `Zestaw ${s.id} został podkablowany Jakubowi.`);
           }
         }
         

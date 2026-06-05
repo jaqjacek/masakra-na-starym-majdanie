@@ -91,11 +91,17 @@ export class GameEventPhaseManager {
     this.ensureEventState();
     
     // Log start of phase
-    this.addLog(`--- Start of Event Phase ---`);
+    this.addLog(`--- Rozpoczęcie Fazy Wydarzeń ---`);
 
     if (this.gameData.events.pool.length === 0) {
-      this.addLog(`No events left in the pool.`);
-      return;
+      if (this.gameData.events.drawn && this.gameData.events.drawn.length > 0) {
+        this.addLog(`Talia wydarzeń wyczerpała się. Przetasowano odrzucone wydarzenia z powrotem do talii.`);
+        this.gameData.events.pool = [...this.gameData.events.drawn];
+        this.gameData.events.drawn = [];
+      } else {
+        this.addLog(`Brak dostępnych wydarzeń w talii.`);
+        return;
+      }
     }
 
     // Draw a random event
@@ -105,8 +111,8 @@ export class GameEventPhaseManager {
 
     // Log the drawn event
     console.log(`[EventPhase] Drawn: [${event.id}] ${event.title}`);
-    this.addLog(`EVENT DRAWN: [${event.id}] ${event.title}`);
-    this.addLog(`Effect: ${event.description}`);
+    this.addLog(`WYLOSOWANO WYDARZENIE: [${event.id}] ${event.title}`);
+    this.addLog(`Efekt: ${event.description}`);
 
     // Apply effects based on event type
     if (event.type === 'anger-plus' || event.type === 'anger-minus') {

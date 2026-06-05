@@ -11,7 +11,7 @@ Ten plik zawiera opisy i prompty dla Nanobanana 2. Każda sekcja odpowiada konkr
 
 *   **Status:** `do generacji` (wersja PRO)
 
-## 2. Frakcje - Pionki (Pawns)
+## 2. Bandy - Pionki (Pawns)
 *   **Styl wspólny:** `vintage` / `sketch` (stylizowane na ilustracje z tanich gazet lub kronik milicyjnych z lat 80.).
 
 ### A. Wampiry (Arystokracja w błocie)
@@ -48,7 +48,7 @@ Ten plik zawiera opisy i prompty dla Nanobanana 2. Każda sekcja odpowiada konkr
 *   **Prompt:** `The word "MASAKRA" hand-painted in a thick, visceral, blood-red paint. The letters are aggressive, irregular, and slightly messy. Long, realistic drips and streaks of wet red paint run down vertically from the bottom of each letter, creating a gruesome, horror-themed effect. High contrast, sharp focus on the texture of the paint. The background should be a simple neutral or transparent-ready surface to allow for easy compositing. Gritty horror aesthetic.`
 *   **Status:** `do generacji`
 
-## 4. Ikony UI (Frakcje)
+## 4. Ikony UI (Bandy)
 *   **Styl wspólny:** Minimalistyczny, 2-kolorowy design UI, wysoki kontrast, grube obramowania (stroke), styl wektorowy.
 
 ### A. Wampir (Vampire)

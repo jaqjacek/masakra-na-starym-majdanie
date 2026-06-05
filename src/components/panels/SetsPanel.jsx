@@ -22,26 +22,26 @@ const SetsPanel = ({ sets, discardedSets = [], onSetMouseDown, title, setInfo, h
             className={`tab-btn ${activeTab === 'active' ? 'active' : ''}`}
             onClick={() => setActiveTab('active')}
           >
-            Active ({sets.length})
+            Aktywne ({sets.length})
           </button>
           <button 
             className={`tab-btn ${activeTab === 'discarded' ? 'active' : ''}`}
             onClick={() => setActiveTab('discarded')}
           >
-            Discarded ({discardedSets.length})
+            Odrzucone ({discardedSets.length})
           </button>
         </div>
       )}
 
       <div className="sets-panel-header compact-row">
         <div className="header-left-group">
-          <h3>{activeTab === 'active' ? (title || "Sets") : "Discarded Pile"}</h3>
+          <h3>{activeTab === 'active' ? (title || "Zestawy") : "Stos odrzucony"}</h3>
         </div>
         
         {activeTab === 'active' && displaySetName && displaySetName !== "Unknown Set" && displaySetName !== "default" && (
           <div className="header-right-group">
             <span className="active-set-name" title={setInfo?.description || ""}>
-              Active: <strong>{displaySetName}</strong>
+              Aktywny: <strong>{displaySetName}</strong>
             </span>
           </div>
         )}
@@ -49,19 +49,15 @@ const SetsPanel = ({ sets, discardedSets = [], onSetMouseDown, title, setInfo, h
 
       <div className="sets-container">
         {sortedSets.length === 0 ? (
-          <div className="no-sets-message">No sets in this category.</div>
+          <div className="no-sets-message">Brak zestawów w tej kategorii.</div>
         ) : (
           sortedSets.map((set, index) => (
             <div 
               key={`${set.id}-${index}`} 
               className={`pawn-set ${set.used || activeTab === 'discarded' ? 'used' : ''}`}
               onMouseDown={(e) => !set.used && activeTab === 'active' && onSetMouseDown(set, e)}
-              title={set.used || activeTab === 'discarded' ? "Cannot use this set" : `Power: ${set.power} | Drag to a region or player`}
+              title={set.used || activeTab === 'discarded' ? "Nie możesz użyć tego zestawu" : "Przeciągnij do pustego regionu planszy lub na panel Jakuba, aby podkablować"}
             >
-              <div className="set-header">
-                <span>Set {set.id}</span>
-                <span className="power-badge">P: {set.power}</span>
-              </div>
               <div className="set-content">
                 {SUMMARY_PAWN_IDS.map(typeId => {
                   const count = set.content[typeId] || 0;

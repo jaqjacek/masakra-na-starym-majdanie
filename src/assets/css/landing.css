@@ -6,48 +6,115 @@
   min-height: 100vh; 
   width: 100%;
   gap: 1.5rem; 
-  background: radial-gradient(circle at center, #2c3e50 0%, #1a1a1a 100%); 
+  background: transparent; /* Show the dark wood table background */
   position: relative;
   overflow: hidden;
 }
 
-.landing-title { font-size: 2.5rem; margin: 0; color: #f1c40f; text-shadow: 0 2px 10px rgba(0,0,0,0.5); }
-.landing-subtitle { margin: 0; color: #aaa; text-transform: uppercase; letter-spacing: 2px; font-size: 0.8rem; }
+.landing-title { 
+  font-size: 3rem; 
+  margin: 0; 
+  color: #f1c40f; 
+  text-shadow: 0 3px 8px rgba(0,0,0,0.8), 0 0 10px rgba(241, 196, 15, 0.3);
+  text-align: center;
+  font-family: 'Cinzel', serif;
+  font-weight: 900;
+}
+
+.landing-subtitle { 
+  margin: 0; 
+  color: #ffd54f; 
+  text-transform: uppercase; 
+  letter-spacing: 3px; 
+  font-size: 0.9rem; 
+  text-shadow: 0 2px 4px rgba(0,0,0,0.8);
+  font-weight: bold;
+}
 
 .landing-card {
-  background: rgba(255, 255, 255, 0.05);
-  padding: 2rem;
+  background-image: url('/src/assets/img/parchment_scroll.png');
+  background-size: cover;
+  padding: 2.5rem 2rem;
   border-radius: 12px;
-  border: 1px solid #444;
+  border: 3px solid #3e2723;
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
-  width: 320px;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+  width: 350px;
+  box-shadow: 0 15px 40px rgba(0,0,0,0.8);
+  color: #3e2723; /* Dark sepia text */
 }
 
 .landing-divider {
-  display: flex; align-items: center; text-align: center; color: #666; font-size: 0.7rem; font-weight: bold;
+  display: flex; align-items: center; text-align: center; color: #5d4037; font-size: 0.75rem; font-weight: bold;
 }
 
 .landing-divider::before, .landing-divider::after {
-  content: ''; flex: 1; border-bottom: 1px solid #444;
+  content: ''; flex: 1; border-bottom: 2px solid #8d6e63;
 }
 
 .landing-divider::before { margin-right: 1rem; }
 .landing-divider::after { margin-left: 1rem; }
 
-.new-game-btn { padding: 0.8rem !important; font-size: 1rem !important; }
+.new-game-btn { 
+  padding: 0.8rem !important; 
+  font-size: 1rem !important; 
+  background-color: #3e2723 !important; 
+  color: #f5f5f5 !important;
+  border: 2px solid #5d4037 !important;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+}
+.new-game-btn:hover {
+  background-color: #5d4037 !important;
+  transform: translateY(-2px);
+}
 
 .game-select-form { display: flex; flex-direction: column; gap: 0.8rem; }
-.game-select-form input { padding: 0.8rem 1rem; font-size: 1.1rem; border-radius: 4px; border: 1px solid #666; background: #333; color: white; text-align: center; }
+.game-select-form input { 
+  padding: 0.8rem 1rem; 
+  font-size: 1.1rem; 
+  border-radius: 4px; 
+  border: 2px solid #8d6e63; 
+  background: #fffdf0; /* Cream background for the input */
+  color: #3e2723; 
+  text-align: center;
+  font-weight: bold;
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
+}
+.game-select-form input::placeholder {
+  color: #8d6e63;
+  opacity: 0.7;
+}
+
+.game-select-form .action-button {
+  background-color: #795548;
+  border: 2px solid #5d4037;
+  color: #fff;
+  font-weight: bold;
+  padding: 0.8rem;
+  font-size: 1rem;
+}
+.game-select-form .action-button:hover:not(:disabled) {
+  background-color: #8d6e63;
+}
 
 .landing-header { position: absolute; top: 2rem; right: 2rem; }
 
 .admin-link-top {
-  color: #3498db; text-decoration: none; font-size: 0.9rem; font-weight: bold;
-  background: rgba(255,255,255,0.05); padding: 0.5rem 1rem; border-radius: 4px;
-  border: 1px solid #444; transition: all 0.2s;
+  color: #3e2723; 
+  text-decoration: none; 
+  font-size: 0.9rem; 
+  font-weight: bold;
+  background-image: url('/src/assets/img/parchment_scroll.png'); 
+  padding: 0.5rem 1rem; 
+  border-radius: 4px;
+  border: 2px solid #3e2723; 
+  transition: all 0.2s;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.4);
 }
 
-.admin-link-top:hover { background: rgba(255,255,255,0.1); border-color: #3498db; color: #fff; }
+.admin-link-top:hover { 
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(0,0,0,0.5);
+  border-color: #5d4037;
+}

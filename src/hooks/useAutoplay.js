@@ -42,7 +42,7 @@ export const useAutoplay = ({
     if (state.sets.drawPile.length === 0 && state.sets.discardPile.length > 0) {
       state.sets.drawPile = [...state.sets.discardPile];
       state.sets.discardPile = [];
-      addLog(state, "Reshuffling discard pile into draw pile.");
+      addLog(state, "Przetasowywanie stosu odrzuconego do talii dobierania.");
     }
   }, [addLog]);
 
@@ -106,7 +106,7 @@ export const useAutoplay = ({
             }
           }
         });
-        if (distributionCount > 0) addLog(workState, `Round ${workState.currentRound}: Refilled player hands to ${INITIAL_HAND_SIZE} sets.`);
+        if (distributionCount > 0) addLog(workState, `Runda ${workState.currentRound}: Uzupełniono ręce graczy do ${INITIAL_HAND_SIZE} zestawów.`);
         
         let jakub = null;
         for (const r of workState.regions) { if (r.pawns.jakub?.length > 0) { jakub = r.pawns.jakub[0]; break; } }
@@ -132,9 +132,9 @@ export const useAutoplay = ({
               const result = applySetToJakubAnger(jakub, set.content);
               jakub.anger = result.anger;
               jakub.range = result.range;
-              addLog(workState, `Jakub claimed Set ${set.id}. Anger updated immediately.`);
+              addLog(workState, `Jakub przejął Zestaw ${set.id}. Furia zaktualizowana natychmiast.`);
             } else {
-              addLog(workState, `Jakub claimed Set ${set.id} from pool.`);
+              addLog(workState, `Jakub przejął Zestaw ${set.id} z puli.`);
             }
           }
         }
@@ -142,7 +142,7 @@ export const useAutoplay = ({
         workState.currentPlayerIndex = 0;
         workState.passedPlayers = [];
         workState.turnActionExecuted = false;
-        addLog(workState, `--- Start of General Phase ---`);
+        addLog(workState, `--- Start Fazy Generałów ---`);
         await updateGameWithSync(workState);
         return;
       }
@@ -154,7 +154,7 @@ export const useAutoplay = ({
           workState.currentPlayerIndex = 0;
           workState.passedPlayers = [];
           workState.turnActionExecuted = false;
-          addLog(workState, `--- Start of Player Phase (Round ${workState.currentRound}) ---`);
+          addLog(workState, `--- Start Fazy Graczy (Runda ${workState.currentRound}) ---`);
           await updateGameWithSync(workState);
           return;
         }
@@ -187,7 +187,7 @@ export const useAutoplay = ({
           );
           curPlayer.generalOf = pick;
           workState.availableGenerals = workState.availableGenerals.filter(g => g !== pick);
-          addLog(workState, `Player ${curId} chose General of ${pick}s`);
+          addLog(workState, `Gracz ${curId} wybrał Generała bandy: ${pick === 'V' ? 'Wampiry' : pick === 'W' ? 'Wilkołaki' : pick === 'G' ? 'Duchy' : 'Bardaki'}`);
           workState.currentPlayerIndex = (workState.currentPlayerIndex + 1) % workState.playerOrder.length;
           await updateGameWithSync(workState);
           return;
@@ -215,7 +215,7 @@ export const useAutoplay = ({
           );
           curPlayer.generalOf = pick;
           workState.availableGenerals = workState.availableGenerals.filter(g => g !== pick);
-          addLog(workState, `Player ${curId} chose General of ${pick}s`);
+          addLog(workState, `Gracz ${curId} wybrał Generała bandy: ${pick === 'V' ? 'Wampiry' : pick === 'W' ? 'Wilkołaki' : pick === 'G' ? 'Duchy' : 'Bardaki'}`);
           workState.currentPlayerIndex = (workState.currentPlayerIndex + 1) % workState.playerOrder.length;
           await updateGameWithSync(workState);
           return;
@@ -231,17 +231,17 @@ export const useAutoplay = ({
 
         if (best) {
           const { logSummaryString, statusLogString } = PlacementManager.executePlacement(best, workState, PAWN_TYPES, playLimits);
-          addLog(workState, `Player ${curId} placed Set ${best.set.id} [${logSummaryString}] | Board: ${statusLogString}`);
+           addLog(workState, `Gracz ${curId} wystawił Zestaw ${best.set.id} w sektorze [${best.region.x},${best.region.y}] [${logSummaryString}] | Plansza: ${statusLogString}`);
         } else {
           const excess = PlacementManager.executePass(curPlayer, workState, MAX_HAND_SIZE, applySetToJakubAnger);
           if (excess > 0) {
-            addLog(workState, `Player ${curId} passed and sold ${excess} excess set(s). Jakub Anger updated.`, { race: curPlayer.generalOf, points: excess });
+            addLog(workState, `Gracz ${curId} spasował i podkablował ${excess} nadmiarowych zestawów. Furia Jakuba zaktualizowana.`, { race: curPlayer.generalOf, points: excess });
           } else {
-            addLog(workState, `Player ${curId} passed.`);
+            addLog(workState, `Gracz ${curId} spasował.`);
           }
         }
         if (workState.passedPlayers.length === workState.players.length) {
-          workState.phase = 'jakub_phase'; addLog(workState, `--- Start of Jakub Phase ---`);
+          workState.phase = 'jakub_phase'; addLog(workState, `--- Start Fazy Jakuba ---`);
         } else workState.currentPlayerIndex = (workState.currentPlayerIndex + 1) % workState.playerOrder.length;
         await updateGameWithSync(workState);
         return;
@@ -253,18 +253,18 @@ export const useAutoplay = ({
           addLog(step.newState, step.log, step.metadata || {}); 
           if (step.metadata && step.metadata.ramboPointsAwarded) {
             step.metadata.ramboPointsAwarded.forEach(r => {
-              addLog(step.newState, `🔥 Rambo Survivor: ${r.player} (${r.race.toUpperCase()}) gained ${r.points} bonus points.`, { race: r.race, points: r.points });
+              addLog(step.newState, `🔥 Rambo: ${r.player} (${r.race === 'V' ? 'Wampiry' : r.race === 'W' ? 'Wilkołaki' : r.race === 'G' ? 'Duchy' : 'Bardaki'}) zdobywa ${r.points} bonusowych punktów za przeżycie w pobliżu Jakuba.`, { race: r.race, points: r.points });
             });
           }
           await updateGameWithSync(step.newState); 
         }
         else {
-          addLog(workState, `Jakub stops his rampage.`);
+          addLog(workState, `Jakub kończy swoje łowy.`);
           let jakub = null;
           for (const r of workState.regions) { if (r.pawns.jakub?.length > 0) { jakub = r.pawns.jakub[0]; break; } }
           if (jakub) { 
             jakub.range = 1; 
-            addLog(workState, `Jakub range reset to 1.`); 
+            addLog(workState, `Zasięg Jakuba zresetowany do 1.`); 
           }
           const toDiscard = (workState.sets.heldSets || []).filter(s => s.ownerId === 'jakub');
           toDiscard.forEach(s => { s.ownerId = null; s.used = false; if (!workState.sets.discardPile) workState.sets.discardPile = []; workState.sets.discardPile.push(s); });
@@ -281,11 +281,11 @@ export const useAutoplay = ({
           if (workState.currentRound >= (workState.totalRounds || TOTAL_GAME_ROUNDS)) { 
             workState.phase = 'final_scoring'; 
             workState.currentPlayerIndex = 0; 
-            addLog(workState, `--- FINAL SCORING PHASE (08:00) ---`); 
+            addLog(workState, `--- FAZA PUNKTACJI KOŃCOWEJ (08:00) ---`); 
           }
           else { 
             workState.phase = 'event_phase'; 
-            addLog(workState, `--- EVENT PHASE ---`); 
+            addLog(workState, `--- FAZA EVENTU ---`); 
           }
           
           if (!isFullAutoplay) {
@@ -338,7 +338,7 @@ export const useAutoplay = ({
           else if (pick === 'bardak') addedPoints = BardakScoring.calculateFinal(workState.regions);
           
           curPlayer.points += addedPoints; 
-          addLog(workState, `Final Scoring: Player ${curPlayer.id} (+${addedPoints} for ${pick}s)`);
+          addLog(workState, `Punktacja Końcowa: Gracz ${curPlayer.id} (+${addedPoints} za bandę ${pick === 'V' ? 'Wampiry' : pick === 'W' ? 'Wilkołaki' : pick === 'G' ? 'Duchy' : 'Bardaki'});`);
         });
 
         workState.phase = 'End Game';
@@ -348,9 +348,9 @@ export const useAutoplay = ({
         const winners = workState.players.filter(p => p.points === maxPoints);
         
         if (winners.length > 1) {
-          addLog(workState, `GAME OVER! It's a TIE between Players: ${winners.map(w => w.id).join(', ')} with ${maxPoints} points!`);
+          addLog(workState, `KONIEC GRY! REMIS pomiędzy graczami: ${winners.map(w => w.id).join(', ')} z liczbą punktów: ${maxPoints}!`);
         } else {
-          addLog(workState, `GAME OVER! Winner: Player ${winners[0].id} with ${maxPoints} points.`);
+          addLog(workState, `KONIEC GRY! Zwycięzca: Gracz ${winners[0].id} z liczbą punktów: ${maxPoints}.`);
         }
 
         setIsFullAutoplay(false);

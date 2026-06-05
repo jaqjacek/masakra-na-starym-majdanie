@@ -41,7 +41,7 @@ const Region = ({ pawnGroups, onMouseUp, onRemovePawn, onAddPawn, onPawnMouseDow
                   setHoveredPawn({ pawn, pawnType, x: e.clientX, y: e.clientY });
                 }}
                 onMouseLeave={() => setHoveredPawn(null)}
-                title={isEnabled ? "Drag to move, Shift+Click to remove" : "Disabled - Cannot move, Shift+Click to remove"}
+                title={isEnabled ? "Przeciągnij, aby przesunąć, Shift+Kliknięcie, aby usunąć" : "Zablokowany - nie możesz się poruszyć, Shift+Kliknięcie, aby usunąć"}
               />
             );
           });
@@ -53,7 +53,7 @@ const Region = ({ pawnGroups, onMouseUp, onRemovePawn, onAddPawn, onPawnMouseDow
           <div 
             key={type.id} 
             className="summary-item" 
-            title={`Shift+Click to add ${type.name}`}
+            title={`Shift+Kliknięcie, aby dodać: ${type.name}`}
             onClick={(e) => {
               if (e.shiftKey) {
                 e.stopPropagation();

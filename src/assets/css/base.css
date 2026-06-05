@@ -1,20 +1,28 @@
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Outfit:wght@300;400;600;700&display=swap');
+
 :root {
   --bg-color: #1a1a1a;
   --text-color: #ffffff;
-  --board-color: #333333;
-  --region-color: #444444;
-  --region-border: #666666;
-  --bag-color: #555555;
+  --board-color: #3e2723; /* Warm reddish-brown for board back */
+  --region-color: #5d4037;
+  --region-border: #4e342e;
+  --bag-color: #5d4037;
   
   --pawn-a: #e74c3c;
   --pawn-b: #3498db;
   --pawn-c: #2ecc71;
   --pawn-d: #f1c40f;
 
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+  font-family: 'Outfit', system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
   font-weight: 400;
   color-scheme: light dark;
+}
+
+h1, h2, h3, h4, h5, h6, .landing-title, .setup-summary-header, .generals-pool-header, .autoplay-event-title, .modal-close-x {
+  font-family: 'Cinzel', serif;
+  font-weight: 700;
+  letter-spacing: 1px;
 }
 
 html, body {
@@ -22,7 +30,12 @@ html, body {
   width: 100%;
   height: 100vh;
   overflow: hidden;
-  background-color: var(--bg-color); color: var(--text-color);
+  background-color: var(--bg-color);
+  background-image: linear-gradient(rgba(0, 0, 0, 0.45), rgba(0, 0, 0, 0.45)), url('/src/assets/img/dark_wood_table.png');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  color: var(--text-color);
   user-select: none;
 }
 
@@ -98,8 +111,7 @@ html.scrollable .app-container {
 
 .app-footer {
   width: 100%;
-  background-color: #1a1a1a;
-  border-top: 1px solid #333;
+  background: transparent;
   padding: 0.5rem 1rem;
   display: flex;
   justify-content: space-between;

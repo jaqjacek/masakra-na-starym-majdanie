@@ -1,7 +1,7 @@
 import React from 'react';
 import { PAWN_TYPES, SUMMARY_PAWN_IDS } from '../../constants/pawnTypes';
 
-const JakubPanel = ({ jakub, onUpdateCounter, onJakubMouseDown, isJakubOnBoard, sets = [], onMouseUp }) => {
+const JakubPanel = ({ jakub, onUpdateCounter, onJakubMouseDown, isJakubOnBoard, sets = [], onMouseUp, isDraggingSet }) => {
   if (!jakub) return null;
 
   const handleClick = (e, path) => {
@@ -13,7 +13,7 @@ const JakubPanel = ({ jakub, onUpdateCounter, onJakubMouseDown, isJakubOnBoard, 
   const normalPawnTypes = PAWN_TYPES.filter(p => !p.isUnique);
 
   return (
-    <div className="jakub-panel" onMouseUp={onMouseUp}>
+    <div className={`jakub-panel ${isDraggingSet ? 'dragging-set-target' : ''}`} onMouseUp={onMouseUp}>
       <h3>Jakub</h3>
       
       <div className="jakub-stats">

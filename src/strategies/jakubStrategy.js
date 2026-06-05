@@ -1,6 +1,8 @@
 import { RACES } from '../constants/game';
 import { JAKUB_ANGER_THRESHOLD, JAKUB_BASE_RANGE } from '../constants/constants';
 
+const RACE_MAP_PL = { 'vampire': 'Wampiry', 'werewolf': 'Wilkołaki', 'ghost': 'Duchy', 'bardak': 'Bardaki' };
+
 /**
  * Updates Jakub's anger based on set contents and handles overflow logic.
  */
@@ -62,7 +64,7 @@ export const executeJakubStep = (gameState) => {
     }
   }
 
-  if (!jakub) return { newState: workState, actionTaken: false, log: "Jakub not found." };
+  if (!jakub) return { newState: workState, actionTaken: false, log: "Nie znaleziono Jakuba." };
 
   // 1. Before move, kill everyone in his current region that he has anger towards.
   // For every pawn killed this way, decrease proper anger.
@@ -82,9 +84,10 @@ export const executeJakubStep = (gameState) => {
     }
   });
 
+
   if (killedInfo.length > 0) {
-    const logStr = `Jakub targets his region at [${currentRegion.x},${currentRegion.y}] and kills everyone he is angry at: ` +
-      killedInfo.map(info => `${info.count} ${info.race}(s)`).join(', ') + '.';
+    const logStr = `Jakub atakuje swój sektor na [${currentRegion.x},${currentRegion.y}] i zabija wszystkich, na których ma furię: ` +
+      killedInfo.map(info => `${info.count} x ${RACE_MAP_PL[info.race] || info.race}`).join(', ') + '.';
     return {
       newState: workState,
       actionTaken: true,
@@ -101,7 +104,7 @@ export const executeJakubStep = (gameState) => {
     .sort((a, b) => b.val - a.val || RACES.indexOf(a.race) - RACES.indexOf(b.race));
 
   if (sortedAnger.length === 0) {
-    return { newState: workState, actionTaken: false, log: "Jakub's anger is gone. Rampage ends." };
+    return { newState: workState, actionTaken: false, log: "Furia Jakuba opadła. Łowy zakończone." };
   }
 
   // Calculate dynamic movement range: Range = 1 + (number of races with anger >= 10)
@@ -139,21 +142,22 @@ export const executeJakubStep = (gameState) => {
     return { 
       newState: workState, 
       actionTaken: false, 
-      log: `Jakub could not find any target races in range ${calculatedRange}. Rampage ends.` 
+      log: `Jakub nie znalazł żadnej bandy w zasięgu ${calculatedRange}. Łowy zakończone.` 
     };
   }
 
   // Construct tie-breaking and priority details for the logs
+
   let extraLogInfo = "";
   if (chosenPriorityIndex > 0) {
-    const skippedRacesStr = sortedAnger.slice(0, chosenPriorityIndex).map(x => x.race.toUpperCase()).join(', ');
-    extraLogInfo += ` (Skipped higher anger races not in range: ${skippedRacesStr})`;
+    const skippedRacesStr = sortedAnger.slice(0, chosenPriorityIndex).map(x => RACE_MAP_PL[x.race] || x.race.toUpperCase()).join(', ');
+    extraLogInfo += ` (Pominięto bandy o wyższej furii poza zasięgiem: ${skippedRacesStr})`;
   }
 
   const chosenAngerVal = jakub.anger[targetRace];
   const tiedRaces = sortedAnger.filter(x => x.val === chosenAngerVal && x.race !== targetRace);
   if (tiedRaces.length > 0) {
-    extraLogInfo += ` [Tie-breaker V->W->G->B selected ${targetRace.toUpperCase()} over ${tiedRaces.map(x => x.race.toUpperCase()).join(', ')}]`;
+    extraLogInfo += ` [Rozstrzygnięcie remisu V->W->G->B wybrało ${RACE_MAP_PL[targetRace] || targetRace} zamiast ${tiedRaces.map(x => RACE_MAP_PL[x.race] || x.race).join(', ')}]`;
   }
 
   // Pick best region: highest number of units of targetRace, tie-break by proximity/discovery order
@@ -184,10 +188,11 @@ export const executeJakubStep = (gameState) => {
     }
   });
 
+
   let ramboLogStr = "";
   if (ramboPointsAwarded.length > 0) {
-    ramboLogStr = ` Rambo Survivor Points awarded: ` + 
-      ramboPointsAwarded.map(r => `${r.player} (${r.race.toUpperCase()}) +${r.points} pts`).join(', ') + '.';
+    ramboLogStr = ` Punkty Rambo przyznane: ` + 
+      ramboPointsAwarded.map(r => `${r.player} (${RACE_MAP_PL[r.race] || r.race}) +${r.points} pkt`).join(', ') + '.';
   }
 
   targetRegion.pawns.jakub = currentRegion.pawns.jakub;
@@ -197,7 +202,8 @@ export const executeJakubStep = (gameState) => {
   targetRegion.pawns.jakub[0].movedThisRound = true;
   targetRegion.pawns.jakub[0].range = calculatedRange;
 
-  const finalLog = `Jakub moves to [${targetRegion.x},${targetRegion.y}] within range ${calculatedRange} to chase ${targetRace.toUpperCase()}s (Anger: ${jakub.anger[targetRace] || 0} | Region contains ${maxCount} unit(s)).${extraLogInfo}${ramboLogStr}`;
+
+  const finalLog = `Jakub przemieszcza się na [${targetRegion.x},${targetRegion.y}] w zasięgu ${calculatedRange}, ścigając ${RACE_MAP_PL[targetRace] || targetRace} (Furia: ${jakub.anger[targetRace] || 0} | Region zawiera ${maxCount} jednostek).${extraLogInfo}${ramboLogStr}`;
 
   return { 
     newState: workState, 

@@ -32,7 +32,7 @@ export const getGlobalConfig = () => {
 export const getGameConfig = () => {
   const defaultGameConfig = {
     gameTitle: "MASAKRA na Starym Majdanie",
-    startPointsAmmount: 10,
+    startPointsAmmount: 20,
     initialSetsPerPlayer: 5,
     setupSetsPerPlayerPerRound: 3,
     jakubSetsPerRound: 2,

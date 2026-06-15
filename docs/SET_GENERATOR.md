@@ -1,6 +1,6 @@
 # Set Generation Specification (v1.3.0)
 
-This document defines the rules and parameters for generating game sets in "Wedrowycz-Gemini".
+This document defines the rules and parameters for generating game sets in "MASAKRA na Starym Majdanie".
 
 ## 1. Global Pawn Pool (Standard)
 | Race | Total Quantity | Power Value |

@@ -96,6 +96,27 @@ const AdminSets = () => {
     } catch (_err) { alert('Failed to set default'); }
   };
 
+  const handleDuplicateSet = async () => {
+    if (!selectedSet) return;
+    try {
+      const res = await fetch(`${SERVER_URL}/api/sets/duplicate/${selectedSet}`, {
+        method: 'POST'
+      });
+      const data = await res.json();
+      if (res.ok) {
+        alert(data.message);
+        const listRes = await fetch(`${SERVER_URL}/api/sets`);
+        const list = await listRes.json();
+        setAvailableSets(list);
+        setSelectedSet(data.name);
+      } else {
+        alert(data.error || 'Failed to duplicate set');
+      }
+    } catch (_err) {
+      alert('Failed to duplicate set');
+    }
+  };
+
   const handleAddEmptySet = () => {
     if (!loadedSetData) return;
     const newData = JSON.parse(JSON.stringify(loadedSetData));
@@ -182,14 +203,15 @@ const AdminSets = () => {
         </select>
         {selectedSet && (
           <>
-            <button className="action-button" style={{ backgroundColor: '#9b59b6' }} onClick={() => setIsEditMode(!isEditMode)}>{isEditMode ? 'Exit Edit Mode' : 'Edit Mode'}</button>
-            <button className="action-button" style={{ backgroundColor: '#f39c12' }} onClick={handleSort}>Sort Set</button>
-            <button className="action-button" style={{ backgroundColor: '#e74c3c' }} onClick={setAsDefault}>Set Default</button>
-            {isEditMode && <button className="action-button" style={{ backgroundColor: '#3498db' }} onClick={handleAddEmptySet}>+ Add Empty Set</button>}
-            {isEditMode && <button className="action-button" style={{ backgroundColor: '#27ae60' }} onClick={handleSaveEdits}>Save Changes</button>}
+            <button className="action-button btn-edit-mode" onClick={() => setIsEditMode(!isEditMode)}>{isEditMode ? 'Exit Edit Mode' : 'Edit Mode'}</button>
+            <button className="action-button btn-sort" onClick={handleSort}>Sort Set</button>
+            <button className="action-button btn-default" onClick={setAsDefault}>Set Default</button>
+            <button className="action-button btn-duplicate" onClick={handleDuplicateSet}>Duplicate Set</button>
+            {isEditMode && <button className="action-button btn-add" onClick={handleAddEmptySet}>+ Add Empty Set</button>}
+            {isEditMode && <button className="action-button btn-save" onClick={handleSaveEdits}>Save Changes</button>}
           </>
         )}
-        <button className="action-button download-btn" onClick={toggleGenForm}>{showGenForm ? 'Hide Form' : 'Generate New Set'}</button>
+        <button className="action-button btn-create" onClick={toggleGenForm}>{showGenForm ? 'Hide Form' : 'Generate New Set'}</button>
       </div>
 
       {showGenForm && (

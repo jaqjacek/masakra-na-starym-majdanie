@@ -19,7 +19,7 @@ import {
   CONFIGS_DIR,
   saveFullState
 } from '../gameLogic.js';
-import { GameEventPhaseManager } from '../gameEventPhaseManager.js';
+import { GameEventPhaseManager } from '../events/gameEventPhaseManager.js';
 
 export function initializeGame(gameId, requestedSet, io) {
   const regions = createEmptyRegions(); 

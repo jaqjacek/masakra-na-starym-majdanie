@@ -16,19 +16,22 @@ export class Scoring {
   }
 
   static calculatePlacementPoints(regions, targetRegion, setContent) {
-    const jakubRegion = regions.find(r => r.pawns.jakub?.length > 0);
+    if (!regions || !targetRegion) return { V: 0, W: 0, G: 0, B: 0 };
+    const jakubRegion = regions.find(r => r && r.pawns && r.pawns.jakub?.length > 0);
     const dist = targetRegion.jakubDistance !== undefined 
       ? targetRegion.jakubDistance 
       : Scoring.getChebyshevDistance(targetRegion, jakubRegion);
     
-    const jakub = jakubRegion?.pawns.jakub[0];
+    const jakub = jakubRegion?.pawns?.jakub?.[0];
     const jakubRange = jakub ? (jakub.range !== undefined ? Math.max(1, jakub.range) : 1) : 0;
 
+    const content = setContent || {};
+
     return {
-      V: VampireScoring.calculate(dist, setContent.vampire || 0),
-      W: WerewolfScoring.calculate(regions, targetRegion, dist, setContent.werewolf || 0),
-      G: GhostScoring.calculate(targetRegion, dist, jakubRange, setContent.ghost || 0),
-      B: BardakScoring.calculate(dist, setContent.bardak || 0)
+      V: VampireScoring.calculate(dist, content.vampire || 0),
+      W: WerewolfScoring.calculate(regions, targetRegion, dist, content.werewolf || 0),
+      G: GhostScoring.calculate(targetRegion, dist, jakubRange, content.ghost || 0),
+      B: BardakScoring.calculate(dist, content.bardak || 0)
     };
   }
 }

@@ -5,7 +5,7 @@ import { WerewolfScoring } from './scoring/werewolfScoring.js';
 import { GhostScoring } from './scoring/ghostScoring.js';
 import { BardakScoring } from './scoring/bardakScoring.js';
 
-export class PlacementManager {
+export class SharedPlacementManager {
   /**
    * Scans a player's held sets and empty board regions to find the best placeable set-region combination.
    * @param {Array} regions - All regions on the board

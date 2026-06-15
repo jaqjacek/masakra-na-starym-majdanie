@@ -94,7 +94,7 @@ const AdminSimulate = () => {
             gameEntry[`${race}_total`] = result.analytics[race].total;
             gameEntry[`${race}_finalBonus`] = result.analytics[race].finalBonus;
             gameEntry[`${race}_killed`] = result.analytics[race].killed;
-            gameEntry[`${race}_ramboPoints`] = result.analytics[race].ramboPoints;
+            gameEntry[`${race}_swiadekJakubaPoints`] = result.analytics[race].swiadekJakubaPoints;
             gameEntry[`${race}_setPlacement`] = result.analytics[race].setPlacement;
           });
           gameEntry.scoreDiff = result.scoreDiff || 0;
@@ -131,7 +131,7 @@ const AdminSimulate = () => {
             <ChartBox title="2. General Selection by Player with Fewest Points" dataKeySuffix="fewestPointsChoice" data={data} />
             <ChartBox title="3. Total Points (Final Game Score)" dataKeySuffix="total" data={data} />
             <ChartBox title="4. Final Phase Bonus Points" dataKeySuffix="finalBonus" data={data} />
-            <ChartBox title="5. Rambo Survivor Bonus Points" dataKeySuffix="ramboPoints" data={data} />
+            <ChartBox title="5. Punkty Świadka Jakuba" dataKeySuffix="swiadekJakubaPoints" data={data} />
             <ChartBox title="6. Pawns Killed by Jakub (Total)" dataKeySuffix="killed" data={data} />
             <ChartBox title="7. Set Placement Points (Total in Game)" dataKeySuffix="setPlacement" data={data} />
             <ScoreDiffChartBox title="8. Score Difference Between Top and Lowest Players (Final)" data={data} />

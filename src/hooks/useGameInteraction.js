@@ -49,20 +49,26 @@ export const useGameInteraction = ({
   const handleSetMouseDown = useCallback((set, e) => {
     setActiveSet({ set, x: e.clientX, y: e.clientY });
     
-    // Check if enough pawns in pool for this set
-    let hasEnough = true;
+    // Check if enough pawns in pool for this set (available globally)
+    let hasEnoughAvailable = true;
     Object.entries(set.content).forEach(([tId, count]) => {
-      if (availablePool[tId] < count) hasEnough = false;
+      if (availablePool[tId] < count) hasEnoughAvailable = false;
     });
 
-    if (!hasEnough) {
+    // Check if enough pawns to place on board (placementPool)
+    let hasEnoughPlacement = true;
+    Object.entries(set.content).forEach(([tId, count]) => {
+      if (placementPool[tId] < count) hasEnoughPlacement = false;
+    });
+
+    if (!hasEnoughAvailable || !hasEnoughPlacement) {
       setValidMoveTargets([]);
       return;
     }
 
     const validIndices = gameState.regions.filter(r => !RACES.some(race => r.pawns[race]?.length > 0)).map(r => r.id);
     setValidMoveTargets(validIndices);
-  }, [gameState, availablePool]);
+  }, [gameState, availablePool, placementPool]);
 
   const handleGeneralMouseDown = useCallback((race, e) => { if (playerId) return; setActiveGeneral({ race, x: e.clientX, y: e.clientY }); }, [playerId]);
 
@@ -70,13 +76,16 @@ export const useGameInteraction = ({
     const instances = gameState.regions[regionIndex].pawns[typeId];
     const pawn = instances[pawnInstanceIndex];
     if (pawn.statuses.includes(STATUSES.ENABLED)) {
-      if (typeId === 'jakub' && pawn.range <= 0) return;
+      if (typeId === 'jakub' && pawn.range <= 0 && playerId) return;
       setActivePawn({ typeId, x: e.clientX, y: e.clientY, fromIndex: regionIndex, pawnInstanceIndex });
       setHoveredPawn(null);
       const speed = typeId === 'jakub' ? pawn.speed : PAWN_TYPES.find(p => p.id === typeId).speed;
-      setValidMoveTargets(Board.getReachableRegions(gameState.regions, regionIndex, speed));
+      const reachable = (typeId === 'jakub' && !playerId) 
+        ? gameState.regions.map(r => r.id) 
+        : Board.getReachableRegions(gameState.regions, regionIndex, speed);
+      setValidMoveTargets(reachable);
     }
-  }, [gameState]);
+  }, [gameState, playerId]);
 
   useEffect(() => {
     const handleMouseMove = (e) => { 
@@ -99,7 +108,7 @@ export const useGameInteraction = ({
       if (fromIndex !== null) {
         const [movedPawn] = newState.regions[fromIndex].pawns[typeId].splice(pawnInstanceIndex, 1);
         if (newState.regions[fromIndex].pawns[typeId].length === 0) delete newState.regions[fromIndex].pawns[typeId];
-        if (typeId === 'jakub') movedPawn.range = Math.max(0, movedPawn.range - 1);
+        if (typeId === 'jakub' && playerId) movedPawn.range = Math.max(0, movedPawn.range - 1);
         if (!newState.regions[toIndex].pawns[typeId]) newState.regions[toIndex].pawns[typeId] = [];
         newState.regions[toIndex].pawns[typeId].push(movedPawn);
       } else {
@@ -159,7 +168,7 @@ export const useGameInteraction = ({
         }
       });
 
-      const usedSet = findAndRemoveSetById(newState, activeSet.set.id);
+      const usedSet = findAndRemoveSetById(newState, activeSet.set.id, activeSet.set.ownerId);
       if (usedSet) {
         usedSet.ownerId = null;
         usedSet.used = false;
@@ -192,7 +201,7 @@ export const useGameInteraction = ({
 
   const handlePlayerMouseUp = useCallback((targetPlayerId) => {
     if (activeSet && !playerId) { 
-      const newState = JSON.parse(JSON.stringify(gameState)); const s = findAndRemoveSetById(newState, activeSet.set.id);
+      const newState = JSON.parse(JSON.stringify(gameState)); const s = findAndRemoveSetById(newState, activeSet.set.id, activeSet.set.ownerId);
       if (s) { s.ownerId = targetPlayerId; if (!newState.sets.heldSets) newState.sets.heldSets = []; newState.sets.heldSets.push(s); addLog(newState, `Ręcznie: Rozdano Zestaw ${s.id} Graczowi ${targetPlayerId}`); updateGameWithSync(newState); }
       setActiveSet(null);
     }
@@ -214,7 +223,7 @@ export const useGameInteraction = ({
       const ownerId = activeSet.set.ownerId;
       const playerIdx = ownerId ? newState.players.findIndex(p => String(p.id) === String(ownerId)) : -1;
       
-      const s = findAndRemoveSetById(newState, activeSet.set.id);
+      const s = findAndRemoveSetById(newState, activeSet.set.id, activeSet.set.ownerId);
       if (s) {
         if (playerIdx !== -1) {
           newState.players[playerIdx].points += 1;

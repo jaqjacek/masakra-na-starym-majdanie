@@ -1,7 +1,7 @@
 import React from 'react';
 import Region from './Region';
 
-const BoardComponent = ({ regions, onRegionMouseUp, onRemovePawn, onAddPawn, onPawnMouseDown, setHoveredPawn, validMoveTargets, children }) => {
+const BoardComponent = ({ regions, onRegionMouseUp, onRemovePawn, onAddPawn, onPawnMouseDown, setHoveredPawn, validMoveTargets, children, onRegionMouseEnter, onRegionMouseLeave }) => {
   return (
     <div className="board-wrapper">
       <div className="board-background-layer"></div>
@@ -16,6 +16,8 @@ const BoardComponent = ({ regions, onRegionMouseUp, onRemovePawn, onAddPawn, onP
             onAddPawn={(typeId) => onAddPawn(region.id, typeId)}
             onPawnMouseDown={(typeId, pIdx, e) => onPawnMouseDown(typeId, region.id, pIdx, e)}
             setHoveredPawn={setHoveredPawn}
+            onMouseEnter={() => onRegionMouseEnter && onRegionMouseEnter(region.id)}
+            onMouseLeave={() => onRegionMouseLeave && onRegionMouseLeave(region.id)}
           />
         ))}
       </div>

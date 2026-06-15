@@ -1,7 +1,7 @@
-import { PlacementManager as SharedPlacementManager } from '../../shared/placementManager.js';
+import { SharedPlacementManager } from '../../shared/sharedPlacementManager.js';
 import { RACES, RACE_TO_ABBR } from '../../shared/constants.js';
 
-export class PlacementManager {
+export class ClientPlacementManager {
   /**
    * Scans a player's held sets and empty board regions to find the best placeable set-region combination.
    * @param {Array} regions - All regions on the board

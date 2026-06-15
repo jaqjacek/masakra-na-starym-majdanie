@@ -10,7 +10,7 @@ import {
   createEmptyRegions 
 } from '../boardManager.js';
 import { initializeGame } from '../services/gameService.js';
-import { GameEventPhaseManager } from '../gameEventPhaseManager.js';
+import { GameEventPhaseManager } from '../events/gameEventPhaseManager.js';
 import { RACES } from '../constants.js';
 
 const router = express.Router();

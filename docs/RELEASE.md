@@ -1,6 +1,6 @@
 # Release Process
 
-This document describes the standard release workflow for the Wedrowycz-Gemini project.
+This document describes the standard release workflow for the MASAKRA na Starym Majdanie project.
 
 ## 1. Preparation
 -   **Version Bump:** Update the version in `package.json` (e.g., `1.7.0` -> `1.8.0`).

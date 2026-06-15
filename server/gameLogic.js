@@ -4,7 +4,7 @@ import { fileURLToPath } from 'url';
 import { RACES, DEFAULT_PLAYERS, INITIAL_PAWN_POOL, DEFAULT_POWER_CONFIG } from './constants.js';
 import { createEmptyRegions } from './boardManager.js';
 import { loadSetFile, generateSetData } from './setManager.js';
-import { GameEventPhaseManager } from './gameEventPhaseManager.js';
+import { GameEventPhaseManager } from './events/gameEventPhaseManager.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);

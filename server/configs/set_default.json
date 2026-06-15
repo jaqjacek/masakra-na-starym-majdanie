@@ -1,15 +1,15 @@
 {
   "pawns": {
-    "vampire": 12,
-    "werewolf": 21,
+    "vampire": 14,
+    "werewolf": 22,
     "ghost": 30,
     "bardak": 70
   },
   "pawnsInPlayLimit": {
-    "vampire": 8,
+    "vampire": 9,
     "werewolf": 16,
     "ghost": 26,
-    "bardak": 40
+    "bardak": 42
   },
   "power": {
     "vampire": 3,
@@ -222,10 +222,10 @@
       "id": 19,
       "content": {
         "werewolf": 1,
-        "bardak": 4
+        "bardak": 3
       },
       "used": false,
-      "power": 6,
+      "power": 5,
       "ownerId": null
     },
     {
@@ -301,11 +301,11 @@
     {
       "id": 27,
       "content": {
-        "werewolf": 1,
+        "werewolf": 2,
         "bardak": 2
       },
       "used": false,
-      "power": 4,
+      "power": 6,
       "ownerId": null
     },
     {
@@ -385,11 +385,21 @@
       "used": false,
       "power": 3,
       "ownerId": null
+    },
+    {
+      "id": 39,
+      "content": {
+        "vampire": 2,
+        "bardak": 1
+      },
+      "used": false,
+      "power": 7,
+      "ownerId": null
     }
   ],
   "discardPile": [],
   "heldSets": [],
-  "setName": "set_45",
+  "setName": "set_2",
   "displayName": "",
   "description": ""
 }

@@ -1,4 +1,4 @@
-import { RACE_MAP, RACE_MAP_PL } from './eventConstants.js';
+import { RACE_MAP, RACE_MAP_PL } from '../eventConstants.js';
 
 export class EventTransformationEffects {
   /**

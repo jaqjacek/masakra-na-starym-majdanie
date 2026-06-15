@@ -1,5 +1,5 @@
 {
-  "name": "wedrowycz-gemini",
+  "name": "masakra-na-starym-majdanie",
   "private": true,
   "version": "1.13.0",
   "type": "module",
@@ -12,26 +12,26 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@scalar/express-api-reference": "^0.9.19",
+    "@scalar/express-api-reference": "^0.10.3",
     "cors": "^2.8.6",
     "express": "^5.2.1",
     "multer": "^2.1.1",
-    "react": "^19.2.6",
-    "react-dom": "^19.2.6",
+    "react": "^19.2.7",
+    "react-dom": "^19.2.7",
     "recharts": "^3.8.1",
     "socket.io": "^4.8.3",
     "socket.io-client": "^4.8.3"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
-    "@types/react": "^19.2.15",
+    "@types/react": "^19.2.17",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^6.0.2",
-    "eslint": "^10.4.0",
-    "eslint-plugin-react-hooks": "^7.0.1",
-    "eslint-plugin-react-refresh": "^0.5.2",
+    "eslint": "^10.5.0",
+    "eslint-plugin-react-hooks": "^7.1.1",
+    "eslint-plugin-react-refresh": "^0.5.3",
     "globals": "^17.6.0",
-    "react-is": "^19.2.6",
-    "vite": "^8.0.14"
+    "react-is": "^19.2.7",
+    "vite": "^8.0.16"
   }
 }

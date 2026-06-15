@@ -162,15 +162,13 @@ const AdminEvents = () => {
         {selectedList && (
           <>
             <button 
-              className="action-button" 
-              style={{ backgroundColor: '#27ae60' }} 
+              className="action-button btn-save" 
               onClick={handleSaveList}
             >
               Save List
             </button>
             <button 
-              className="action-button" 
-              style={{ backgroundColor: '#e74c3c' }} 
+              className="action-button btn-default" 
               onClick={handleSetDefault}
             >
               Set Default
@@ -178,7 +176,7 @@ const AdminEvents = () => {
           </>
         )}
         <button 
-          className="action-button download-btn" 
+          className="action-button btn-create" 
           onClick={handleCreateListClick}
         >
           Create New List
@@ -187,9 +185,9 @@ const AdminEvents = () => {
 
       {selectedList && (
         <div className="admin-events-list">
-          <h3 style={{ margin: '0 0 1rem 0', color: '#f1c40f' }}>
-            Editing Event List: <span style={{ color: '#fff' }}>{selectedList}</span>
-            {hasChanges && <span style={{ color: '#e74c3c', fontSize: '1rem', marginLeft: '1rem' }}>(Unsaved changes)</span>}
+          <h3 className="editing-title">
+            Editing Event List: <span>{selectedList}</span>
+            {hasChanges && <span className="unsaved-changes-badge">(Unsaved changes)</span>}
           </h3>
           <div className="events-table-header">
             <span>In Game</span>
@@ -210,7 +208,7 @@ const AdminEvents = () => {
                   {event.title}
                   <span className="event-name-tooltip-content">
                     <strong>{event.title}</strong>
-                    <hr style={{ border: 'none', borderBottom: '1px solid rgba(255,255,255,0.2)', margin: '5px 0' }} />
+                    <hr />
                     {event.description}
                   </span>
                 </span>
@@ -219,7 +217,7 @@ const AdminEvents = () => {
                     {event.type}
                   </span>
                 </span>
-                <span style={{ color: '#888', fontSize: '0.9rem' }}>
+                <span className="event-meta-info">
                   ID: {event.id} | {isChecked ? 'Included' : 'Excluded'}
                 </span>
               </div>
@@ -231,14 +229,14 @@ const AdminEvents = () => {
 
       {showCreateModal && (
         <div className="scoring-modal-overlay" onClick={() => setShowCreateModal(false)}>
-          <div className="scoring-modal-content" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '450px' }}>
+          <div className="scoring-modal-content create-list-modal" onClick={(e) => e.stopPropagation()}>
             <button className="modal-close-x" onClick={() => setShowCreateModal(false)}>×</button>
-            <h3 style={{ margin: '0 0 1.5rem 0', color: '#3e2723', textAlign: 'center', fontFamily: 'inherit' }}>
+            <h3 className="modal-title">
               Create New Event List
             </h3>
-            <form onSubmit={handleCreateListSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                <label style={{ fontWeight: 'bold', color: '#3e2723' }}>
+            <form onSubmit={handleCreateListSubmit} className="modal-form">
+              <div className="form-group">
+                <label>
                   List Name:
                 </label>
                 <input
@@ -250,33 +248,23 @@ const AdminEvents = () => {
                   title="Alphanumeric characters and underscores only"
                   required
                   autoFocus
-                  style={{
-                    padding: '0.8rem',
-                    fontSize: '1rem',
-                    borderRadius: '6px',
-                    border: '2px solid #3e2723',
-                    background: 'rgba(255, 255, 255, 0.85)',
-                    color: '#3e2723',
-                    outline: 'none',
-                  }}
+                  className="modal-input"
                 />
-                <small style={{ color: '#5d4037', fontSize: '0.8rem' }}>
+                <small>
                   Use alphanumeric characters and underscores only.
                 </small>
               </div>
-              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.8rem', marginTop: '0.5rem' }}>
+              <div className="modal-actions-row">
                 <button
                   type="button"
-                  className="action-button"
-                  style={{ backgroundColor: '#7f8c8d', fontSize: '1.1rem', padding: '0.6rem 1.2rem', cursor: 'pointer' }}
+                  className="action-button btn-cancel"
                   onClick={() => setShowCreateModal(false)}
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="action-button"
-                  style={{ backgroundColor: '#27ae60', fontSize: '1.1rem', padding: '0.6rem 1.2rem', cursor: 'pointer' }}
+                  className="action-button btn-save"
                 >
                   Create
                 </button>

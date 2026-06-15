@@ -1,7 +1,7 @@
 # Fabuła Gry: Wędrowycz - Ostatni Zajazd na Stary Majdan
 
 ## Wprowadzenie
-Po latach upokarzających porażek, najwięksi przywódcy sił ciemności: **Wampirów**, **Wilkołaków**, **Duchów** (bytów eterycznych) oraz klanu **Bardaków**, spotykają się w ruinach byłego PGR-u. Cel jest jeden: zawrzeć tymczasowy sojusz i przeprowadzić ostateczny, zmasowany atak na Stary Majdan – posiadłość Jakuba Wędrowycza.
+W ciasnej, zawilgoconej krypcie grobowej lokalnego magnata na wojsławickim cmentarzu panuje niemiłosierny ścisk. Przywódcy sił ciemności: **Wampirów**, **Wilkołaków**, **Duchów** oraz klanu **Bardaków** spotykają się potajemnie o północy. Próchniejąca trumna służy im za stół konferencyjny, na którym rozłożono mapę Starego Majdanu narysowaną węglem na kartonie po butach. Podczas gdy Wilkołaki kichają od kurzu, Wampiry narzekają na zaduch, a Duchy wiszą smętnie pod sufitem ubolewając nad wilgocią psującą ektoplazmę i brakiem zasięgu LTE, Bardaki po cichu odkręcają mosiężne uchwyty od trumny i kombinują, jak ukraść Baronowi portfel oraz jego zapasowe, posrebrzane zęby. Cel tego konszachtu jest jeden: zawiązać tymczasowy sojusz i przeprowadzić ostateczny, zmasowany atak na Stary Majdan – posiadłość Jakuba Wędrowycza, który od lat bezcześci ich grobowce i pędzi z nich lecznicze nalewki.
 
 ## Przebieg Wydarzeń
 1.  **Mentalny Alarm:** Skumulowana aura zła tysięcy potworów otaczających dom Jakuba była tak potężna, że aktywowała jego "mentalne alarmy". Egzorcysta obudził się w wyjątkowo podłym humorze i natychmiast ruszył do walki.

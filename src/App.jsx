@@ -34,7 +34,60 @@ import { RACES, INITIAL_STATE } from './constants/game';
 import { applySetToJakubAnger } from './strategies/jakubStrategy';
 import { GeneralSelectionManager } from '../shared/generalSelectionManager.js';
 import { TOTAL_GAME_ROUNDS, INITIAL_HAND_SIZE, JAKUB_INITIAL_SETS, SERVER_URL, MAX_HAND_SIZE } from './constants/constants';
-import { PlacementManager } from './logic/placementManager';
+import { ClientPlacementManager } from './logic/clientPlacementManager';
+import { Scoring } from '../shared/scoring/scoring.js';
+
+const RACE_TO_ABBR = {
+  vampire: 'V',
+  werewolf: 'W',
+  ghost: 'G',
+  bardak: 'B'
+};
+
+const RACE_TO_LABEL = {
+  vampire: 'Wampiry',
+  werewolf: 'Wilkołaki',
+  ghost: 'Duchy',
+  bardak: 'Bardaki'
+};
+
+const SetGhostPointsPopup = ({ regions, hoveredRegionId, activeSet }) => {
+  if (!regions || hoveredRegionId === null || !activeSet || !activeSet.set || !activeSet.set.content) {
+    return null;
+  }
+  const targetRegion = regions.find(r => r && r.id === hoveredRegionId);
+  if (!targetRegion) return null;
+
+  let placementScores;
+  try {
+    placementScores = Scoring.calculatePlacementPoints(regions, targetRegion, activeSet.set.content);
+  } catch (err) {
+    console.error("Error calculating placement points:", err);
+    return null;
+  }
+
+  if (!placementScores) return null;
+
+  const RACES_ORDER = ['vampire', 'werewolf', 'ghost', 'bardak'];
+
+  return (
+    <div className="set-ghost-points-popup">
+      {RACES_ORDER.map(race => {
+        const abbr = RACE_TO_ABBR[race];
+        const pts = placementScores[abbr] || 0;
+        const ptsClass = pts > 0 ? 'pts-positive' : pts < 0 ? 'pts-negative' : 'pts-zero';
+        const ptsString = pts >= 0 ? `+${pts}` : `${pts}`;
+
+        return (
+          <div key={race} className="popup-item">
+            <div className={`set-icon ${race}`} />
+            <span className={`race-pts ${ptsClass}`}>{ptsString}</span>
+          </div>
+        );
+      })}
+    </div>
+  );
+};
 
 function App() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -42,6 +95,7 @@ function App() {
   const [isEventsPanelOpen, setIsEventsPanelOpen] = useState(false);
   const [isScoringPopupOpen, setIsScoringPopupOpen] = useState(false);
   const [manualPlayers, setManualPlayers] = useState([]);
+  const [hoveredRegionId, setHoveredRegionId] = useState(null);
 
   const handleToggleManualPlayer = useCallback((id) => {
     setManualPlayers(prev => 
@@ -69,6 +123,8 @@ function App() {
       document.documentElement.classList.remove('scrollable');
     }
   }, [isAdminPath, currentPath]);
+
+
 
   // 2. Computed values
   const counters = useMemo(() => {
@@ -171,12 +227,12 @@ function App() {
         addLog(workState, `Gracz ${playerId} wybrał Generała bandy: ${pick === 'V' ? 'Wampiry' : pick === 'W' ? 'Wilkołaki' : pick === 'G' ? 'Duchy' : 'Bardaki'}`);
       }
 
-      const best = PlacementManager.findBestPlacement(workState.regions, workState.sets.heldSets, playerId, curPlayer.generalOf, globalPool, playLimits);
+      const best = ClientPlacementManager.findBestPlacement(workState.regions, workState.sets.heldSets, playerId, curPlayer.generalOf, globalPool, playLimits);
       if (best) {
-        const { logSummaryString, statusLogString } = PlacementManager.executePlacement(best, workState, PAWN_TYPES, playLimits);
+        const { logSummaryString, statusLogString } = ClientPlacementManager.executePlacement(best, workState, PAWN_TYPES, playLimits);
         addLog(workState, `Gracz ${playerId} wystawił Zestaw ${best.set.id} [${logSummaryString}] | Plansza: ${statusLogString}`);
       } else {
-        const excess = PlacementManager.executePass(curPlayer, workState, MAX_HAND_SIZE, applySetToJakubAnger);
+        const excess = ClientPlacementManager.executePass(curPlayer, workState, MAX_HAND_SIZE, applySetToJakubAnger);
         if (excess > 0) {
           addLog(workState, `Gracz ${playerId} spasował i podkablował ${excess} nadmiarowych zestawów. Furia Jakuba zaktualizowana.`, { race: curPlayer.generalOf, points: excess });
         } else {
@@ -185,7 +241,7 @@ function App() {
       }
       advanceTurn(workState);
     } else if (action === 'pass') {
-      const excess = PlacementManager.executePass(curPlayer, workState, MAX_HAND_SIZE, applySetToJakubAnger);
+      const excess = ClientPlacementManager.executePass(curPlayer, workState, MAX_HAND_SIZE, applySetToJakubAnger);
       if (excess > 0) {
         addLog(workState, `Gracz ${playerId} spasował i podkablował ${excess} nadmiarowych zestawów. Furia Jakuba zaktualizowana.`, { race: curPlayer.generalOf, points: excess });
       } else {
@@ -211,6 +267,13 @@ function App() {
   } = useGameInteraction({
     gameId, playerId, gameState, availablePool, placementPool, counters, isJakubOnBoard, updateGameWithSync, addLog, findAndRemoveSetById, advanceTurn, manualPlayers
   });
+
+  // Reset hoveredRegionId when we stop dragging a set
+  useEffect(() => {
+    if (!activeSet) {
+      setHoveredRegionId(null);
+    }
+  }, [activeSet]);
 
   // 5. Specific handlers
   const handleUpdatePoints = useCallback((playerIndex, delta) => {
@@ -458,6 +521,7 @@ function App() {
               title="Global Sets Pool" 
               setInfo={gameState.sets} 
               discardPileCount={gameState.sets?.discardPile?.length || 0} 
+              placementPool={placementPool}
             />
           </div>
         </div>
@@ -499,6 +563,8 @@ function App() {
               onPawnMouseDown={handlePawnMouseDown} 
               setHoveredPawn={setHoveredPawn} 
               validMoveTargets={validMoveTargets}
+              onRegionMouseEnter={(regionId) => { if (activeSet) setHoveredRegionId(regionId); }}
+              onRegionMouseLeave={() => setHoveredRegionId(null)}
             >
               {autoplayEventPopup && (
                 <div className="autoplay-event-popup-wrapper">
@@ -614,6 +680,7 @@ function App() {
                 sets={(gameState.sets?.heldSets || []).filter(s => String(s.ownerId) === String(playerId))}
                 onSetMouseDown={handleSetMouseDown}
                 hideTabs={true}
+                placementPool={placementPool}
               />
             </div>
           )}
@@ -629,14 +696,14 @@ function App() {
               <div className="rules-section">
                 <h3>Placement Points (Immediate)</h3>
                 <p><strong>Vampire:</strong> (4 - distance from Jakub) × count.</p>
-                <p><strong>Werewolf:</strong> floor(total pack / 3) + 1. Plus 1 if Jakub is in target or neighbor.</p>
+                <p><strong>Werewolf:</strong> 1 base point + 1 point for every 3 werewolves (rounding down) in target/neighbor regions. Plus 1 if Jakub is in target or neighbor.</p>
                 <p><strong>Ghost:</strong> (2 - distance to edge) per pawn. -1 if in Jakub's reach.</p>
                 <p><strong>Bardak:</strong> 1 pt per pawn (0 if distance ≤ 1 from Jakub).</p>
                 </div>
-                <div className="rules-section">
-                <h3>Rambo Survivor Bonus</h3>
-                <p>Generals get <strong>+2 points</strong> for each of their pawns remaining in Jakub's region after his rampage.</p>
-                </div>
+              <div className="rules-section">
+                <h3>Punkty Świadka Jakuba</h3>
+                <p>Generals get <strong>+2 points</strong> for each of their pawns remaining in Jakub's region after he leaves, or after his anger towards all bands falls to 0.</p>
+              </div>
                 <div className="rules-section">
                 <h3>End Game Bonus (Final Round)</h3>
                 <p><strong>Vampire:</strong> 2 pts per region containing vampires.</p>
@@ -660,6 +727,13 @@ function App() {
               ));
             })}
           </div>
+          {hoveredRegionId !== null && validMoveTargets.includes(hoveredRegionId) && (
+            <SetGhostPointsPopup 
+              regions={gameState.regions}
+              hoveredRegionId={hoveredRegionId}
+              activeSet={activeSet}
+            />
+          )}
         </div>
       )}
       {activeGeneral && <div className="general-ghost" style={{ left: activeGeneral.x, top: activeGeneral.y }}><div className={`general-icon large portrait ${activeGeneral.race}`}></div></div>}

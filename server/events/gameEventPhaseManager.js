@@ -9,7 +9,7 @@ const __dirname = path.dirname(__filename);
 export class GameEventPhaseManager {
   constructor(gameData) {
     this.gameData = gameData;
-    this.eventsConfigPath = path.join(__dirname, 'configs', 'events_default.json');
+    this.eventsConfigPath = path.join(__dirname, '..', 'configs', 'events_default.json');
   }
 
   /**
@@ -74,12 +74,39 @@ export class GameEventPhaseManager {
     }
     
     const limits = this.gameData.sets.pawnsInPlayLimit;
+    const setsData = this.gameData.sets;
+    const players = this.gameData.players || [];
+    
     return {
       getLimits: () => ({ ...limits }),
       setLimit: (race, value) => {
         if (limits[race] !== undefined) {
           limits[race] = Math.max(0, value);
         }
+      },
+      getPlayerIds: () => {
+        return players.map(p => p.id);
+      },
+      drawSetForPlayer: (playerId) => {
+        if (!setsData.drawPile) setsData.drawPile = [];
+        if (!setsData.discardPile) setsData.discardPile = [];
+        if (!setsData.heldSets) setsData.heldSets = [];
+        
+        if (setsData.drawPile.length === 0) {
+          if (setsData.discardPile.length === 0) return null;
+          setsData.drawPile = [...setsData.discardPile];
+          setsData.discardPile = [];
+        }
+        
+        const randomIdx = Math.floor(Math.random() * setsData.drawPile.length);
+        const s = setsData.drawPile.splice(randomIdx, 1)[0];
+        if (s) {
+          s.ownerId = playerId;
+          s.used = false;
+          setsData.heldSets.push(s);
+          return s;
+        }
+        return null;
       }
     };
   }
@@ -131,8 +158,11 @@ export class GameEventPhaseManager {
       const effectLog = EventEffectManager.applyWipeSectorsEffect(this.gameData, event.value);
       this.addLog(effectLog);
     } else if (event.type === 'support') {
-      const effectLog = EventEffectManager.applySupportEffect(this.gameData, event.value);
-      this.addLog(effectLog);
+      const sets = this.getSetsInterface();
+      if (sets) {
+        const effectLog = EventEffectManager.applySupportEffect(sets, event.value);
+        this.addLog(effectLog);
+      }
     } else if (event.type === 'move') {
       const effectLog = EventEffectManager.applyMoveEffect(this.gameData, event.value);
       this.addLog(effectLog);

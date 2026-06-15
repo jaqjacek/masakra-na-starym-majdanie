@@ -1,7 +1,7 @@
 /**
  * Manager responsible for applying event effects to the game state.
  */
-import { RACE_MAP, RACE_MAP_PL } from './eventConstants.js';
+import { RACE_MAP, RACE_MAP_PL } from '../eventConstants.js';
 import { EventMoveEffects } from './eventMoveEffects.js';
 import { EventTransformationEffects } from './eventTransformationEffects.js';
 

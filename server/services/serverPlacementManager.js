@@ -1,8 +1,8 @@
-import { PlacementManager as SharedPlacementManager } from '../../shared/placementManager.js';
+import { SharedPlacementManager } from '../../shared/sharedPlacementManager.js';
 import { Scoring } from '../../shared/scoring/scoring.js';
 import { RACES, RACE_TO_ABBR } from '../../shared/constants.js';
 
-export class PlacementManager {
+export class ServerPlacementManager {
   /**
    * Scans a player's held sets and empty board regions to find the best placeable set-region combination.
    * @param {Array} regions - All regions on the board
@@ -71,7 +71,7 @@ export class PlacementManager {
    * @returns {number} Count of excess sets sold
    */
   static executePass(player, heldSets, _maxHandSize) {
-    const myHeld = heldSets.filter(s => s.ownerId === player.id);
+    const myHeld = heldSets.filter(s => s.ownerId !== null && s.ownerId !== undefined && String(s.ownerId) === String(player.id));
     const toSell = myHeld.filter(s => (s.content[player.generalOf] || 0) === 0);
 
     toSell.forEach(s => {

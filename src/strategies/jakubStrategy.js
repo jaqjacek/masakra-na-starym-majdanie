@@ -104,7 +104,31 @@ export const executeJakubStep = (gameState) => {
     .sort((a, b) => b.val - a.val || RACES.indexOf(a.race) - RACES.indexOf(b.race));
 
   if (sortedAnger.length === 0) {
-    return { newState: workState, actionTaken: false, log: "Furia Jakuba opadła. Łowy zakończone." };
+    let swiadekPointsAwarded = [];
+    RACES.forEach(race => {
+      const count = currentRegion.pawns[race]?.length || 0;
+      if (count > 0 && (jakub.anger[race] || 0) === 0) {
+        const playerIdx = workState.players.findIndex(p => p.generalOf === race);
+        const pts = count * 2;
+        if (playerIdx !== -1) {
+          workState.players[playerIdx].points += pts;
+          swiadekPointsAwarded.push({ race, count, points: pts, player: workState.players[playerIdx].name });
+        }
+      }
+    });
+
+    let swiadekLogStr = "";
+    if (swiadekPointsAwarded.length > 0) {
+      swiadekLogStr = ` Punkty Świadka Jakuba przyznane: ` + 
+        swiadekPointsAwarded.map(r => `${r.player} (${RACE_MAP_PL[r.race] || r.race}) +${r.points} pkt`).join(', ') + '.';
+    }
+
+    return { 
+      newState: workState, 
+      actionTaken: false, 
+      log: `Furia Jakuba opadła. Łowy zakończone.${swiadekLogStr}`,
+      metadata: { swiadekPointsAwarded }
+    };
   }
 
   // Calculate dynamic movement range: Range = 1 + (number of races with anger >= 10)
@@ -173,9 +197,9 @@ export const executeJakubStep = (gameState) => {
 
   const targetRegion = workState.regions[bestRIdx];
 
-  // Change to rambo points: Whenever Jakub moves from regions with pawns,
-  // the current general of those pawns receives Rambo Survivor points (only when anger is 0)
-  let ramboPointsAwarded = [];
+  // Change to Punkty Świadka Jakuba: Whenever Jakub moves from regions with pawns,
+  // the current general of those pawns receives Punkty Świadka Jakuba (only when anger is 0)
+  let swiadekPointsAwarded = [];
   RACES.forEach(race => {
     const count = currentRegion.pawns[race]?.length || 0;
     if (count > 0 && (jakub.anger[race] || 0) === 0) {
@@ -183,16 +207,16 @@ export const executeJakubStep = (gameState) => {
       const pts = count * 2;
       if (playerIdx !== -1) {
         workState.players[playerIdx].points += pts;
-        ramboPointsAwarded.push({ race, count, points: pts, player: workState.players[playerIdx].name });
+        swiadekPointsAwarded.push({ race, count, points: pts, player: workState.players[playerIdx].name });
       }
     }
   });
 
 
-  let ramboLogStr = "";
-  if (ramboPointsAwarded.length > 0) {
-    ramboLogStr = ` Punkty Rambo przyznane: ` + 
-      ramboPointsAwarded.map(r => `${r.player} (${RACE_MAP_PL[r.race] || r.race}) +${r.points} pkt`).join(', ') + '.';
+  let swiadekLogStr = "";
+  if (swiadekPointsAwarded.length > 0) {
+    swiadekLogStr = ` Punkty Świadka Jakuba przyznane: ` + 
+      swiadekPointsAwarded.map(r => `${r.player} (${RACE_MAP_PL[r.race] || r.race}) +${r.points} pkt`).join(', ') + '.';
   }
 
   targetRegion.pawns.jakub = currentRegion.pawns.jakub;
@@ -203,12 +227,12 @@ export const executeJakubStep = (gameState) => {
   targetRegion.pawns.jakub[0].range = calculatedRange;
 
 
-  const finalLog = `Jakub przemieszcza się na [${targetRegion.x},${targetRegion.y}] w zasięgu ${calculatedRange}, ścigając ${RACE_MAP_PL[targetRace] || targetRace} (Furia: ${jakub.anger[targetRace] || 0} | Region zawiera ${maxCount} jednostek).${extraLogInfo}${ramboLogStr}`;
+  const finalLog = `Jakub przemieszcza się na [${targetRegion.x},${targetRegion.y}] w zasięgu ${calculatedRange}, ścigając ${RACE_MAP_PL[targetRace] || targetRace} (Furia: ${jakub.anger[targetRace] || 0} | Region zawiera ${maxCount} jednostek).${extraLogInfo}${swiadekLogStr}`;
 
   return { 
     newState: workState, 
     actionTaken: true, 
     log: finalLog,
-    metadata: { ramboPointsAwarded }
+    metadata: { swiadekPointsAwarded }
   };
 };

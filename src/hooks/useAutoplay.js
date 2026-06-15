@@ -14,7 +14,7 @@ import {
 import { PAWN_TYPES } from '../constants/pawnTypes';
 import { RACES } from '../constants/game';
 import { Board } from '../constants/board';
-import { PlacementManager } from '../logic/placementManager';
+import { ClientPlacementManager } from '../logic/clientPlacementManager';
 import { applySetToJakubAnger, executeJakubStep } from '../strategies/jakubStrategy';
 import { GeneralSelectionManager } from '../../shared/generalSelectionManager.js';
 import { VampireScoring } from '../../shared/scoring/vampireScoring.js';
@@ -53,13 +53,45 @@ export const useAutoplay = ({
     return state.sets.drawPile.splice(randomIdx, 1)[0];
   }, [refillSetsIfNeeded]);
 
-  const findAndRemoveSetById = useCallback((state, setId) => {
-    let idx = (state.sets.drawPile || []).findIndex(s => String(s.id) === String(setId));
-    if (idx !== -1) return state.sets.drawPile.splice(idx, 1)[0];
-    idx = (state.sets.heldSets || []).findIndex(s => String(s.id) === String(setId));
-    if (idx !== -1) return state.sets.heldSets.splice(idx, 1)[0];
-    idx = (state.sets.discardPile || []).findIndex(s => String(s.id) === String(setId));
-    if (idx !== -1) return state.sets.discardPile.splice(idx, 1)[0];
+  const findAndRemoveSetById = useCallback((state, setId, expectedOwnerId = undefined) => {
+    console.log('[findAndRemoveSetById] START', { setId, expectedOwnerId });
+    if (!state || !state.sets) {
+      console.log('[findAndRemoveSetById] ERROR: state or state.sets missing');
+      return null;
+    }
+    
+    console.log('[findAndRemoveSetById] state.sets.heldSets:', (state.sets.heldSets || []).map(s => s ? { id: s.id, ownerId: s.ownerId } : null));
+
+    if (expectedOwnerId !== undefined && expectedOwnerId !== null) {
+      const idx = (state.sets.heldSets || []).findIndex(s => 
+        s && String(s.id) === String(setId) && String(s.ownerId) === String(expectedOwnerId)
+      );
+      if (idx !== -1) {
+        const found = state.sets.heldSets.splice(idx, 1)[0];
+        console.log('[findAndRemoveSetById] FOUND and spliced from heldSets matching owner:', found);
+        return found;
+      }
+    }
+    
+    let idx = (state.sets.heldSets || []).findIndex(s => s && String(s.id) === String(setId));
+    if (idx !== -1) {
+      const found = state.sets.heldSets.splice(idx, 1)[0];
+      console.log('[findAndRemoveSetById] FOUND and spliced from heldSets by ID only:', found);
+      return found;
+    }
+    idx = (state.sets.drawPile || []).findIndex(s => s && String(s.id) === String(setId));
+    if (idx !== -1) {
+      const found = state.sets.drawPile.splice(idx, 1)[0];
+      console.log('[findAndRemoveSetById] FOUND and spliced from drawPile by ID only:', found);
+      return found;
+    }
+    idx = (state.sets.discardPile || []).findIndex(s => s && String(s.id) === String(setId));
+    if (idx !== -1) {
+      const found = state.sets.discardPile.splice(idx, 1)[0];
+      console.log('[findAndRemoveSetById] FOUND and spliced from discardPile by ID only:', found);
+      return found;
+    }
+    console.log('[findAndRemoveSetById] NOT FOUND ANYWHERE');
     return null;
   }, []);
 
@@ -94,7 +126,7 @@ export const useAutoplay = ({
       if (workState.phase === 'setup') {
         let distributionCount = 0;
         workState.players.forEach(player => {
-          const myHeld = (workState.sets.heldSets || []).filter(s => s.ownerId === player.id);
+          const myHeld = (workState.sets.heldSets || []).filter(s => s.ownerId !== null && s.ownerId !== undefined && String(s.ownerId) === String(player.id));
           const needed = INITIAL_HAND_SIZE - myHeld.length;
           for (let i = 0; i < needed; i++) {
             const set = drawSet(workState);
@@ -227,13 +259,13 @@ export const useAutoplay = ({
         }
         const globalPool = { ...workState.sets.pawns };
         const playLimits = workState.sets.pawnsInPlayLimit || globalPool;
-        const best = PlacementManager.findBestPlacement(workState.regions, workState.sets.heldSets, curId, curPlayer.generalOf, globalPool, playLimits);
+        const best = ClientPlacementManager.findBestPlacement(workState.regions, workState.sets.heldSets, curId, curPlayer.generalOf, globalPool, playLimits);
 
         if (best) {
-          const { logSummaryString, statusLogString } = PlacementManager.executePlacement(best, workState, PAWN_TYPES, playLimits);
+          const { logSummaryString, statusLogString } = ClientPlacementManager.executePlacement(best, workState, PAWN_TYPES, playLimits);
            addLog(workState, `Gracz ${curId} wystawił Zestaw ${best.set.id} w sektorze [${best.region.x},${best.region.y}] [${logSummaryString}] | Plansza: ${statusLogString}`);
         } else {
-          const excess = PlacementManager.executePass(curPlayer, workState, MAX_HAND_SIZE, applySetToJakubAnger);
+          const excess = ClientPlacementManager.executePass(curPlayer, workState, MAX_HAND_SIZE, applySetToJakubAnger);
           if (excess > 0) {
             addLog(workState, `Gracz ${curId} spasował i podkablował ${excess} nadmiarowych zestawów. Furia Jakuba zaktualizowana.`, { race: curPlayer.generalOf, points: excess });
           } else {
@@ -249,23 +281,29 @@ export const useAutoplay = ({
 
       if (workState.phase === 'jakub_phase') {
         const step = executeJakubStep(workState);
-        if (step.actionTaken) { 
+        let updatedState = workState;
+        if (step.actionTaken || (step.metadata && step.metadata.swiadekPointsAwarded && step.metadata.swiadekPointsAwarded.length > 0)) { 
           addLog(step.newState, step.log, step.metadata || {}); 
-          if (step.metadata && step.metadata.ramboPointsAwarded) {
-            step.metadata.ramboPointsAwarded.forEach(r => {
-              addLog(step.newState, `🔥 Rambo: ${r.player} (${r.race === 'V' ? 'Wampiry' : r.race === 'W' ? 'Wilkołaki' : r.race === 'G' ? 'Duchy' : 'Bardaki'}) zdobywa ${r.points} bonusowych punktów za przeżycie w pobliżu Jakuba.`, { race: r.race, points: r.points });
+          if (step.metadata && step.metadata.swiadekPointsAwarded) {
+            step.metadata.swiadekPointsAwarded.forEach(r => {
+              addLog(step.newState, `🔥 Świadek Jakuba: ${r.player} (${r.race === 'V' ? 'Wampiry' : r.race === 'W' ? 'Wilkołaki' : r.race === 'G' ? 'Duchy' : 'Bardaki'}) zdobywa ${r.points} bonusowych punktów za przeżycie w pobliżu Jakuba.`, { race: r.race, points: r.points });
             });
           }
-          await updateGameWithSync(step.newState); 
-        }
-        else {
-          addLog(workState, `Jakub kończy swoje łowy.`);
-          let jakub = null;
-          for (const r of workState.regions) { if (r.pawns.jakub?.length > 0) { jakub = r.pawns.jakub[0]; break; } }
-          if (jakub) { 
-            jakub.range = 1; 
-            addLog(workState, `Zasięg Jakuba zresetowany do 1.`); 
+          updatedState = step.newState;
+          if (step.actionTaken) {
+            await updateGameWithSync(updatedState); 
+            return;
           }
+        }
+        
+        workState = updatedState;
+        addLog(workState, `Jakub kończy swoje łowy.`);
+        let jakub = null;
+        for (const r of workState.regions) { if (r.pawns.jakub?.length > 0) { jakub = r.pawns.jakub[0]; break; } }
+        if (jakub) { 
+          jakub.range = 1; 
+          addLog(workState, `Zasięg Jakuba zresetowany do 1.`); 
+        }
           const toDiscard = (workState.sets.heldSets || []).filter(s => s.ownerId === 'jakub');
           toDiscard.forEach(s => { s.ownerId = null; s.used = false; if (!workState.sets.discardPile) workState.sets.discardPile = []; workState.sets.discardPile.push(s); });
           workState.sets.heldSets = (workState.sets.heldSets || []).filter(s => s.ownerId !== 'jakub');
@@ -293,7 +331,6 @@ export const useAutoplay = ({
           }
           
           await updateGameWithSync(workState);
-        }
         return;
       }
 

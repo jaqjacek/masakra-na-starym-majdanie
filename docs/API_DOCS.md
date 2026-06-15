@@ -1,6 +1,6 @@
-# Wedrowycz-Gemini REST API Documentation
+# MASAKRA na Starym Majdanie REST API Documentation
 
-This document describes the available API endpoints for the Wedrowycz-Gemini game engine.
+This document describes the available API endpoints for the MASAKRA na Starym Majdanie game engine.
 
 ## General Information
 - **Base URL:** `http://<host>:<port>/api`

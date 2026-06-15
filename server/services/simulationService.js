@@ -18,7 +18,7 @@ import { VampireScoring } from '../../shared/scoring/vampireScoring.js';
 import { WerewolfScoring } from '../../shared/scoring/werewolfScoring.js';
 import { GhostScoring } from '../../shared/scoring/ghostScoring.js';
 import { BardakScoring } from '../../shared/scoring/bardakScoring.js';
-import { PlacementManager } from './placementManager.js';
+import { ServerPlacementManager } from './serverPlacementManager.js';
 import { 
   loadSetFile, 
   generateSetData 
@@ -28,7 +28,7 @@ import {
   getGlobalConfig,
   getGameConfig
 } from '../gameLogic.js';
-import { GameEventPhaseManager } from '../gameEventPhaseManager.js';
+import { GameEventPhaseManager } from '../events/gameEventPhaseManager.js';
 import { GeneralSelectionManager } from '../../shared/generalSelectionManager.js';
 
 export function runDetailedSimulation(set, uploadedSets, uploadedEvents) {
@@ -88,9 +88,9 @@ export function runDetailedSimulation(set, uploadedSets, uploadedEvents) {
         const p = players.find(x => x.id === id);
         const pool = { ...setsData.pawns };
         const playLimits = setsData.pawnsInPlayLimit || pool;
-        const best = PlacementManager.findBestPlacement(regions, setsData.heldSets, p.id, p.generalOf, pool, playLimits);
+        const best = ServerPlacementManager.findBestPlacement(regions, setsData.heldSets, p.id, p.generalOf, pool, playLimits);
         if (best) {
-          const pointGains = PlacementManager.executePlacement(best, regions, players, setsData.heldSets, setsData.discardPile);
+          const pointGains = ServerPlacementManager.executePlacement(best, regions, players, setsData.heldSets, setsData.discardPile);
           const onBoardStatus = {};
           RACES.forEach(race => {
             const current = regions.reduce((sum, r) => sum + (r.pawns[race]?.length || 0), 0);
@@ -107,7 +107,7 @@ export function runDetailedSimulation(set, uploadedSets, uploadedEvents) {
             boardStatus: onBoardStatus
           });
         } else {
-          const excess = PlacementManager.executePass(p, setsData.heldSets, 3);
+          const excess = ServerPlacementManager.executePass(p, setsData.heldSets, 3);
           if (excess > 0) {
             roundData.turns.push({
               type: 'pass_to_jakub',
@@ -157,7 +157,21 @@ export function runDetailedSimulation(set, uploadedSets, uploadedEvents) {
         .filter(a => a.val > 0)
         .sort((a, b) => b.val - a.val || RACES.indexOf(a.race) - RACES.indexOf(b.race));
       
-      if (sortedAnger.length === 0) break;
+      if (sortedAnger.length === 0) {
+        // Award Punkty Świadka Jakuba to all pawns remaining in Jakub's region (since anger on all bands is 0)
+        RACES.forEach(race => {
+          const count = curR.pawns[race]?.length || 0;
+          if (count > 0 && (jakub.anger[race] || 0) === 0) {
+            const pts = count * 2;
+            const p = players.find(x => x.generalOf === race);
+            if (p) {
+              p.points += pts;
+              roundData.turns.push({ type: 'swiadek_jakuba_points', player: p.name, race, points: pts });
+            }
+          }
+        });
+        break;
+      }
 
       // Calculate dynamic movement range
       let extraRange = 0;
@@ -191,7 +205,7 @@ export function runDetailedSimulation(set, uploadedSets, uploadedEvents) {
           }
         });
         
-        // Award Rambo Survivor points before moving from curR (only when anger is 0)
+        // Award Punkty Świadka Jakuba before moving from curR (only when anger is 0)
         RACES.forEach(race => {
           const count = curR.pawns[race]?.length || 0;
           if (count > 0 && (jakub.anger[race] || 0) === 0) {
@@ -199,7 +213,7 @@ export function runDetailedSimulation(set, uploadedSets, uploadedEvents) {
             const p = players.find(x => x.generalOf === race);
             if (p) {
               p.points += pts;
-              roundData.turns.push({ type: 'rambo_points', player: p.name, race, points: pts });
+              roundData.turns.push({ type: 'swiadek_jakuba_points', player: p.name, race, points: pts });
             }
           }
         });
@@ -294,10 +308,10 @@ export function runBasicSimulation(set, uploadedSets, uploadedEvents) {
   };
   players.forEach(p => { for (let i = 0; i < gameConfig.initialSetsPerPlayer; i++) { const s = drawSet(); if (s) { s.ownerId = p.id; setsData.heldSets.push(s); } } });
   const analytics = {
-    vampire: { afterR1: 0, total: 0, finalBonus: 0, killed: 0, ramboPoints: 0, setPlacement: 0, fewestPointsChoice: 0 },
-    werewolf: { afterR1: 0, total: 0, finalBonus: 0, killed: 0, ramboPoints: 0, setPlacement: 0, fewestPointsChoice: 0 },
-    ghost: { afterR1: 0, total: 0, finalBonus: 0, killed: 0, ramboPoints: 0, setPlacement: 0, fewestPointsChoice: 0 },
-    bardak: { afterR1: 0, total: 0, finalBonus: 0, killed: 0, ramboPoints: 0, setPlacement: 0, fewestPointsChoice: 0 }
+    vampire: { afterR1: 0, total: 0, finalBonus: 0, killed: 0, swiadekJakubaPoints: 0, setPlacement: 0, fewestPointsChoice: 0 },
+    werewolf: { afterR1: 0, total: 0, finalBonus: 0, killed: 0, swiadekJakubaPoints: 0, setPlacement: 0, fewestPointsChoice: 0 },
+    ghost: { afterR1: 0, total: 0, finalBonus: 0, killed: 0, swiadekJakubaPoints: 0, setPlacement: 0, fewestPointsChoice: 0 },
+    bardak: { afterR1: 0, total: 0, finalBonus: 0, killed: 0, swiadekJakubaPoints: 0, setPlacement: 0, fewestPointsChoice: 0 }
   };
   for (let round = 1; round <= gameConfig.totalRounds; round++) {
     players.forEach(p => { const myHeld = setsData.heldSets.filter(s => s.ownerId === p.id); const needed = gameConfig.setupSetsPerPlayerPerRound - myHeld.length; for (let i = 0; i < needed; i++) { const s = drawSet(); if (s) { s.ownerId = p.id; setsData.heldSets.push(s); } } });
@@ -320,16 +334,16 @@ export function runBasicSimulation(set, uploadedSets, uploadedEvents) {
         const p = players.find(x => x.id === id);
         const pool = { ...setsData.pawns };
         const playLimits = setsData.pawnsInPlayLimit || pool;
-        const best = PlacementManager.findBestPlacement(regions, setsData.heldSets, p.id, p.generalOf, pool, playLimits);
+        const best = ServerPlacementManager.findBestPlacement(regions, setsData.heldSets, p.id, p.generalOf, pool, playLimits);
         if (best) {
-          const pointGains = PlacementManager.executePlacement(best, regions, players, setsData.heldSets, setsData.discardPile);
+          const pointGains = ServerPlacementManager.executePlacement(best, regions, players, setsData.heldSets, setsData.discardPile);
           pointGains.forEach(gain => {
             if (analytics[gain.race]) {
               analytics[gain.race].setPlacement += gain.points;
             }
           });
         } else {
-          PlacementManager.executePass(p, setsData.heldSets, 3);
+          ServerPlacementManager.executePass(p, setsData.heldSets, 3);
           passed.add(id);
         }
       }
@@ -380,7 +394,21 @@ export function runBasicSimulation(set, uploadedSets, uploadedEvents) {
         .filter(a => a.val > 0)
         .sort((a, b) => b.val - a.val || RACES.indexOf(a.race) - RACES.indexOf(b.race));
       
-      if (sortedAnger.length === 0) break;
+      if (sortedAnger.length === 0) {
+        // Award Punkty Świadka Jakuba to all pawns remaining in Jakub's region (since anger on all bands is 0)
+        RACES.forEach(race => {
+          const count = curR.pawns[race]?.length || 0;
+          if (count > 0 && (jakub.anger[race] || 0) === 0) {
+            const pts = count * 2;
+            const p = players.find(x => x.generalOf === race);
+            if (p) {
+              p.points += pts;
+              analytics[race].swiadekJakubaPoints += pts;
+            }
+          }
+        });
+        break;
+      }
 
       // Calculate dynamic movement range
       let extraRange = 0;
@@ -414,7 +442,7 @@ export function runBasicSimulation(set, uploadedSets, uploadedEvents) {
           }
         });
         
-        // Award Rambo Survivor points before moving from curR (only when anger is 0)
+        // Award Punkty Świadka Jakuba before moving from curR (only when anger is 0)
         RACES.forEach(race => {
           const count = curR.pawns[race]?.length || 0;
           if (count > 0 && (jakub.anger[race] || 0) === 0) {
@@ -422,7 +450,7 @@ export function runBasicSimulation(set, uploadedSets, uploadedEvents) {
             const p = players.find(x => x.generalOf === race);
             if (p) {
               p.points += pts;
-              analytics[race].ramboPoints += pts;
+              analytics[race].swiadekJakubaPoints += pts;
             }
           }
         });
@@ -508,10 +536,10 @@ export function runFullSimulation(setsConfig, inputGameConfig, uploadedEvents) {
   players.forEach(p => { for (let i = 0; i < initialDraw; i++) { const s = drawSet(); if (s) { s.ownerId = p.id; setsData.heldSets.push(s); } } });
 
   const analytics = {
-    vampire: { afterR1: 0, total: 0, finalBonus: 0, killed: 0, ramboPoints: 0, setPlacement: 0, fewestPointsChoice: 0 },
-    werewolf: { afterR1: 0, total: 0, finalBonus: 0, killed: 0, ramboPoints: 0, setPlacement: 0, fewestPointsChoice: 0 },
-    ghost: { afterR1: 0, total: 0, finalBonus: 0, killed: 0, ramboPoints: 0, setPlacement: 0, fewestPointsChoice: 0 },
-    bardak: { afterR1: 0, total: 0, finalBonus: 0, killed: 0, ramboPoints: 0, setPlacement: 0, fewestPointsChoice: 0 }
+    vampire: { afterR1: 0, total: 0, finalBonus: 0, killed: 0, swiadekJakubaPoints: 0, setPlacement: 0, fewestPointsChoice: 0 },
+    werewolf: { afterR1: 0, total: 0, finalBonus: 0, killed: 0, swiadekJakubaPoints: 0, setPlacement: 0, fewestPointsChoice: 0 },
+    ghost: { afterR1: 0, total: 0, finalBonus: 0, killed: 0, swiadekJakubaPoints: 0, setPlacement: 0, fewestPointsChoice: 0 },
+    bardak: { afterR1: 0, total: 0, finalBonus: 0, killed: 0, swiadekJakubaPoints: 0, setPlacement: 0, fewestPointsChoice: 0 }
   };
 
   for (let round = 1; round <= roundsToPlay; round++) {
@@ -541,16 +569,16 @@ export function runFullSimulation(setsConfig, inputGameConfig, uploadedEvents) {
         const p = players.find(x => x.id === id);
         const pool = { ...setsData.pawns };
         const playLimits = setsData.pawnsInPlayLimit || pool;
-        const best = PlacementManager.findBestPlacement(regions, setsData.heldSets, p.id, p.generalOf, pool, playLimits);
+        const best = ServerPlacementManager.findBestPlacement(regions, setsData.heldSets, p.id, p.generalOf, pool, playLimits);
         if (best) {
-          const pointGains = PlacementManager.executePlacement(best, regions, players, setsData.heldSets, setsData.discardPile);
+          const pointGains = ServerPlacementManager.executePlacement(best, regions, players, setsData.heldSets, setsData.discardPile);
           pointGains.forEach(gain => {
             if (analytics[gain.race]) {
               analytics[gain.race].setPlacement += gain.points;
             }
           });
         } else {
-          PlacementManager.executePass(p, setsData.heldSets, 3);
+          ServerPlacementManager.executePass(p, setsData.heldSets, 3);
           passed.add(id);
         }
       }
@@ -603,7 +631,21 @@ export function runFullSimulation(setsConfig, inputGameConfig, uploadedEvents) {
         .filter(a => a.val > 0)
         .sort((a, b) => b.val - a.val || RACES.indexOf(a.race) - RACES.indexOf(b.race));
       
-      if (sortedAnger.length === 0) break;
+      if (sortedAnger.length === 0) {
+        // Award Punkty Świadka Jakuba to all pawns remaining in Jakub's region (since anger on all bands is 0)
+        RACES.forEach(race => {
+          const count = curR.pawns[race]?.length || 0;
+          if (count > 0 && (jakub.anger[race] || 0) === 0) {
+            const pts = count * 2;
+            const p = players.find(x => x.generalOf === race);
+            if (p) {
+              p.points += pts;
+              analytics[race].swiadekJakubaPoints += pts;
+            }
+          }
+        });
+        break;
+      }
 
       // Calculate dynamic movement range
       let extraRange = 0;
@@ -637,7 +679,7 @@ export function runFullSimulation(setsConfig, inputGameConfig, uploadedEvents) {
           }
         });
         
-        // Award Rambo Survivor points before moving from curR (only when anger is 0)
+        // Award Punkty Świadka Jakuba before moving from curR (only when anger is 0)
         RACES.forEach(race => {
           const count = curR.pawns[race]?.length || 0;
           if (count > 0 && (jakub.anger[race] || 0) === 0) {
@@ -645,7 +687,7 @@ export function runFullSimulation(setsConfig, inputGameConfig, uploadedEvents) {
             const p = players.find(x => x.generalOf === race);
             if (p) {
               p.points += pts;
-              analytics[race].ramboPoints += pts;
+              analytics[race].swiadekJakubaPoints += pts;
             }
           }
         });
@@ -678,7 +720,7 @@ export function runFullSimulation(setsConfig, inputGameConfig, uploadedEvents) {
       }
       const event = eventManager.gameData.events.drawn[eventManager.gameData.events.drawn.length - 1];
       if (event) {
-        // Apply any rambo-related analytics changes if needed, but events mostly affect anger and limits
+        // Apply any swiadek_jakuba-related analytics changes if needed, but events mostly affect anger and limits
         // which are already applied to the objects in the simulation.
       }
     }

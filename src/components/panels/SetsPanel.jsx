@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { PAWN_TYPES, SUMMARY_PAWN_IDS } from '../../constants/pawnTypes';
 
-const SetsPanel = ({ sets, discardedSets = [], onSetMouseDown, title, setInfo, hideTabs = false }) => {
+const SetsPanel = ({ sets, discardedSets = [], onSetMouseDown, title, setInfo, hideTabs = false, placementPool }) => {
   const [activeTab, setActiveTab] = useState('active');
 
   const currentSets = activeTab === 'active' ? sets : discardedSets;
@@ -51,23 +51,29 @@ const SetsPanel = ({ sets, discardedSets = [], onSetMouseDown, title, setInfo, h
         {sortedSets.length === 0 ? (
           <div className="no-sets-message">Brak zestawów w tej kategorii.</div>
         ) : (
-          sortedSets.map((set, index) => (
-            <div 
-              key={`${set.id}-${index}`} 
-              className={`pawn-set ${set.used || activeTab === 'discarded' ? 'used' : ''}`}
-              onMouseDown={(e) => !set.used && activeTab === 'active' && onSetMouseDown(set, e)}
-              title={set.used || activeTab === 'discarded' ? "Nie możesz użyć tego zestawu" : "Przeciągnij do pustego regionu planszy lub na panel Jakuba, aby podkablować"}
-            >
-              <div className="set-content">
-                {SUMMARY_PAWN_IDS.map(typeId => {
-                  const count = set.content[typeId] || 0;
-                  return Array.from({ length: count }).map((_, i) => (
-                    <div key={`${typeId}-${i}`} className={`set-icon ${typeId}`}></div>
-                  ));
-                })}
+          sortedSets.map((set, index) => {
+            const cannotPlaceOnBoard = !set.used && activeTab === 'active' && placementPool && Object.entries(set.content).some(([tId, count]) => {
+              return (placementPool[tId] || 0) < count;
+            });
+
+            return (
+              <div 
+                key={`${set.id}-${index}`} 
+                className={`pawn-set ${set.used || activeTab === 'discarded' ? 'used' : ''} ${cannotPlaceOnBoard ? 'cannot-place-board' : ''}`}
+                onMouseDown={(e) => !set.used && activeTab === 'active' && onSetMouseDown(set, e)}
+                title={set.used || activeTab === 'discarded' ? "Nie możesz użyć tego zestawu" : (cannotPlaceOnBoard ? "Niewystarczająca liczba pionków w puli. Przeciągnij na panel Jakuba, aby podkablować." : "Przeciągnij do pustego regionu planszy lub na panel Jakuba, aby podkablować")}
+              >
+                <div className="set-content">
+                  {SUMMARY_PAWN_IDS.map(typeId => {
+                    const count = set.content[typeId] || 0;
+                    return Array.from({ length: count }).map((_, i) => (
+                      <div key={`${typeId}-${i}`} className={`set-icon ${typeId}`}></div>
+                    ));
+                  })}
+                </div>
               </div>
-            </div>
-          ))
+            );
+          })
         )}
       </div>
     </div>

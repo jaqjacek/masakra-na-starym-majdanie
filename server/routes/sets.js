@@ -31,8 +31,24 @@ const updatePawnTotals = (setsData) => {
   setsData.pawns = totals;
 };
 
+// Ensure sets directory has set_default.json on startup
+const ensureDefaultSetFile = () => {
+  try {
+    const files = fs.readdirSync(SETS_DIR).filter(f => f.endsWith('.json'));
+    if (files.length === 0) {
+      const defaultSrc = path.join(CONFIGS_DIR, 'set_default.json');
+      if (fs.existsSync(defaultSrc)) {
+        fs.copyFileSync(defaultSrc, path.join(SETS_DIR, 'set_default.json'));
+      }
+    }
+  } catch (err) {
+    console.error('Error ensuring default set file:', err);
+  }
+};
+
 router.get('/', (req, res) => { 
   try { 
+    ensureDefaultSetFile();
     res.json(fs.readdirSync(SETS_DIR).filter(f => f.endsWith('.json')).map(f => f.replace('.json', ''))); 
   } catch (_err) { res.status(500).json({ error: 'Failed' }); } 
 });
@@ -55,6 +71,40 @@ router.post('/generate', (req, res) => {
     fs.writeFileSync(path.join(SETS_DIR, fileName), JSON.stringify(data, null, 2)); 
     res.json({ message: 'Set generated', name: data.setName });
   } catch (_err) { res.status(500).json({ error: 'Failed' }); }
+});
+
+router.post('/duplicate/:setName', (req, res) => {
+  try {
+    const { setName } = req.params;
+    const sourcePath = path.join(SETS_DIR, `${setName}.json`);
+    let sourceData;
+    if (setName === 'set_default') {
+      const defaultSrc = path.join(CONFIGS_DIR, 'set_default.json');
+      if (fs.existsSync(defaultSrc)) {
+        sourceData = JSON.parse(fs.readFileSync(defaultSrc, 'utf8'));
+      }
+    } else if (fs.existsSync(sourcePath)) {
+      sourceData = JSON.parse(fs.readFileSync(sourcePath, 'utf8'));
+    }
+    
+    if (!sourceData) {
+      return res.status(404).json({ error: 'Source set not found' });
+    }
+
+    const files = fs.readdirSync(SETS_DIR).filter(f => f.startsWith('set_') && f.endsWith('.json'));
+    let nextId = 1;
+    const ids = files.map(f => parseInt(f.replace('set_', '').replace('.json', ''))).filter(n => !isNaN(n));
+    if (ids.length > 0) nextId = Math.max(...ids) + 1;
+    const newSetName = `set_${nextId}`;
+    const destPath = path.join(SETS_DIR, `${newSetName}.json`);
+
+    sourceData.setName = newSetName;
+    fs.writeFileSync(destPath, JSON.stringify(sourceData, null, 2));
+
+    res.json({ message: 'Set duplicated successfully', name: newSetName });
+  } catch (_err) {
+    res.status(500).json({ error: 'Failed to duplicate set' });
+  }
 });
 
 router.post('/save/:setName', (req, res) => {

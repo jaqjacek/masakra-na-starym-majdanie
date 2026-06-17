@@ -146,3 +146,55 @@ export const saveFullState = (gameId, data) => {
   keys.forEach(k => { if (data[k] !== undefined) meta[k] = data[k]; });
   fs.writeFileSync(path.join(gamePath, 'state.json'), JSON.stringify(meta, null, 2));
 };
+
+export const backupRound = (gameId, round) => {
+  const gamePath = ensureGameDir(gameId);
+  const files = ['map', 'players', 'sets', 'state', 'history'];
+  files.forEach(f => {
+    const src = path.join(gamePath, `${f}.json`);
+    const dest = path.join(gamePath, `${f}_round_${round}.json`);
+    if (fs.existsSync(src)) {
+      fs.copyFileSync(src, dest);
+    }
+  });
+};
+
+export const restoreRound = (gameId, round) => {
+  const gamePath = ensureGameDir(gameId);
+  const files = ['map', 'players', 'sets', 'state', 'history'];
+  
+  // Restore round files to main files
+  files.forEach(f => {
+    const src = path.join(gamePath, `${f}_round_${round}.json`);
+    const dest = path.join(gamePath, `${f}.json`);
+    if (fs.existsSync(src)) {
+      fs.copyFileSync(src, dest);
+    }
+  });
+  
+  // Delete subsequent saves (round > target round)
+  const allFiles = fs.readdirSync(gamePath);
+  allFiles.forEach(file => {
+    const match = file.match(/^.+_round_(\d+)\.json$/);
+    if (match) {
+      const fileRound = parseInt(match[1]);
+      if (fileRound > round) {
+        fs.unlinkSync(path.join(gamePath, file));
+      }
+    }
+  });
+};
+
+export const getAvailableRoundSaves = (gameId) => {
+  const gamePath = ensureGameDir(gameId);
+  if (!fs.existsSync(gamePath)) return [];
+  const files = fs.readdirSync(gamePath);
+  const rounds = [];
+  files.forEach(file => {
+    const match = file.match(/^state_round_(\d+)\.json$/);
+    if (match) {
+      rounds.push(parseInt(match[1]));
+    }
+  });
+  return rounds.sort((a, b) => a - b);
+};

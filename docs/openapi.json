@@ -181,6 +181,60 @@
         }
       }
     },
+    "/api/map/{gameId}/trigger-event/{eventId}": {
+      "post": {
+        "summary": "Trigger a Specific Event Manually",
+        "description": "Applies the effects of a specific event (by its ID) to the game immediately, useful for manual testing and debugging.",
+        "parameters": [
+          { "name": "gameId", "in": "path", "required": true, "schema": { "type": "string" } },
+          { "name": "eventId", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "responses": {
+          "200": { "description": "Event triggered and applied successfully" },
+          "404": { "description": "Event not found" },
+          "500": { "description": "Failed to trigger event" }
+        }
+      }
+    },
+    "/api/map/{gameId}/saves": {
+      "get": {
+        "summary": "List Round Saves",
+        "description": "Returns a list of round numbers for which backup saves exist in the game session directory.",
+        "parameters": [
+          { "name": "gameId", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of round numbers retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "saves": { "type": "array", "items": { "type": "integer" } }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/map/{gameId}/load-round/{round}": {
+      "post": {
+        "summary": "Load Round Save",
+        "description": "Restores the state of a specific round from backup files, updates the game state, deletes all backups of subsequent rounds, and broadcasts the state.",
+        "parameters": [
+          { "name": "gameId", "in": "path", "required": true, "schema": { "type": "string" } },
+          { "name": "round", "in": "path", "required": true, "schema": { "type": "integer" } }
+        ],
+        "responses": {
+          "200": { "description": "Round save loaded and state restored successfully" },
+          "400": { "description": "Invalid round number" },
+          "500": { "description": "Failed to load round save" }
+        }
+      }
+    },
     "/api/simulate/": {
       "post": {
         "summary": "Run Quick Simulation",

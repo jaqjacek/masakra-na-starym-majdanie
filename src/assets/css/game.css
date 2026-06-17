@@ -62,7 +62,7 @@
   gap: 0.5rem;
 }
 
-.scoring-summary-btn.main-panel-btn {
+.scoring-summary-btn.main-panel-btn, .load-saves-btn.main-panel-btn {
   background: #2980b9;
   color: white;
   border: none;
@@ -77,7 +77,7 @@
   transition: background 0.2s;
 }
 
-.scoring-summary-btn.main-panel-btn:hover {
+.scoring-summary-btn.main-panel-btn:hover, .load-saves-btn.main-panel-btn:hover {
   background: #3498db;
 }
 
@@ -251,14 +251,119 @@
   gap: 2rem;
 }
 
-.scoring-summary-btn.main-panel-btn {
+.scoring-summary-btn.main-panel-btn, .load-saves-btn.main-panel-btn {
   height: 32px;
   background: #3498db;
   margin-left: 0.5rem;
 }
 
-.scoring-summary-btn:hover {
+.scoring-summary-btn:hover, .load-saves-btn:hover {
   background: #2980b9;
+}
+
+/* Load Saves Modal Styles */
+.load-saves-modal-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  backdrop-filter: blur(4px);
+}
+
+.load-saves-modal-content {
+  background: #1e272e;
+  border: 2px solid #57606f;
+  border-radius: 8px;
+  width: 400px;
+  max-width: 90%;
+  padding: 20px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+  position: relative;
+  color: #f5f6fa;
+}
+
+.load-saves-modal-content h3 {
+  margin-top: 0;
+  color: #3498db;
+  border-bottom: 1px solid #2f3542;
+  padding-bottom: 10px;
+  font-family: 'Outfit', sans-serif;
+  letter-spacing: 0.5px;
+}
+
+.saves-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 20px 0;
+  max-height: 250px;
+  overflow-y: auto;
+  padding-right: 5px;
+}
+
+.save-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #2f3542;
+  border: 1px solid #57606f;
+  border-radius: 6px;
+  padding: 10px 15px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.save-item:hover {
+  border-color: #3498db;
+  background: #34495e;
+}
+
+.save-item.selected {
+  border-color: #2ecc71;
+  background: #27ae60;
+  color: white;
+}
+
+.save-item-info {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.save-item-title {
+  font-weight: bold;
+  font-size: 0.95rem;
+}
+
+.load-btn-container {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 15px;
+}
+
+.load-action-btn {
+  background: #2ecc71;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 8px 16px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.load-action-btn:hover:not(:disabled) {
+  background: #27ae60;
+}
+
+.load-action-btn:disabled {
+  background: #7f8c8d;
+  cursor: not-allowed;
+  opacity: 0.6;
 }
 
 /* Scoring Modal Styles */

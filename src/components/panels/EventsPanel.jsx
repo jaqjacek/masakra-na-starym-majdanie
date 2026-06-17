@@ -1,12 +1,31 @@
 import React, { useState } from 'react';
 
-const EventsPanel = ({ events, onClose }) => {
+const EventsPanel = ({ events, onClose, onTriggerEvent }) => {
   console.log('EventsPanel rendering with events:', events);
   const [hoveredEvent, setHoveredEvent] = useState(null);
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
 
   const handleMouseMove = (e) => {
-    setMousePos({ x: e.clientX + 15, y: e.clientY + 15 });
+    const popupWidth = 230; // 200px width + padding + borders + safe margin
+    const popupHeight = 160; // Estimated max height + safe margin
+    
+    let x = e.clientX + 15;
+    let y = e.clientY + 15;
+    
+    // Check horizontal boundaries
+    if (x + popupWidth > window.innerWidth) {
+      x = e.clientX - popupWidth - 10;
+    }
+    
+    // Check vertical boundaries
+    if (y + popupHeight > window.innerHeight) {
+      y = e.clientY - popupHeight - 10;
+    }
+    
+    setMousePos({ 
+      x: Math.max(10, x), 
+      y: Math.max(10, y) 
+    });
   };
 
   const drawn = events?.drawn || [];
@@ -29,6 +48,14 @@ const EventsPanel = ({ events, onClose }) => {
                 onMouseMove={handleMouseMove}
                 onMouseEnter={() => setHoveredEvent(event)}
                 onMouseLeave={() => setHoveredEvent(null)}
+                onMouseDown={(e) => {
+                  if (e.shiftKey && e.button === 0) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    onTriggerEvent && onTriggerEvent(event.id);
+                  }
+                }}
+                title="Shift+LPP: Uruchom wydarzenie ręcznie"
               >
                 <div className={`event-icon drawn event-${event.type}`}>E</div>
                 <span>{event.id}</span>
@@ -46,6 +73,14 @@ const EventsPanel = ({ events, onClose }) => {
                 onMouseMove={handleMouseMove}
                 onMouseEnter={() => setHoveredEvent(event)}
                 onMouseLeave={() => setHoveredEvent(null)}
+                onMouseDown={(e) => {
+                  if (e.shiftKey && e.button === 0) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    onTriggerEvent && onTriggerEvent(event.id);
+                  }
+                }}
+                title="Shift+LPP: Uruchom wydarzenie ręcznie"
               >
                 <div className={`event-icon event-${event.type}`}>E</div>
                 <span>{event.id}</span>

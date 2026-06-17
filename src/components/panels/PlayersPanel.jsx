@@ -11,9 +11,20 @@ const PlayersPanel = ({
   manualPlayers = [],
   onToggleManualPlayer
 }) => {
-  const handleClick = (e, index) => {
-    if (e.shiftKey) onUpdatePoints(index, 1);
-    else if (e.ctrlKey) onUpdatePoints(index, -1);
+  const handleMouseDown = (e, index) => {
+    if (e.shiftKey) {
+      if (e.button === 0) {
+        e.preventDefault();
+        e.stopPropagation();
+        onUpdatePoints(index, 1);
+      }
+    } else if (e.ctrlKey) {
+      if (e.button === 0) {
+        e.preventDefault();
+        e.stopPropagation();
+        onUpdatePoints(index, 0, true); // Sets to 0
+      }
+    }
   };
 
   const handleSelectPlayer = (e, id) => {
@@ -64,8 +75,8 @@ const PlayersPanel = ({
               <div className="player-points-display">
                 <span 
                   className="player-points interactive" 
-                  onClick={(e) => handleClick(e, index)}
-                  title="Shift+Click: +1 | Ctrl+Click: -1"
+                  onMouseDown={(e) => handleMouseDown(e, index)}
+                  title="Shift+LPP: +1 | Ctrl+LPP: Set to 0"
                 >
                   {player.points}
                 </span>

@@ -43,16 +43,6 @@
     { "x": 4, "y": 4 }
   ], "title": "Przełamanie Wewnętrznej Linii", "description": "Jakub przebija się przez wewnętrzną obronę. Pionki na polach (1,1), (1,4), (4,1) i (4,4) zostają wyeliminowane." },
   { "id": 24, "type": "wipe-sectors", "value": [
-    { "x": 1, "y": 0 },
-    { "x": 2, "y": 0 },
-    { "x": 3, "y": 0 },
-    { "x": 4, "y": 0 },
-    { "x": 1, "y": 5 },
-    { "x": 2, "y": 5 },
-    { "x": 3, "y": 5 },
-    { "x": 4, "y": 5 }
-  ], "title": "Patrol wzdłuż Płotów", "description": "Jakub krąży wzdłuż bocznych ogrodzeń gospodarstw. Pionki przy bocznych płotach zostają wyeliminowane." },
-  { "id": 25, "type": "wipe-sectors", "value": [
     { "x": 0, "y": 1 },
     { "x": 0, "y": 2 },
     { "x": 0, "y": 3 },
@@ -61,7 +51,17 @@
     { "x": 5, "y": 2 },
     { "x": 5, "y": 3 },
     { "x": 5, "y": 4 }
-  ], "title": "Rubieże Majdanu", "description": "Jakub najeżdża północne i południowe krańce wioski. Pionki na rubieżach zostają wyeliminowane." },
+  ], "title": "Patrol wzdłuż Płotów", "description": "Jakub krąży wzdłuż bocznych ogrodzeń gospodarstw. Pionki przy bocznych płotach (z wyłączeniem narożników planszy) zostają wyeliminowane." },
+  { "id": 25, "type": "wipe-sectors", "value": [
+    { "x": 1, "y": 0 },
+    { "x": 2, "y": 0 },
+    { "x": 3, "y": 0 },
+    { "x": 4, "y": 0 },
+    { "x": 1, "y": 5 },
+    { "x": 2, "y": 5 },
+    { "x": 3, "y": 5 },
+    { "x": 4, "y": 5 }
+  ], "title": "Rubieże Majdanu", "description": "Jakub najeżdża północne i południowe krańce wioski. Pionki na rubieżach (z wyłączeniem narożników planszy) zostają wyeliminowane." },
   { "id": 26, "type": "wipe-sectors", "value": [
     { "x": 2, "y": 2 },
     { "x": 2, "y": 3 },

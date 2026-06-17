@@ -24,7 +24,8 @@ const GamePanel = ({
   onOpenScoring,
   onCreateNewGame,
   onChangeGame,
-  onAdminPanel
+  onAdminPanel,
+  onOpenLoadSaves
 }) => {
   return (
     <div className="top-header-bar">
@@ -40,6 +41,7 @@ const GamePanel = ({
         </div>
 
         <button className="scoring-summary-btn main-panel-btn" onClick={onOpenScoring}>Scoring</button>
+        <button className="load-saves-btn main-panel-btn" onClick={onOpenLoadSaves}>Load</button>
 
         {!isFullAutoplay && !isJakubAutoplay && (
           <div className="manual-phase-controls">

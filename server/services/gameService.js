@@ -17,7 +17,8 @@ import {
   getGlobalConfig, 
   getGameConfig,
   CONFIGS_DIR,
-  saveFullState
+  saveFullState,
+  backupRound
 } from '../gameLogic.js';
 import { GameEventPhaseManager } from '../events/gameEventPhaseManager.js';
 
@@ -68,6 +69,7 @@ export function initializeGame(gameId, requestedSet, io) {
   console.log(`[Game ${gameId}] Events initialized:`, !!finalState.events, finalState.events?.pool?.length);
   
   saveFullState(gameId, finalState); 
+  backupRound(gameId, 1);
   if (io) io.to(`game:${gameId}`).emit('boardUpdate', finalState); 
   return finalState;
 }

@@ -20,6 +20,7 @@ import GameRulesPage from './components/docs/GameRulesPage';
 import HistoryPanel from './components/panels/HistoryPanel';
 import GamePanel from './components/panels/GamePanel';
 import EventsPanel from './components/panels/EventsPanel';
+import LoadSavesPanel from './components/panels/LoadSavesPanel';
 import PawnStatusPopup from './components/PawnStatusPopup';
 import Footer from './components/Footer';
 
@@ -94,6 +95,7 @@ function App() {
   const [isSetsPanelOpen, setIsSetsPanelOpen] = useState(false);
   const [isEventsPanelOpen, setIsEventsPanelOpen] = useState(false);
   const [isScoringPopupOpen, setIsScoringPopupOpen] = useState(false);
+  const [isLoadSavesPanelOpen, setIsLoadSavesPanelOpen] = useState(false);
   const [manualPlayers, setManualPlayers] = useState([]);
   const [hoveredRegionId, setHoveredRegionId] = useState(null);
 
@@ -276,9 +278,13 @@ function App() {
   }, [activeSet]);
 
   // 5. Specific handlers
-  const handleUpdatePoints = useCallback((playerIndex, delta) => {
+  const handleUpdatePoints = useCallback((playerIndex, delta, setToZero = false) => {
     const newState = JSON.parse(JSON.stringify(gameState));
-    newState.players[playerIndex].points = Math.max(0, newState.players[playerIndex].points + delta);
+    if (setToZero) {
+      newState.players[playerIndex].points = 0;
+    } else {
+      newState.players[playerIndex].points = Math.max(0, newState.players[playerIndex].points + delta);
+    }
     updateGameWithSync(newState);
   }, [gameState, updateGameWithSync]);
 
@@ -301,13 +307,17 @@ function App() {
     updateGameWithSync(newState);
   }, [gameState, counters.breakdown, availablePool, updateGameWithSync]);
 
-  const handleJakubCounterUpdate = useCallback((path, delta) => {
+  const handleJakubCounterUpdate = useCallback((path, delta, setToZero = false) => {
     const newState = JSON.parse(JSON.stringify(gameState));
     let target = null;
     for (const r of newState.regions) { if (r.pawns.jakub?.length > 0) { target = r.pawns.jakub[0]; break; } }
     if (!target) return;
     let curr = target; for (let i = 0; i < path.length - 1; i++) curr = curr[path[i]];
-    curr[path[path.length - 1]] = Math.max(0, curr[path[path.length - 1]] + delta);
+    if (setToZero) {
+      curr[path[path.length - 1]] = 0;
+    } else {
+      curr[path[path.length - 1]] = Math.max(0, curr[path[path.length - 1]] + delta);
+    }
     updateGameWithSync(newState);
   }, [gameState, updateGameWithSync]);
 
@@ -455,6 +465,45 @@ function App() {
     }
   }, [gameState, updateGameWithSync, addLog]);
 
+  const handleTriggerEvent = useCallback(async (eventId) => {
+    try {
+      const response = await fetch(`${SERVER_URL}/api/map/${gameId}/trigger-event/${eventId}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+      });
+      if (response.ok) {
+        const result = await response.json();
+        if (result.state) {
+          setGameState(result.state);
+        }
+      } else {
+        console.error('Failed to trigger event:', response.statusText);
+      }
+    } catch (err) {
+      console.error('Error triggering event:', err);
+    }
+  }, [gameId, setGameState]);
+
+  const handleLoadRound = useCallback(async (round) => {
+    try {
+      const response = await fetch(`${SERVER_URL}/api/map/${gameId}/load-round/${round}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+      });
+      if (response.ok) {
+        const result = await response.json();
+        if (result.state) {
+          setGameState(result.state);
+          setIsLoadSavesPanelOpen(false);
+        }
+      } else {
+        console.error('Failed to load round:', response.statusText);
+      }
+    } catch (err) {
+      console.error('Error loading round:', err);
+    }
+  }, [gameId, setGameState]);
+
   // 6. Filtering
   const jakubsSets = gameState.sets ? (gameState.sets.heldSets || []).filter(s => String(s.ownerId) === 'jakub') : [];
 
@@ -490,6 +539,7 @@ function App() {
         onGoToJakubPhase={handleGoToJakubPhase}
         onExecuteEventPhase={handleExecuteEventPhase}
         onOpenScoring={() => setIsScoringPopupOpen(true)}
+        onOpenLoadSaves={() => setIsLoadSavesPanelOpen(true)}
         onCreateNewGame={async () => {
           try {
             const res = await fetch(`${SERVER_URL}/api/map/next-id`);
@@ -507,6 +557,16 @@ function App() {
         <EventsPanel 
           events={gameState.events} 
           onClose={() => setIsEventsPanelOpen(false)} 
+          onTriggerEvent={handleTriggerEvent}
+        />
+      )}
+
+      {isLoadSavesPanelOpen && (
+        <LoadSavesPanel 
+          gameId={gameId}
+          onClose={() => setIsLoadSavesPanelOpen(false)}
+          onLoadRound={handleLoadRound}
+          serverUrl={SERVER_URL}
         />
       )}
 
@@ -697,7 +757,7 @@ function App() {
                 <h3>Placement Points (Immediate)</h3>
                 <p><strong>Vampire:</strong> (4 - distance from Jakub) × count.</p>
                 <p><strong>Werewolf:</strong> 1 base point + 1 point for every 3 werewolves (rounding down) in target/neighbor regions. Plus 1 if Jakub is in target or neighbor.</p>
-                <p><strong>Ghost:</strong> (2 - distance to edge) per pawn. -1 if in Jakub's reach.</p>
+                <p><strong>Ghost:</strong> (2 - distance to edge) per pawn. -1 if in target or neighbor region (distance ≤ 1).</p>
                 <p><strong>Bardak:</strong> 1 pt per pawn (0 if distance ≤ 1 from Jakub).</p>
                 </div>
               <div className="rules-section">

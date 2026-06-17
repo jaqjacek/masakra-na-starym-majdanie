@@ -65,12 +65,12 @@ const GameRulesPage = () => {
         <div className="rulebook-title-header-container">
           <img src={titleImg} alt="AMMENNY ZAJAZD NA STARYM MAJDANIE" className="rulebook-title-img" />
         </div>
-        <p>Oficjalne Zasady Gry - Edycja Kolekcjonerska</p>
+        <p>Oficjalne Zasady Gry v1.15.0 - Edycja Kolekcjonerska</p>
       </header>
 
       <div className="rulebook-full-width">
         <section className="rule-section">
-          <h2>1. Fabuła: Tajne Konszachty w Grobowcu</h2>
+          <h2>Fabuła: Tajne Konszachty w Grobowcu</h2>
           <p className="flavor-text">
             "W ciasnej, zawilgoconej krypcie grobowej lokalnego magnata na wojsławickim cmentarzu panował niemiłosierny ścisk. Próchniejąca trumna służyła za stół konferencyjny, na którym rozłożono mapę Starego Majdanu nabazgraną węglem na kartonie po butach. Wilkołaki ciągle kichały od kurzu i stęchlizny, wampiry narzekały, że nie ma czym oddychać, duchy z powodu wilgoci straciły swoją ektoplazmatyczną puszystość i smętnie wisiały pod sufitem ubolewając nad brakiem zasięgu LTE, a Bardaki po cichu odkręcają mosiężne uchwyty od trumny i kombinują, jak ukraść Baronowi portfel oraz jego zapasowe, posrebrzane zęby."
           </p>
@@ -83,7 +83,7 @@ const GameRulesPage = () => {
         </section>
 
         <section className="rule-section">
-          <h2>2. Osoby Dramatu (Hersztowie)</h2>
+          <h2>Osoby Dramatu (Hersztowie)</h2>
           <div className="generals-grid">
             <div className="general-card">
               <div className="general-portrait-container">
@@ -136,7 +136,7 @@ const GameRulesPage = () => {
 
       <div className="rulebook-full-width">
         <section className="rule-section">
-          <h2>3. Elementy Gry</h2>
+          <h2>Elementy Gry</h2>
           <ul>
             <li>
               <strong>Plansza:</strong> Siatka 6x6 regionów, na której toczy się walka.
@@ -204,7 +204,7 @@ const GameRulesPage = () => {
         </section>
 
         <section className="rule-section">
-          <h2>4. Przebieg Rund i Mechanika Zestawów</h2>
+          <h2>Przebieg Rund i Mechanika Zestawów</h2>
           <p>Gra trwa <strong>12 rund</strong>. Każda runda składa się z pięciu faz:</p>
 
           <h3>Główne pojęcia</h3>
@@ -237,6 +237,10 @@ const GameRulesPage = () => {
             <h4>Furia (Gniew Jakuba)</h4>
             <p>Wskaźnik określający poziom agresji Jakuba wobec danej bandy. Każdy zlikwidowany przez niego pionek danej bandy zmniejsza furię na tę bandę o 1. Gdy furia spadnie do 0, Jakub przestaje ją ścigać i atakować. Oznacza to, że wartość furii wyznacza maksymalną liczbę pionków danej bandy, jaką Jakub może zabić w danej rundzie.</p>
           </div>
+          <div className="mechanic-box" style={{ background: '#fdf2e9', borderColor: '#e67e22', marginBottom: '15px' }}>
+            <h4>Zasięg Jakuba</h4>
+            <p>Zasięg Jakuba to domyślnie sektor w którym stoi i sektory w odległości 1. Odległość ta zwiększana jest o 1 za każdą nację, której poziom Furii &gt; 9. Maksymalny zasięg wynosi 5.</p>
+          </div>
           <div className="phase-card">
             <h3>I. Przygotowanie (Początek Gry i Rund)</h3>
             <p>W <strong>pierwszej rundzie</strong> kolejność graczy jest ustalana losowo, a każdy gracz zaczyna z <strong>20 punktami</strong>. Ostatni gracz decyduje, gdzie wewnątrz planszy pojawia się Jakub.</p>
@@ -252,8 +256,8 @@ const GameRulesPage = () => {
             <h3>III. Faza Graczy</h3>
             <p>Gracze wykonują swoje tury w <strong>normalnej kolejności</strong>. W swojej turze możesz wykonać jedną akcję:</p>
             <ul>
-              <li><strong>Wystawienie zestawu:</strong> Kładziesz pionki na planszy (zestawy można wystawiać <strong>wyłącznie do pustych sektorów</strong>). Aby móc wystawić zestaw, w puli posiłków musi znajdować się wystarczająca liczba pionków danej bandy, aby całkowicie skompletować oddział. W przeciwnym razie zagranie takiego zestawu jest niedozwolone. Punkty zdobywają wszyscy Hersztowie za każdą jednostkę swojej bandy w tym zestawie.</li>
-              <li><strong>Podkablowanie Jakubowi:</strong> Przekazujesz (podkablujesz) zestaw Jakubowi w tajemnicy, zyskując natychmiast <strong>1 punkt</strong>. Zestaw ten zasili furię Jakuba na konkretną bandę (furia rośnie za każdy pionek danej bandy znajdujący się w tym zestawie).</li>
+              <li><strong>Wystawienie zestawu:</strong> Kładziesz pionki na planszy (zestawy można wystawiać <strong>wyłącznie do sektorów, w których nie ma pionków żadnej bandy</strong> – sektor z samym Jakubem zalicza się jako pusty sektor). Aby móc wystawić zestaw, w puli posiłków musi znajdować się wystarczająca liczba pionków dla każdej z band reprezentowanych w tym zestawie, aby w pełni go skompletować. Jeśli brakuje pionków chociaż jednej z tych band, wystawienie takiego zestawu jest niedozwolone. Punkty zdobywają wszyscy Hersztowie za każdą jednostkę swojej bandy w tym zestawie.</li>
+              <li><strong>Podkablowanie Jakubowi:</strong> Przekazujesz (podkablujesz) zestaw Jakubowi jawnie (a nie w tajemnicy), zyskując natychmiast <strong>1 punkt</strong>. Zestaw ten zasili furię Jakuba na konkretne bandy (furia na poszczególne bandy oraz zasięg Jakuba są aktualizowane na bieżąco, za każdy pionek danej bandy znajdujący się w tym zestawie).</li>
               <li><strong>Pasowanie:</strong> Rezygnujesz z dalszych akcji w tej rundzie.</li>
             </ul>
             <p>Faza kończy się, gdy wszyscy gracze spasują.</p>
@@ -261,7 +265,7 @@ const GameRulesPage = () => {
 
           <div className="phase-card">
             <h3>IV. Faza Jakuba</h3>
-            <p>Jakub "upuszcza pary" wykonując swój morderczy taniec (patrz pkt 6). Zabija jednostki i traci furię.</p>
+            <p>Jakub "upuszcza pary" wykonując swój morderczy taniec (patrz sekcja Furia i Łowy Jakuba). Zabija jednostki i traci furię.</p>
           </div>
 
           <div className="phase-card">
@@ -271,7 +275,7 @@ const GameRulesPage = () => {
         </section>
 
         <section className="rule-section">
-          <h2>5. Punktacja Band (Wystawianie)</h2>
+          <h2>Punktacja Band (Wystawianie)</h2>
           
 
 
@@ -281,8 +285,8 @@ const GameRulesPage = () => {
             </p>
             <p><strong>Wampiry (V):</strong> Punkty = <code>(4 - odległość) * liczba wampirów</code>. Przy maksymalnej odległości równej 5 punkty za wampiry są ujemne (<code>-1</code> za każdego wampira).</p>
             <p><strong>Wilkołaki (W):</strong> Punkty = 1 punkt bazowy + 1 punkt za każde 3 wilkołaki (zaokrąglając w dół) w regionie docelowym i regionach sąsiednich. Bonus +1, jeśli odległość od Jakuba wynosi 0 lub 1.</p>
-            <p><strong>Duchy (G):</strong> Punkty = <code>(2 - odległość do najbliższej krawędzi) * liczba duchów</code>. Kara <code>-1</code> za każdego ducha, jeśli region jest w zasięgu Jakuba (kara może sprawić, że punkty staną się ujemne).</p>
-            <p><strong>Bardaki (B):</strong> Punkty = <code>liczba Bardaków</code>. Jeśli region jest w odległości 0 lub 1 od Jakuba (wliczając skosy / odległość ≤ 1), Bardaki otrzymują <strong>0 punktów</strong> za każdego Bardaka w zestawie.</p>
+            <p><strong>Duchy (G):</strong> Punkty = <code>(2 - odległość do najbliższej krawędzi) * liczba duchów</code>. Kara <code>-1</code> za każdego ducha, jeśli region to region z Jakubem lub region sąsiedni (odległość ≤ 1; kara może sprawić, że punkty staną się ujemne).</p>
+            <p><strong>Bardaki (B):</strong> Punkty = <code>liczba Bardaków</code>. Jeśli region to region z Jakubem lub region sąsiedni (odległość ≤ 1), Bardaki otrzymują <strong>0 punktów</strong> za każdego Bardaka w zestawie.</p>
           </div>
 
           <div className="example-screenshots-container" style={{ marginTop: '30px', textAlign: 'center' }}>
@@ -292,7 +296,7 @@ const GameRulesPage = () => {
                 <strong style={{ fontSize: '1.05em' }}>Przykład 1:</strong>
                 <img src={scoreExampleVMinus1Img} alt="Przykładowy Wynik 1" className="rule-screenshot" style={{ width: '100%', height: 'auto', borderRadius: '6px', border: '1px solid #ccc' }} />
                 <p style={{ margin: '5px 0 0 0', fontSize: '0.95em', color: '#555', textAlign: 'center', lineHeight: '1.4' }}>
-                  Zestaw został wystawiony do brzegowego regionu planszy w odległości 5 od Jakuba. Punktacja za Wampiry to 4 - odległość, czyli Herszt Wampirów otrzymuje <strong>-1 punkt</strong>. Herszt Duchów otrzymuje 2 punkty minus odległość do krawędzi; ponieważ jest to region brzegowy: 2 - 0, czyli <strong>2 punkty</strong>. Herszt Bardaków otrzymuje po 1 punkcie za każdego swojego pionka wystawionego na planszę poza zasięgiem Jakuba. Zasięg Jakuba to 1, więc dostaje 2 x 1, czyli <strong>2 punkty</strong>.
+                  Zestaw został wystawiony do brzegowego regionu planszy w odległości 5 od Jakuba. Punktacja za Wampiry to 4 - odległość, czyli Herszt Wampirów otrzymuje <strong>-1 punkt</strong>. Herszt Duchów otrzymuje 2 punkty minus odległość do krawędzi; ponieważ jest to region brzegowy: 2 - 0, czyli <strong>2 punkty</strong>. Herszt Bardaków otrzymuje po 1 punkcie za każdego swojego pionka wystawionego na planszę poza regionem z Jakubem i regionami sąsiednimi (odległość &gt; 1). Ponieważ odległość wynosi 5, dostaje 2 x 1, czyli <strong>2 punkty</strong>.
                 </p>
               </div>
 
@@ -308,7 +312,7 @@ const GameRulesPage = () => {
                 <strong style={{ fontSize: '1.05em' }}>Przykład 3:</strong>
                 <img src={scoreExampleW1Img} alt="Przykładowy Wynik 3" className="rule-screenshot" style={{ width: '100%', height: 'auto', borderRadius: '6px', border: '1px solid #ccc' }} />
                 <p style={{ margin: '5px 0 0 0', fontSize: '0.95em', color: '#555', textAlign: 'center', lineHeight: '1.4' }}>
-                  Zestaw został wystawiony w odległości 2 od Jakuba. Herszt Wilkołaków otrzymuje <strong>1 punkt</strong>, ponieważ w regionie docelowym oraz sąsiednich nie ma innych Wilkołaków (za 1 wilkołaka zaokrąglając w dół otrzymuje 0 pkt, plus 1 pkt bazowy = 1 pkt). Nie otrzymuje też dodatkowego bonusowego punktu za bliskość Jakuba (odległość &gt; 1). Herszt Bardaków znajduje się poza zasięgiem Jakuba (odległość &gt; 1), więc otrzymuje po 1 punkcie za każdego Bardaka w zestawie, co daje <strong>2 pkt</strong>.
+                  Zestaw został wystawiony w odległości 2 od Jakuba. Herszt Wilkołaków otrzymuje <strong>1 punkt</strong>, ponieważ w regionie docelowym oraz sąsiednich nie ma innych Wilkołaków (za 1 wilkołaka zaokrąglając w dół otrzymuje 0 pkt, plus 1 pkt bazowy = 1 pkt). Nie otrzymuje też dodatkowego bonusowego punktu za bliskość Jakuba (odległość &gt; 1). Herszt Bardaków znajduje się poza regionem z Jakubem i regionami sąsiednimi (odległość &gt; 1), więc otrzymuje po 1 punkcie za każdego Bardaka w zestawie, co daje <strong>2 pkt</strong>.
                 </p>
               </div>
 
@@ -316,7 +320,7 @@ const GameRulesPage = () => {
                 <strong style={{ fontSize: '1.05em' }}>Przykład 4:</strong>
                 <img src={scoreExampleW3Img} alt="Przykładowy Wynik 4" className="rule-screenshot" style={{ width: '100%', height: 'auto', borderRadius: '6px', border: '1px solid #ccc' }} />
                 <p style={{ margin: '5px 0 0 0', fontSize: '0.95em', color: '#555', textAlign: 'center', lineHeight: '1.4' }}>
-                  Zestaw został wystawiony do regionu w odległości 1 od Jakuba. Herszt Bardaków otrzymuje <strong>0 punktów</strong>, ponieważ jest to sektor zagrożony (odległość ≤ 1). Herszt Duchów liczy odległość od krawędzi (wynosi ona 1), więc bazowo otrzymałby 2 - 1 = 1 pkt za ducha, ale z racji tego, że region znajduje się w zasięgu Jakuba, naliczana jest kara -1 pkt za każdego ducha, co daje ostatecznie <strong>0 pkt</strong>. Herszt Wilkołaków otrzymuje 1 punkt za wystawionego Wilkołaka, +1 punkt za bliskość Jakuba (odległość ≤ 1), oraz +1 punkt za to, że łącznie w regionie docelowym oraz sąsiednich znajdują się 4 Wilkołaki (za 4 wilkołaki zaokrąglając w dół otrzymuje 1 pkt). Ostatecznie daje to 1 (bazowy) + 1 (za bliskość) + 1 (za 4 wilkołaki) = <strong>3 pkt</strong>.
+                  Zestaw został wystawiony do regionu w odległości 1 od Jakuba. Herszt Bardaków otrzymuje <strong>0 punktów</strong>, ponieważ jest to sektor zagrożony (odległość ≤ 1). Herszt Duchów liczy odległość od krawędzi (wynosi ona 1), więc bazowo otrzymałby 2 - 1 = 1 pkt za ducha, ale z racji tego, że region to region z Jakubem lub region sąsiedni (odległość ≤ 1), naliczana jest kara -1 pkt za każdego ducha, co daje ostatecznie <strong>0 pkt</strong>. Herszt Wilkołaków otrzymuje 1 punkt za wystawionego Wilkołaka, +1 punkt za bliskość Jakuba (odległość ≤ 1), oraz +1 punkt za to, że łącznie w regionie docelowym oraz sąsiednich znajdują się 4 Wilkołaki (za 4 wilkołaki zaokrąglając w dół otrzymuje 1 pkt). Ostatecznie daje to 1 (bazowy) + 1 (za bliskość) + 1 (za 4 wilkołaki) = <strong>3 pkt</strong>.
                 </p>
               </div>
 
@@ -324,7 +328,7 @@ const GameRulesPage = () => {
                 <strong style={{ fontSize: '1.05em' }}>Przykład 5:</strong>
                 <img src={scoreExampleW3B2Img} alt="Przykładowy Wynik 5" className="rule-screenshot" style={{ width: '100%', height: 'auto', borderRadius: '6px', border: '1px solid #ccc' }} />
                 <p style={{ margin: '5px 0 0 0', fontSize: '0.95em', color: '#555', textAlign: 'center', lineHeight: '1.4' }}>
-                  Herszt bardaków nie dostaje żadnych punktów gdyż został wystawiony do regionu w zasięgu jakuba. Hersz wilkołaków dostaje. 1 punkt za wystawienie wilkołaka 1 punkt za region w zasięgu jakuba. Następnie zlicza wilkołaki w zasięgu sektora w którym został wystawiony jest ich 6 czyli dodatkowe 2 punkty. Łącznie 4 punkty.
+                  Herszt bardaków nie dostaje żadnych punktów gdyż został wystawiony do regionu z Jakubem lub regionu sąsiedniego (odległość ≤ 1). Herszt wilkołaków dostaje 1 punkt za wystawienie wilkołaka oraz 1 punkt za region z Jakubem lub region sąsiedni (odległość ≤ 1). Następnie zlicza wilkołaki w zasięgu sektora w którym został wystawiony jest ich 6 czyli dodatkowe 2 punkty. Łącznie 4 punkty.
                 </p>
               </div>
 
@@ -332,7 +336,7 @@ const GameRulesPage = () => {
                 <strong style={{ fontSize: '1.05em' }}>Przykład 6:</strong>
                 <img src={scoreExampleW4G2Img} alt="Przykładowy Wynik 6" className="rule-screenshot" style={{ width: '100%', height: 'auto', borderRadius: '6px', border: '1px solid #ccc' }} />
                 <p style={{ margin: '5px 0 0 0', fontSize: '0.95em', color: '#555', textAlign: 'center', lineHeight: '1.4' }}>
-                  Hersz bardaków 1 punkt gdyż jest to region poza zasięgiem Jakuba. Obecny sektor jest w odległości 2 od jakuba czyli każdy wampir dostej 4 -2=2pkt czyli łącznie 4pkt
+                  Hersz bardaków 1 punkt gdyż jest to region poza regionem z Jakubem i regionami sąsiednimi (odległość &gt; 1). Obecny sektor jest w odległości 2 od jakuba czyli każdy wampir dostej 4 -2=2pkt czyli łącznie 4pkt
                 </p>
               </div>
             </div>
@@ -340,20 +344,20 @@ const GameRulesPage = () => {
         </section>
 
         <section className="rule-section">
-          <h2>6. Furia i Łowy Jakuba</h2>
+          <h2>Furia i Łowy Jakuba</h2>
           <p>
-            Jakub nie jest cierpliwym człowiekiem. Jego <strong>Furia</strong> kumuluje się podczas innych faz gry (np. gdy wchłania zestawy w fazie przygotowania lub gdy gracze podkablują nim Jakubowi). Szczegółowe zasady ataku i ruchu Jakuba wyglądają następująco:
+            Jakub nie jest cierpliwym człowiekiem. Jego <strong>Furia</strong> kumuluje się podczas innych faz gry (np. gdy wchłania zestawy w fazie przygotowania lub gdy hersztowie kablują na innych hersztów). Szczegółowe zasady ataku i ruchu Jakuba wyglądają następująco:
           </p>
           <ul>
             <li>
               <strong>Czystka w obecnym sektorze:</strong> Przed jakimkolwiek ruchem Jakub najpierw eliminuje pionki w regionie, w którym aktualnie stoi. 
-              Atakuje tylko te bandy, na które ma <strong>Furię &gt; 0</strong>. Każda zgładzona jednostka zmniejsza jego Furię na daną bandę o <strong>1</strong> (a jej Herszt traci 1 punkt). Czystka trwa dopóki są cele i Furia.
+              Atakuje tylko te bandy, na które ma <strong>Furię &gt; 0</strong>. Każda zgładzona jednostka zmniejsza jego Furię na daną bandę o <strong>1</strong> (a jej Herszt traci 1 punkt), a sam zabity pionek wraca do puli posiłków tej bandy, co umożliwia i ułatwia wystawianie zestawów w kolejnych rundach. Czystka trwa dopóki są cele i Furia.
             </li>
             <li>
               <strong>Poszukiwanie celu i ruch:</strong> Jeśli po czystce Jakub wciąż posiada Furię, a na jego polu nie ma już pionków nacji, na które jest zły, rozpoczyna ruch:
               <ol style={{ marginTop: '5px', marginLeft: '20px' }}>
                 <li>Wybiera jako cel bandę, na którą ma <strong>najwyższy aktualny poziom Furii</strong> (w przypadku remisu decyduje Hierarchia Band).</li>
-                <li>Skanuje regiony w swoim zasięgu ruchu w poszukiwaniu pionków tej bandy.</li>
+                <li>Skanuje regiony w swoim zasięgu ruchu (który wynosi domyślnie 1 + 1 za każdą bandę, na którą ma furię &gt; 9) w poszukiwaniu pionków tej bandy.</li>
                 <li>
                   <strong>Rozstrzyganie remisów przy wyborze regionu docelowego:</strong>
                   <ul style={{ marginTop: '5px', listStyleType: 'circle', marginLeft: '20px' }}>
@@ -363,7 +367,7 @@ const GameRulesPage = () => {
                   </ul>
                 </li>
               </ol>
-              Każdy ruch zmniejsza aktualny zasięg Jakuba o 1. Po przemieszczeniu się, Jakub wykonuje ponowną czystkę w nowym regionie.
+              Przed każdym ruchem na nowo wyliczany jest aktualny zasięg Jakuba. Po przemieszczeniu się, Jakub wykonuje ponowną czystkę w nowym regionie.
             </li>
           </ul>
           
@@ -393,7 +397,7 @@ const GameRulesPage = () => {
                 <strong style={{ fontSize: '1.05em' }}>2. Wybór celu i ruch:</strong>
                 <img src={jakubPhasePart2Img} alt="Jakub Phase Example Part 2" className="rule-screenshot" style={{ width: '100%', height: 'auto', borderRadius: '6px', border: '1px solid #ccc' }} />
                 <p style={{ margin: '5px 0 0 0', fontSize: '0.95em', color: '#555', textAlign: 'center', lineHeight: '1.4' }}>
-                  Jakub najbardziej pała furią do Bardaków, więc szuka regionu z największą ilością Bardaków w jego zasięgu. Ponieważ żadna z nacji nie ma furii większej lub równej 10, jego zasięg to 1, więc przeskakuje do regionu w prawo.
+                  Jakub najbardziej pała furią do Bardaków, więc szuka regionu z największą ilością Bardaków w jego zasięgu. Ponieważ żadna z nacji nie ma furii &gt; 9, jego zasięg to 1, więc przeskakuje do regionu w prawo.
                 </p>
               </div>
 
@@ -425,7 +429,7 @@ const GameRulesPage = () => {
         </section>
 
         <section className="rule-section">
-          <h2>7. Koniec Gry i Punktacja Końcowa</h2>
+          <h2>Koniec Gry i Punktacja Końcowa</h2>
           <p>W <strong>12. rundzie</strong>, po zakończeniu Fazy Jakuba, nie następuje Faza Eventu. Zamiast niej przeprowadzana jest <strong>Punktacja Końcowa</strong>, która wyłoni ostatecznego zwycięzcę.</p>
           
           <div className="scoring-box">
@@ -442,13 +446,13 @@ const GameRulesPage = () => {
           
           <div className="tie-breaker-box warning">
             <h3>Zasada Remisu:</h3>
-            <p>Jeżeli na koniec gry dwóch lub więcej graczy posiada identyczną liczbę punktów, postępujemy według <strong>Hierarchii Band</strong>.</p>
+            <p>W przypadku jakichkolwiek remisów na koniec gry, zwycięzcą zostaje gracz posiadający generała stojącego najwyżej w <strong>Hierarchii Band</strong>.</p>
           </div>
         </section>
       </div>
 
       <footer className="rulebook-footer">
-        © 2026 Wędrowycz-Gemini Project - Professional Rulebook v1.11.0 | Jakub approves.
+        © 2026 Wędrowycz-Gemini Project - Professional Rulebook v1.15.0 | Jakub approves.
       </footer>
     </div>
   );

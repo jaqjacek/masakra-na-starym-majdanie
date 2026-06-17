@@ -308,14 +308,17 @@ const EditableSet = ({ set, isEditMode, onPawnDragStart, onPawnDrop, onClonePawn
             className={`set-icon ${race} ${isEditMode ? 'draggable' : ''}`} 
             draggable={isEditMode} 
             onDragStart={() => isEditMode && onPawnDragStart(race, set.id)}
-            onClick={(e) => { 
+            onMouseDown={(e) => { 
+              if (e.button !== 0) return;
               if (e.shiftKey) {
+                e.stopPropagation();
                 onClonePawn(set.id, race);
               } else if (e.ctrlKey || e.metaKey) {
+                e.stopPropagation();
                 onRemovePawn(set.id, race);
               }
             }}
-            title={isEditMode ? "Drag to move | Shift+Click to clone | Ctrl+Click to remove" : ""}
+            title={isEditMode ? "Drag to move | Shift+LPP to clone | Ctrl+LPP to remove" : ""}
           ></div>
         ))}
       </div>

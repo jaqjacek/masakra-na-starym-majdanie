@@ -31,7 +31,11 @@ const Region = ({ pawnGroups, onMouseUp, onRemovePawn, onAddPawn, onPawnMouseDow
                 key={`${typeId}-${pIdx}`} 
                 className={`pawn-indicator ${typeId} ${!isEnabled ? 'disabled-pawn' : ''}`}
                 onMouseDown={(e) => {
+                  if (e.button !== 0) return;
                   if (e.shiftKey) {
+                    e.stopPropagation();
+                    onAddPawn(typeId);
+                  } else if (e.ctrlKey) {
                     e.stopPropagation();
                     onRemovePawn(typeId);
                   } else {
@@ -43,7 +47,7 @@ const Region = ({ pawnGroups, onMouseUp, onRemovePawn, onAddPawn, onPawnMouseDow
                   setHoveredPawn({ pawn, pawnType, x: e.clientX, y: e.clientY });
                 }}
                 onMouseLeave={() => setHoveredPawn(null)}
-                title={isEnabled ? "Przeciągnij, aby przesunąć, Shift+Kliknięcie, aby usunąć" : "Zablokowany - nie możesz się poruszyć, Shift+Kliknięcie, aby usunąć"}
+                title={isEnabled ? "Przeciągnij, aby przesunąć | Shift+LPP: dodaj | Ctrl+LPP: usuń" : "Zablokowany | Shift+LPP: dodaj | Ctrl+LPP: usuń"}
               />
             );
           });
@@ -55,11 +59,15 @@ const Region = ({ pawnGroups, onMouseUp, onRemovePawn, onAddPawn, onPawnMouseDow
           <div 
             key={type.id} 
             className="summary-item" 
-            title={`Shift+Kliknięcie, aby dodać: ${type.name}`}
-            onClick={(e) => {
+            title={`Shift+LPP: Dodaj ${type.name} | Ctrl+LPP: Usuń ${type.name}`}
+            onMouseDown={(e) => {
+              if (e.button !== 0) return;
               if (e.shiftKey) {
                 e.stopPropagation();
                 onAddPawn(type.id);
+              } else if (e.ctrlKey) {
+                e.stopPropagation();
+                onRemovePawn(type.id);
               }
             }}
           >

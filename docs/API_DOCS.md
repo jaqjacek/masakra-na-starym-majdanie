@@ -26,6 +26,8 @@ This document describes the available API endpoints for the MASAKRA na Starym Ma
   - Returns the JSON structure of a specific set.
 - **POST `/sets/generate`**
   - Generates a new randomized set based on parameters in the request body.
+- **POST `/sets/generate/transient`**
+  - Generates a new randomized set transiently and returns the resulting JSON structure without saving it to disk. Naming matches parameters.
 
 ### 3. Simulation & Analytics
 - **POST `/simulate/`**

@@ -10,6 +10,11 @@ import {
   sortSetsData, 
   generateSetData 
 } from '../setManager.js';
+import { 
+  INITIAL_PAWN_POOL, 
+  PAWNS_IN_PLAY_LIMIT, 
+  DEFAULT_POWER_CONFIG 
+} from '../constants.js';
 
 const router = express.Router();
 
@@ -56,6 +61,35 @@ router.get('/', (req, res) => {
 router.get('/details/:setName', (req, res) => { 
   try { res.json(loadSetFile(req.params.setName)); } 
   catch (_err) { res.status(500).json({ error: 'Failed' }); } 
+});
+
+router.post('/generate/transient', (req, res) => {
+  try {
+    const { pawns, pawnsInPlayLimit, power, maxPower, displayName, description } = req.body;
+    
+    // Fallback defaults
+    const finalPawns = pawns || INITIAL_PAWN_POOL;
+    const finalLimits = pawnsInPlayLimit || PAWNS_IN_PLAY_LIMIT;
+    const finalPower = power || DEFAULT_POWER_CONFIG;
+    const finalMaxPower = maxPower !== undefined ? maxPower : 6;
+
+    // Generate filename based on parameters: TV10-TW20-TG30-TB40_LV5-LW10-LG15-LB20
+    const namePart1 = `TV${finalPawns.vampire || 0}-TW${finalPawns.werewolf || 0}-TG${finalPawns.ghost || 0}-TB${finalPawns.bardak || 0}`;
+    const namePart2 = `LV${finalLimits.vampire || 0}-LW${finalLimits.werewolf || 0}-LG${finalLimits.ghost || 0}-LB${finalLimits.bardak || 0}`;
+    const customName = `${namePart1}_${namePart2}`;
+
+    const data = generateSetData(finalPawns, finalPower, finalMaxPower, { 
+      displayName: displayName || customName, 
+      description: description || 'Transient generated set', 
+      pawnsInPlayLimit: finalLimits 
+    }); 
+    
+    data.setName = customName;
+    res.json(data);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Transient set generation failed' });
+  }
 });
 
 router.post('/generate', (req, res) => {

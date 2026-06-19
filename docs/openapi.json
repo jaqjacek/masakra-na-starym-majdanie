@@ -100,6 +100,29 @@
         "responses": { "200": { "description": "Set generated" } }
       }
     },
+    "/api/sets/generate/transient": {
+      "post": {
+        "summary": "Generate a new pawn set transiently without saving to disk",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "pawns": { "type": "object", "description": "Totals pool per race" },
+                  "pawnsInPlayLimit": { "type": "object", "description": "Limits per race" },
+                  "power": { "type": "object" },
+                  "maxPower": { "type": "number" },
+                  "displayName": { "type": "string" },
+                  "description": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": { "200": { "description": "Generated set JSON structure" } }
+      }
+    },
     "/api/sets/duplicate/{setName}": {
       "post": {
         "summary": "Duplicate an existing set",

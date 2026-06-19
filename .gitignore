@@ -14,4 +14,5 @@ tests/simulation_outputs
 tests/simulations_sets
 tests/simulation_sets
 tests/simulates_game
+tests/run_local_simulation.js
  

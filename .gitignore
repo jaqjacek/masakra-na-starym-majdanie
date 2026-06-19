@@ -21,6 +21,7 @@ tests/analyze_simulation_archive.js
 tests/analyze_simulation_archive.py
 tests/run_game_set_simulation.js
 tests/run_all_simulations.sh
+tests/analyze_all_archives.py
 *.pyc
 *.pyo
 __pycache__/

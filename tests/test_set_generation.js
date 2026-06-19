@@ -1,35 +1,48 @@
 import { generateSetData } from '../server/setManager.js';
 import { INITIAL_PAWN_POOL, DEFAULT_POWER_CONFIG } from '../server/constants.js';
 
-console.log('--- STARTING SET GENERATION TEST ---');
+console.log('--- STARTING SET GENERATION TEST (PART 2) ---');
 
-// Generate set using default pools and maxPower=6
 const maxPower = 6;
 const data = generateSetData(INITIAL_PAWN_POOL, DEFAULT_POWER_CONFIG, maxPower);
 
 const sets = data.drawPile;
 console.log(`Total generated sets: ${sets.length}`);
 
-// Validation stats
 let errors = 0;
 let vampire2Sets = 0;
 let werewolf2Sets = 0;
 let ghost3Sets = 0;
 let bardak4Sets = 0;
 let allRacesSets = 0;
-let setsOver4Units = 0;
+
+const sigCounts = {};
+const getSignature = (content) => {
+  return Object.entries(content)
+    .filter(([_, count]) => count > 0)
+    .sort((a, b) => a[0].localeCompare(b[0]))
+    .map(([race, count]) => `${race}:${count}`)
+    .join(',');
+};
 
 sets.forEach((set, index) => {
   const c = set.content;
   const unitCount = Object.values(c).reduce((a, b) => a + b, 0);
   const raceCount = Object.keys(c).length;
   
+  // 1. Verify max 4 units
   if (unitCount > 4) {
     console.error(`Error: Set #${index} has more than 4 pawns:`, c);
-    setsOver4Units++;
     errors++;
   }
   
+  // 2. Verify min power 3
+  const power = Object.entries(c).reduce((sum, [r, count]) => sum + (DEFAULT_POWER_CONFIG[r] || 0) * count, 0);
+  if (power < 3) {
+    console.error(`Error: Set #${index} has power < 3 (${power}):`, c);
+    errors++;
+  }
+
   // Count matches for mandatory configs
   if (c.vampire === 2 && unitCount === 2) vampire2Sets++;
   if (c.werewolf === 2 && unitCount === 2) werewolf2Sets++;
@@ -58,6 +71,10 @@ sets.forEach((set, index) => {
     console.error(`Error: Set #${index} has all 4 races unexpectedly:`, c);
     errors++;
   }
+
+  // Count duplicate signatures
+  const sig = getSignature(c);
+  sigCounts[sig] = (sigCounts[sig] || 0) + 1;
 });
 
 // Enforce specific counts
@@ -68,10 +85,12 @@ console.log(`- Sets with exactly 3 Ghosts: ${ghost3Sets} (Expected: 2)`);
 console.log(`- Sets with exactly 4 Bardaks: ${bardak4Sets} (Expected: 1)`);
 console.log(`- Sets containing all 4 races: ${allRacesSets} (Expected: 1)`);
 
-if (sets.length > 50) {
-  console.error(`Error: Total sets (${sets.length}) exceeds maximum limit of 50.`);
+// 3. Verify total sets range [30, 50]
+if (sets.length < 30 || sets.length > 50) {
+  console.error(`Error: Total sets (${sets.length}) is not within the range [30, 50].`);
   errors++;
 }
+
 if (vampire2Sets < 1) {
   console.error(`Error: Missing mandatory set with 2 vampires.`);
   errors++;
@@ -92,6 +111,24 @@ if (allRacesSets !== 1) {
   console.error(`Error: Should have exactly 1 set with all 4 races, got ${allRacesSets}.`);
   errors++;
 }
+
+// Print signature uniqueness distribution
+console.log('\nSignature distribution (uniqueness check):');
+let duplicateSetsCount = 0;
+Object.entries(sigCounts).sort((a,b) => b[1] - a[1]).forEach(([sig, count]) => {
+  console.log(`  - [${sig}]: ${count} sets`);
+  if (count > 1) {
+    // Subtract 1 since the first occurrence is not a duplicate.
+    // For ghost:3, 2 occurrences is the mandatory count, so only count duplicates above 2.
+    if (sig === 'ghost:3') {
+      duplicateSetsCount += Math.max(0, count - 2);
+    } else {
+      duplicateSetsCount += (count - 1);
+    }
+  }
+});
+
+console.log(`\nTotal duplicate sets (excluding mandatory ghost duplicates): ${duplicateSetsCount}`);
 
 if (errors === 0) {
   console.log('\nSUCCESS: All set generation checks passed successfully!');

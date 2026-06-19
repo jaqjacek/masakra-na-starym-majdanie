@@ -62,13 +62,22 @@ export const generateSetData = (pawnsConfig, powerConfig, maxPower, meta = {}) =
   const countUnits = (content) => Object.values(content).reduce((a, b) => a + b, 0);
   const countDistinctRaces = (content) => Object.keys(content).length;
 
+  const getSignature = (content) => {
+    return Object.entries(content)
+      .filter(([_, count]) => count > 0)
+      .sort((a, b) => a[0].localeCompare(b[0]))
+      .map(([race, count]) => `${race}:${count}`)
+      .join(',');
+  };
+
   // Enforce constraints on general generation:
   // - Capped at 4 units total per set.
   // - Adheres to PAWN_CONSTRAINTS (vampire <= 1, werewolf <= 1, ghost <= 2).
   // - Number of distinct races <= 3 (to prevent any other set from containing all 4 races).
   // - Capped at 3 bardaks (to prevent any other set from containing 4 bardaks).
-  const canAdd = (content, race) => {
-    if (totals[race] <= 0) return false;
+  const canAdd = (content, race, tempTotals) => {
+    const totalsPool = tempTotals || totals;
+    if (totalsPool[race] <= 0) return false;
     if (countUnits(content) >= maxUnits) return false;
     if ((content[race] || 0) >= PAWN_CONSTRAINTS[race]) return false;
     
@@ -122,28 +131,61 @@ export const generateSetData = (pawnsConfig, powerConfig, maxPower, meta = {}) =
   // 2. Generate the rest of the sets, up to a hard cap of 50 total sets
   while (items.length < 50 && RACES.some(r => totals[r] > 0)) {
     let content = {};
-    const availableFirst = RACES.filter(r => totals[r] > 0 && canAdd(content, r));
-    if (availableFirst.length === 0) break;
-    const firstRace = availableFirst[Math.floor(Math.random() * availableFirst.length)];
-    content[firstRace] = 1; totals[firstRace]--;
+    let foundValid = false;
     
-    let adding = true;
-    while (adding) {
-      if (calcPower(content) >= maxPower || countUnits(content) >= maxUnits) break;
-      let pawnAddedThisPass = false;
-      for (const race of REVERSE_RACES) {
-        if (canAdd(content, race)) {
-          if (Math.random() < 0.5) { 
-            content[race] = (content[race] || 0) + 1; 
-            totals[race]--; 
-            pawnAddedThisPass = true; 
-            break; 
+    // Try up to 10 times to find a unique combination with power >= 3
+    for (let tryIdx = 0; tryIdx < 10; tryIdx++) {
+      let tempTotals = { ...totals };
+      let tempContent = {};
+      
+      const availableFirst = RACES.filter(r => tempTotals[r] > 0 && canAdd(tempContent, r, tempTotals));
+      if (availableFirst.length === 0) break;
+      const firstRace = availableFirst[Math.floor(Math.random() * availableFirst.length)];
+      tempContent[firstRace] = 1; tempTotals[firstRace]--;
+      
+      let adding = true;
+      while (adding) {
+        if (calcPower(tempContent) >= maxPower || countUnits(tempContent) >= maxUnits) break;
+        let pawnAddedThisPass = false;
+        for (const race of REVERSE_RACES) {
+          if (canAdd(tempContent, race, tempTotals)) {
+            // Force adding if power is less than 3, otherwise 50% probability
+            const prob = calcPower(tempContent) < 3 ? 1.0 : 0.5;
+            if (Math.random() < prob) { 
+              tempContent[race] = (tempContent[race] || 0) + 1; 
+              tempTotals[race]--; 
+              pawnAddedThisPass = true; 
+              break; 
+            }
           }
         }
+        if (!pawnAddedThisPass) adding = false;
       }
-      if (!pawnAddedThisPass) adding = false;
+      
+      // Enforce power >= 3
+      if (calcPower(tempContent) >= 3) {
+        const sig = getSignature(tempContent);
+        const isDuplicate = items.some(item => getSignature(item.content) === sig);
+        
+        // Accept if unique or on final fallback try
+        if (!isDuplicate || tryIdx === 9) {
+          content = tempContent;
+          // Apply changes to real totals
+          Object.entries(content).forEach(([race, count]) => {
+            totals[race] -= count;
+          });
+          foundValid = true;
+          break;
+        }
+      }
     }
-    items.push({ id: 0, content, used: false, power: calcPower(content), ownerId: null });
+    
+    if (foundValid) {
+      items.push({ id: 0, content, used: false, power: calcPower(content), ownerId: null });
+    } else {
+      // Break the loop if we cannot form a single set with power >= 3
+      break;
+    }
   }
 
   const result = { 

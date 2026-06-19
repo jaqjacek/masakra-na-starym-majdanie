@@ -18,3 +18,7 @@ tests/run_local_simulation.js
 tests/plays_data
 tests/run_single_combination.js
 tests/analyze_simulation_archive.js
+tests/analyze_simulation_archive.py
+*.pyc
+*.pyo
+__pycache__/

@@ -28,6 +28,7 @@ import Footer from './components/Footer';
 import { useGameState } from './hooks/useGameState';
 import { useAutoplay } from './hooks/useAutoplay';
 import { useGameInteraction } from './hooks/useGameInteraction';
+import { trackGeneralSelection } from '../shared/statsManager.js';
 
 // Constants & Utilities
 import { PAWN_TYPES, SUMMARY_PAWN_IDS } from './constants/pawnTypes';
@@ -98,6 +99,7 @@ function App() {
   const [isLoadSavesPanelOpen, setIsLoadSavesPanelOpen] = useState(false);
   const [manualPlayers, setManualPlayers] = useState([]);
   const [hoveredRegionId, setHoveredRegionId] = useState(null);
+  const [isEndGamePopupOpen, setIsEndGamePopupOpen] = useState(false);
 
   const handleToggleManualPlayer = useCallback((id) => {
     setManualPlayers(prev => 
@@ -125,6 +127,15 @@ function App() {
       document.documentElement.classList.remove('scrollable');
     }
   }, [isAdminPath, currentPath]);
+
+  // Open End Game rankings popup automatically when phase changes to 'End Game'
+  useEffect(() => {
+    if (gameState.phase === 'End Game') {
+      setIsEndGamePopupOpen(true);
+    } else {
+      setIsEndGamePopupOpen(false);
+    }
+  }, [gameState.phase]);
 
 
 
@@ -226,7 +237,8 @@ function App() {
         );
         curPlayer.generalOf = pick;
         workState.availableGenerals = workState.availableGenerals.filter(g => g !== pick);
-        addLog(workState, `Gracz ${playerId} wybrał Generała bandy: ${pick === 'V' ? 'Wampiry' : pick === 'W' ? 'Wilkołaki' : pick === 'G' ? 'Duchy' : 'Bardaki'}`);
+        trackGeneralSelection(curPlayer, pick);
+        addLog(workState, `Gracz ${playerId} wybrał Generała bandy: ${pick === 'vampire' ? 'Wampiry' : pick === 'werewolf' ? 'Wilkołaki' : pick === 'ghost' ? 'Duchy' : 'Bardaki'}`);
       }
 
       const best = ClientPlacementManager.findBestPlacement(workState.regions, workState.sets.heldSets, playerId, curPlayer.generalOf, globalPool, playLimits);
@@ -443,7 +455,8 @@ function App() {
 
       player.generalOf = race;
       workState.availableGenerals = workState.availableGenerals.filter(r => r !== race);
-      addLog(workState, `Gracz ${player.id} wybrał Generała bandy: ${race === 'V' ? 'Wampiry' : race === 'W' ? 'Wilkołaki' : race === 'G' ? 'Duchy' : 'Bardaki'}`);
+      trackGeneralSelection(player, race);
+      addLog(workState, `Gracz ${player.id} wybrał Generała bandy: ${race === 'vampire' ? 'Wampiry' : race === 'werewolf' ? 'Wilkołaki' : race === 'ghost' ? 'Duchy' : 'Bardaki'}`);
       
       advanceTurn(workState);
       updateGameWithSync(workState);
@@ -507,6 +520,85 @@ function App() {
   // 6. Filtering
   const jakubsSets = gameState.sets ? (gameState.sets.heldSets || []).filter(s => String(s.ownerId) === 'jakub') : [];
 
+  // Rankings and Stats Helpers
+  const sortedPlayers = useMemo(() => {
+    if (!gameState.players) return [];
+    const raceHierarchy = ['vampire', 'werewolf', 'ghost', 'bardak'];
+    return [...gameState.players].sort((a, b) => {
+      if (b.points !== a.points) {
+        return b.points - a.points;
+      }
+      // Tie-breaker: General in round 12
+      const aRaceIndex = raceHierarchy.indexOf(a.generalOf);
+      const bRaceIndex = raceHierarchy.indexOf(b.generalOf);
+      return aRaceIndex - bRaceIndex;
+    });
+  }, [gameState.players]);
+
+  const renderPlayerStats = (player, isSmall = false) => {
+    const stats = player.stats || {
+      races: {}, scores: {}, losses: {}, rambo: {}, witness: {}, final: {}, passing: {}
+    };
+    const racesList = ['vampire', 'werewolf', 'ghost', 'bardak'];
+    const raceNames = { vampire: 'Wampiry', werewolf: 'Wilkołaki', ghost: 'Duchy', bardak: 'Bardaki' };
+    
+    const chosenRaces = racesList.filter(race => (stats.races[race] || 0) > 0);
+    
+    if (chosenRaces.length === 0) {
+      return <div className="no-stats-text">Brak statystyk (nie wybrano żadnej bandy)</div>;
+    }
+    
+    return (
+      <div className={`player-stats-grid ${isSmall ? 'small' : ''}`}>
+        {chosenRaces.map(race => {
+          const times = stats.races[race] || 0;
+          const score = stats.scores[race] || 0;
+          const loss = stats.losses[race] || 0;
+          const rambo = stats.rambo[race] || 0;
+          const witness = stats.witness[race] || 0;
+          const final = stats.final[race] || 0;
+          const passing = stats.passing[race] || 0;
+          
+          return (
+            <div key={race} className={`race-stat-row ${race}`}>
+              <div className="race-header-info">
+                <div className={`general-icon small ${race}`} />
+                <span className="race-name">{raceNames[race]}</span>
+                <span className="race-times">({times}x)</span>
+              </div>
+              <div className="race-metrics">
+                <div className="metric-item score-metric" title="Zdobyte punkty na tej bandzie">
+                  <span className="metric-label">Zdobyte:</span>
+                  <span className="metric-value">+{score}</span>
+                </div>
+                <div className="metric-item loss-metric" title="Stracone punkty na tej bandzie">
+                  <span className="metric-label">Stracone:</span>
+                  <span className="metric-value">-{loss}</span>
+                </div>
+                <div className="metric-item rambo-metric" title="Punkty za zestawy (Rambo)">
+                  <span className="metric-label">Szturm:</span>
+                  <span className="metric-value">{rambo > 0 ? `+${rambo}` : rambo}</span>
+                </div>
+                <div className="metric-item witness-metric" title="Punkty Świadka Jakuba">
+                  <span className="metric-label">Świadek:</span>
+                  <span className="metric-value">+{witness}</span>
+                </div>
+                <div className="metric-item final-metric" title="Bonus na koniec gry">
+                  <span className="metric-label">Koniec:</span>
+                  <span className="metric-value">+{final}</span>
+                </div>
+                <div className="metric-item passing-metric" title="Punkty za kablowanie/pasowanie">
+                  <span className="metric-label">Kablowanie:</span>
+                  <span className="metric-value">+{passing}</span>
+                </div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    );
+  };
+
   // 7. Render logic
   if (currentPath === '/docs/game') return <GameRulesPage />;
   if (currentPath === '/admin/sets') return <div className="app-container"><AdminNav currentPath={currentPath} /><AdminSets /></div>;
@@ -540,6 +632,7 @@ function App() {
         onExecuteEventPhase={handleExecuteEventPhase}
         onOpenScoring={() => setIsScoringPopupOpen(true)}
         onOpenLoadSaves={() => setIsLoadSavesPanelOpen(true)}
+        onOpenStats={() => setIsEndGamePopupOpen(true)}
         onCreateNewGame={async () => {
           try {
             const res = await fetch(`${SERVER_URL}/api/map/next-id`);
@@ -771,6 +864,65 @@ function App() {
                 <p><strong>Ghost:</strong> 2 pts if alone in region; 1 pt if Majority.</p>
                 <p><strong>Bardak:</strong> 1 pt if Majority.</p>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {isEndGamePopupOpen && (
+        <div className="end-game-modal-overlay" onClick={() => setIsEndGamePopupOpen(false)}>
+          <div className="end-game-modal-content" onClick={e => e.stopPropagation()}>
+            <button className="modal-close-x" onClick={() => setIsEndGamePopupOpen(false)}>×</button>
+            <div className="end-game-header">
+              <div className="trophy-glow">🏆</div>
+              <h2>KONIEC GRY: RANKING I STATYSTYKI</h2>
+            </div>
+            
+            {sortedPlayers.length > 0 && (
+              <div className="end-game-rankings">
+                {/* 1st Place / Winner */}
+                {(() => {
+                  const winner = sortedPlayers[0];
+                  return (
+                    <div className="rank-card winner-card">
+                      <div className="rank-badge gold">1st</div>
+                      <div className="player-details">
+                        <h3 className="winner-title">ZWYCIĘZCA: Gracz {winner.id} ({winner.name})</h3>
+                        <div className="final-score">{winner.points} pkt</div>
+                      </div>
+                      <div className="stats-breakdown">
+                        {renderPlayerStats(winner)}
+                      </div>
+                    </div>
+                  );
+                })()}
+
+                {/* 2nd, 3rd, 4th Places */}
+                <div className="runners-up-grid">
+                  {sortedPlayers.slice(1).map((player, idx) => {
+                    const rankLabel = idx === 0 ? '2nd' : idx === 1 ? '3rd' : '4th';
+                    const rankClass = idx === 0 ? 'silver' : idx === 1 ? 'bronze' : 'fourth';
+                    return (
+                      <div key={player.id} className={`rank-card runner-card ${rankClass}`}>
+                        <div className={`rank-badge ${rankClass}`}>{rankLabel}</div>
+                        <div className="player-details">
+                          <h4>Gracz {player.id} ({player.name})</h4>
+                          <div className="final-score">{player.points} pkt</div>
+                        </div>
+                        <div className="stats-breakdown">
+                          {renderPlayerStats(player, true)}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+            
+            <div className="end-game-footer">
+              <button className="close-popup-btn" onClick={() => setIsEndGamePopupOpen(false)}>
+                POWRÓT DO PLANSZY
+              </button>
             </div>
           </div>
         </div>

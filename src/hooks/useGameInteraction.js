@@ -4,6 +4,7 @@ import { Board } from '../constants/board';
 import { RACES } from '../constants/game';
 import { Scoring } from '../../shared/scoring/scoring.js';
 import { applySetToJakubAnger } from '../strategies/jakubStrategy';
+import { trackPointsChange, trackGeneralSelection } from '../../shared/statsManager.js';
 
 const RACE_TO_ABBR = {
   vampire: 'V',
@@ -145,6 +146,7 @@ export const useGameInteraction = ({
           const racePts = placementScores[abbr] || 0;
           if (racePts !== 0) {
             p.points += racePts;
+            trackPointsChange(p, p.generalOf, racePts, 'rambo');
             playerGains[p.generalOf] = racePts;
           }
         }
@@ -208,8 +210,10 @@ export const useGameInteraction = ({
     if (activeGeneral && !playerId) { 
       const newState = JSON.parse(JSON.stringify(gameState)); const playerIdx = newState.players.findIndex(p => p.id === targetPlayerId);
       if (playerIdx !== -1) {
-        const oldRace = newState.players[playerIdx].generalOf; if (oldRace) newState.availableGenerals.push(oldRace);
-        newState.players[playerIdx].generalOf = activeGeneral.race; newState.availableGenerals = newState.availableGenerals.filter(r => r !== activeGeneral.race);
+        const p = newState.players[playerIdx];
+        const oldRace = p.generalOf; if (oldRace) newState.availableGenerals.push(oldRace);
+        p.generalOf = activeGeneral.race; newState.availableGenerals = newState.availableGenerals.filter(r => r !== activeGeneral.race);
+        trackGeneralSelection(p, activeGeneral.race);
         updateGameWithSync(newState);
       }
       setActiveGeneral(null);
@@ -226,7 +230,9 @@ export const useGameInteraction = ({
       const s = findAndRemoveSetById(newState, activeSet.set.id, activeSet.set.ownerId);
       if (s) {
         if (playerIdx !== -1) {
-          newState.players[playerIdx].points += 1;
+          const p = newState.players[playerIdx];
+          p.points += 1;
+          trackPointsChange(p, p.generalOf, 1, 'passing');
         }
         s.ownerId = 'jakub';
         if (!newState.sets.heldSets) newState.sets.heldSets = [];

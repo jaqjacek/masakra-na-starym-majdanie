@@ -1,5 +1,6 @@
 import { SharedPlacementManager } from '../../shared/sharedPlacementManager.js';
 import { RACES, RACE_TO_ABBR } from '../../shared/constants.js';
+import { trackPointsChange } from '../../shared/statsManager.js';
 
 export class ClientPlacementManager {
   /**
@@ -48,6 +49,7 @@ export class ClientPlacementManager {
         const racePts = best.allScores[abbr] || 0;
         if (racePts !== 0) {
           p.points += racePts;
+          trackPointsChange(p, p.generalOf, racePts, 'rambo');
           playerGains[p.generalOf] = racePts;
         }
       }
@@ -132,6 +134,9 @@ export class ClientPlacementManager {
     });
 
     curPlayer.points += toSell.length;
+    if (toSell.length > 0) {
+      trackPointsChange(curPlayer, curPlayer.generalOf, toSell.length, 'passing');
+    }
     return toSell.length;
   }
 }

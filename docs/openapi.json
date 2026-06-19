@@ -235,6 +235,29 @@
         }
       }
     },
+    "/api/simulate/batch": {
+      "post": {
+        "summary": "Run Batch Simulation",
+        "parameters": [
+          { "name": "set", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "count", "in": "query", "required": false, "schema": { "type": "integer", "default": 100 } }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "setsData": { "type": "object", "description": "Optional custom sets data" },
+                  "eventsData": { "type": "array", "description": "Optional custom events list" }
+                }
+              }
+            }
+          }
+        },
+        "responses": { "200": { "description": "Batch simulation results array" } }
+      }
+    },
     "/api/simulate/": {
       "post": {
         "summary": "Run Quick Simulation",
@@ -282,7 +305,10 @@
     "/api/simulate/full": {
       "post": {
         "summary": "Run Simulation with Full Config",
-        "description": "Accepts complete JSON objects for sets, game, and events parameters. Supports both JSON body and multipart/form-data file uploads.",
+        "description": "Accepts complete JSON objects for sets, game, and events parameters. Supports both JSON body and multipart/form-data file uploads. If configurations are omitted, falls back to default server configurations.",
+        "parameters": [
+          { "name": "count", "in": "query", "required": false, "schema": { "type": "integer", "default": 1 } }
+        ],
         "requestBody": {
           "content": {
             "application/json": {
@@ -297,9 +323,9 @@
                   "events": {
                     "type": "array",
                     "description": "Optional custom events list"
-                  }
-                },
-                "required": ["sets"]
+                  },
+                  "count": { "type": "integer", "description": "Number of simulations to run" }
+                }
               }
             },
             "multipart/form-data": {
@@ -308,16 +334,16 @@
                 "properties": {
                   "sets": { "type": "string", "format": "binary", "description": "JSON file with sets configuration" },
                   "game": { "type": "string", "format": "binary", "description": "JSON file with game configuration" },
-                  "events": { "type": "string", "format": "binary", "description": "JSON file with custom events list" }
-                },
-                "required": ["sets"]
+                  "events": { "type": "string", "format": "binary", "description": "JSON file with custom events list" },
+                  "count": { "type": "string", "description": "Number of simulations to run" }
+                }
               }
             }
           }
         },
         "responses": {
-          "200": { "description": "Simulation analytics result" },
-          "400": { "description": "Missing required configuration or invalid JSON in files" }
+          "200": { "description": "Simulation analytics result array" },
+          "400": { "description": "Invalid JSON in files" }
         }
       }
     }

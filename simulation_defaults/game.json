@@ -1,0 +1,8 @@
+{
+  "gameTitle": "MASAKRA na Starym Majdanie",
+  "startPointsAmmount": 20,
+  "initialSetsPerPlayer": 2,
+  "setupSetsPerPlayerPerRound": 3,
+  "jakubSetsPerRound": 2,
+  "totalRounds": 12
+}

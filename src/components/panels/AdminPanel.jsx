@@ -124,31 +124,43 @@ const AdminPanel = () => {
     setIsSimulating(true);
     setProgress(0);
     setShowPreview(false); // Hide preview when simulating
-    const results = [];
+    
+    // Smooth progress simulation to show the "simulate running process" in the UI
+    const progressInterval = setInterval(() => {
+      setProgress(prev => Math.min(prev + 10, 90));
+    }, 45);
+
     const activeSetName = selectedSet || 'Random';
     
-    for (let i = 1; i <= 100; i++) {
-      try {
-        const url = `${SERVER_URL}/api/simulate/${i}${selectedSet ? `?set=${selectedSet}` : ''}`;
-        const response = await fetch(url, { method: 'POST' });
-        const result = await response.json();
-        
-        if (result.scores) {
-          const gamePointData = { game: i };
-          result.scores.forEach(s => {
-            gamePointData[s.race] = s.points;
+    try {
+      const url = `${SERVER_URL}/api/simulate/batch?count=100${selectedSet ? `&set=${selectedSet}` : ''}`;
+      const response = await fetch(url, { method: 'POST' });
+      const batchResults = await response.json();
+      
+      clearInterval(progressInterval);
+      setProgress(100);
+      
+      const results = batchResults.map(result => {
+        if (result.analytics) {
+          const gamePointData = { game: result.game };
+          Object.keys(result.analytics).forEach(race => {
+            gamePointData[race] = result.analytics[race].total;
           });
-          results.push(gamePointData);
+          return gamePointData;
         }
-      } catch (_err) { console.error(_err); }
-      setProgress(i);
+        return null;
+      }).filter(Boolean);
+      
+      if (results.length > 0) {
+        const newEntry = { id: Date.now(), setName: activeSetName, data: results };
+        setHistory(prev => [newEntry, ...prev].slice(0, 5));
+      }
+    } catch (_err) {
+      console.error(_err);
+      clearInterval(progressInterval);
+    } finally {
+      setIsSimulating(false);
     }
-    
-    if (results.length > 0) {
-      const newEntry = { id: Date.now(), setName: activeSetName, data: results };
-      setHistory(prev => [newEntry, ...prev].slice(0, 5));
-    }
-    setIsSimulating(false);
   };
 
   const calculateWins = (data) => {
@@ -275,7 +287,11 @@ const AdminPanel = () => {
                       <CartesianGrid strokeDasharray="3 3" stroke="#444" />
                       <XAxis dataKey="game" stroke="#888" />
                       <YAxis stroke="#888" />
-                      <Tooltip contentStyle={{ backgroundColor: '#2c3e50', border: '1px solid #444' }} />
+                      <Tooltip 
+                        contentStyle={{ backgroundColor: '#555555', border: '2px solid #777777', borderRadius: '6px', padding: '10px 14px' }}
+                        labelStyle={{ color: '#ffd54f', fontWeight: 'bold', textShadow: '1px 1px 2px #000', marginBottom: '4px' }}
+                        itemStyle={{ color: '#fffdf0', fontWeight: 'bold', textShadow: '1px 1px 2px #000' }}
+                      />
                       <Line type="monotone" dataKey="vampire" stroke={PAWN_TYPES.find(p => p.id === 'vampire').color} strokeWidth={2} dot={false} isAnimationActive={index === 0} />
                       <Line type="monotone" dataKey="werewolf" stroke={PAWN_TYPES.find(p => p.id === 'werewolf').color} strokeWidth={2} dot={false} isAnimationActive={index === 0} />
                       <Line type="monotone" dataKey="ghost" stroke={PAWN_TYPES.find(p => p.id === 'ghost').color} strokeWidth={2} dot={false} isAnimationActive={index === 0} />

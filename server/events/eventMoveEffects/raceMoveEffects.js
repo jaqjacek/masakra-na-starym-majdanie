@@ -1,4 +1,5 @@
 import { RACE_MAP_PL } from '../../eventConstants.js';
+import { trackPointsChange } from '../../../shared/statsManager.js';
 
 export class RaceMoveEffects {
   /**
@@ -101,7 +102,12 @@ export class RaceMoveEffects {
           // Deduct points from Bardak general
           const bardakPlayer = gameData.players.find(p => p.generalOf === 'bardak');
           if (bardakPlayer) {
+            const prevPoints = bardakPlayer.points;
             bardakPlayer.points = Math.max(0, bardakPlayer.points - count);
+            const actualLoss = prevPoints - bardakPlayer.points;
+            if (actualLoss > 0) {
+              trackPointsChange(bardakPlayer, 'bardak', -actualLoss, 'event');
+            }
             totalPenalties += count;
           }
         }

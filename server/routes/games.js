@@ -18,6 +18,51 @@ import { initializeGame } from '../services/gameService.js';
 import { GameEventPhaseManager } from '../events/gameEventPhaseManager.js';
 import { EventEffectManager } from '../events/eventEffectManager.js';
 import { RACES } from '../constants.js';
+import { VampireScoring } from '../../shared/scoring/vampireScoring.js';
+import { WerewolfScoring } from '../../shared/scoring/werewolfScoring.js';
+import { GhostScoring } from '../../shared/scoring/ghostScoring.js';
+import { BardakScoring } from '../../shared/scoring/bardakScoring.js';
+import { trackPointsChange } from '../../shared/statsManager.js';
+
+function calculateFinalScoring(data) {
+  if (!data.history) data.history = [];
+  data.players.forEach(curPlayer => {
+    const pick = curPlayer.generalOf;
+    if (!pick) return;
+    let addedPoints = 0;
+    
+    if (pick === 'vampire') addedPoints = VampireScoring.calculateFinal(data.regions);
+    else if (pick === 'werewolf') addedPoints = WerewolfScoring.calculateFinal(data.regions);
+    else if (pick === 'ghost') addedPoints = GhostScoring.calculateFinal(data.regions);
+    else if (pick === 'bardak') addedPoints = BardakScoring.calculateFinal(data.regions);
+    
+    curPlayer.points += addedPoints;
+    
+    // Track stats
+    trackPointsChange(curPlayer, pick, addedPoints, 'final');
+    
+    // Log history
+    const raceNamePL = pick === 'vampire' ? 'Wampiry' : pick === 'werewolf' ? 'Wilkołaki' : pick === 'ghost' ? 'Duchy' : 'Bardaki';
+    data.history.push({
+      time: new Date().toLocaleTimeString(),
+      text: `Punktacja Końcowa: Gracz ${curPlayer.id} (+${addedPoints} za bandę ${raceNamePL});`
+    });
+  });
+
+  const raceHierarchy = ['vampire', 'werewolf', 'ghost', 'bardak'];
+  const sortedWinners = [...data.players].sort((a, b) => {
+    if (b.points !== a.points) return b.points - a.points;
+    const aRaceIndex = raceHierarchy.indexOf(a.generalOf);
+    const bRaceIndex = raceHierarchy.indexOf(b.generalOf);
+    return aRaceIndex - bRaceIndex;
+  });
+  
+  const winner = sortedWinners[0];
+  data.history.push({
+    time: new Date().toLocaleTimeString(),
+    text: `KONIEC GRY! Zwycięzca: Gracz ${winner.id} z liczbą punktów: ${winner.points}.`
+  });
+}
 
 const router = express.Router();
 
@@ -46,6 +91,9 @@ router.post('/:gameId/event-phase', (req, res) => {
       data.turnActionExecuted = false;
     } else {
       data.phase = 'final_scoring';
+      calculateFinalScoring(data);
+      data.phase = 'End Game';
+      data.gameStatus = 'finished';
     }
     
     saveFullState(gameId, data);
@@ -185,8 +233,14 @@ router.get('/:gameId/remove', (req, res) => {
 
 router.post('/:gameId', (req, res) => { 
   try { 
-    saveFullState(req.params.gameId, req.body); 
-    req.app.get('io').to(`game:${req.params.gameId}`).emit('boardUpdate', req.body); 
+    const data = req.body;
+    if (data.phase === 'final_scoring') {
+      calculateFinalScoring(data);
+      data.phase = 'End Game';
+      data.gameStatus = 'finished';
+    }
+    saveFullState(req.params.gameId, data); 
+    req.app.get('io').to(`game:${req.params.gameId}`).emit('boardUpdate', data); 
     res.json({ message: 'Saved' }); 
   } catch (_err) { res.status(500).json({ error: 'Failed' }); } 
 });

@@ -136,8 +136,6 @@ export class GameEventPhaseManager {
     const event = this.gameData.events.pool.splice(randomIndex, 1)[0];
     this.gameData.events.drawn.push(event);
 
-    // Log the drawn event
-    console.log(`[EventPhase] Drawn: [${event.id}] ${event.title}`);
     this.addLog(`WYLOSOWANO WYDARZENIE: [${event.id}] ${event.title}`);
     this.addLog(`Efekt: ${event.description}`);
 

@@ -116,6 +116,9 @@ export const saveFullState = (gameId, data) => {
   if (data.players) fs.writeFileSync(path.join(gamePath, 'players.json'), JSON.stringify(data.players, null, 2));
   if (data.sets) fs.writeFileSync(path.join(gamePath, 'sets.json'), JSON.stringify(data.sets, null, 2));
   if (data.history) {
+    if (data.history.length > 100) {
+      data.history = data.history.slice(data.history.length - 100);
+    }
     fs.writeFileSync(path.join(gamePath, 'history.json'), JSON.stringify(data.history, null, 2));
     const logContent = data.history.map(h => {
       const racePrefix = h.race ? ` [${h.race.toUpperCase()}]` : '';

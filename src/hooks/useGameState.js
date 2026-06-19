@@ -54,11 +54,15 @@ export const useGameState = () => {
   }, [gameId]);
 
   const addLog = useCallback((state, text, metadata = {}) => {
-    state.history = [...(state.history || []), { 
+    let newHistory = [...(state.history || []), { 
       time: getTime(), 
       text,
       ...metadata
     }];
+    if (newHistory.length > HISTORY_LIMIT) {
+      newHistory = newHistory.slice(newHistory.length - HISTORY_LIMIT);
+    }
+    state.history = newHistory;
   }, []);
 
   return {

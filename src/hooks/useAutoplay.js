@@ -21,6 +21,7 @@ import { VampireScoring } from '../../shared/scoring/vampireScoring.js';
 import { WerewolfScoring } from '../../shared/scoring/werewolfScoring.js';
 import { GhostScoring } from '../../shared/scoring/ghostScoring.js';
 import { BardakScoring } from '../../shared/scoring/bardakScoring.js';
+import { trackPointsChange, trackGeneralSelection } from '../../shared/statsManager.js';
 
 export const useAutoplay = ({ 
   gameId, 
@@ -219,7 +220,8 @@ export const useAutoplay = ({
           );
           curPlayer.generalOf = pick;
           workState.availableGenerals = workState.availableGenerals.filter(g => g !== pick);
-          addLog(workState, `Gracz ${curId} wybrał Generała bandy: ${pick === 'V' ? 'Wampiry' : pick === 'W' ? 'Wilkołaki' : pick === 'G' ? 'Duchy' : 'Bardaki'}`);
+          trackGeneralSelection(curPlayer, pick);
+          addLog(workState, `Gracz ${curId} wybrał Generała bandy: ${pick === 'vampire' ? 'Wampiry' : pick === 'werewolf' ? 'Wilkołaki' : pick === 'ghost' ? 'Duchy' : 'Bardaki'}`);
           workState.currentPlayerIndex = (workState.currentPlayerIndex + 1) % workState.playerOrder.length;
           await updateGameWithSync(workState);
           return;
@@ -247,7 +249,8 @@ export const useAutoplay = ({
           );
           curPlayer.generalOf = pick;
           workState.availableGenerals = workState.availableGenerals.filter(g => g !== pick);
-          addLog(workState, `Gracz ${curId} wybrał Generała bandy: ${pick === 'V' ? 'Wampiry' : pick === 'W' ? 'Wilkołaki' : pick === 'G' ? 'Duchy' : 'Bardaki'}`);
+          trackGeneralSelection(curPlayer, pick);
+          addLog(workState, `Gracz ${curId} wybrał Generała bandy: ${pick === 'vampire' ? 'Wampiry' : pick === 'werewolf' ? 'Wilkołaki' : pick === 'ghost' ? 'Duchy' : 'Bardaki'}`);
           workState.currentPlayerIndex = (workState.currentPlayerIndex + 1) % workState.playerOrder.length;
           await updateGameWithSync(workState);
           return;
@@ -375,7 +378,8 @@ export const useAutoplay = ({
           else if (pick === 'bardak') addedPoints = BardakScoring.calculateFinal(workState.regions);
           
           curPlayer.points += addedPoints; 
-          addLog(workState, `Punktacja Końcowa: Gracz ${curPlayer.id} (+${addedPoints} za bandę ${pick === 'V' ? 'Wampiry' : pick === 'W' ? 'Wilkołaki' : pick === 'G' ? 'Duchy' : 'Bardaki'});`);
+          trackPointsChange(curPlayer, pick, addedPoints, 'final');
+          addLog(workState, `Punktacja Końcowa: Gracz ${curPlayer.id} (+${addedPoints} za bandę ${pick === 'vampire' ? 'Wampiry' : pick === 'werewolf' ? 'Wilkołaki' : pick === 'ghost' ? 'Duchy' : 'Bardaki'});`);
         });
 
         workState.phase = 'End Game';

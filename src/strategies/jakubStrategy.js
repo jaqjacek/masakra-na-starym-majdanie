@@ -1,5 +1,6 @@
 import { RACES } from '../constants/game';
 import { JAKUB_ANGER_THRESHOLD, JAKUB_BASE_RANGE } from '../constants/constants';
+import { trackPointsChange } from '../../shared/statsManager.js';
 
 const RACE_MAP_PL = { 'vampire': 'Wampiry', 'werewolf': 'Wilkołaki', 'ghost': 'Duchy', 'bardak': 'Bardaki' };
 
@@ -75,7 +76,13 @@ export const executeJakubStep = (gameState) => {
     if (units > 0 && angerVal > 0) {
       const playerIdx = workState.players.findIndex(p => p.generalOf === race);
       if (playerIdx !== -1) {
-        workState.players[playerIdx].points = Math.max(0, workState.players[playerIdx].points - units);
+        const p = workState.players[playerIdx];
+        const prevPoints = p.points;
+        p.points = Math.max(0, p.points - units);
+        const actualLoss = prevPoints - p.points;
+        if (actualLoss > 0) {
+          trackPointsChange(p, race, -actualLoss, 'czystka');
+        }
       }
       
       jakub.anger[race] = Math.max(0, angerVal - units);
@@ -111,8 +118,10 @@ export const executeJakubStep = (gameState) => {
         const playerIdx = workState.players.findIndex(p => p.generalOf === race);
         const pts = count * 2;
         if (playerIdx !== -1) {
-          workState.players[playerIdx].points += pts;
-          swiadekPointsAwarded.push({ race, count, points: pts, player: workState.players[playerIdx].name });
+          const p = workState.players[playerIdx];
+          p.points += pts;
+          trackPointsChange(p, race, pts, 'witness');
+          swiadekPointsAwarded.push({ race, count, points: pts, player: p.name });
         }
       }
     });
@@ -206,8 +215,10 @@ export const executeJakubStep = (gameState) => {
       const playerIdx = workState.players.findIndex(p => p.generalOf === race);
       const pts = count * 2;
       if (playerIdx !== -1) {
-        workState.players[playerIdx].points += pts;
-        swiadekPointsAwarded.push({ race, count, points: pts, player: workState.players[playerIdx].name });
+        const p = workState.players[playerIdx];
+        p.points += pts;
+        trackPointsChange(p, race, pts, 'witness');
+        swiadekPointsAwarded.push({ race, count, points: pts, player: p.name });
       }
     }
   });

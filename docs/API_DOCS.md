@@ -28,10 +28,13 @@ This document describes the available API endpoints for the MASAKRA na Starym Ma
   - Generates a new randomized set based on parameters in the request body.
 
 ### 3. Simulation & Analytics
-- **POST `/simulate/:gameId`**
-  - Runs a fast 10-round simulation and returns race performance analytics.
-- **POST `/simulate-detailed`**
-  - Runs a full 100-game simulation and returns a comprehensive history of turns and scores.
+- **POST `/simulate/`**
+  - Runs a fast simulation of a single game and returns race performance analytics.
+- **POST `/simulate/batch`**
+  - Runs multiple simulations in a single request and returns an array of performance analytics.
+  - Query Param: `?count=100` (optional, default 100), `?set=set_name` (optional)
+- **POST `/simulate/detailed`**
+  - Runs a detailed single game simulation and returns a comprehensive history of turns and scores.
   - **Body Support:** Accepts `setsData` in the request body to simulate custom configurations.
 
 ### 4. System

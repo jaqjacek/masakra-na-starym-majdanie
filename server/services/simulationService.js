@@ -308,10 +308,10 @@ export function runBasicSimulation(set, uploadedSets, uploadedEvents) {
   };
   players.forEach(p => { for (let i = 0; i < gameConfig.initialSetsPerPlayer; i++) { const s = drawSet(); if (s) { s.ownerId = p.id; setsData.heldSets.push(s); } } });
   const analytics = {
-    vampire: { afterR1: 0, total: 0, finalBonus: 0, killed: 0, swiadekJakubaPoints: 0, setPlacement: 0, fewestPointsChoice: 0 },
-    werewolf: { afterR1: 0, total: 0, finalBonus: 0, killed: 0, swiadekJakubaPoints: 0, setPlacement: 0, fewestPointsChoice: 0 },
-    ghost: { afterR1: 0, total: 0, finalBonus: 0, killed: 0, swiadekJakubaPoints: 0, setPlacement: 0, fewestPointsChoice: 0 },
-    bardak: { afterR1: 0, total: 0, finalBonus: 0, killed: 0, swiadekJakubaPoints: 0, setPlacement: 0, fewestPointsChoice: 0 }
+    vampire: { afterR1: 0, total: 0, finalBonus: 0, killed: 0, swiadekJakubaPoints: 0, setPlacement: 0, fewestPointsChoice: 0, passing: 0 },
+    werewolf: { afterR1: 0, total: 0, finalBonus: 0, killed: 0, swiadekJakubaPoints: 0, setPlacement: 0, fewestPointsChoice: 0, passing: 0 },
+    ghost: { afterR1: 0, total: 0, finalBonus: 0, killed: 0, swiadekJakubaPoints: 0, setPlacement: 0, fewestPointsChoice: 0, passing: 0 },
+    bardak: { afterR1: 0, total: 0, finalBonus: 0, killed: 0, swiadekJakubaPoints: 0, setPlacement: 0, fewestPointsChoice: 0, passing: 0 }
   };
   for (let round = 1; round <= gameConfig.totalRounds; round++) {
     players.forEach(p => { const myHeld = setsData.heldSets.filter(s => s.ownerId === p.id); const needed = gameConfig.setupSetsPerPlayerPerRound - myHeld.length; for (let i = 0; i < needed; i++) { const s = drawSet(); if (s) { s.ownerId = p.id; setsData.heldSets.push(s); } } });
@@ -343,7 +343,10 @@ export function runBasicSimulation(set, uploadedSets, uploadedEvents) {
             }
           });
         } else {
-          ServerPlacementManager.executePass(p, setsData.heldSets, 3);
+          const excess = ServerPlacementManager.executePass(p, setsData.heldSets, 3);
+          if (excess > 0 && p.generalOf && analytics[p.generalOf]) {
+            analytics[p.generalOf].passing += excess;
+          }
           passed.add(id);
         }
       }
@@ -493,13 +496,20 @@ export function runBasicSimulation(set, uploadedSets, uploadedEvents) {
     else if (pick === 'werewolf') addedPoints = WerewolfScoring.calculateFinal(regions);
     else if (pick === 'ghost') addedPoints = GhostScoring.calculateFinal(regions);
     else if (pick === 'bardak') addedPoints = BardakScoring.calculateFinal(regions);
-    p.points += addedPoints; analytics[pick].finalBonus = addedPoints; analytics[pick].total = p.points;
+    p.points += addedPoints; analytics[pick].finalBonus = addedPoints;
   });
-  const scores = players.map(p => p.points);
-  const maxScore = Math.max.apply(null, scores);
-  const minScore = Math.min.apply(null, scores);
-  const scoreDiff = maxScore - minScore;
-  return { analytics, scoreDiff };
+  RACES.forEach(race => {
+    if (analytics[race]) {
+      analytics[race].total = (analytics[race].setPlacement || 0) + 
+                             (analytics[race].passing || 0) + 
+                             (analytics[race].swiadekJakubaPoints || 0) + 
+                             (analytics[race].finalBonus || 0);
+    }
+  });
+  const sortedScores = players.map(p => p.points).sort((a, b) => b - a);
+  const scoreDiff = sortedScores[0] - sortedScores[sortedScores.length - 1];
+  const scoreDiff1st2nd = sortedScores[0] - sortedScores[1];
+  return { analytics, scoreDiff, scoreDiff1st2nd };
 }
 
 export function runFullSimulation(setsConfig, inputGameConfig, uploadedEvents) {
@@ -521,6 +531,14 @@ export function runFullSimulation(setsConfig, inputGameConfig, uploadedEvents) {
   players.forEach(p => p.points = startPoints);
 
   let setsData = setsConfig;
+  if (!setsData) {
+    const globalConfig = getGlobalConfig();
+    let requestedSet = null; 
+    if (fs.existsSync(path.join(CONFIGS_DIR, 'set_default.json'))) requestedSet = 'set_default'; 
+    if (!requestedSet) requestedSet = globalConfig.defaultSetName;
+    setsData = (requestedSet ? loadSetFile(requestedSet) : null) || generateSetData(INITIAL_PAWN_POOL, DEFAULT_POWER_CONFIG, gameConfig.maxPower, { maxUnitsPerSet: gameConfig.maxUnitsPerSet });
+  }
+
   if (setsData.items && !setsData.drawPile) { setsData.drawPile = setsData.items; delete setsData.items; }
   if (!setsData.discardPile) setsData.discardPile = []; if (!setsData.heldSets) setsData.heldSets = [];
   
@@ -536,10 +554,10 @@ export function runFullSimulation(setsConfig, inputGameConfig, uploadedEvents) {
   players.forEach(p => { for (let i = 0; i < initialDraw; i++) { const s = drawSet(); if (s) { s.ownerId = p.id; setsData.heldSets.push(s); } } });
 
   const analytics = {
-    vampire: { afterR1: 0, total: 0, finalBonus: 0, killed: 0, swiadekJakubaPoints: 0, setPlacement: 0, fewestPointsChoice: 0 },
-    werewolf: { afterR1: 0, total: 0, finalBonus: 0, killed: 0, swiadekJakubaPoints: 0, setPlacement: 0, fewestPointsChoice: 0 },
-    ghost: { afterR1: 0, total: 0, finalBonus: 0, killed: 0, swiadekJakubaPoints: 0, setPlacement: 0, fewestPointsChoice: 0 },
-    bardak: { afterR1: 0, total: 0, finalBonus: 0, killed: 0, swiadekJakubaPoints: 0, setPlacement: 0, fewestPointsChoice: 0 }
+    vampire: { afterR1: 0, total: 0, finalBonus: 0, killed: 0, swiadekJakubaPoints: 0, setPlacement: 0, fewestPointsChoice: 0, passing: 0 },
+    werewolf: { afterR1: 0, total: 0, finalBonus: 0, killed: 0, swiadekJakubaPoints: 0, setPlacement: 0, fewestPointsChoice: 0, passing: 0 },
+    ghost: { afterR1: 0, total: 0, finalBonus: 0, killed: 0, swiadekJakubaPoints: 0, setPlacement: 0, fewestPointsChoice: 0, passing: 0 },
+    bardak: { afterR1: 0, total: 0, finalBonus: 0, killed: 0, swiadekJakubaPoints: 0, setPlacement: 0, fewestPointsChoice: 0, passing: 0 }
   };
 
   for (let round = 1; round <= roundsToPlay; round++) {
@@ -578,7 +596,10 @@ export function runFullSimulation(setsConfig, inputGameConfig, uploadedEvents) {
             }
           });
         } else {
-          ServerPlacementManager.executePass(p, setsData.heldSets, 3);
+          const excess = ServerPlacementManager.executePass(p, setsData.heldSets, 3);
+          if (excess > 0 && p.generalOf && analytics[p.generalOf]) {
+            analytics[p.generalOf].passing += excess;
+          }
           passed.add(id);
         }
       }
@@ -736,12 +757,19 @@ export function runFullSimulation(setsConfig, inputGameConfig, uploadedEvents) {
     else if (pick === 'werewolf') addedPoints = WerewolfScoring.calculateFinal(regions);
     else if (pick === 'ghost') addedPoints = GhostScoring.calculateFinal(regions);
     else if (pick === 'bardak') addedPoints = BardakScoring.calculateFinal(regions);
-    p.points += addedPoints; analytics[pick].finalBonus = addedPoints; analytics[pick].total = p.points;
+    p.points += addedPoints; analytics[pick].finalBonus = addedPoints;
+  });
+  RACES.forEach(race => {
+    if (analytics[race]) {
+      analytics[race].total = (analytics[race].setPlacement || 0) + 
+                             (analytics[race].passing || 0) + 
+                             (analytics[race].swiadekJakubaPoints || 0) + 
+                             (analytics[race].finalBonus || 0);
+    }
   });
 
-  const scores = players.map(p => p.points);
-  const maxScore = Math.max.apply(null, scores);
-  const minScore = Math.min.apply(null, scores);
-  const scoreDiff = maxScore - minScore;
-  return { analytics, scoreDiff };
+  const sortedScores = players.map(p => p.points).sort((a, b) => b - a);
+  const scoreDiff = sortedScores[0] - sortedScores[sortedScores.length - 1];
+  const scoreDiff1st2nd = sortedScores[0] - sortedScores[1];
+  return { analytics, scoreDiff, scoreDiff1st2nd };
 }

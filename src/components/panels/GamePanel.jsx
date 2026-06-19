@@ -25,7 +25,8 @@ const GamePanel = ({
   onCreateNewGame,
   onChangeGame,
   onAdminPanel,
-  onOpenLoadSaves
+  onOpenLoadSaves,
+  onOpenStats
 }) => {
   return (
     <div className="top-header-bar">
@@ -42,6 +43,9 @@ const GamePanel = ({
 
         <button className="scoring-summary-btn main-panel-btn" onClick={onOpenScoring}>Scoring</button>
         <button className="load-saves-btn main-panel-btn" onClick={onOpenLoadSaves}>Load</button>
+        {gameState.phase === 'End Game' && (
+          <button className="end-game-stats-btn main-panel-btn" onClick={onOpenStats}>Stats</button>
+        )}
 
         {!isFullAutoplay && !isJakubAutoplay && (
           <div className="manual-phase-controls">
@@ -121,7 +125,7 @@ const GamePanel = ({
 
           <div className="speed-control">
             <span className="speed-label">{autoplaySpeed}ms</span>
-            <input type="range" min="100" max="1500" step="50" value={autoplaySpeed} onChange={(e) => setAutoplaySpeed(parseInt(e.target.value))} />
+            <input type="range" min="50" max="1500" step="50" value={autoplaySpeed} onChange={(e) => setAutoplaySpeed(parseInt(e.target.value))} />
           </div>
         </div>
 

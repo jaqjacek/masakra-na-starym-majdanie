@@ -1,4 +1,5 @@
 import { RACE_MAP_PL } from '../../eventConstants.js';
+import { trackPointsChange } from '../../../shared/statsManager.js';
 
 export class JakubMoveEffects {
   /**
@@ -91,7 +92,12 @@ export class JakubMoveEffects {
       const count = instances.length;
       const generalPlayer = gameData.players.find(p => p.generalOf === raceId);
       if (generalPlayer) {
+        const prevPoints = generalPlayer.points;
         generalPlayer.points = Math.max(0, generalPlayer.points - count);
+        const actualLoss = prevPoints - generalPlayer.points;
+        if (actualLoss > 0) {
+          trackPointsChange(generalPlayer, raceId, -actualLoss, 'event');
+        }
         penaltyMap[generalPlayer.name] = (penaltyMap[generalPlayer.name] || 0) + count;
       }
     });

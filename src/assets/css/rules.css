@@ -373,6 +373,10 @@
   }
   .no-print { display: none; }
   a { text-decoration: none; color: black; }
+  .rule-section, .general-card, .pawn-showcase-item {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
 }
 
 @media (max-width: 800px) {

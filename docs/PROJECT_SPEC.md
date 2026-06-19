@@ -20,7 +20,7 @@
 - **Game Isolation:** Each game session is identified by a unique ID in the URL (`/game/{id}`).
 - **Data Storage:** Each game has its own directory in `server/games/{id}/` containing:
   - `map.json`: Region coordinates, neighbors, and pawn instances.
-  - `players.json`: Player names, points, and assigned General race.
+  - `players.json`: Player names, points, assigned General race, and game end stats breakdown.
   - `sets.json`: Randomized pawn sets and their power configurations.
   - `state.json`: Current game phase and metadata.
 

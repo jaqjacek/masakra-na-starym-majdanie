@@ -50,18 +50,67 @@ router.post('/full', upload.fields([
   }
 
   // Fallback to JSON body if files not provided (for backward compatibility)
-  if (!setsConfig) setsConfig = req.body?.sets;
-  if (!gameConfig) gameConfig = req.body?.game;
-  if (!eventsConfig) eventsConfig = req.body?.events;
+  if (!setsConfig) {
+    if (typeof req.body?.sets === 'string') {
+      try { setsConfig = JSON.parse(req.body.sets); } catch (_) {}
+    } else {
+      setsConfig = req.body?.sets;
+    }
+  }
+  if (!gameConfig) {
+    if (typeof req.body?.game === 'string') {
+      try { gameConfig = JSON.parse(req.body.game); } catch (_) {}
+    } else {
+      gameConfig = req.body?.game;
+    }
+  }
+  if (!eventsConfig) {
+    if (typeof req.body?.events === 'string') {
+      try { eventsConfig = JSON.parse(req.body.events); } catch (_) {}
+    } else {
+      eventsConfig = req.body?.events;
+    }
+  }
 
-  if (!setsConfig) return res.status(400).json({ error: 'Missing sets configuration' });
-  
+  const count = parseInt(req.query.count || req.body?.count, 10) || 1;
+
   try {
-    const result = runFullSimulation(setsConfig, gameConfig, eventsConfig);
-    res.json(result);
+    const results = [];
+    for (let i = 1; i <= count; i++) {
+      const setsClone = setsConfig ? JSON.parse(JSON.stringify(setsConfig)) : null;
+      const gameClone = gameConfig ? JSON.parse(JSON.stringify(gameConfig)) : null;
+      const eventsClone = eventsConfig ? JSON.parse(JSON.stringify(eventsConfig)) : null;
+
+      const result = runFullSimulation(setsClone, gameClone, eventsClone);
+      results.push({
+        game: i,
+        ...result
+      });
+    }
+    res.json(results);
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Full simulation failed' });
+  }
+});
+
+router.post('/batch', (req, res) => {
+  const { set, count = 100 } = req.query;
+  const { setsData: uploadedSets, eventsData: uploadedEvents } = req.body || {};
+  try {
+    const numGames = parseInt(count, 10) || 100;
+    const results = [];
+    for (let i = 1; i <= numGames; i++) {
+      const result = runBasicSimulation(set, uploadedSets, uploadedEvents);
+      results.push({
+        game: i,
+        ...result
+      });
+    }
+    res.json(results);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Batch simulation failed' });
   }
 });
 

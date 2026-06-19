@@ -13,4 +13,5 @@ server_config.json
 tests/simulation_outputs 
 tests/simulations_sets
 tests/simulation_sets
+tests/simulates_game
  

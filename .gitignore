@@ -16,3 +16,4 @@ tests/simulation_sets
 tests/simulates_game
 tests/run_local_simulation.js
 tests/plays_data
+tests/run_single_combination.js

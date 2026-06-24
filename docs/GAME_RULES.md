@@ -1,7 +1,8 @@
-# MASAKRA na Starym Majdanie: Oficjalne Zasady Gry v1.15.0
+# MASAKRA na Starym Majdanie: Oficjalne Zasady Gry v1.15.1
 
 ## Cel Gry
 Wędrowycz-Gemini to gra strategiczna, w której gracze (Hersztowie) dowodzą czterema bandami: Wampirami, Wilkołakami, Duchami i Bardakami. Celem jest zdobycie jak największej liczby punktów zwycięstwa w ciągu 12 rund, unikając furii Jakuba Wędrowycza.
+
 
 ## Elementy Gry
 *   **Plansza:** Siatka 6x6 regionów, na której toczy się walka.
@@ -106,7 +107,8 @@ W Fazie Jakuba jego ruch oraz ataki są w pełni zautomatyzowane i przebiegają 
 1.  **Czystka w obecnym sektorze:** 
     Zanim Jakub wykona jakikolwiek ruch, najpierw niszczy pionki w sektorze, w którym się aktualnie znajduje.
     *   Atakuje wyłącznie te bandy, na które ma **Furię większą niż 0**.
-    *   Za każdego zabitego pionka danej bandy, jej Herszt traci **1 punkt**, poziom Furii Jakuba na tę bandę **zmniejsza się o 1**, a zabity pionek wraca do puli posiłków tej bandy, co umożliwia i ułatwia wystawianie zestawów w kolejnych rundach.
+    *   Niszczy pionki danej bandy tylko **do wysokości swojej Furii** wobec tej bandy (tj. maksymalnie tyle pionków, ile wynosi wartość Furii).
+    *   Za każdego zabitego w ten sposób pionka danej bandy, jej Herszt traci **1 punkt**, poziom Furii Jakuba na tę bandę **zmniejsza się o 1**, a zabity pionek wraca do puli posiłków tej bandy.
     *   Czystka trwa dopóki w obecnym regionie są pionki band, na które Jakub ma Furię, lub dopóki Furia na te bandy nie spadnie do 0.
 
 2.  **Poszukiwanie Celu i Ruch:**

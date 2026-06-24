@@ -74,20 +74,24 @@ export const executeJakubStep = (gameState) => {
     const units = currentRegion.pawns[race]?.length || 0;
     const angerVal = jakub.anger[race] || 0;
     if (units > 0 && angerVal > 0) {
+      const toKill = Math.min(units, angerVal);
       const playerIdx = workState.players.findIndex(p => p.generalOf === race);
       if (playerIdx !== -1) {
         const p = workState.players[playerIdx];
         const prevPoints = p.points;
-        p.points = Math.max(0, p.points - units);
+        p.points = Math.max(0, p.points - toKill);
         const actualLoss = prevPoints - p.points;
         if (actualLoss > 0) {
           trackPointsChange(p, race, -actualLoss, 'czystka');
         }
       }
       
-      jakub.anger[race] = Math.max(0, angerVal - units);
-      delete currentRegion.pawns[race];
-      killedInfo.push({ race, count: units });
+      jakub.anger[race] -= toKill;
+      currentRegion.pawns[race] = currentRegion.pawns[race].slice(toKill);
+      if (currentRegion.pawns[race].length === 0) {
+        delete currentRegion.pawns[race];
+      }
+      killedInfo.push({ race, count: toKill });
     }
   });
 

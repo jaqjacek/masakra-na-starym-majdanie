@@ -136,13 +136,17 @@ export function runDetailedSimulation(set, uploadedSets, uploadedEvents) {
         const units = curR.pawns[race]?.length || 0;
         const angerVal = jakub.anger[race] || 0;
         if (units > 0 && angerVal > 0) {
+          const toKill = Math.min(units, angerVal);
           const p = players.find(x => x.generalOf === race);
-          if (p) p.points = Math.max(0, p.points - units);
+          if (p) p.points = Math.max(0, p.points - toKill);
           
-          jakub.anger[race] = Math.max(0, angerVal - units);
-          delete curR.pawns[race];
+          jakub.anger[race] -= toKill;
+          curR.pawns[race] = curR.pawns[race].slice(toKill);
+          if (curR.pawns[race].length === 0) {
+            delete curR.pawns[race];
+          }
           killedAny = true;
-          roundData.turns.push({ type: 'jakub_attack', regionId: curR.id, race, killCount: units });
+          roundData.turns.push({ type: 'jakub_attack', regionId: curR.id, race, killCount: toKill });
         }
       });
 
@@ -376,12 +380,16 @@ export function runBasicSimulation(set, uploadedSets, uploadedEvents) {
         const units = curR.pawns[race]?.length || 0;
         const angerVal = jakub.anger[race] || 0;
         if (units > 0 && angerVal > 0) {
+          const toKill = Math.min(units, angerVal);
           const p = players.find(x => x.generalOf === race);
-          if (p) p.points = Math.max(0, p.points - units);
+          if (p) p.points = Math.max(0, p.points - toKill);
           
-          analytics[race].killed += units;
-          jakub.anger[race] = Math.max(0, angerVal - units);
-          delete curR.pawns[race];
+          analytics[race].killed += toKill;
+          jakub.anger[race] -= toKill;
+          curR.pawns[race] = curR.pawns[race].slice(toKill);
+          if (curR.pawns[race].length === 0) {
+            delete curR.pawns[race];
+          }
           killedAny = true;
         }
       });
@@ -631,12 +639,16 @@ export function runFullSimulation(setsConfig, inputGameConfig, uploadedEvents) {
         const units = curR.pawns[race]?.length || 0;
         const angerVal = jakub.anger[race] || 0;
         if (units > 0 && angerVal > 0) {
+          const toKill = Math.min(units, angerVal);
           const p = players.find(x => x.generalOf === race);
-          if (p) p.points = Math.max(0, p.points - units);
+          if (p) p.points = Math.max(0, p.points - toKill);
           
-          analytics[race].killed += units;
-          jakub.anger[race] = Math.max(0, angerVal - units);
-          delete curR.pawns[race];
+          analytics[race].killed += toKill;
+          jakub.anger[race] -= toKill;
+          curR.pawns[race] = curR.pawns[race].slice(toKill);
+          if (curR.pawns[race].length === 0) {
+            delete curR.pawns[race];
+          }
           killedAny = true;
         }
       });

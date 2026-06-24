@@ -24,6 +24,7 @@ tests/run_all_simulations.sh
 tests/analyze_all_archives.py
 tests/analyze_random_archive.py
 tests/list_clean_combinations.py
+tests/run_final_10k_simulations.js
 *.pyc
 *.pyo
 __pycache__/

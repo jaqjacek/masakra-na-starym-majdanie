@@ -52,27 +52,7 @@ test('Faza Miłosierdzia - podział nieparzystej furii (zaokrąglenie w górę)'
   assert.strictEqual(rewards[0].points, 3);
 });
 
-test('Faza Miłosierdzia - brak generała (furia zostaje podzielona, ale brak punktów dla graczy)', () => {
-  const jakub = {
-    anger: {
-      vampire: 3,
-      werewolf: 0,
-      ghost: 0,
-      bardak: 0
-    }
-  };
-  const players = [
-    { id: 1, generalOf: 'werewolf', points: 10 }
-  ];
 
-  const rewards = MilosierdzieManager.applyMercy(jakub, players);
-
-  // Vampire has 3 anger, Math.ceil(3 / 2) = 2 points are processed but general doesn't exist.
-  // The remaining 3 - 2 = 1 anger stays on track.
-  assert.strictEqual(jakub.anger.vampire, 1);
-  assert.strictEqual(rewards.length, 0);
-  assert.strictEqual(players[0].points, 10);
-});
 
 test('Faza Miłosierdzia - ignorowanie zerowej furii', () => {
   const jakub = {

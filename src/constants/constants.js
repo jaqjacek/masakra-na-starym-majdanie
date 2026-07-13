@@ -1,4 +1,4 @@
-import config from '../../server_config.json';
+import config from '../../server_config.json' with { type: 'json' };
 
 /**
  * Global game configuration constants.
@@ -6,10 +6,10 @@ import config from '../../server_config.json';
 
 // Use server_config.json for dev, but in production we can default to relative paths
 // if config.SERVER_URL is not set or matches dev default.
-export const SERVER_URL = import.meta.env.VITE_SERVER_URL || 
+export const SERVER_URL = (typeof import.meta.env !== 'undefined' ? import.meta.env.VITE_SERVER_URL : null) || 
   ((config.SERVER_URL && config.SERVER_URL !== 'http://localhost:3001') 
     ? config.SERVER_URL 
-    : (import.meta.env.PROD ? '' : 'http://localhost:3001'));
+    : (typeof import.meta.env !== 'undefined' && import.meta.env.PROD ? '' : 'http://localhost:3001'));
 export const TOTAL_GAME_ROUNDS = 12;
 export const INITIAL_HAND_SIZE = 5;
 export const MAX_HAND_SIZE = 3;

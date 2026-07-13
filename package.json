@@ -9,7 +9,8 @@
     "cli": "node cli.js",
     "build": "vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test": "node --test tests/*.test.js"
   },
   "dependencies": {
     "@scalar/express-api-reference": "^0.10.3",

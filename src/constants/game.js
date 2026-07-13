@@ -1,4 +1,4 @@
-import { Board } from './board';
+import { Board } from './board.js';
 import { 
   TOTAL_GAME_ROUNDS, 
   INITIAL_PLAYER_POINTS, 
@@ -6,7 +6,7 @@ import {
   WEREWOLF_SCORING_DIVISOR, 
   BOARD_SIZE, 
   GHOST_SCORING_BASE 
-} from './constants';
+} from './constants.js';
 
 export const RACES = ['vampire', 'werewolf', 'ghost', 'bardak'];
 

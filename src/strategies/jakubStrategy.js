@@ -1,5 +1,5 @@
-import { RACES } from '../constants/game';
-import { JAKUB_ANGER_THRESHOLD, JAKUB_BASE_RANGE } from '../constants/constants';
+import { RACES } from '../constants/game.js';
+import { JAKUB_ANGER_THRESHOLD, JAKUB_BASE_RANGE } from '../constants/constants.js';
 import { trackPointsChange, trackJakubKills } from '../../shared/statsManager.js';
 
 const RACE_MAP_PL = { 'vampire': 'Wampiry', 'werewolf': 'Wilkołaki', 'ghost': 'Duchy', 'bardak': 'Bardaki' };

@@ -41,4 +41,24 @@ test('Punktacja w różnych sektorach w odniesieniu do Jakuba na (1,1)', () => {
     G: 2, // 2 - 0 (odległość do krawędzi) - 0 (brak kary Jakuba) = 2
     B: 1  // odległość 4 > 1 -> 1
   });
+
+  // 4. Sektor (3,1) -> odległość 2
+  const index31 = 1 * 6 + 3; // 9
+  const scoresAt31 = Scoring.calculatePlacementPoints(regions, regions[index31], setContent);
+  assert.deepStrictEqual(scoresAt31, {
+    V: 2, // (4 - 2) * 1
+    W: 1, // 1 (bazowy) + 0 (za watahę) + 0 (brak premii za bliskość)
+    G: 1, // 2 - 1 (odległość do krawędzi) - 0 (brak kary Jakuba) = 1
+    B: 1  // odległość 2 > 1 -> 1
+  });
+
+  // 5. Sektor (1,3) -> odległość 2
+  const index13 = 3 * 6 + 1; // 19
+  const scoresAt13 = Scoring.calculatePlacementPoints(regions, regions[index13], setContent);
+  assert.deepStrictEqual(scoresAt13, {
+    V: 2, // (4 - 2) * 1
+    W: 1, // 1 (bazowy) + 0 (za watahę) + 0 (brak premii za bliskość)
+    G: 1, // 2 - 1 (odległość do krawędzi) - 0 (brak kary Jakuba) = 1
+    B: 1  // odległość 2 > 1 -> 1
+  });
 });

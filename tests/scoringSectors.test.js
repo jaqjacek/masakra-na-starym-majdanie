@@ -62,3 +62,29 @@ test('Punktacja w różnych sektorach w odniesieniu do Jakuba na (1,1)', () => {
     B: 1  // odległość 2 > 1 -> 1
   });
 });
+
+test('Punktacja Wilkołaków w watahach wokół sektora (3,1)', () => {
+  const board = new Board(6);
+  const regions = board.generateEmpty();
+
+  // Place Jakub at (1,1) -> index 7
+  const jakubIndex = 1 * 6 + 1; // 7
+  regions[jakubIndex].pawns.jakub = [{ range: 1, anger: { vampire: 0, werewolf: 0, ghost: 0, bardak: 0 } }];
+
+  // Sektor (3,1) -> index 9
+  const index31 = 1 * 6 + 3; // 9
+  
+  // Place 1 werewolf in each of the 8 neighbors of (3,1)
+  regions[index31].neighbors.forEach(nIdx => {
+    regions[nIdx].pawns.werewolf = [{}];
+  });
+
+  // Play a set with 1 werewolf
+  const setContent = { werewolf: 1 };
+
+  const scores = Scoring.calculatePlacementPoints(regions, regions[index31], setContent);
+
+  // Total werewolves = 1 (placed) + 8 (neighbors) = 9
+  // Points = Math.floor(9 / 3) + 1 = 4 points
+  assert.strictEqual(scores.W, 4);
+});

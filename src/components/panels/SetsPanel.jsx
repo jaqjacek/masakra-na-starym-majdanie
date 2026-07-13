@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 import { PAWN_TYPES, SUMMARY_PAWN_IDS } from '../../constants/pawnTypes';
+import { useTranslation } from '../../hooks/useTranslation';
 
 const SetsPanel = ({ sets, discardedSets = [], onSetMouseDown, title, setInfo, hideTabs = false, placementPool }) => {
+  const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState('active');
 
   const currentSets = activeTab === 'active' ? sets : discardedSets;
@@ -22,26 +24,26 @@ const SetsPanel = ({ sets, discardedSets = [], onSetMouseDown, title, setInfo, h
             className={`tab-btn ${activeTab === 'active' ? 'active' : ''}`}
             onClick={() => setActiveTab('active')}
           >
-            Aktywne ({sets.length})
+            {t('active_sets_tab', { count: sets.length })}
           </button>
           <button 
             className={`tab-btn ${activeTab === 'discarded' ? 'active' : ''}`}
             onClick={() => setActiveTab('discarded')}
           >
-            Odrzucone ({discardedSets.length})
+            {t('discarded_sets_tab', { count: discardedSets.length })}
           </button>
         </div>
       )}
 
       <div className="sets-panel-header compact-row">
         <div className="header-left-group">
-          <h3>{activeTab === 'active' ? (title || "Zestawy") : "Stos odrzucony"}</h3>
+          <h3>{activeTab === 'active' ? (title || t('sets_title_default')) : t('discard_pile_title')}</h3>
         </div>
         
         {activeTab === 'active' && displaySetName && displaySetName !== "Unknown Set" && displaySetName !== "default" && (
           <div className="header-right-group">
             <span className="active-set-name" title={setInfo?.description || ""}>
-              Aktywny: <strong>{displaySetName}</strong>
+              {t('active_set_prefix')} <strong>{displaySetName}</strong>
             </span>
           </div>
         )}
@@ -49,7 +51,7 @@ const SetsPanel = ({ sets, discardedSets = [], onSetMouseDown, title, setInfo, h
 
       <div className="sets-container">
         {sortedSets.length === 0 ? (
-          <div className="no-sets-message">Brak zestawów w tej kategorii.</div>
+          <div className="no-sets-message">{t('no_sets_message')}</div>
         ) : (
           sortedSets.map((set, index) => {
             const cannotPlaceOnBoard = !set.used && activeTab === 'active' && placementPool && Object.entries(set.content).some(([tId, count]) => {
@@ -61,7 +63,7 @@ const SetsPanel = ({ sets, discardedSets = [], onSetMouseDown, title, setInfo, h
                 key={`${set.id}-${index}`} 
                 className={`pawn-set ${set.used || activeTab === 'discarded' ? 'used' : ''} ${cannotPlaceOnBoard ? 'cannot-place-board' : ''}`}
                 onMouseDown={(e) => !set.used && activeTab === 'active' && onSetMouseDown(set, e)}
-                title={set.used || activeTab === 'discarded' ? "Nie możesz użyć tego zestawu" : (cannotPlaceOnBoard ? "Niewystarczająca liczba pionków w puli. Przeciągnij na panel Jakuba, aby podkablować." : "Przeciągnij do pustego regionu planszy lub na panel Jakuba, aby podkablować")}
+                title={set.used || activeTab === 'discarded' ? t('drag_tooltip_used') : (cannotPlaceOnBoard ? t('drag_tooltip_blocked') : t('drag_tooltip_normal'))}
               >
                 <div className="set-content">
                   {SUMMARY_PAWN_IDS.map(typeId => {

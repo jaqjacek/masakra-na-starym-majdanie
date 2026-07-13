@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from '../hooks/useTranslation';
 import '../assets/css/admin.css';
-import Footer from './Footer';
 import { VERSION_INFO } from '../constants/version';
 import { SERVER_URL } from '../constants/constants';
 
 const AdminSets = () => {
+  const { t } = useTranslation();
   const [availableSets, setAvailableSets] = useState([]);
   const [selectedSet, setSelectedSet] = useState('');
   const [loadedSetData, setLoadedSetData] = useState(null);
@@ -54,8 +55,8 @@ const AdminSets = () => {
       const list = await res.json();
       setAvailableSets(list);
       setSelectedSet(result.name);
-      alert(`Set generated: ${result.name}`);
-    } catch (_err) { alert('Failed to generate set'); }
+      alert(t('admin_sets_generated_alert', { name: result.name, defaultValue: `Set generated: ${result.name}` }));
+    } catch (_err) { alert(t('admin_sets_failed_gen', { defaultValue: 'Failed to generate set' })); }
   };
 
   const handleSaveEdits = async () => {
@@ -70,7 +71,7 @@ const AdminSets = () => {
       alert(data.message);
       setIsEditMode(false);
       fetchSetDetails(selectedSet); // Refresh to get re-indexed state
-    } catch (_err) { alert('Failed to save set'); }
+    } catch (_err) { alert(t('admin_sets_failed_save', { defaultValue: 'Failed to save set' })); }
   };
 
   const handleSort = async () => {
@@ -80,7 +81,7 @@ const AdminSets = () => {
       const data = await res.json();
       setLoadedSetData(data.setsData);
       alert(data.message);
-    } catch (_err) { alert('Failed to sort set'); }
+    } catch (_err) { alert(t('admin_sets_failed_sort', { defaultValue: 'Failed to sort set' })); }
   };
 
   const setAsDefault = async () => {
@@ -93,7 +94,7 @@ const AdminSets = () => {
       });
       const data = await res.json();
       alert(data.message);
-    } catch (_err) { alert('Failed to set default'); }
+    } catch (_err) { alert(t('admin_sets_failed_default', { defaultValue: 'Failed to set default' })); }
   };
 
   const handleDuplicateSet = async () => {
@@ -110,10 +111,10 @@ const AdminSets = () => {
         setAvailableSets(list);
         setSelectedSet(data.name);
       } else {
-        alert(data.error || 'Failed to duplicate set');
+        alert(data.error || t('admin_sets_failed_duplicate', { defaultValue: 'Failed to duplicate set' }));
       }
     } catch (_err) {
-      alert('Failed to duplicate set');
+      alert(t('admin_sets_failed_duplicate', { defaultValue: 'Failed to duplicate set' }));
     }
   };
 
@@ -198,35 +199,35 @@ const AdminSets = () => {
     <div className="admin-page-content">
       <div className="admin-actions-bar">
         <select value={selectedSet} onChange={(e) => setSelectedSet(e.target.value)}>
-          <option value="">Select Set to Manage...</option>
+          <option value="">{t('admin_sets_select', { defaultValue: 'Select Set to Manage...' })}</option>
           {availableSets.map(s => <option key={s} value={s}>{s}</option>)}
         </select>
         {selectedSet && (
           <>
-            <button className="action-button btn-edit-mode" onClick={() => setIsEditMode(!isEditMode)}>{isEditMode ? 'Exit Edit Mode' : 'Edit Mode'}</button>
-            <button className="action-button btn-sort" onClick={handleSort}>Sort Set</button>
-            <button className="action-button btn-default" onClick={setAsDefault}>Set Default</button>
-            <button className="action-button btn-duplicate" onClick={handleDuplicateSet}>Duplicate Set</button>
-            {isEditMode && <button className="action-button btn-add" onClick={handleAddEmptySet}>+ Add Empty Set</button>}
-            {isEditMode && <button className="action-button btn-save" onClick={handleSaveEdits}>Save Changes</button>}
+            <button className="action-button btn-edit-mode" onClick={() => setIsEditMode(!isEditMode)}>{isEditMode ? t('admin_sets_exit_edit', { defaultValue: 'Exit Edit Mode' }) : t('admin_sets_edit_mode', { defaultValue: 'Edit Mode' })}</button>
+            <button className="action-button btn-sort" onClick={handleSort}>{t('admin_sets_sort', { defaultValue: 'Sort Set' })}</button>
+            <button className="action-button btn-default" onClick={setAsDefault}>{t('admin_sets_set_default', { defaultValue: 'Set Default' })}</button>
+            <button className="action-button btn-duplicate" onClick={handleDuplicateSet}>{t('admin_sets_duplicate', { defaultValue: 'Duplicate Set' })}</button>
+            {isEditMode && <button className="action-button btn-add" onClick={handleAddEmptySet}>{t('admin_sets_add_empty', { defaultValue: '+ Add Empty Set' })}</button>}
+            {isEditMode && <button className="action-button btn-save" onClick={handleSaveEdits}>{t('admin_sets_save_changes', { defaultValue: 'Save Changes' })}</button>}
           </>
         )}
-        <button className="action-button btn-create" onClick={toggleGenForm}>{showGenForm ? 'Hide Form' : 'Generate New Set'}</button>
+        <button className="action-button btn-create" onClick={toggleGenForm}>{showGenForm ? t('admin_sets_hide_form', { defaultValue: 'Hide Form' }) : t('admin_sets_generate_new', { defaultValue: 'Generate New Set' })}</button>
       </div>
 
       {showGenForm && (
         <form className="generation-form" onSubmit={handleGenerate}>
-          <h3>Generate New Set</h3>
+          <h3>{t('admin_sets_generate_title', { defaultValue: 'Generate New Set' })}</h3>
           <div className="form-row">
-            <div className="form-group"><label>Display Name:</label><input type="text" value={genDisplayName} onChange={e => setGenDisplayName(e.target.value)} /></div>
-            <div className="form-group"><label>Max Power:</label><input type="number" value={genMaxPower} onChange={e => setGenMaxPower(parseInt(e.target.value))} /></div>
+            <div className="form-group"><label>{t('admin_sets_display_name', { defaultValue: 'Display Name:' })}</label><input type="text" value={genDisplayName} onChange={e => setGenDisplayName(e.target.value)} /></div>
+            <div className="form-group"><label>{t('admin_sets_max_power', { defaultValue: 'Max Power:' })}</label><input type="number" value={genMaxPower} onChange={e => setGenMaxPower(parseInt(e.target.value))} /></div>
           </div>
           <div className="form-grid">
-            <div><h4>Pawn Totals</h4>{Object.keys(genPawns).map(race => (<div key={race} className="input-row"><label>{race}:</label><input type="number" value={genPawns[race]} onChange={e => setGenPawns({...genPawns, [race]: parseInt(e.target.value)})} /></div>))}</div>
-            <div><h4>Play Limits</h4>{Object.keys(genPawnsInPlayLimit).map(race => (<div key={race} className="input-row"><label>{race}:</label><input type="number" value={genPawnsInPlayLimit[race]} onChange={e => setGenPawnsInPlayLimit({...genPawnsInPlayLimit, [race]: parseInt(e.target.value)})} /></div>))}</div>
-            <div><h4>Power Config</h4>{Object.keys(genPower).map(race => (<div key={race} className="input-row"><label>{race}:</label><input type="number" value={genPower[race]} onChange={e => setGenPower({...genPower, [race]: parseInt(e.target.value)})} /></div>))}</div>
+            <div><h4>{t('admin_sets_pawn_totals', { defaultValue: 'Pawn Totals' })}</h4>{Object.keys(genPawns).map(race => (<div key={race} className="input-row"><label>{t(race)}:</label><input type="number" value={genPawns[race]} onChange={e => setGenPawns({...genPawns, [race]: parseInt(e.target.value)})} /></div>))}</div>
+            <div><h4>{t('admin_sets_play_limits', { defaultValue: 'Play Limits' })}</h4>{Object.keys(genPawnsInPlayLimit).map(race => (<div key={race} className="input-row"><label>{t(race)}:</label><input type="number" value={genPawnsInPlayLimit[race]} onChange={e => setGenPawnsInPlayLimit({...genPawnsInPlayLimit, [race]: parseInt(e.target.value)})} /></div>))}</div>
+            <div><h4>{t('admin_sets_power_config', { defaultValue: 'Power Config' })}</h4>{Object.keys(genPower).map(race => (<div key={race} className="input-row"><label>{t(race)}:</label><input type="number" value={genPower[race]} onChange={e => setGenPower({...genPower, [race]: parseInt(e.target.value)})} /></div>))}</div>
           </div>
-          <button type="submit" className="action-button download-btn">Generate & Save</button>
+          <button type="submit" className="action-button download-btn">{t('admin_sets_generate_btn', { defaultValue: 'Generate & Save' })}</button>
         </form>
       )}
 
@@ -234,7 +235,7 @@ const AdminSets = () => {
         <div className={`admin-sets-editor ${isEditMode ? 'editing' : ''}`}>
           <div className="editor-section">
             <div className="editor-header-with-stats">
-              <h4>Draw Pile ({loadedSetData.drawPile?.length || 0})</h4>
+              <h4>{t('admin_sets_draw_pile_count', { count: loadedSetData.drawPile?.length || 0, defaultValue: `Draw Pile (${loadedSetData.drawPile?.length || 0})` })}</h4>
               <div className="set-totals-summary">
                 {['vampire', 'werewolf', 'ghost', 'bardak'].map(race => {
                   const total = [...(loadedSetData.drawPile || []), ...(loadedSetData.heldSets || []), ...(loadedSetData.discardPile || [])]
@@ -286,13 +287,12 @@ const AdminSets = () => {
           </div>
         </div>
       )}
-
-      <Footer />
     </div>
   );
 };
 
 const EditableSet = ({ set, isEditMode, onPawnDragStart, onPawnDrop, onClonePawn, onRemovePawn }) => {
+  const { t } = useTranslation();
   const racePriority = { vampire: 0, werewolf: 1, ghost: 2, bardak: 3 };
   const allPawns = [];
   Object.entries(set.content).forEach(([race, count]) => { for (let i = 0; i < count; i++) allPawns.push(race); });
@@ -300,7 +300,7 @@ const EditableSet = ({ set, isEditMode, onPawnDragStart, onPawnDrop, onClonePawn
 
   return (
     <div className="pawn-set editable" onDragOver={(e) => isEditMode && e.preventDefault()} onDrop={() => isEditMode && onPawnDrop(set.id)}>
-      <div className="set-header"><span>Set {set.id}</span><span className="power-badge">P: {set.power}</span></div>
+      <div className="set-header"><span>{t('admin_sets_set_label', { id: set.id, defaultValue: `Set ${set.id}` })}</span><span className="power-badge">{t('admin_sets_power_label', { power: set.power, defaultValue: `P: ${set.power}` })}</span></div>
       <div className="set-content">
         {allPawns.map((race, index) => (
           <div 
@@ -318,7 +318,7 @@ const EditableSet = ({ set, isEditMode, onPawnDragStart, onPawnDrop, onClonePawn
                 onRemovePawn(set.id, race);
               }
             }}
-            title={isEditMode ? "Drag to move | Shift+LPP to clone | Ctrl+LPP to remove" : ""}
+            title={isEditMode ? t('admin_sets_drag_tooltip', { defaultValue: 'Drag to move | Shift+LPP to clone | Ctrl+LPP to remove' }) : ""}
           ></div>
         ))}
       </div>

@@ -110,8 +110,6 @@ export class ClientPlacementManager {
     if (!workState.passedPlayers.includes(curPlayer.id)) {
       workState.passedPlayers.push(curPlayer.id);
     }
-    const currentHand = (workState.sets.heldSets || []).filter(s => String(s.ownerId) === String(curPlayer.id));
-    const toSell = currentHand.filter(s => (s.content[curPlayer.generalOf] || 0) === 0);
     
     let jakub = null;
     for (const r of workState.regions) {
@@ -120,6 +118,12 @@ export class ClientPlacementManager {
         break;
       }
     }
+
+    const currentHand = (workState.sets.heldSets || []).filter(s => String(s.ownerId) === String(curPlayer.id));
+    const toSell = currentHand.filter(s => 
+      (s.content[curPlayer.generalOf] || 0) === 0 &&
+      SharedPlacementManager.isSetAllowedToPass(s, workState.regions, jakub)
+    );
 
     toSell.forEach(s => {
       const idx = workState.sets.heldSets.findIndex(h => String(h.id) === String(s.id));

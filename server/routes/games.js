@@ -7,9 +7,9 @@ import {
   getGameData, 
   saveFullState,
   getNextGameId,
-  backupRound,
-  restoreRound,
-  getAvailableRoundSaves
+  createSnapshot,
+  restoreSnapshot,
+  getAvailableSnapshots
 } from '../gameLogic.js';
 import { 
   createEmptyRegions 
@@ -98,7 +98,7 @@ router.post('/:gameId/event-phase', (req, res) => {
     
     saveFullState(gameId, data);
     if (data.phase === 'setup') {
-      backupRound(gameId, data.currentRound);
+      createSnapshot(gameId, data);
     }
     req.app.get('io').to(`game:${gameId}`).emit('boardUpdate', data);
     res.json({ message: 'Event phase completed', state: data });
@@ -250,6 +250,7 @@ router.delete('/:gameId', (req, res) => {
     const { gameId } = req.params;
     const { data } = getGameData(gameId);
     data.regions = createEmptyRegions();
+    delete data.jakubPath;
     saveFullState(gameId, data);
     req.app.get('io').to(`game:${gameId}`).emit('boardUpdate', data);
     res.json({ message: 'Board reset to empty' });
@@ -275,29 +276,27 @@ router.post('/init/:gameId', (req, res) => {
 router.get('/:gameId/saves', (req, res) => {
   try {
     const { gameId } = req.params;
-    const saves = getAvailableRoundSaves(gameId);
+    const saves = getAvailableSnapshots(gameId);
     res.json({ saves });
   } catch (err) {
-    console.error('Failed to get round saves:', err);
+    console.error('Failed to get snapshots:', err);
     res.status(500).json({ error: 'Failed to retrieve saves' });
   }
 });
 
-router.post('/:gameId/load-round/:round', (req, res) => {
+router.post('/:gameId/load-snapshot/:snapshotId', (req, res) => {
   try {
-    const { gameId, round } = req.params;
-    const roundNum = parseInt(round);
-    if (isNaN(roundNum)) return res.status(400).json({ error: 'Invalid round number' });
+    const { gameId, snapshotId } = req.params;
     
-    restoreRound(gameId, roundNum);
+    restoreSnapshot(gameId, snapshotId);
     const { data } = getGameData(gameId);
     
     // Broadcast restored state to all clients
     req.app.get('io').to(`game:${gameId}`).emit('boardUpdate', data);
-    res.json({ message: `Restored round ${roundNum}`, state: data });
+    res.json({ message: `Restored snapshot ${snapshotId}`, state: data });
   } catch (err) {
-    console.error('Failed to load round save:', err);
-    res.status(500).json({ error: 'Failed to load round' });
+    console.error('Failed to load snapshot:', err);
+    res.status(500).json({ error: 'Failed to load snapshot' });
   }
 });
 

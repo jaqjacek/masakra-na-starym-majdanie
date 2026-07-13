@@ -52,21 +52,21 @@ router.post('/full', upload.fields([
   // Fallback to JSON body if files not provided (for backward compatibility)
   if (!setsConfig) {
     if (typeof req.body?.sets === 'string') {
-      try { setsConfig = JSON.parse(req.body.sets); } catch (_) {}
+      try { setsConfig = JSON.parse(req.body.sets); } catch (_) { /* ignore */ }
     } else {
       setsConfig = req.body?.sets;
     }
   }
   if (!gameConfig) {
     if (typeof req.body?.game === 'string') {
-      try { gameConfig = JSON.parse(req.body.game); } catch (_) {}
+      try { gameConfig = JSON.parse(req.body.game); } catch (_) { /* ignore */ }
     } else {
       gameConfig = req.body?.game;
     }
   }
   if (!eventsConfig) {
     if (typeof req.body?.events === 'string') {
-      try { eventsConfig = JSON.parse(req.body.events); } catch (_) {}
+      try { eventsConfig = JSON.parse(req.body.events); } catch (_) { /* ignore */ }
     } else {
       eventsConfig = req.body?.events;
     }

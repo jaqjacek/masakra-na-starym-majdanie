@@ -13,6 +13,7 @@ export const useGameState = () => {
   const [gameId, setGameId] = useState(null);
   const [playerId, setPlayerId] = useState(null);
   const [gameState, setGameState] = useState(INITIAL_STATE);
+  const [isLoaded, setIsLoaded] = useState(false);
 
   const isAdminPath = currentPath.startsWith('/admin');
 
@@ -21,7 +22,9 @@ export const useGameState = () => {
       const path = window.location.pathname;
       setCurrentPath(path);
       const match = path.match(/^\/game\/([^/]+)/);
-      setGameId(match ? match[1] : null);
+      const newGameId = match ? match[1] : null;
+      setGameId(newGameId);
+      setIsLoaded(false); // Reset loaded flag on path/game change
       const params = new URLSearchParams(window.location.search);
       setPlayerId(params.get('player') ? parseInt(params.get('player')) : null);
     };
@@ -40,9 +43,19 @@ export const useGameState = () => {
       .then(data => setGameState(prev => ({ ...prev, gameTitle: data.title })))
       .catch(console.error);
 
-    fetchMap(gameId).then(d => { if (d && d.regions) setGameState(prev => ({ ...prev, ...d })); }).catch(console.error);
+    fetchMap(gameId).then(d => { 
+      if (d && d.regions) {
+        setGameState(prev => ({ ...prev, ...d })); 
+        setIsLoaded(true);
+      }
+    }).catch(console.error);
 
-    const handleUpdate = (newData) => { if (newData && newData.regions) setGameState(prev => ({ ...prev, ...newData })); };
+    const handleUpdate = (newData) => { 
+      if (newData && newData.regions) {
+        setGameState(prev => ({ ...prev, ...newData })); 
+        setIsLoaded(true);
+      }
+    };
     socket.on('boardUpdate', handleUpdate);
     return () => socket.off('boardUpdate', handleUpdate);
   }, [gameId, isAdminPath]);
@@ -72,6 +85,7 @@ export const useGameState = () => {
     setPlayerId,
     gameState,
     setGameState,
+    isLoaded,
     currentPath,
     setCurrentPath,
     isAdminPath,

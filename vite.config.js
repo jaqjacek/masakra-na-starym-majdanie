@@ -10,8 +10,20 @@ export default defineConfig({
   server: {
     proxy: {
       '/api': {
-        target: config.SERVER_URL || 'http://localhost:3001',
+        target: process.env.VITE_SERVER_URL || config.SERVER_URL || 'http://localhost:3001',
         changeOrigin: true,
+      }
+    }
+  },
+  build: {
+    chunkSizeWarningLimit: 800, // Increase warning limit slightly if needed
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (id.includes('node_modules')) {
+            return 'vendor';
+          }
+        }
       }
     }
   }

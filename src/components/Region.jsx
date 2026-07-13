@@ -1,7 +1,9 @@
 import React from 'react';
 import { PAWN_TYPES, STATUSES, SUMMARY_PAWN_IDS } from '../constants/pawnTypes';
+import { useTranslation } from '../hooks/useTranslation';
 
-const Region = ({ pawnGroups, onMouseUp, onRemovePawn, onAddPawn, onPawnMouseDown, setHoveredPawn, isValidTarget, onMouseEnter, onMouseLeave }) => {
+const Region = ({ pawnGroups, onMouseUp, onRemovePawn, onAddPawn, onPawnMouseDown, setHoveredPawn, isValidTarget, onMouseEnter, onMouseLeave, showCounters = true, witnessGlowRaces = [] }) => {
+  const { t } = useTranslation();
   // Calculate summary counts for specific pawn types defined in SUMMARY_PAWN_IDS
   const summary = SUMMARY_PAWN_IDS.map(id => {
     const type = PAWN_TYPES.find(t => t.id === id);
@@ -20,16 +22,19 @@ const Region = ({ pawnGroups, onMouseUp, onRemovePawn, onAddPawn, onPawnMouseDow
     >
       <div className="pawns-area">
         {Object.entries(pawnGroups).map(([typeId, instances]) => {
+          if (typeId === 'jakub') return null; // Rendered by JakubOverlay
+
           const pawnType = PAWN_TYPES.find(t => t.id === typeId);
           if (!pawnType) return null;
           
           return instances.map((pawn, pIdx) => {
             const isEnabled = pawn.statuses.includes(STATUSES.ENABLED);
+            const isWitness = witnessGlowRaces.includes(typeId);
             
             return (
               <div 
                 key={`${typeId}-${pIdx}`} 
-                className={`pawn-indicator ${typeId} ${!isEnabled ? 'disabled-pawn' : ''}`}
+                className={`pawn-indicator ${typeId} ${!isEnabled ? 'disabled-pawn' : ''} ${isWitness ? 'witness-glow' : ''}`}
                 onMouseDown={(e) => {
                   if (e.button !== 0) return;
                   if (e.shiftKey) {
@@ -47,19 +52,20 @@ const Region = ({ pawnGroups, onMouseUp, onRemovePawn, onAddPawn, onPawnMouseDow
                   setHoveredPawn({ pawn, pawnType, x: e.clientX, y: e.clientY });
                 }}
                 onMouseLeave={() => setHoveredPawn(null)}
-                title={isEnabled ? "Przeciągnij, aby przesunąć | Shift+LPP: dodaj | Ctrl+LPP: usuń" : "Zablokowany | Shift+LPP: dodaj | Ctrl+LPP: usuń"}
+                title={isEnabled ? t('pawn_tooltip_drag') : t('pawn_tooltip_blocked')}
               />
             );
           });
         })}
       </div>
 
-      <div className="region-summary">
+      {showCounters && (
+        <div className="region-summary">
         {summary.map(type => (
           <div 
             key={type.id} 
             className="summary-item" 
-            title={`Shift+LPP: Dodaj ${type.name} | Ctrl+LPP: Usuń ${type.name}`}
+            title={t('pawn_tooltip_add_remove', { name: t(type.id) })}
             onMouseDown={(e) => {
               if (e.button !== 0) return;
               if (e.shiftKey) {
@@ -76,6 +82,7 @@ const Region = ({ pawnGroups, onMouseUp, onRemovePawn, onAddPawn, onPawnMouseDow
           </div>
         ))}
       </div>
+      )}
     </div>
   );
 };

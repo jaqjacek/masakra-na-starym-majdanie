@@ -1,7 +1,11 @@
 import React, { useState, useCallback, useMemo, useEffect } from 'react';
 import './assets/css/base.css';
 import './assets/css/game.css';
+import './assets/css/modals.css';
+import './assets/css/popups.css';
+import './assets/css/effects.css';
 import './assets/css/events.css';
+import { useTranslation } from './hooks/useTranslation';
 
 // Components
 import BoardComponent from './components/Board';
@@ -33,7 +37,8 @@ import { trackGeneralSelection } from '../shared/statsManager.js';
 // Constants & Utilities
 import { PAWN_TYPES, SUMMARY_PAWN_IDS } from './constants/pawnTypes';
 import { RACES, INITIAL_STATE } from './constants/game';
-import { applySetToJakubAnger } from './strategies/jakubStrategy';
+import { applySetToJakubAnger, getRegionsInRange } from './strategies/jakubStrategy';
+
 import { GeneralSelectionManager } from '../shared/generalSelectionManager.js';
 import { TOTAL_GAME_ROUNDS, INITIAL_HAND_SIZE, JAKUB_INITIAL_SETS, SERVER_URL, MAX_HAND_SIZE } from './constants/constants';
 import { ClientPlacementManager } from './logic/clientPlacementManager';
@@ -92,25 +97,68 @@ const SetGhostPointsPopup = ({ regions, hoveredRegionId, activeSet }) => {
 };
 
 function App() {
+  const { t } = useTranslation();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isSetsPanelOpen, setIsSetsPanelOpen] = useState(false);
   const [isEventsPanelOpen, setIsEventsPanelOpen] = useState(false);
   const [isScoringPopupOpen, setIsScoringPopupOpen] = useState(false);
   const [isLoadSavesPanelOpen, setIsLoadSavesPanelOpen] = useState(false);
-  const [manualPlayers, setManualPlayers] = useState([]);
   const [hoveredRegionId, setHoveredRegionId] = useState(null);
   const [isEndGamePopupOpen, setIsEndGamePopupOpen] = useState(false);
+  const [showTracks, setShowTracks] = useState(() => localStorage.getItem('showTracks') !== 'false');
+  const [showCounters, setShowCounters] = useState(() => localStorage.getItem('showCounters') !== 'false');
+  const [showAnimations, setShowAnimations] = useState(() => localStorage.getItem('showAnimations') !== 'false');
+  const [visualEffects, setVisualEffects] = useState([]);
+  const prevRegionsRef = React.useRef();
 
-  const handleToggleManualPlayer = useCallback((id) => {
-    setManualPlayers(prev => 
-      prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]
-    );
-  }, []);
+  useEffect(() => {
+    localStorage.setItem('showTracks', showTracks);
+  }, [showTracks]);
+
+  useEffect(() => {
+    localStorage.setItem('showCounters', showCounters);
+  }, [showCounters]);
+
+  useEffect(() => {
+    localStorage.setItem('showAnimations', showAnimations);
+  }, [showAnimations]);
 
   // 1. Basic state and sync
   const {
-    gameId, setGameId, playerId, gameState, setGameState, currentPath, isAdminPath, updateGameWithSync, addLog
+    gameId, setGameId, playerId, gameState, setGameState, isLoaded, currentPath, isAdminPath, updateGameWithSync, addLog
   } = useGameState();
+
+  const manualPlayers = useMemo(() => gameState.manualPlayers || [], [gameState.manualPlayers]);
+
+  const handleToggleManualPlayer = useCallback((id) => {
+    const workState = JSON.parse(JSON.stringify(gameState));
+    if (!workState.manualPlayers) workState.manualPlayers = [];
+    
+    const numericId = parseInt(id);
+    const idToUse = isNaN(numericId) ? id : numericId;
+    
+    if (workState.manualPlayers.includes(idToUse)) {
+      workState.manualPlayers = workState.manualPlayers.filter(x => x !== idToUse);
+    } else {
+      workState.manualPlayers.push(idToUse);
+    }
+    updateGameWithSync(workState);
+  }, [gameState, updateGameWithSync]);
+
+  // Auto-register playerId as a manual player if not already registered
+  useEffect(() => {
+    if (isLoaded && gameId && playerId && gameState && gameState.players) {
+      const numericId = parseInt(playerId);
+      const idToUse = isNaN(numericId) ? playerId : numericId;
+      const currentManuals = gameState.manualPlayers || [];
+      if (!currentManuals.includes(idToUse)) {
+        const workState = JSON.parse(JSON.stringify(gameState));
+        if (!workState.manualPlayers) workState.manualPlayers = [];
+        workState.manualPlayers.push(idToUse);
+        updateGameWithSync(workState);
+      }
+    }
+  }, [isLoaded, gameId, playerId, gameState, updateGameWithSync]);
 
   // Toggle html class for scrolling
   useEffect(() => {
@@ -136,8 +184,108 @@ function App() {
       setIsEndGamePopupOpen(false);
     }
   }, [gameState.phase]);
+  // Track pawn deaths and spawn visual effects
+  useEffect(() => {
+    if (gameState.regions && prevRegionsRef.current) {
+      const newEffects = [];
+      gameState.regions.forEach((region, i) => {
+        const prevRegion = prevRegionsRef.current[i];
+        if (!prevRegion) return;
 
+        ['vampire', 'werewolf', 'ghost', 'bardak'].forEach(race => {
+          const prevCount = prevRegion.pawns[race]?.length || 0;
+          const currCount = region.pawns[race]?.length || 0;
+          if (currCount < prevCount && !(gameState.magnetismPullRegions && gameState.magnetismPullRegions.includes(region.id))) {
+            const diff = prevCount - currCount;
+            for (let i = 0; i < diff; i++) {
+              const id = Date.now() + Math.random();
+              let prefix = '';
+              if (race === 'vampire') prefix = 'V';
+              if (race === 'werewolf') prefix = 'W';
+              if (race === 'ghost') prefix = 'G';
+              if (race === 'bardak') prefix = 'B';
+              
+              newEffects.push({
+                id: `exp-${id}`,
+                type: 'explosion',
+                regionId: region.id,
+                race,
+                timestamp: Date.now()
+              });
+              newEffects.push({
+                id: `txt-${id}`,
+                type: 'text',
+                regionId: region.id,
+                race,
+                text: `${prefix} -1 Pkt`,
+                timestamp: Date.now()
+              });
+            }
+          }
+        });
+      });
 
+      if (newEffects.length > 0) {
+        setVisualEffects(prev => [...prev, ...newEffects]);
+        // Auto-cleanup after 1.5 seconds
+        setTimeout(() => {
+          setVisualEffects(prev => prev.filter(e => !newEffects.find(ne => ne.id === e.id)));
+        }, 1500);
+      }
+    }
+    prevRegionsRef.current = gameState.regions;
+  }, [gameState.regions]);
+
+  const prevHistoryLengthRef = React.useRef(0);
+  useEffect(() => {
+    if (gameState.history) {
+      const currentLength = gameState.history.length;
+      const prevLength = prevHistoryLengthRef.current;
+      if (currentLength > prevLength) {
+        const newLogs = gameState.history.slice(prevLength);
+        const newEffects = [];
+        newLogs.forEach(log => {
+          if (log.type === 'witness_points' && log.regionId) {
+            const id = Date.now() + Math.random();
+            let prefix = '';
+            if (log.race === 'vampire') prefix = 'V';
+            if (log.race === 'werewolf') prefix = 'W';
+            if (log.race === 'ghost') prefix = 'G';
+            if (log.race === 'bardak') prefix = 'B';
+            
+            newEffects.push({
+              id: `txt-${id}`,
+              type: 'text',
+              regionId: log.regionId,
+              race: log.race,
+              text: `${prefix} +${log.points} Pkt`,
+              isPositive: true,
+              timestamp: Date.now()
+            });
+          } else if (log.magnetismStart && log.regionId) {
+            const id = Date.now() + Math.random();
+            newEffects.push({
+              id: `txt-${id}`,
+              type: 'text',
+              regionId: log.regionId,
+              race: 'vampire', // to give it a red color
+              text: `Niepochamowany zwierzęcy Magnetyzm`,
+              isMagnetism: true,
+              timestamp: Date.now()
+            });
+          }
+        });
+
+        if (newEffects.length > 0) {
+          setVisualEffects(prev => [...prev, ...newEffects]);
+          setTimeout(() => {
+            setVisualEffects(prev => prev.filter(e => !newEffects.find(ne => ne.id === e.id)));
+          }, 1500);
+        }
+      }
+      prevHistoryLengthRef.current = currentLength;
+    }
+  }, [gameState.history]);
 
   // 2. Computed values
   const counters = useMemo(() => {
@@ -241,19 +389,15 @@ function App() {
         addLog(workState, `Gracz ${playerId} wybrał Generała bandy: ${pick === 'vampire' ? 'Wampiry' : pick === 'werewolf' ? 'Wilkołaki' : pick === 'ghost' ? 'Duchy' : 'Bardaki'}`);
       }
 
-      const best = ClientPlacementManager.findBestPlacement(workState.regions, workState.sets.heldSets, playerId, curPlayer.generalOf, globalPool, playLimits);
+      const best = ClientPlacementManager.findBestPlacement(workState.regions, workState.sets.heldSets, playerId, curPlayer.generalOf, globalPool, playLimits, workState.currentRound);
       if (best) {
         const { logSummaryString, statusLogString } = ClientPlacementManager.executePlacement(best, workState, PAWN_TYPES, playLimits);
         addLog(workState, `Gracz ${playerId} wystawił Zestaw ${best.set.id} [${logSummaryString}] | Plansza: ${statusLogString}`);
+        advanceTurn(workState);
       } else {
-        const excess = ClientPlacementManager.executePass(curPlayer, workState, MAX_HAND_SIZE, applySetToJakubAnger);
-        if (excess > 0) {
-          addLog(workState, `Gracz ${playerId} spasował i podkablował ${excess} nadmiarowych zestawów. Furia Jakuba zaktualizowana.`, { race: curPlayer.generalOf, points: excess });
-        } else {
-          addLog(workState, `Gracz ${playerId} spasował.`);
-        }
+        alert(t('no_valid_moves'));
+        return;
       }
-      advanceTurn(workState);
     } else if (action === 'pass') {
       const excess = ClientPlacementManager.executePass(curPlayer, workState, MAX_HAND_SIZE, applySetToJakubAnger);
       if (excess > 0) {
@@ -271,7 +415,7 @@ function App() {
 
     updateGameWithSync(workState);
     setIsFullAutoplay(true);
-  }, [gameState, updateGameWithSync, addLog, advanceTurn, setIsFullAutoplay]);
+  }, [gameState, updateGameWithSync, addLog, advanceTurn, setIsFullAutoplay, t]);
 
   // 4. Interaction logic
   const {
@@ -288,6 +432,23 @@ function App() {
       setHoveredRegionId(null);
     }
   }, [activeSet]);
+
+  const [jakubHoverTargets, setJakubHoverTargets] = useState([]);
+  
+  const handleJakubMouseEnter = useCallback(() => {
+    if (jakubRegion && jakubInstance && gameState.regions) {
+      let extra = 0;
+      const races = ['vampire', 'werewolf', 'ghost', 'bardak'];
+      races.forEach(race => { if ((jakubInstance.anger?.[race] || 0) >= 10) extra += 1; });
+      const range = 1 + extra;
+      const targets = getRegionsInRange(gameState.regions, jakubRegion.id, range);
+      setJakubHoverTargets(targets);
+    }
+  }, [jakubRegion, jakubInstance, gameState.regions]);
+
+  const handleJakubMouseLeave = useCallback(() => {
+    setJakubHoverTargets([]);
+  }, []);
 
   // 5. Specific handlers
   const handleUpdatePoints = useCallback((playerIndex, delta, setToZero = false) => {
@@ -445,9 +606,14 @@ function App() {
 
   const handleSelectGeneral = useCallback((race) => {
     const workState = JSON.parse(JSON.stringify(gameState));
-    // If we have a playerId in URL, we assign specifically to that player
-    const targetId = playerId || workState.playerOrder[workState.currentPlayerIndex];
-    const playerIdx = workState.players.findIndex(p => p.id !== null && p.id !== undefined && String(p.id) === String(targetId));
+    const activeId = workState.playerOrder[workState.currentPlayerIndex];
+    
+    // Safety check: if playerId is defined, it must match activeId
+    if (playerId !== null && playerId !== undefined && String(playerId) !== String(activeId)) {
+      return;
+    }
+    
+    const playerIdx = workState.players.findIndex(p => p.id !== null && p.id !== undefined && String(p.id) === String(activeId));
     
     if (playerIdx !== -1) {
       const player = workState.players[playerIdx];
@@ -497,9 +663,9 @@ function App() {
     }
   }, [gameId, setGameState]);
 
-  const handleLoadRound = useCallback(async (round) => {
+  const handleLoadSnapshot = useCallback(async (snapshotId) => {
     try {
-      const response = await fetch(`${SERVER_URL}/api/map/${gameId}/load-round/${round}`, {
+      const response = await fetch(`${SERVER_URL}/api/map/${gameId}/load-snapshot/${snapshotId}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' }
       });
@@ -510,10 +676,10 @@ function App() {
           setIsLoadSavesPanelOpen(false);
         }
       } else {
-        console.error('Failed to load round:', response.statusText);
+        console.error('Failed to load snapshot:', response.statusText);
       }
     } catch (err) {
-      console.error('Error loading round:', err);
+      console.error('Error loading snapshot:', err);
     }
   }, [gameId, setGameState]);
 
@@ -537,15 +703,15 @@ function App() {
 
   const renderPlayerStats = (player, isSmall = false) => {
     const stats = player.stats || {
-      races: {}, scores: {}, losses: {}, rambo: {}, witness: {}, final: {}, passing: {}
+      races: {}, scores: {}, losses: {}, rambo: {}, witness: {}, final: {}, passing: {}, killedByJakub: {}, setsPlayed: {}
     };
     const racesList = ['vampire', 'werewolf', 'ghost', 'bardak'];
-    const raceNames = { vampire: 'Wampiry', werewolf: 'Wilkołaki', ghost: 'Duchy', bardak: 'Bardaki' };
+    const raceNames = { vampire: t('vampire'), werewolf: t('werewolf'), ghost: t('ghost'), bardak: t('bardak') };
     
     const chosenRaces = racesList.filter(race => (stats.races[race] || 0) > 0);
     
     if (chosenRaces.length === 0) {
-      return <div className="no-stats-text">Brak statystyk (nie wybrano żadnej bandy)</div>;
+      return <div className="no-stats-text">{t('no_stats_text')}</div>;
     }
     
     return (
@@ -558,6 +724,9 @@ function App() {
           const witness = stats.witness[race] || 0;
           const final = stats.final[race] || 0;
           const passing = stats.passing[race] || 0;
+          const mercy = stats.mercy?.[race] || 0;
+          const killed = stats.killedByJakub[race] || 0;
+          const setsCount = stats.setsPlayed[race] || 0;
           
           return (
             <div key={race} className={`race-stat-row ${race}`}>
@@ -567,29 +736,41 @@ function App() {
                 <span className="race-times">({times}x)</span>
               </div>
               <div className="race-metrics">
-                <div className="metric-item score-metric" title="Zdobyte punkty na tej bandzie">
-                  <span className="metric-label">Zdobyte:</span>
+                <div className="metric-item score-metric" title={t('stats_tooltip_scored')}>
+                  <span className="metric-label">{t('stats_scored')}</span>
                   <span className="metric-value">+{score}</span>
                 </div>
-                <div className="metric-item loss-metric" title="Stracone punkty na tej bandzie">
-                  <span className="metric-label">Stracone:</span>
+                <div className="metric-item loss-metric" title={t('stats_tooltip_lost')}>
+                  <span className="metric-label">{t('stats_lost')}</span>
                   <span className="metric-value">-{loss}</span>
                 </div>
-                <div className="metric-item rambo-metric" title="Punkty za zestawy (Rambo)">
-                  <span className="metric-label">Szturm:</span>
+                <div className="metric-item rambo-metric" title={t('stats_tooltip_assault')}>
+                  <span className="metric-label">{t('stats_assault')}</span>
                   <span className="metric-value">{rambo > 0 ? `+${rambo}` : rambo}</span>
                 </div>
-                <div className="metric-item witness-metric" title="Punkty Świadka Jakuba">
-                  <span className="metric-label">Świadek:</span>
+                <div className="metric-item witness-metric" title={t('stats_tooltip_witness')}>
+                  <span className="metric-label">{t('stats_witness')}</span>
                   <span className="metric-value">+{witness}</span>
                 </div>
-                <div className="metric-item final-metric" title="Bonus na koniec gry">
-                  <span className="metric-label">Koniec:</span>
+                <div className="metric-item final-metric" title={t('stats_tooltip_final')}>
+                  <span className="metric-label">{t('stats_final')}</span>
                   <span className="metric-value">+{final}</span>
                 </div>
-                <div className="metric-item passing-metric" title="Punkty za kablowanie/pasowanie">
-                  <span className="metric-label">Kablowanie:</span>
+                <div className="metric-item passing-metric" title={t('stats_tooltip_passing')}>
+                  <span className="metric-label">{t('stats_passing')}</span>
                   <span className="metric-value">+{passing}</span>
+                </div>
+                <div className="metric-item mercy-metric" title={gameState.mercyActive === false ? "Faza Miłosierdzia wyłączona" : t('stats_tooltip_mercy', { defaultValue: 'Punkty z Miłosierdzia Jakuba' })}>
+                  <span className="metric-label">😇 {t('stats_mercy', { defaultValue: 'Miłosierdzie' })}</span>
+                  <span className="metric-value">{gameState.mercyActive === false ? "Brak miłosierdzia" : `+${mercy}`}</span>
+                </div>
+                <div className="metric-item killed-metric" title="Zabici przez Jakuba">
+                  <span className="metric-label">💀 Zabici</span>
+                  <span className="metric-value">-{killed}</span>
+                </div>
+                <div className="metric-item sets-metric" title="Zagrane zestawy">
+                  <span className="metric-label">🃏 Zestawy</span>
+                  <span className="metric-value">{setsCount}</span>
                 </div>
               </div>
             </div>
@@ -601,10 +782,10 @@ function App() {
 
   // 7. Render logic
   if (currentPath === '/docs/game') return <GameRulesPage />;
-  if (currentPath === '/admin/sets') return <div className="app-container"><AdminNav currentPath={currentPath} /><AdminSets /></div>;
-  if (currentPath === '/admin/events') return <div className="app-container"><AdminNav currentPath={currentPath} /><AdminEvents /></div>;
-  if (currentPath === '/admin/simulate') return <div className="app-container"><AdminNav currentPath={currentPath} /><AdminSimulate /></div>;
-  if (isAdminPath) return <div className="app-container"><AdminNav currentPath={currentPath} /><div className="admin-page-content"><p>Please select an Admin section.</p></div></div>;
+  if (currentPath === '/admin/sets') return <div className="app-container"><AdminNav currentPath={currentPath} /><AdminSets /><Footer /></div>;
+  if (currentPath === '/admin/events') return <div className="app-container"><AdminNav currentPath={currentPath} /><AdminEvents /><Footer /></div>;
+  if (currentPath === '/admin/simulate') return <div className="app-container"><AdminNav currentPath={currentPath} /><AdminSimulate /><Footer /></div>;
+  if (isAdminPath) return <div className="app-container"><AdminNav currentPath={currentPath} /><div className="admin-page-content"><p>Please select an Admin section.</p></div><Footer /></div>;
   if (!gameId) return <LandingPage onGoToGame={(id) => { if (id) window.location.href = `/game/${id}`; }} />;
 
   return (
@@ -612,7 +793,9 @@ function App() {
       <GamePanel 
         gameId={gameId}
         gameState={gameState}
+        updateGameWithSync={updateGameWithSync}
         totalRounds={gameState.totalRounds || TOTAL_GAME_ROUNDS}
+        currentPlayerId={playerId}
         isMenuOpen={isMenuOpen}
         setIsMenuOpen={setIsMenuOpen}
         isFullAutoplay={isFullAutoplay}
@@ -644,6 +827,12 @@ function App() {
         onAdminPanel={() => { window.history.pushState({}, '', '/admin/sets'); window.dispatchEvent(new Event('popstate')); }}
         serverUrl={SERVER_URL}
         initialState={INITIAL_STATE}
+        showTracks={showTracks}
+        setShowTracks={setShowTracks}
+        showCounters={showCounters}
+        setShowCounters={setShowCounters}
+        showAnimations={showAnimations}
+        setShowAnimations={setShowAnimations}
       />
 
       {isEventsPanelOpen && (
@@ -658,7 +847,7 @@ function App() {
         <LoadSavesPanel 
           gameId={gameId}
           onClose={() => setIsLoadSavesPanelOpen(false)}
-          onLoadRound={handleLoadRound}
+          onLoadSnapshot={handleLoadSnapshot}
           serverUrl={SERVER_URL}
         />
       )}
@@ -707,6 +896,44 @@ function App() {
           </div>
         </div>
         <div className="main-game-area">
+          {gameState.phase === 'general_phase' && (() => {
+            const activeId = gameState.playerOrder[gameState.currentPlayerIndex];
+            
+            // If playerId is defined and it's not our turn to choose, we wait
+            if (playerId !== null && playerId !== undefined && String(playerId) !== String(activeId)) {
+              return (
+                <div className="generals-pool-wrapper" style={{ textAlign: 'center', padding: '15px' }}>
+                  <div className="generals-pool-header">
+                    {t('waiting_for_general', { player: activeId })}
+                  </div>
+                </div>
+              );
+            }
+
+            const player = gameState.players.find(p => p.id !== null && p.id !== undefined && String(p.id) === String(activeId));
+            const hasGeneral = !!player?.generalOf;
+            
+            return (
+              <div className="generals-pool-wrapper">
+                <div className="generals-pool-header">
+                  {hasGeneral ? t('general_chosen') : t('choose_general_for', { player: activeId })}
+                </div>
+                <div className="generals-pool-horizontal">
+                  {gameState.availableGenerals.map(race => (
+                    <div 
+                      key={race} 
+                      className={`general-icon large portrait ${race} ${hasGeneral ? 'disabled' : ''}`} 
+                      onMouseDown={(e) => !hasGeneral && handleGeneralMouseDown(race, e)}
+                      onClick={() => !hasGeneral && handleSelectGeneral(race)}
+                      title={hasGeneral ? t('general_portrait_title') : t('general_icon_title', { race: t(race) })}
+                    >
+                    </div>
+                  ))}
+                </div>
+              </div>
+            );
+          })()}
+
           {gameState.regions && (
             <BoardComponent 
               regions={gameState.regions} 
@@ -715,28 +942,41 @@ function App() {
               onAddPawn={handleRegionAdd} 
               onPawnMouseDown={handlePawnMouseDown} 
               setHoveredPawn={setHoveredPawn} 
-              validMoveTargets={validMoveTargets}
+              validMoveTargets={validMoveTargets.length > 0 ? validMoveTargets : jakubHoverTargets}
               onRegionMouseEnter={(regionId) => { if (activeSet) setHoveredRegionId(regionId); }}
               onRegionMouseLeave={() => setHoveredRegionId(null)}
+              jakubPath={gameState.jakubPath || []}
+              currentRound={gameState.currentRound}
+              currentPhase={gameState.phase}
+              showTracks={showTracks}
+              showCounters={showCounters}
+              showAnimations={showAnimations}
+              visualEffects={visualEffects}
+              witnessGlows={gameState.witnessGlows}
+              jakubInstance={jakubInstance}
+              jakubRegion={jakubRegion}
+              autoplaySpeed={autoplaySpeed}
+              onJakubMouseEnter={handleJakubMouseEnter}
+              onJakubMouseLeave={handleJakubMouseLeave}
             >
               {autoplayEventPopup && (
                 <div className="autoplay-event-popup-wrapper">
                   <div className="autoplay-event-popup-glow"></div>
-                  <div className="autoplay-event-badge">⚠️ BOARD EVENT ACTIVE</div>
-                  <h2 className="autoplay-event-title">{autoplayEventPopup.event.title}</h2>
+                  <div className="autoplay-event-badge">⚠️ {t('active_event_badge_board', { defaultValue: 'BOARD EVENT ACTIVE' })}</div>
+                  <h2 className="autoplay-event-title">{t(`event.${autoplayEventPopup.event.id}.title`, { defaultValue: autoplayEventPopup.event.title })}</h2>
                   <div className="autoplay-event-divider"></div>
-                  <p className="autoplay-event-description">{autoplayEventPopup.event.description}</p>
+                  <p className="autoplay-event-description">{t(`event.${autoplayEventPopup.event.id}.description`, { defaultValue: autoplayEventPopup.event.description })}</p>
                   <div className="autoplay-event-footer">
                     <div className="autoplay-event-ticks-container">
                       {Array.from({ length: 6 }).map((_, idx) => (
                         <div 
-                          key={idx} 
-                          className={`autoplay-event-tick-dot ${idx < autoplayEventPopup.ticksLeft ? 'active' : ''}`}
+                           key={idx} 
+                           className={`autoplay-event-tick-dot ${idx < autoplayEventPopup.ticksLeft ? 'active' : ''}`}
                         />
                       ))}
                     </div>
                     <span className="autoplay-event-countdown-text">
-                      Resuming autoplay in {autoplayEventPopup.ticksLeft} ticks...
+                      {t('resuming_autoplay_ticks', { ticks: autoplayEventPopup.ticksLeft, defaultValue: `Resuming autoplay in ${autoplayEventPopup.ticksLeft} ticks...` })}
                     </span>
                   </div>
                 </div>
@@ -744,10 +984,10 @@ function App() {
 
               {gameState.phase === 'setup' && (
                 <div className="setup-summary-wrapper">
-                  <div className="setup-summary-header">Game Setup: {gameState.setName || 'Random'}</div>
+                  <div className="setup-summary-header">{t('setup_summary_header', { name: gameState.setName || t('setup_random_name', { defaultValue: 'Random' }), defaultValue: `Game Setup: ${gameState.setName || 'Random'}` })}</div>
                   <div className="setup-limits-grid">
                     <div className="setup-limit-section">
-                      <h4>Total Pawn Pool</h4>
+                      <h4>{t('setup_total_pawn_pool', { defaultValue: 'Total Pawn Pool' })}</h4>
                       <div className="setup-limit-list">
                         {RACES.map(race => (
                           <div key={race} className="setup-limit-item">
@@ -758,7 +998,7 @@ function App() {
                       </div>
                     </div>
                     <div className="setup-limit-section">
-                      <h4>Pawn Play Limits</h4>
+                      <h4>{t('setup_pawn_play_limits', { defaultValue: 'Pawn Play Limits' })}</h4>
                       <div className="setup-limit-list">
                         {RACES.map(race => (
                           <div key={race} className="setup-limit-item">
@@ -770,7 +1010,7 @@ function App() {
                     </div>
                   </div>
                   <div className="setup-hint" style={{ marginTop: '1.5rem', color: '#888', fontSize: '0.8rem' }}>
-                    Waiting for host to click "DRAW SETS" in the top bar...
+                    {t('setup_waiting_host_draw', { defaultValue: 'Waiting for host to click "DRAW SETS" in the top bar...' })}
                   </div>
                 </div>
               )}
@@ -797,38 +1037,13 @@ function App() {
             onToggleManualPlayer={handleToggleManualPlayer}
           />
 
-          {gameState.phase === 'general_phase' && (() => {
-            const curId = playerId || gameState.playerOrder[gameState.currentPlayerIndex];
-            const player = gameState.players.find(p => p.id !== null && p.id !== undefined && String(p.id) === String(curId));
-            const hasGeneral = !!player?.generalOf;
-            
-            return (
-              <div className="generals-pool-wrapper">
-                <div className="generals-pool-header">
-                  {hasGeneral ? "General Chosen" : "Choose General"}
-                </div>
-                <div className="generals-pool-horizontal">
-                  {gameState.availableGenerals.map(race => (
-                    <div 
-                      key={race} 
-                      className={`general-icon large portrait ${race} ${hasGeneral ? 'disabled' : ''}`} 
-                      onMouseDown={(e) => !hasGeneral && handleGeneralMouseDown(race, e)}
-                      onClick={() => !hasGeneral && handleSelectGeneral(race)}
-                      title={hasGeneral ? "You already have a general" : `Click to choose ${race}`}
-                    >
-                    </div>
-                  ))}
-                </div>
-              </div>
-            );
-          })()}
         </div>
         <div className="right-controls">
           <HistoryPanel logs={gameState.history || []} />
           
           {playerId && (
             <div className="player-hand-section always-visible">
-              <div className="player-hand-header">Player {playerId} Hand</div>
+              <div className="player-hand-header">{t('player_hand_title', { player: playerId })}</div>
               <SetsPanel 
                 sets={(gameState.sets?.heldSets || []).filter(s => String(s.ownerId) === String(playerId))}
                 onSetMouseDown={handleSetMouseDown}
@@ -845,24 +1060,24 @@ function App() {
           <div className="scoring-modal-content" onClick={e => e.stopPropagation()}>
             <button className="modal-close-x" onClick={() => setIsScoringPopupOpen(false)}>×</button>
             <div className="scoring-rules-container">
-              <h2>SCORING RULES</h2>
+              <h2>{t('scoring_popup_title')}</h2>
               <div className="rules-section">
-                <h3>Placement Points (Immediate)</h3>
-                <p><strong>Vampire:</strong> (4 - distance from Jakub) × count.</p>
-                <p><strong>Werewolf:</strong> 1 base point + 1 point for every 3 werewolves (rounding down) in target/neighbor regions. Plus 1 if Jakub is in target or neighbor.</p>
-                <p><strong>Ghost:</strong> (2 - distance to edge) per pawn. -1 if in target or neighbor region (distance ≤ 1).</p>
-                <p><strong>Bardak:</strong> 1 pt per pawn (0 if distance ≤ 1 from Jakub).</p>
-                </div>
-              <div className="rules-section">
-                <h3>Punkty Świadka Jakuba</h3>
-                <p>Generals get <strong>+2 points</strong> for each of their pawns remaining in Jakub's region after he leaves, or after his anger towards all bands falls to 0.</p>
+                <h3>{t('scoring_popup_immediate_title')}</h3>
+                <p><span className="rules-race-icon vampire"></span><strong>{t('vampire')}:</strong> {t('scoring_popup_vampire_desc')}</p>
+                <p><span className="rules-race-icon werewolf"></span><strong>{t('werewolf')}:</strong> {t('scoring_popup_werewolf_desc')}</p>
+                <p><span className="rules-race-icon ghost"></span><strong>{t('ghost')}:</strong> {t('scoring_popup_ghost_desc')}</p>
+                <p><span className="rules-race-icon bardak"></span><strong>{t('bardak')}:</strong> {t('scoring_popup_bardak_desc')}</p>
               </div>
-                <div className="rules-section">
-                <h3>End Game Bonus (Final Round)</h3>
-                <p><strong>Vampire:</strong> 2 pts per region containing vampires.</p>
-                <p><strong>Werewolf:</strong> 1 pt per pawn on board.</p>
-                <p><strong>Ghost:</strong> 2 pts if alone in region; 1 pt if Majority.</p>
-                <p><strong>Bardak:</strong> 1 pt if Majority.</p>
+              <div className="rules-section">
+                <h3>{t('scoring_popup_witness_title')}</h3>
+                <p>{t('scoring_popup_witness_desc')}</p>
+              </div>
+              <div className="rules-section">
+                <h3>{t('scoring_popup_endgame_title')}</h3>
+                <p><span className="rules-race-icon vampire"></span><strong>{t('vampire')}:</strong> {t('scoring_popup_endgame_vampire')}</p>
+                <p><span className="rules-race-icon werewolf"></span><strong>{t('werewolf')}:</strong> {t('scoring_popup_endgame_werewolf')}</p>
+                <p><span className="rules-race-icon ghost"></span><strong>{t('ghost')}:</strong> {t('scoring_popup_endgame_ghost')}</p>
+                <p><span className="rules-race-icon bardak"></span><strong>{t('bardak')}:</strong> {t('scoring_popup_endgame_bardak')}</p>
               </div>
             </div>
           </div>
@@ -875,7 +1090,7 @@ function App() {
             <button className="modal-close-x" onClick={() => setIsEndGamePopupOpen(false)}>×</button>
             <div className="end-game-header">
               <div className="trophy-glow">🏆</div>
-              <h2>KONIEC GRY: RANKING I STATYSTYKI</h2>
+              <h2>{t('endgame_modal_title')}</h2>
             </div>
             
             {sortedPlayers.length > 0 && (
@@ -885,10 +1100,10 @@ function App() {
                   const winner = sortedPlayers[0];
                   return (
                     <div className="rank-card winner-card">
-                      <div className="rank-badge gold">1st</div>
+                      <div className="rank-badge gold">{t('rank_1')}</div>
                       <div className="player-details">
-                        <h3 className="winner-title">ZWYCIĘZCA: Gracz {winner.id} ({winner.name})</h3>
-                        <div className="final-score">{winner.points} pkt</div>
+                        <h3 className="winner-title">{t('endgame_winner_title', { id: winner.id, name: winner.name })}</h3>
+                        <div className="final-score">{t('endgame_points', { points: winner.points })}</div>
                       </div>
                       <div className="stats-breakdown">
                         {renderPlayerStats(winner)}
@@ -900,14 +1115,14 @@ function App() {
                 {/* 2nd, 3rd, 4th Places */}
                 <div className="runners-up-grid">
                   {sortedPlayers.slice(1).map((player, idx) => {
-                    const rankLabel = idx === 0 ? '2nd' : idx === 1 ? '3rd' : '4th';
+                    const rankKey = idx === 0 ? 'rank_2' : idx === 1 ? 'rank_3' : 'rank_4';
                     const rankClass = idx === 0 ? 'silver' : idx === 1 ? 'bronze' : 'fourth';
                     return (
                       <div key={player.id} className={`rank-card runner-card ${rankClass}`}>
-                        <div className={`rank-badge ${rankClass}`}>{rankLabel}</div>
+                        <div className={`rank-badge ${rankClass}`}>{t(rankKey)}</div>
                         <div className="player-details">
-                          <h4>Gracz {player.id} ({player.name})</h4>
-                          <div className="final-score">{player.points} pkt</div>
+                          <h4>{t('endgame_runner_title', { id: player.id, name: player.name })}</h4>
+                          <div className="final-score">{t('endgame_points', { points: player.points })}</div>
                         </div>
                         <div className="stats-breakdown">
                           {renderPlayerStats(player, true)}
@@ -921,7 +1136,7 @@ function App() {
             
             <div className="end-game-footer">
               <button className="close-popup-btn" onClick={() => setIsEndGamePopupOpen(false)}>
-                POWRÓT DO PLANSZY
+                {t('endgame_back_to_board')}
               </button>
             </div>
           </div>

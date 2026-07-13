@@ -143,16 +143,23 @@ const AdminPanel = () => {
       const results = batchResults.map(result => {
         if (result.analytics) {
           const gamePointData = { game: result.game };
+          const gameMercyData = { game: result.game };
           Object.keys(result.analytics).forEach(race => {
             gamePointData[race] = result.analytics[race].total;
+            gameMercyData[race] = result.analytics[race].mercyPoints || 0;
           });
-          return gamePointData;
+          return { total: gamePointData, mercy: gameMercyData };
         }
         return null;
       }).filter(Boolean);
       
       if (results.length > 0) {
-        const newEntry = { id: Date.now(), setName: activeSetName, data: results };
+        const newEntry = { 
+          id: Date.now(), 
+          setName: activeSetName, 
+          data: results.map(r => r.total), 
+          mercyData: results.map(r => r.mercy) 
+        };
         setHistory(prev => [newEntry, ...prev].slice(0, 5));
       }
     } catch (_err) {
@@ -299,6 +306,30 @@ const AdminPanel = () => {
                     </LineChart>
                   </ResponsiveContainer>
                 </div>
+
+                {entry.mercyData && (
+                  <>
+                    <h3 style={{ margin: '1.5rem 0 0.5rem 0', color: '#ffd54f', textAlign: 'center' }}>😇 Faza Miłosierdzia - Skumulowane punkty na koniec rundy</h3>
+                    <div className="chart-wrapper">
+                      <ResponsiveContainer width="100%" height={300}>
+                        <LineChart data={entry.mercyData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+                          <CartesianGrid strokeDasharray="3 3" stroke="#444" />
+                          <XAxis dataKey="game" stroke="#888" />
+                          <YAxis stroke="#888" />
+                          <Tooltip 
+                            contentStyle={{ backgroundColor: '#555555', border: '2px solid #777777', borderRadius: '6px', padding: '10px 14px' }}
+                            labelStyle={{ color: '#ffd54f', fontWeight: 'bold', textShadow: '1px 1px 2px #000', marginBottom: '4px' }}
+                            itemStyle={{ color: '#fffdf0', fontWeight: 'bold', textShadow: '1px 1px 2px #000' }}
+                          />
+                          <Line type="monotone" dataKey="vampire" stroke={PAWN_TYPES.find(p => p.id === 'vampire').color} strokeWidth={2} dot={false} isAnimationActive={index === 0} />
+                          <Line type="monotone" dataKey="werewolf" stroke={PAWN_TYPES.find(p => p.id === 'werewolf').color} strokeWidth={2} dot={false} isAnimationActive={index === 0} />
+                          <Line type="monotone" dataKey="ghost" stroke={PAWN_TYPES.find(p => p.id === 'ghost').color} strokeWidth={2} dot={false} isAnimationActive={index === 0} />
+                          <Line type="monotone" dataKey="bardak" stroke={PAWN_TYPES.find(p => p.id === 'bardak').color} strokeWidth={2} dot={false} isAnimationActive={index === 0} />
+                        </LineChart>
+                      </ResponsiveContainer>
+                    </div>
+                  </>
+                )}
                 <div className="custom-legend-row">
                   {PAWN_TYPES.filter(p => !p.isUnique).map(pawn => (
                     <div key={pawn.id} className="legend-stat-item">

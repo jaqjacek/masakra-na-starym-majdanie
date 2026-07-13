@@ -1,6 +1,8 @@
 import React from 'react';
+import { useTranslation } from '../hooks/useTranslation';
 
 const Bag = ({ type, onMouseDown, disabled, availableCount, onBoard, limit }) => {
+  const { t } = useTranslation();
   const isOutOfStock = availableCount <= 0;
   const showLimit = onBoard !== undefined && limit !== undefined;
 
@@ -11,7 +13,7 @@ const Bag = ({ type, onMouseDown, disabled, availableCount, onBoard, limit }) =>
     >
       <div 
         className="bag"
-        title={disabled ? `${type.name} znajduje się już na planszy` : `Dostępne: ${availableCount}`}
+        title={disabled ? t('witness_pawn_limit_on_board', { name: t(type.id), defaultValue: `${type.name} znajduje się już na planszy` }) : t('witness_pawn_limit_available', { count: availableCount, defaultValue: `Dostępne: ${availableCount}` })}
       >
         <div className={`pawn-preview ${type.id}`}></div>
         <div className="bag-count-badge">{availableCount}</div>

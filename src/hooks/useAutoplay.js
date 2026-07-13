@@ -22,6 +22,7 @@ import { WerewolfScoring } from '../../shared/scoring/werewolfScoring.js';
 import { GhostScoring } from '../../shared/scoring/ghostScoring.js';
 import { BardakScoring } from '../../shared/scoring/bardakScoring.js';
 import { trackPointsChange, trackGeneralSelection } from '../../shared/statsManager.js';
+import { MilosierdzieManager } from '../../shared/milosierdzieManager.js';
 
 export const useAutoplay = ({ 
   gameId, 
@@ -262,7 +263,7 @@ export const useAutoplay = ({
         }
         const globalPool = { ...workState.sets.pawns };
         const playLimits = workState.sets.pawnsInPlayLimit || globalPool;
-        const best = ClientPlacementManager.findBestPlacement(workState.regions, workState.sets.heldSets, curId, curPlayer.generalOf, globalPool, playLimits);
+        const best = ClientPlacementManager.findBestPlacement(workState.regions, workState.sets.heldSets, curId, curPlayer.generalOf, globalPool, playLimits, workState.currentRound);
 
         if (best) {
           const { logSummaryString, statusLogString } = ClientPlacementManager.executePlacement(best, workState, PAWN_TYPES, playLimits);
@@ -289,8 +290,11 @@ export const useAutoplay = ({
           addLog(step.newState, step.log, step.metadata || {}); 
           if (step.metadata && step.metadata.swiadekPointsAwarded) {
             step.metadata.swiadekPointsAwarded.forEach(r => {
-              addLog(step.newState, `🔥 Świadek Jakuba: ${r.player} (${r.race === 'V' ? 'Wampiry' : r.race === 'W' ? 'Wilkołaki' : r.race === 'G' ? 'Duchy' : 'Bardaki'}) zdobywa ${r.points} bonusowych punktów za przeżycie w pobliżu Jakuba.`, { race: r.race, points: r.points });
+              addLog(step.newState, `🔥 Świadek Jakuba: ${r.player} (${r.race === 'vampire' ? 'Wampiry' : r.race === 'werewolf' ? 'Wilkołaki' : r.race === 'ghost' ? 'Duchy' : 'Bardaki'}) zdobywa ${r.points} bonusowych punktów za przeżycie w pobliżu Jakuba.`, { race: r.race, points: r.points, type: 'witness_points', regionId: r.regionId });
             });
+          }
+          if (step.metadata && step.metadata.magnetism) {
+            step.newState.magnetismCount = (step.newState.magnetismCount || 0) + 1;
           }
           updatedState = step.newState;
           if (step.actionTaken) {
@@ -303,6 +307,20 @@ export const useAutoplay = ({
         addLog(workState, `Jakub kończy swoje łowy.`);
         let jakub = null;
         for (const r of workState.regions) { if (r.pawns.jakub?.length > 0) { jakub = r.pawns.jakub[0]; break; } }
+        if (jakub) {
+          if (workState.mercyActive !== false) {
+            const rewards = MilosierdzieManager.applyMercy(jakub, workState.players);
+            rewards.forEach(reward => {
+              const raceNamePl = reward.race === 'vampire' ? 'Wampiry' : reward.race === 'werewolf' ? 'Wilkołaki' : reward.race === 'ghost' ? 'Duchy' : 'Bardaki';
+              addLog(workState, `😇 Miłosierdzie Jakuba: ${reward.playerName} (${raceNamePl}) otrzymuje +${reward.points} pkt za pozostałą furię.`, { race: reward.race, points: reward.points, type: 'mercy_points' });
+              
+              const p = workState.players.find(x => x.id === reward.playerId);
+              if (p) {
+                trackPointsChange(p, reward.race, reward.points, 'mercy');
+              }
+            });
+          }
+        }
         if (jakub) { 
           jakub.range = 1; 
           addLog(workState, `Zasięg Jakuba zresetowany do 1.`); 
@@ -318,6 +336,7 @@ export const useAutoplay = ({
           }
 
           Board.updateJakubDistance(workState.regions);
+          delete workState.witnessGlows;
 
           if (workState.currentRound >= (workState.totalRounds || TOTAL_GAME_ROUNDS)) { 
             workState.phase = 'final_scoring'; 

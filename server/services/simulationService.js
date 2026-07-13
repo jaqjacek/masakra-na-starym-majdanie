@@ -30,6 +30,83 @@ import {
 } from '../gameLogic.js';
 import { GameEventPhaseManager } from '../events/gameEventPhaseManager.js';
 import { GeneralSelectionManager } from '../../shared/generalSelectionManager.js';
+import { MilosierdzieManager } from '../../shared/milosierdzieManager.js';
+
+/**
+ * Groups races by anger value into descending tiers, ordered within each tier by hierarchy (V→W→G→B).
+ */
+const buildAngerTiersServer = (jakub) => {
+  const angerEntries = RACES
+    .map(race => ({ race, val: jakub.anger[race] || 0 }))
+    .filter(a => a.val > 0);
+  if (angerEntries.length === 0) return [];
+  const tierMap = {};
+  angerEntries.forEach(({ race, val }) => {
+    if (!tierMap[val]) tierMap[val] = [];
+    tierMap[val].push(race);
+  });
+  return Object.entries(tierMap)
+    .sort(([a], [b]) => Number(b) - Number(a))
+    .map(([anger, races]) => ({ anger: Number(anger), races }));
+};
+
+/**
+ * Cascading tie-breaker for server simulation.
+ * Returns: { winner: regionIndex | null, magnetism: boolean, tiedRegions: number[] }
+ */
+const cascadeTieBreakServer = (regions, candidates, angerTiers) => {
+  let remaining = [...candidates];
+  if (remaining.length === 1) return { winner: remaining[0], magnetism: false, tiedRegions: [] };
+  
+  const flatRaces = angerTiers.flatMap(tier => tier.races);
+  
+  // Narrow to candidates that have the first available target race
+  let initialTargetRace = null;
+  for (const race of flatRaces) {
+    const hasRace = remaining.filter(rIdx => (regions[rIdx].pawns[race]?.length || 0) > 0);
+    if (hasRace.length > 0) {
+      initialTargetRace = race;
+      remaining = hasRace;
+      break;
+    }
+  }
+  if (!initialTargetRace || remaining.length === 1) {
+    return { winner: remaining[0], magnetism: false, tiedRegions: [] };
+  }
+
+  // Cascade through all races in tier order
+  for (const race of flatRaces) {
+    const counts = remaining.map(rIdx => ({
+      rIdx,
+      count: regions[rIdx].pawns[race]?.length || 0
+    }));
+    const maxCount = Math.max(...counts.map(c => c.count));
+    const maxRegions = counts.filter(c => c.count === maxCount);
+    if (maxRegions.length === 1) {
+      return { winner: maxRegions[0].rIdx, magnetism: false, tiedRegions: [] };
+    }
+    remaining = maxRegions.map(c => c.rIdx);
+  }
+  // Absolute tie — magnetism!
+  return { winner: null, magnetism: true, tiedRegions: remaining };
+};
+
+/**
+ * Handles magnetism in server simulation — pulls all pawns from tied regions to Jakub's region.
+ */
+const handleMagnetismServer = (regions, jakubRegion, tiedRegionIndices) => {
+  tiedRegionIndices.forEach(rIdx => {
+    const region = regions[rIdx];
+    RACES.forEach(race => {
+      const pawns = region.pawns[race];
+      if (pawns && pawns.length > 0) {
+        if (!jakubRegion.pawns[race]) jakubRegion.pawns[race] = [];
+        jakubRegion.pawns[race].push(...pawns);
+        delete region.pawns[race];
+      }
+    });
+  });
+};
 
 export function runDetailedSimulation(set, uploadedSets, uploadedEvents) {
   let simulationEvents = uploadedEvents ? {
@@ -65,7 +142,8 @@ export function runDetailedSimulation(set, uploadedSets, uploadedEvents) {
       pawnPool: setsData.pawns,
       pawnsInPlayLimit: setsData.pawnsInPlayLimit || setsData.pawns
     }, 
-    rounds: [] 
+    rounds: [],
+    magnetismCount: 0
   };
 
   for (let round = 1; round <= gameConfig.totalRounds; round++) {
@@ -88,7 +166,7 @@ export function runDetailedSimulation(set, uploadedSets, uploadedEvents) {
         const p = players.find(x => x.id === id);
         const pool = { ...setsData.pawns };
         const playLimits = setsData.pawnsInPlayLimit || pool;
-        const best = ServerPlacementManager.findBestPlacement(regions, setsData.heldSets, p.id, p.generalOf, pool, playLimits);
+        const best = ServerPlacementManager.findBestPlacement(regions, setsData.heldSets, p.id, p.generalOf, pool, playLimits, round);
         if (best) {
           const pointGains = ServerPlacementManager.executePlacement(best, regions, players, setsData.heldSets, setsData.discardPile);
           const onBoardStatus = {};
@@ -107,7 +185,7 @@ export function runDetailedSimulation(set, uploadedSets, uploadedEvents) {
             boardStatus: onBoardStatus
           });
         } else {
-          const excess = ServerPlacementManager.executePass(p, setsData.heldSets, 3);
+          const excess = ServerPlacementManager.executePass(p, setsData.heldSets, regions);
           if (excess > 0) {
             roundData.turns.push({
               type: 'pass_to_jakub',
@@ -156,17 +234,13 @@ export function runDetailedSimulation(set, uploadedSets, uploadedEvents) {
       }
 
       // 2. If no targets left to kill in the current region, proceed to move.
-      const sortedAnger = RACES
-        .map(race => ({ race, val: jakub.anger[race] || 0 }))
-        .filter(a => a.val > 0)
-        .sort((a, b) => b.val - a.val || RACES.indexOf(a.race) - RACES.indexOf(b.race));
+      const angerTiers = buildAngerTiersServer(jakub);
       
-      if (sortedAnger.length === 0) {
-        // Award Punkty Świadka Jakuba to all pawns remaining in Jakub's region (since anger on all bands is 0)
+      if (angerTiers.length === 0) {
         RACES.forEach(race => {
           const count = curR.pawns[race]?.length || 0;
           if (count > 0 && (jakub.anger[race] || 0) === 0) {
-            const pts = count * 2;
+            const pts = count * 1;
             const p = players.find(x => x.generalOf === race);
             if (p) {
               p.points += pts;
@@ -183,37 +257,19 @@ export function runDetailedSimulation(set, uploadedSets, uploadedEvents) {
       const calculatedRange = 1 + extraRange;
       
       const candidates = getRegionsInRange(regions, curR.id, calculatedRange);
-
-      let targetRace = null;
-      let validCandidates = [];
-
-      // Search through races in sortedAnger order for first one with pawns in range
-      for (let i = 0; i < sortedAnger.length; i++) {
-        const race = sortedAnger[i].race;
-        const filtered = candidates.filter(rIdx => (regions[rIdx].pawns[race]?.length || 0) > 0);
-        if (filtered.length > 0) {
-          targetRace = race;
-          validCandidates = filtered;
-          break;
-        }
-      }
+      const flatRaceOrder = angerTiers.flatMap(tier => tier.races);
+      let validCandidates = candidates.filter(rIdx => 
+        flatRaceOrder.some(race => (regions[rIdx].pawns[race]?.length || 0) > 0)
+      );
       
-      if (targetRace && validCandidates.length > 0) {
-        let bestRIdx = validCandidates[0];
-        let maxCount = -1;
-        validCandidates.forEach(rIdx => {
-          const count = regions[rIdx].pawns[targetRace]?.length || 0;
-          if (count > maxCount) {
-            maxCount = count;
-            bestRIdx = rIdx;
-          }
-        });
+      if (validCandidates.length > 0) {
+        const cascadeResult = cascadeTieBreakServer(regions, validCandidates, angerTiers);
         
-        // Award Punkty Świadka Jakuba before moving from curR (only when anger is 0)
+        // Award Punkty Świadka Jakuba before moving
         RACES.forEach(race => {
           const count = curR.pawns[race]?.length || 0;
           if (count > 0 && (jakub.anger[race] || 0) === 0) {
-            const pts = count * 2;
+            const pts = count * 1;
             const p = players.find(x => x.generalOf === race);
             if (p) {
               p.points += pts;
@@ -222,20 +278,29 @@ export function runDetailedSimulation(set, uploadedSets, uploadedEvents) {
           }
         });
 
-        const fromId = curR.id;
-        regions[bestRIdx].pawns.jakub = curR.pawns.jakub;
-        delete curR.pawns.jakub;
-        jakub.range = calculatedRange;
-        continues = true;
-        roundData.turns.push({ 
-          type: 'jakub_move', 
-          from: fromId, 
-          to: regions[bestRIdx].id, 
-          remainingRange: calculatedRange, 
-          targetRace, 
-          targetAnger: jakub.anger[targetRace] || 0, 
-          targetUnitsCount: maxCount 
-        });
+        if (cascadeResult.magnetism) {
+          // Niepochamowany Zwierzęcy Magnetyzm!
+          handleMagnetismServer(regions, curR, cascadeResult.tiedRegions);
+          roundData.turns.push({ type: 'magnetism', regionId: curR.id, tiedRegions: cascadeResult.tiedRegions.map(rIdx => regions[rIdx].id) });
+          gameHistory.magnetismCount += 1;
+          continues = true;
+        } else {
+          const targetRace = flatRaceOrder.find(race => (regions[cascadeResult.winner].pawns[race]?.length || 0) > 0) || flatRaceOrder[0];
+          const fromId = curR.id;
+          regions[cascadeResult.winner].pawns.jakub = curR.pawns.jakub;
+          delete curR.pawns.jakub;
+          jakub.range = calculatedRange;
+          continues = true;
+          roundData.turns.push({ 
+            type: 'jakub_move', 
+            from: fromId, 
+            to: regions[cascadeResult.winner].id, 
+            remainingRange: calculatedRange, 
+            targetRace, 
+            targetAnger: jakub.anger[targetRace] || 0, 
+            targetUnitsCount: regions[cascadeResult.winner].pawns[targetRace]?.length || 0 
+          });
+        }
       }
     }
     updateJakubDistance(regions);
@@ -312,11 +377,12 @@ export function runBasicSimulation(set, uploadedSets, uploadedEvents) {
   };
   players.forEach(p => { for (let i = 0; i < gameConfig.initialSetsPerPlayer; i++) { const s = drawSet(); if (s) { s.ownerId = p.id; setsData.heldSets.push(s); } } });
   const analytics = {
-    vampire: { afterR1: 0, total: 0, finalBonus: 0, killed: 0, swiadekJakubaPoints: 0, setPlacement: 0, fewestPointsChoice: 0, passing: 0 },
-    werewolf: { afterR1: 0, total: 0, finalBonus: 0, killed: 0, swiadekJakubaPoints: 0, setPlacement: 0, fewestPointsChoice: 0, passing: 0 },
-    ghost: { afterR1: 0, total: 0, finalBonus: 0, killed: 0, swiadekJakubaPoints: 0, setPlacement: 0, fewestPointsChoice: 0, passing: 0 },
-    bardak: { afterR1: 0, total: 0, finalBonus: 0, killed: 0, swiadekJakubaPoints: 0, setPlacement: 0, fewestPointsChoice: 0, passing: 0 }
+    vampire: { afterR1: 0, total: 0, finalBonus: 0, killed: 0, swiadekJakubaPoints: 0, setPlacement: 0, fewestPointsChoice: 0, passing: 0, mercyPoints: 0 },
+    werewolf: { afterR1: 0, total: 0, finalBonus: 0, killed: 0, swiadekJakubaPoints: 0, setPlacement: 0, fewestPointsChoice: 0, passing: 0, mercyPoints: 0 },
+    ghost: { afterR1: 0, total: 0, finalBonus: 0, killed: 0, swiadekJakubaPoints: 0, setPlacement: 0, fewestPointsChoice: 0, passing: 0, mercyPoints: 0 },
+    bardak: { afterR1: 0, total: 0, finalBonus: 0, killed: 0, swiadekJakubaPoints: 0, setPlacement: 0, fewestPointsChoice: 0, passing: 0, mercyPoints: 0 }
   };
+  analytics.magnetismCount = 0;
   for (let round = 1; round <= gameConfig.totalRounds; round++) {
     players.forEach(p => { const myHeld = setsData.heldSets.filter(s => s.ownerId === p.id); const needed = gameConfig.setupSetsPerPlayerPerRound - myHeld.length; for (let i = 0; i < needed; i++) { const s = drawSet(); if (s) { s.ownerId = p.id; setsData.heldSets.push(s); } } });
     for (let i = 0; i < gameConfig.jakubSetsPerRound; i++) { const s = drawSet(); if (s) { s.ownerId = 'jakub'; setsData.heldSets.push(s); } }
@@ -338,7 +404,7 @@ export function runBasicSimulation(set, uploadedSets, uploadedEvents) {
         const p = players.find(x => x.id === id);
         const pool = { ...setsData.pawns };
         const playLimits = setsData.pawnsInPlayLimit || pool;
-        const best = ServerPlacementManager.findBestPlacement(regions, setsData.heldSets, p.id, p.generalOf, pool, playLimits);
+        const best = ServerPlacementManager.findBestPlacement(regions, setsData.heldSets, p.id, p.generalOf, pool, playLimits, round);
         if (best) {
           const pointGains = ServerPlacementManager.executePlacement(best, regions, players, setsData.heldSets, setsData.discardPile);
           pointGains.forEach(gain => {
@@ -347,7 +413,7 @@ export function runBasicSimulation(set, uploadedSets, uploadedEvents) {
             }
           });
         } else {
-          const excess = ServerPlacementManager.executePass(p, setsData.heldSets, 3);
+          const excess = ServerPlacementManager.executePass(p, setsData.heldSets, regions);
           if (excess > 0 && p.generalOf && analytics[p.generalOf]) {
             analytics[p.generalOf].passing += excess;
           }
@@ -400,24 +466,9 @@ export function runBasicSimulation(set, uploadedSets, uploadedEvents) {
       }
 
       // 2. If no targets left to kill in the current region, proceed to move.
-      const sortedAnger = RACES
-        .map(race => ({ race, val: jakub.anger[race] || 0 }))
-        .filter(a => a.val > 0)
-        .sort((a, b) => b.val - a.val || RACES.indexOf(a.race) - RACES.indexOf(b.race));
+      const angerTiers = buildAngerTiersServer(jakub);
       
-      if (sortedAnger.length === 0) {
-        // Award Punkty Świadka Jakuba to all pawns remaining in Jakub's region (since anger on all bands is 0)
-        RACES.forEach(race => {
-          const count = curR.pawns[race]?.length || 0;
-          if (count > 0 && (jakub.anger[race] || 0) === 0) {
-            const pts = count * 2;
-            const p = players.find(x => x.generalOf === race);
-            if (p) {
-              p.points += pts;
-              analytics[race].swiadekJakubaPoints += pts;
-            }
-          }
-        });
+      if (angerTiers.length === 0) {
         break;
       }
 
@@ -427,52 +478,69 @@ export function runBasicSimulation(set, uploadedSets, uploadedEvents) {
       const calculatedRange = 1 + extraRange;
       
       const candidates = getRegionsInRange(regions, curR.id, calculatedRange);
+      const flatRaceOrder = angerTiers.flatMap(tier => tier.races);
+      let validCandidates = candidates.filter(rIdx => 
+        flatRaceOrder.some(race => (regions[rIdx].pawns[race]?.length || 0) > 0)
+      );
+      
+      if (validCandidates.length > 0) {
+        const cascadeResult = cascadeTieBreakServer(regions, validCandidates, angerTiers);
+        
+        if (cascadeResult.magnetism) {
+          // Niepochamowany Zwierzęcy Magnetyzm!
+          handleMagnetismServer(regions, curR, cascadeResult.tiedRegions);
+          analytics.magnetismCount += 1;
+          continues = true;
+        } else {
+          // Award Punkty Świadka Jakuba before moving (leaving curR)
+          RACES.forEach(race => {
+            const count = curR.pawns[race]?.length || 0;
+            if (count > 0 && (jakub.anger[race] || 0) === 0) {
+              const pts = count * 1;
+              const p = players.find(x => x.generalOf === race);
+              if (p) {
+                p.points += pts;
+                analytics[race].swiadekJakubaPoints += pts;
+              }
+            }
+          });
 
-      let targetRace = null;
-      let validCandidates = [];
-
-      // Search through races in sortedAnger order for first one with pawns in range
-      for (let i = 0; i < sortedAnger.length; i++) {
-        const race = sortedAnger[i].race;
-        const filtered = candidates.filter(rIdx => (regions[rIdx].pawns[race]?.length || 0) > 0);
-        if (filtered.length > 0) {
-          targetRace = race;
-          validCandidates = filtered;
-          break;
+          regions[cascadeResult.winner].pawns.jakub = curR.pawns.jakub;
+          delete curR.pawns.jakub;
+          jakub.range = calculatedRange;
+          continues = true;
         }
       }
-      
-      if (targetRace && validCandidates.length > 0) {
-        let bestRIdx = validCandidates[0];
-        let maxCount = -1;
-        validCandidates.forEach(rIdx => {
-          const count = regions[rIdx].pawns[targetRace]?.length || 0;
-          if (count > maxCount) {
-            maxCount = count;
-            bestRIdx = rIdx;
-          }
-        });
-        
-        // Award Punkty Świadka Jakuba before moving from curR (only when anger is 0)
-        RACES.forEach(race => {
-          const count = curR.pawns[race]?.length || 0;
-          if (count > 0 && (jakub.anger[race] || 0) === 0) {
-            const pts = count * 2;
-            const p = players.find(x => x.generalOf === race);
-            if (p) {
-              p.points += pts;
-              analytics[race].swiadekJakubaPoints += pts;
-            }
-          }
-        });
-
-        regions[bestRIdx].pawns.jakub = curR.pawns.jakub;
-        delete curR.pawns.jakub;
-        jakub.range = calculatedRange;
-        continues = true;
-      }
     }
+
+    // Award Punkty Świadka Jakuba for the final region he stands in
+    let finalR = regions.find(r => r.pawns.jakub?.length > 0);
+    if (finalR) {
+      RACES.forEach(race => {
+        const count = finalR.pawns[race]?.length || 0;
+        if (count > 0 && (jakub.anger[race] || 0) === 0) {
+          const pts = count * 1;
+          const p = players.find(x => x.generalOf === race);
+          if (p) {
+            p.points += pts;
+            analytics[race].swiadekJakubaPoints += pts;
+          }
+        }
+      });
+    }
+
     updateJakubDistance(regions);
+    
+    // Faza Miłosierdzia Jakuba
+    if (gameConfig.mercyActive !== false) {
+      const mercyRewards = MilosierdzieManager.applyMercy(jakub, players);
+      mercyRewards.forEach(reward => {
+        if (analytics[reward.race]) {
+          analytics[reward.race].mercyPoints = (analytics[reward.race].mercyPoints || 0) + reward.points;
+        }
+      });
+    }
+
     jakub.range = 1; // Reset to 1 after Jakub's phase
     jakubSets.forEach(s => { const idx = setsData.heldSets.findIndex(x => x.id === s.id); const recycled = setsData.heldSets.splice(idx, 1)[0]; recycled.ownerId = null; recycled.used = false; setsData.discardPile.push(recycled); });
 
@@ -511,6 +579,7 @@ export function runBasicSimulation(set, uploadedSets, uploadedEvents) {
       analytics[race].total = (analytics[race].setPlacement || 0) + 
                              (analytics[race].passing || 0) + 
                              (analytics[race].swiadekJakubaPoints || 0) + 
+                             (analytics[race].mercyPoints || 0) + 
                              (analytics[race].finalBonus || 0);
     }
   });
@@ -562,11 +631,12 @@ export function runFullSimulation(setsConfig, inputGameConfig, uploadedEvents) {
   players.forEach(p => { for (let i = 0; i < initialDraw; i++) { const s = drawSet(); if (s) { s.ownerId = p.id; setsData.heldSets.push(s); } } });
 
   const analytics = {
-    vampire: { afterR1: 0, total: 0, finalBonus: 0, killed: 0, swiadekJakubaPoints: 0, setPlacement: 0, fewestPointsChoice: 0, passing: 0 },
-    werewolf: { afterR1: 0, total: 0, finalBonus: 0, killed: 0, swiadekJakubaPoints: 0, setPlacement: 0, fewestPointsChoice: 0, passing: 0 },
-    ghost: { afterR1: 0, total: 0, finalBonus: 0, killed: 0, swiadekJakubaPoints: 0, setPlacement: 0, fewestPointsChoice: 0, passing: 0 },
-    bardak: { afterR1: 0, total: 0, finalBonus: 0, killed: 0, swiadekJakubaPoints: 0, setPlacement: 0, fewestPointsChoice: 0, passing: 0 }
+    vampire: { afterR1: 0, total: 0, finalBonus: 0, killed: 0, swiadekJakubaPoints: 0, setPlacement: 0, fewestPointsChoice: 0, passing: 0, mercyPoints: 0 },
+    werewolf: { afterR1: 0, total: 0, finalBonus: 0, killed: 0, swiadekJakubaPoints: 0, setPlacement: 0, fewestPointsChoice: 0, passing: 0, mercyPoints: 0 },
+    ghost: { afterR1: 0, total: 0, finalBonus: 0, killed: 0, swiadekJakubaPoints: 0, setPlacement: 0, fewestPointsChoice: 0, passing: 0, mercyPoints: 0 },
+    bardak: { afterR1: 0, total: 0, finalBonus: 0, killed: 0, swiadekJakubaPoints: 0, setPlacement: 0, fewestPointsChoice: 0, passing: 0, mercyPoints: 0 }
   };
+  analytics.magnetismCount = 0;
 
   for (let round = 1; round <= roundsToPlay; round++) {
     players.forEach(p => { 
@@ -595,7 +665,7 @@ export function runFullSimulation(setsConfig, inputGameConfig, uploadedEvents) {
         const p = players.find(x => x.id === id);
         const pool = { ...setsData.pawns };
         const playLimits = setsData.pawnsInPlayLimit || pool;
-        const best = ServerPlacementManager.findBestPlacement(regions, setsData.heldSets, p.id, p.generalOf, pool, playLimits);
+        const best = ServerPlacementManager.findBestPlacement(regions, setsData.heldSets, p.id, p.generalOf, pool, playLimits, round);
         if (best) {
           const pointGains = ServerPlacementManager.executePlacement(best, regions, players, setsData.heldSets, setsData.discardPile);
           pointGains.forEach(gain => {
@@ -604,7 +674,7 @@ export function runFullSimulation(setsConfig, inputGameConfig, uploadedEvents) {
             }
           });
         } else {
-          const excess = ServerPlacementManager.executePass(p, setsData.heldSets, 3);
+          const excess = ServerPlacementManager.executePass(p, setsData.heldSets, regions);
           if (excess > 0 && p.generalOf && analytics[p.generalOf]) {
             analytics[p.generalOf].passing += excess;
           }
@@ -659,24 +729,9 @@ export function runFullSimulation(setsConfig, inputGameConfig, uploadedEvents) {
       }
 
       // 2. If no targets left to kill in the current region, proceed to move.
-      const sortedAnger = RACES
-        .map(race => ({ race, val: jakub.anger[race] || 0 }))
-        .filter(a => a.val > 0)
-        .sort((a, b) => b.val - a.val || RACES.indexOf(a.race) - RACES.indexOf(b.race));
+      const angerTiers = buildAngerTiersServer(jakub);
       
-      if (sortedAnger.length === 0) {
-        // Award Punkty Świadka Jakuba to all pawns remaining in Jakub's region (since anger on all bands is 0)
-        RACES.forEach(race => {
-          const count = curR.pawns[race]?.length || 0;
-          if (count > 0 && (jakub.anger[race] || 0) === 0) {
-            const pts = count * 2;
-            const p = players.find(x => x.generalOf === race);
-            if (p) {
-              p.points += pts;
-              analytics[race].swiadekJakubaPoints += pts;
-            }
-          }
-        });
+      if (angerTiers.length === 0) {
         break;
       }
 
@@ -686,52 +741,69 @@ export function runFullSimulation(setsConfig, inputGameConfig, uploadedEvents) {
       const calculatedRange = 1 + extraRange;
       
       const candidates = getRegionsInRange(regions, curR.id, calculatedRange);
+      const flatRaceOrder = angerTiers.flatMap(tier => tier.races);
+      let validCandidates = candidates.filter(rIdx => 
+        flatRaceOrder.some(race => (regions[rIdx].pawns[race]?.length || 0) > 0)
+      );
+      
+      if (validCandidates.length > 0) {
+        const cascadeResult = cascadeTieBreakServer(regions, validCandidates, angerTiers);
+        
+        if (cascadeResult.magnetism) {
+          // Niepochamowany Zwierzęcy Magnetyzm!
+          handleMagnetismServer(regions, curR, cascadeResult.tiedRegions);
+          analytics.magnetismCount += 1;
+          continues = true;
+        } else {
+          // Award Punkty Świadka Jakuba before moving (leaving curR)
+          RACES.forEach(race => {
+            const count = curR.pawns[race]?.length || 0;
+            if (count > 0 && (jakub.anger[race] || 0) === 0) {
+              const pts = count * 1;
+              const p = players.find(x => x.generalOf === race);
+              if (p) {
+                p.points += pts;
+                analytics[race].swiadekJakubaPoints += pts;
+              }
+            }
+          });
 
-      let targetRace = null;
-      let validCandidates = [];
-
-      // Search through races in sortedAnger order for first one with pawns in range
-      for (let i = 0; i < sortedAnger.length; i++) {
-        const race = sortedAnger[i].race;
-        const filtered = candidates.filter(rIdx => (regions[rIdx].pawns[race]?.length || 0) > 0);
-        if (filtered.length > 0) {
-          targetRace = race;
-          validCandidates = filtered;
-          break;
+          regions[cascadeResult.winner].pawns.jakub = curR.pawns.jakub;
+          delete curR.pawns.jakub;
+          jakub.range = calculatedRange;
+          continues = true;
         }
       }
-      
-      if (targetRace && validCandidates.length > 0) {
-        let bestRIdx = validCandidates[0];
-        let maxCount = -1;
-        validCandidates.forEach(rIdx => {
-          const count = regions[rIdx].pawns[targetRace]?.length || 0;
-          if (count > maxCount) {
-            maxCount = count;
-            bestRIdx = rIdx;
-          }
-        });
-        
-        // Award Punkty Świadka Jakuba before moving from curR (only when anger is 0)
-        RACES.forEach(race => {
-          const count = curR.pawns[race]?.length || 0;
-          if (count > 0 && (jakub.anger[race] || 0) === 0) {
-            const pts = count * 2;
-            const p = players.find(x => x.generalOf === race);
-            if (p) {
-              p.points += pts;
-              analytics[race].swiadekJakubaPoints += pts;
-            }
-          }
-        });
-
-        regions[bestRIdx].pawns.jakub = curR.pawns.jakub;
-        delete curR.pawns.jakub;
-        jakub.range = calculatedRange;
-        continues = true;
-      }
     }
+
+    // Award Punkty Świadka Jakuba for the final region he stands in
+    let finalR = regions.find(r => r.pawns.jakub?.length > 0);
+    if (finalR) {
+      RACES.forEach(race => {
+        const count = finalR.pawns[race]?.length || 0;
+        if (count > 0 && (jakub.anger[race] || 0) === 0) {
+          const pts = count * 1;
+          const p = players.find(x => x.generalOf === race);
+          if (p) {
+            p.points += pts;
+            analytics[race].swiadekJakubaPoints += pts;
+          }
+        }
+      });
+    }
+
     updateJakubDistance(regions);
+    
+    // Faza Miłosierdzia Jakuba
+    if (gameConfig.mercyActive !== false) {
+      const mercyRewards = MilosierdzieManager.applyMercy(jakub, players);
+      mercyRewards.forEach(reward => {
+        if (analytics[reward.race]) {
+          analytics[reward.race].mercyPoints = (analytics[reward.race].mercyPoints || 0) + reward.points;
+        }
+      });
+    }
+
     jakub.range = 1;
     jakubSets.forEach(s => { const idx = setsData.heldSets.findIndex(x => x.id === s.id); const recycled = setsData.heldSets.splice(idx, 1)[0]; recycled.ownerId = null; recycled.used = false; setsData.discardPile.push(recycled); });
     
@@ -776,6 +848,7 @@ export function runFullSimulation(setsConfig, inputGameConfig, uploadedEvents) {
       analytics[race].total = (analytics[race].setPlacement || 0) + 
                              (analytics[race].passing || 0) + 
                              (analytics[race].swiadekJakubaPoints || 0) + 
+                             (analytics[race].mercyPoints || 0) + 
                              (analytics[race].finalBonus || 0);
     }
   });

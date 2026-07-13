@@ -18,7 +18,7 @@ import {
   getGameConfig,
   CONFIGS_DIR,
   saveFullState,
-  backupRound
+  createSnapshot
 } from '../gameLogic.js';
 import { GameEventPhaseManager } from '../events/gameEventPhaseManager.js';
 
@@ -60,7 +60,8 @@ export function initializeGame(gameId, requestedSet, io) {
       time: new Date().toLocaleTimeString(), 
       text: `Game started with config: ${JSON.stringify(gameConfig)}`
     }], 
-    gameStatus: 'active', jakubAngerIncreased: false, jakubTurnExecuted: false 
+    gameStatus: 'active', jakubAngerIncreased: false, jakubTurnExecuted: false,
+    manualPlayers: []
   };
 
   // Initialize events
@@ -69,7 +70,7 @@ export function initializeGame(gameId, requestedSet, io) {
   console.log(`[Game ${gameId}] Events initialized:`, !!finalState.events, finalState.events?.pool?.length);
   
   saveFullState(gameId, finalState); 
-  backupRound(gameId, 1);
+  createSnapshot(gameId, finalState);
   if (io) io.to(`game:${gameId}`).emit('boardUpdate', finalState); 
   return finalState;
 }

@@ -4,7 +4,7 @@ import { Board } from '../constants/board';
 import { RACES } from '../constants/game';
 import { Scoring } from '../../shared/scoring/scoring.js';
 import { applySetToJakubAnger } from '../strategies/jakubStrategy';
-import { trackPointsChange, trackGeneralSelection } from '../../shared/statsManager.js';
+import { trackPointsChange, trackGeneralSelection, trackSetsPlayed } from '../../shared/statsManager.js';
 
 const RACE_TO_ABBR = {
   vampire: 'V',
@@ -107,6 +107,15 @@ export const useGameInteraction = ({
       e.stopPropagation(); const { typeId, fromIndex, pawnInstanceIndex } = activePawn;
       if (!validMoveTargets.includes(toIndex)) { setActivePawn(null); setValidMoveTargets([]); return; }
       if (fromIndex !== null) {
+        if (typeId === 'jakub') {
+          if (!newState.jakubPath) newState.jakubPath = [];
+          newState.jakubPath.push({
+            from: fromIndex,
+            to: toIndex,
+            round: newState.currentRound,
+            phase: newState.phase
+          });
+        }
         const [movedPawn] = newState.regions[fromIndex].pawns[typeId].splice(pawnInstanceIndex, 1);
         if (newState.regions[fromIndex].pawns[typeId].length === 0) delete newState.regions[fromIndex].pawns[typeId];
         if (typeId === 'jakub' && playerId) movedPawn.range = Math.max(0, movedPawn.range - 1);
@@ -188,6 +197,14 @@ export const useGameInteraction = ({
       addLog(newState, `Ręcznie: Zestaw ${activeSet.set.id} wystawiony w sektorze [${targetRegion.x},${targetRegion.y}] [${logSummary.join(', ')}] | Plansza: ${statusLog}`);
       
       const curId = playerId || newState.playerOrder[newState.currentPlayerIndex];
+      const playerIdx = newState.players.findIndex(p => String(p.id) === String(curId));
+      if (playerIdx !== -1) {
+        const p = newState.players[playerIdx];
+        if (p.generalOf) {
+          trackSetsPlayed(p, p.generalOf, 1);
+        }
+      }
+
       const isManual = (manualPlayers && manualPlayers.some(id => String(id) === String(curId))) || (playerId !== null && playerId !== undefined && String(curId) === String(playerId));
       if (isManual) {
         newState.turnActionExecuted = true;

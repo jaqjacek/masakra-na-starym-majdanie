@@ -162,25 +162,49 @@
 
 .event-popup-desc {
   position: fixed;
-  background: #1a1a1a;
-  border: 1px solid #00ff00;
-  padding: 10px;
-  border-radius: 4px;
+  background-image: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url('/src/assets/img/dark_wood_frame.png');
+  background-size: cover;
+  border: 2px solid #ffd54f;
+  padding: 15px;
+  border-radius: 8px;
   z-index: 2000;
   width: 200px;
+  height: 280px;
   pointer-events: none;
-  box-shadow: 0 5px 15px rgba(0,0,0,0.8);
+  box-shadow: 0 10px 25px rgba(0,0,0,0.85);
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
 }
 
 .event-popup-desc h5 {
-  margin: 0 0 5px 0;
-  color: #00ff00;
+  margin: 0 0 10px 0;
+  color: #ffd54f;
+  text-align: center;
+  font-family: 'Cinzel', serif;
+  font-weight: bold;
+  font-size: 0.9rem;
+  border-bottom: 1px solid rgba(255, 213, 79, 0.3);
+  padding-bottom: 5px;
 }
 
 .event-popup-desc p {
   margin: 0;
-  font-size: 0.85rem;
-  color: #ccc;
+  font-size: 0.75rem;
+  line-height: 1.4;
+  color: #e0e0e0;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.event-popup-desc .event-popup-id {
+  align-self: flex-end;
+  font-size: 0.6rem;
+  color: #888;
+  margin-top: 5px;
 }
 
 .close-panel-btn {
@@ -194,3 +218,31 @@
 .close-panel-btn:hover {
   color: #fff;
 }
+
+/* Event Type Specific Border and Title Colors for Hover Card */
+.event-popup-desc.event-anger-plus { border-color: #e74c3c; }
+.event-popup-desc.event-anger-plus h5 { color: #e74c3c; border-bottom-color: rgba(231, 76, 60, 0.4); }
+
+.event-popup-desc.event-anger-minus { border-color: #3498db; }
+.event-popup-desc.event-anger-minus h5 { color: #3498db; border-bottom-color: rgba(52, 152, 219, 0.4); }
+
+.event-popup-desc.event-pawnsTotal-plus { border-color: #2ecc71; }
+.event-popup-desc.event-pawnsTotal-plus h5 { color: #2ecc71; border-bottom-color: rgba(46, 204, 113, 0.4); }
+
+.event-popup-desc.event-pawnsTotal-minus { border-color: #e67e22; }
+.event-popup-desc.event-pawnsTotal-minus h5 { color: #e67e22; border-bottom-color: rgba(230, 126, 34, 0.4); }
+
+.event-popup-desc.event-wipe-sectors { border-color: #9b59b6; }
+.event-popup-desc.event-wipe-sectors h5 { color: #9b59b6; border-bottom-color: rgba(155, 89, 182, 0.4); }
+
+.event-popup-desc.event-support { border-color: #f39c12; }
+.event-popup-desc.event-support h5 { color: #f39c12; border-bottom-color: rgba(243, 156, 18, 0.4); }
+
+.event-popup-desc.event-move { border-color: #1abc9c; }
+.event-popup-desc.event-move h5 { color: #1abc9c; border-bottom-color: rgba(26, 188, 156, 0.4); }
+
+.event-popup-desc.event-generic { border-color: #95a5a6; }
+.event-popup-desc.event-generic h5 { color: #95a5a6; border-bottom-color: rgba(149, 165, 166, 0.4); }
+
+.event-popup-desc.event-transformation { border-color: #fd79a8; }
+.event-popup-desc.event-transformation h5 { color: #fd79a8; border-bottom-color: rgba(253, 121, 168, 0.4); }

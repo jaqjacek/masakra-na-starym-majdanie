@@ -70,9 +70,20 @@ export class ServerPlacementManager {
    * @param {number} maxHandSize - Maximum hand size allowed (e.g. 3)
    * @returns {number} Count of excess sets sold
    */
-  static executePass(player, heldSets, _maxHandSize) {
+  static executePass(player, heldSets, regions) {
+    let jakub = null;
+    for (const r of regions) {
+      if (r.pawns.jakub?.length > 0) {
+        jakub = r.pawns.jakub[0];
+        break;
+      }
+    }
+
     const myHeld = heldSets.filter(s => s.ownerId !== null && s.ownerId !== undefined && String(s.ownerId) === String(player.id));
-    const toSell = myHeld.filter(s => (s.content[player.generalOf] || 0) === 0);
+    const toSell = myHeld.filter(s => 
+      (s.content[player.generalOf] || 0) === 0 &&
+      SharedPlacementManager.isSetAllowedToPass(s, regions, jakub)
+    );
 
     toSell.forEach(s => {
       s.ownerId = 'jakub';

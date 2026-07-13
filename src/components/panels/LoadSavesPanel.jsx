@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from 'react';
+import { useTranslation } from '../../hooks/useTranslation';
 
-const LoadSavesPanel = ({ gameId, onClose, onLoadRound, serverUrl }) => {
+const LoadSavesPanel = ({ gameId, onClose, onLoadSnapshot, serverUrl }) => {
+  const { t } = useTranslation();
   const [saves, setSaves] = useState([]);
-  const [selectedRound, setSelectedRound] = useState(null);
+  const [selectedSnapshot, setSelectedSnapshot] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -15,17 +17,17 @@ const LoadSavesPanel = ({ gameId, onClose, onLoadRound, serverUrl }) => {
         setSaves(data.saves || []);
       } catch (err) {
         console.error(err);
-        setError('Nie udało się pobrać zapisów rund.');
+        setError(t('load_saves_error', { defaultValue: 'Nie udało się pobrać zapisów rund.' }));
       } finally {
         setLoading(false);
       }
     };
     fetchSaves();
-  }, [gameId, serverUrl]);
+  }, [gameId, serverUrl, t]);
 
   const handleLoad = () => {
-    if (selectedRound !== null) {
-      onLoadRound(selectedRound);
+    if (selectedSnapshot !== null) {
+      onLoadSnapshot(selectedSnapshot);
     }
   };
 
@@ -33,40 +35,46 @@ const LoadSavesPanel = ({ gameId, onClose, onLoadRound, serverUrl }) => {
     <div className="load-saves-modal-overlay" onClick={onClose}>
       <div className="load-saves-modal-content" onClick={e => e.stopPropagation()}>
         <button className="modal-close-x" onClick={onClose}>×</button>
-        <h3>Wczytaj zapis rundy</h3>
+        <h3>{t('load_saves_title', { defaultValue: 'Wczytaj zapis rundy' })}</h3>
         
-        {loading && <div className="loading-saves">Ładowanie zapisów...</div>}
+        {loading && <div className="loading-saves">{t('load_saves_loading', { defaultValue: 'Ładowanie zapisów...' })}</div>}
         {error && <div className="error-saves">{error}</div>}
         
         {!loading && !error && (
           <>
             {saves.length === 0 ? (
               <div className="no-saves-message" style={{ margin: '20px 0', textAlign: 'center', color: '#aaa' }}>
-                Brak dostępnych zapisów dla tej gry.
+                {t('load_saves_empty', { defaultValue: 'Brak dostępnych zapisów dla tej gry.' })}
               </div>
             ) : (
               <div className="saves-list">
-                {saves.map(round => (
-                  <div 
-                    key={round} 
-                    className={`save-item ${selectedRound === round ? 'selected' : ''}`}
-                    onClick={() => setSelectedRound(round)}
-                  >
-                    <div className="save-item-info">
-                      <span className="save-item-title">Runda {round}</span>
+                {saves.map(snap => {
+                  const phaseName = snap.phase.replace('_', ' ').toUpperCase();
+                  const timeString = new Date(snap.timestamp).toLocaleTimeString();
+                  return (
+                    <div 
+                      key={snap.id} 
+                      className={`save-item ${selectedSnapshot === snap.id ? 'selected' : ''}`}
+                      onClick={() => setSelectedSnapshot(snap.id)}
+                    >
+                      <div className="save-item-info">
+                        <span className="save-item-title">
+                          {t('load_saves_item_round', { round: snap.round, defaultValue: `Runda ${snap.round}` })} - {phaseName} ({timeString})
+                        </span>
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
             
             <div className="load-btn-container">
               <button 
                 className="load-action-btn" 
-                disabled={selectedRound === null}
+                disabled={selectedSnapshot === null}
                 onClick={handleLoad}
               >
-                Wczytaj
+                {t('load_saves_load_btn', { defaultValue: 'Wczytaj' })}
               </button>
             </div>
           </>

@@ -31,7 +31,7 @@ This document describes the available API endpoints for the MASAKRA na Starym Ma
 
 ### 3. Simulation & Analytics
 - **POST `/simulate/`**
-  - Runs a fast simulation of a single game and returns race performance analytics.
+  - Runs a fast simulation of a single game and returns band performance analytics.
 - **POST `/simulate/batch`**
   - Runs multiple simulations in a single request and returns an array of performance analytics.
   - Query Param: `?count=100` (optional, default 100), `?set=set_name` (optional)

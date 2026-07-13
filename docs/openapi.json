@@ -109,8 +109,8 @@
               "schema": {
                 "type": "object",
                 "properties": {
-                  "pawns": { "type": "object", "description": "Totals pool per race" },
-                  "pawnsInPlayLimit": { "type": "object", "description": "Limits per race" },
+                  "pawns": { "type": "object", "description": "Totals pool per band" },
+                  "pawnsInPlayLimit": { "type": "object", "description": "Limits per band" },
                   "power": { "type": "object" },
                   "maxPower": { "type": "number" },
                   "displayName": { "type": "string" },

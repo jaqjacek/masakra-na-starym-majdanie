@@ -25,7 +25,7 @@ Gra toczy się przez **12 rund**. Każda runda składa się z pięciu faz:
     Rozstrzyga wszelkie sytuacje remisu w grze. Starszeństwo band od najwyższego do najniższego:
     **Wampiry > Wilkołaki > Duchy > Bardaki**
 *   **Zasada Remisu:**
-    W przypadku remisu (np. przy rozstrzyganiu punktów, wyborze celów Jakuba lub na koniec gry), postępujemy według **Hierarchii Band**.
+    W przypadku remisu (np. przy rozstrzyganiu punktów lub na koniec gry), postępujemy według **Hierarchii Band**. Wybór celów Jakuba podlega specjalnej **Kaskadowej** procedurze rozstrzygania remisu (patrz: Szczegółowe Zasady Ruchu i Walki Jakuba).
 *   **Furia (Gniew Jakuba):**
     Wskaźnik określający poziom agresji Jakuba wobec danej bandy. Każdy zlikwidowany przez niego pionek danej bandy zmniejsza furię na tę bandę o 1. Gdy furia spadnie do 0, Jakub przestaje ją ścigać i atakować. Oznacza to, że wartość furii wyznacza maksymalną liczbę pionków danej bandy, jaką Jakub może zabić w danej rundzie.
 *   **Zasięg Jakuba:**
@@ -115,10 +115,23 @@ W Fazie Jakuba jego ruch oraz ataki są w pełni zautomatyzowane i przebiegają 
     Jeśli Jakub wciąż posiada Furię, a w jego obecnym sektorze nie ma już pionków band, na które jest wściekły, decyduje się na ruch:
     *   Jakub wybiera jako cel bandę, na którą ma **najwyższy aktualny poziom Furii** (w przypadku remisu decyduje Hierarchia Band).
     *   Skanuje sektory w swoim aktualnym zasięgu ruchu (który wynosi domyślnie 1 + 1 za każdą bandę, na którą ma furię > 9) w poszukiwaniu pionków tej docelowej bandy.
-    *   **Wybór regionu docelowego (remisy):**
-        1. Wybiera region w zasięgu z **największą ilością pionków docelowej bandy**.
-        2. W przypadku remisu (kilka regionów ma tyle samo pionków tej bandy), wybiera region z **największą łączną liczbą wszystkich pionków** (dowolnych band).
-        3. Jeśli nadal występuje remis, decyduje **Hierarchia Band** obecnych w tych regionach (wybierany jest ten z silniejszą bandą według hierarchii).
+    *   **Wybór regionu docelowego (Rozstrzyganie remisów):**
+        Gdy w zasięgu ruchu Jakuba znajduje się kilka regionów z pionkami poszukiwanej bandy, musimy rozstrzygnąć remis. Jakub kieruje się wtedy stopniem swojej wściekłości:
+        1. Sprawdza regiony po kolei pod kątem liczebności band, zaczynając od tej, na którą ma największą Furię. Jeśli na tym samym poziomie Furii jest kilka band, decyduje ogólna hierarchia band.
+        2. Porównuje remisowe regiony i szuka tego, w którym znajduje się najwięcej pionków aktualnie sprawdzanej bandy.
+        3. Jeśli w którymś regionie jest ich więcej – remis zostaje rozstrzygnięty i Jakub wkracza do tego regionu. W przeciwnym razie przechodzi do kolejnej bandy ze swojej listy gniewu.
+        4. Jeśli po sprawdzeniu wszystkich band, na które ma jakąkolwiek Furię, nadal nie można wybrać jednego regionu – następuje absolutny remis i aktywuje się **Niepochamowany Zwierzęcy Magnetyzm** (patrz poniżej).
+
+> [!CAUTION]
+> **Niepochamowany Zwierzęcy Magnetyzm (Tego nie pochamujesz)**
+>
+> Jeśli po sprawdzeniu **wszystkich** band z furią > 0 regiony są nadal w absolutnym remisie, następuje nadzwyczajne zjawisko:
+> **Wszystkie pionki (każdej bandy) z WSZYSTKICH remisowych regionów zostają przyciągnięte do sektora, w którym stoi Jakub.**
+> Jakub NIE przemieszcza się — zamiast tego ściąga ofiary do siebie.
+> W następnym kroku Jakub wykonuje normalną Czystkę w swoim (teraz zatłoczonym) sektorze.
+>
+> To zdarzenie jest śledzone jako statystyka w przebiegu gry.
+
     *   Po wybraniu celu Jakub przemieszcza się do tego sektora. Przed każdym ruchem na nowo wyliczany jest aktualny zasięg Jakuba. Po przemieszczeniu się, Jakub natychmiast wykonuje czystkę (punkt 1) w nowym sektorze.
 
 > [!NOTE]
@@ -127,13 +140,19 @@ W Fazie Jakuba jego ruch oraz ataki są w pełni zautomatyzowane i przebiegają 
 > Punkty te są przyznawane za odwagę pionków, które przetrwały spotkanie z Jakubem. 
 > Tuż przed tym, jak Jakub opuści swój dotychczasowy sektor (rozpoczynając ruch do innego regionu), sprawdzane jest czy w opuszczanym sektorze pozostały jakieś pionki.
 >
-> Jeśli w sektorze znajdują się pionki bandy, na którą **Furia Jakuba wynosi dokładnie 0**, Herszt tej bandy otrzymuje **2 punkty** za każdy taki ocalały pionek.
+> Jeśli w sektorze znajdują się pionki bandy, na którą **Furia Jakuba wynosi dokładnie 0**, Herszt tej bandy otrzymuje **1 punkt** za każdy taki ocalały pionek.
 > Punkty te są przyznawane także tym pionkom, które zostaną w regionie Jakuba po tym, jak furia na wszystkie bandy spadnie do 0.
+
+> [!NOTE]
+> **Faza Miłosierdzia Jakuba**
+>
+> Faza ta następuje automatycznie na sam koniec Fazy Jakuba (po zakończeniu jego czystek i ruchu).
+> Jeżeli na Jakubie pozostały jakieś punkty furii dla danej nacji, a na planszy nie ma już pionków tej nacji w jego zasięgu (lub łowy dobiegły końca), połowa tych punktów furii (w zaokrągleniu w górę) jest przyznawana jako punkty zwycięstwa aktualnemu Hersztowi tej nacji. Pozostałe punkty furii (w zaokrągleniu w dół) zostają na torze furii Jakuba na kolejną rundę.
 
 ### Przykład Fazy Jakuba
 
 1. ![Jakub Phase Example Part 1](../src/assets/img/jakub_phase_example_1_part_1.png)
-   *Opis 1:* Faza Jakuba zaczyna się od zabicia Bardaka na polu z Jakubem. Furia Jakuba na Bardaki spada o 1.
+   *Opis 1:* Faza Jakuba zaczyna się od zabika Bardaka na polu z Jakubem. Furia Jakuba na Bardaki spada o 1.
 
 2. ![Jakub Phase Example Part 2](../src/assets/img/jakub_phase_example_1_part_2.png)
    *Opis 2:* Jakub najbardziej pała furią do Bardaków, więc szuka regionu z największą ilością Bardaków w jego zasięgu. Ponieważ żadna z nacji nie ma furii > 9, jego zasięg to 1, więc przeskakuje do regionu w prawo.
@@ -142,10 +161,32 @@ W Fazie Jakuba jego ruch oraz ataki są w pełni zautomatyzowane i przebiegają 
    *Opis 3:* Jakub zabił wszystkie pionki w regionie i została mu jeszcze furia.
 
 4. ![Jakub Phase Example Part 4](../src/assets/img/jakub_phase_example_1_part_4.png)
-   *Opis 4:* Ponieważ ma tyle samo furii na Duchy i Bardaki, remis rozstrzyga Hierarchia Band: Wampiry -> Wilkołaki -> Duchy -> Bardaki. Szuka więc w sąsiedztwie regionu z największą ilością Duchów i będzie to region prosto w górę.
+   *Opis 4:* Ponieważ ma tyle samo furii na Duchy i Bardaki, rozpoczyna się kaskadowe rozstrzyganie remisu. Hierarchia Band w obrębie tego samego piętra furii mówi: najpierw szukaj Duchów (przed Bardakami). Jakub szuka regionu z największą liczbą Duchów i wybiera region prosto w górę.
 
 5. ![Jakub Phase Example Part 5](../src/assets/img/jakub_phase_example_1_part_5.png)
-   *Opis 5:* Jakub zabił 2 Duchy i Bardaka. Jego obecna furia jest skierowana na Bardaki, ale ponieważ nie ma w zasięgu żadnego Bardaka, szuka kolejnej bandy (Duchów), jednak ich również nie ma. Jego faza furii się kończy. Ponieważ po wygaśnięciu furii na polu z Jakubem pozostał Wilkołak, gracz kontrolujący tę bandę otrzymuje Punkty Świadka Jakuba w wysokości 2 pkt za każdego członka bandy.
+   *Opis 5:* Jakub zabił 2 Duchy i Bardaka. Jego obecna furia jest skierowana na Bardaki, ale ponieważ nie ma w zasięgu żadnego Bardaka, szuka kolejnej bandy (Duchów), jednak ich również nie ma. Jego faza furii się kończy. Ponieważ po wygaśnięciu furii na polu z Jakubem pozostał Wilkołak, gracz kontrolujący tę bandę otrzymuje Punkty Świadka Jakuba w wysokości 1 pkt za każdego członka bandy.
+
+---
+
+## Najczęściej Zadawane Pytania (FAQ)
+
+### Pytanie: Czy to jest głupia losowa gra?
+**ODP:** Tak! Nie podoba się to wypier...z koszulę.
+
+### Pytanie: Jak tu się zdobywa punkty?
+**ODP:** To jest nie tyle gra w zdobywanie punktów ile gra w to aby inni stracili ich więcej niż ty.
+
+### Pytanie: Jak rozstrzygać remisy?
+**ODP:**
+* Przy ustalaniu kolejności graczy: jak jest remis w punktach, to kolejność tych graczy nie zmienia się.
+* Przy wyborze celu Jakuba: decyduje Hierarchia Band; w przypadku absolutnego remisu rozpatrujemy Niepochamowany Zwierzęcy Magnetyzm.
+* Przy ustalaniu zwycięzcy: decyduje gracz prowadzący herszta bandy według Hierarchii Band.
+
+### Pytanie: Jakieś strategie dla początkujących graczy?
+**ODP:**
+* Staraj się nie być pierwszym graczem gdyż on nie ma wyboru odnośnie nacji którą kieruje.
+* Kabluj Jakubowi na pierwszego gracza.
+* Jeżeli uważasz iż w następnej rundzie będziesz tą jakąś nacją rozważ zostawienie sobie zestawów tej nacji na następną rundę.
 
 ---
 *Zasady te stanowią fundament logiki symulatora MASAKRA na Starym Majdanie.*

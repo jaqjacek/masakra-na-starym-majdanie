@@ -36,7 +36,9 @@ export const INITIAL_STATE = {
   availableGenerals: [...RACES],
   jakubAngerIncreased: false,
   jakubTurnExecuted: false,
+  magnetismCount: 0,
   gameStatus: 'active',
+  manualPlayers: [],
   history: []
 };
 

@@ -1,0 +1,188 @@
+/* Jakub Footprint Trails */
+.jakub-tracks-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 1; /* under grid cells and borders */
+}
+
+.jakub-track-line {
+  stroke-dasharray: 2, 4;
+  stroke-width: 0.3px;
+  transition: opacity 0.5s ease-in-out, stroke 0.5s ease-in-out;
+}
+
+.jakub-track-line.active {
+  stroke: rgba(192, 57, 43, 0.35); /* Subtle active guide */
+}
+
+.jakub-track-line.inactive {
+  stroke: rgba(139, 139, 139, 0.08); /* Faint guide */
+}
+
+.jakub-footstep {
+  color: #8b5a2b; /* mud brown */
+  transition: color 0.5s ease-in-out, opacity 0.5s ease-in-out;
+}
+
+.jakub-footstep.active {
+  color: #c0392b; /* blood-red / dark-red for active footprints */
+  opacity: 0.95;
+  animation: footprint-pulse 1.5s infinite alternate;
+}
+
+.jakub-footstep.inactive {
+  color: #5c3e21; /* dark mud brown for older traces */
+  opacity: 0.35; /* 35% opacity as requested */
+}
+
+@keyframes footprint-pulse {
+  0% {
+    filter: drop-shadow(0 0 1px rgba(192, 57, 43, 0.4));
+  }
+  100% {
+    filter: drop-shadow(0 0 3px rgba(192, 57, 43, 0.8));
+  }
+}
+
+/* Jakub Sliding Overlay */
+.jakub-overlay-container {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  pointer-events: auto;
+  cursor: grab;
+}
+.jakub-overlay-container:active {
+  cursor: grabbing;
+}
+.jakub-overlay-container .pawn-indicator {
+  position: relative; /* Override region styles that try to position pawns absolutely */
+  width: 40px;
+  height: 40px;
+}
+
+/* Visual Effects (Explosions & Floating Text) */
+.visual-effects-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 100;
+  overflow: hidden;
+}
+
+.effect-explosion {
+  position: absolute;
+  width: 0;
+  height: 0;
+}
+
+.explosion-core {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 40px;
+  height: 40px;
+  margin-top: -20px;
+  margin-left: -20px;
+  border-radius: 50%;
+  transform: scale(0);
+  animation: explode-core 0.5s ease-out forwards;
+}
+
+.explosion-particle {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  top: 50%;
+  left: 50%;
+  margin-top: -5px;
+  margin-left: -5px;
+  opacity: 1;
+  animation: explode-particle 0.6s cubic-bezier(0.1, 0.8, 0.3, 1) forwards;
+}
+
+.explosion-particle.p1 { --tx: -30px; --ty: -40px; }
+.explosion-particle.p2 { --tx: 40px; --ty: -30px; }
+.explosion-particle.p3 { --tx: -20px; --ty: 40px; }
+.explosion-particle.p4 { --tx: 30px; --ty: 30px; }
+
+@keyframes explode-core {
+  0% { transform: scale(0); opacity: 1; }
+  50% { transform: scale(1.5); opacity: 0.8; }
+  100% { transform: scale(2); opacity: 0; }
+}
+
+@keyframes explode-particle {
+  0% { transform: translate(0, 0) scale(1); opacity: 1; }
+  100% { transform: translate(var(--tx), var(--ty)) scale(0.2); opacity: 0; }
+}
+
+/* Colors for Explosions */
+.effect-explosion.race-vampire .explosion-core, .effect-explosion.race-vampire .explosion-particle {
+  background: radial-gradient(circle, #ff0000 0%, #330000 100%);
+  box-shadow: 0 0 10px #ff0000;
+}
+.effect-explosion.race-werewolf .explosion-core, .effect-explosion.race-werewolf .explosion-particle {
+  background: radial-gradient(circle, #8b4513 0%, #1a0d00 100%);
+  box-shadow: 0 0 10px #8b4513;
+}
+.effect-explosion.race-ghost .explosion-core, .effect-explosion.race-ghost .explosion-particle {
+  background: radial-gradient(circle, #ffffff 0%, #333333 100%);
+  box-shadow: 0 0 10px #ffffff;
+}
+.effect-explosion.race-bardak .explosion-core, .effect-explosion.race-bardak .explosion-particle {
+  background: radial-gradient(circle, #b3b3b3 0%, #4d4d4d 100%);
+  box-shadow: 0 0 10px #b3b3b3;
+}
+
+/* Floating Text */
+.effect-floating-text {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  font-weight: 900;
+  font-size: 1.4rem;
+  white-space: nowrap;
+  text-shadow: 2px 2px 4px #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000;
+  animation: float-up-fade 1.5s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+}
+
+@keyframes float-up-fade {
+  0% { transform: translate(-50%, -100%) scale(0.5); opacity: 0; }
+  20% { transform: translate(-50%, -130%) scale(1.2); opacity: 1; }
+  100% { transform: translate(-50%, -200%) scale(1); opacity: 0; }
+}
+
+.effect-floating-text.race-vampire { color: #ff3333; }
+.effect-floating-text.race-werewolf { color: #d2691e; }
+.effect-floating-text.race-ghost { color: #e6e6e6; }
+.effect-floating-text.race-bardak { color: #cccccc; }
+
+.effect-floating-text.positive {
+  text-shadow: 0 0 8px currentColor, 1px 1px 2px #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000;
+  font-size: 1.6rem;
+}
+
+.effect-floating-text.magnetism {
+  text-shadow: 0 0 10px #e74c3c, 2px 2px 4px #000;
+  font-size: 1.8rem;
+  color: #fff;
+  white-space: nowrap;
+}
+
+.pawn-indicator.witness-glow {
+  box-shadow: 0 0 15px #f1c40f, inset 0 0 10px #f1c40f !important;
+  border: 2px solid #f39c12 !important;
+  animation: witness-pulse 1s infinite alternate;
+}
+
+@keyframes witness-pulse {
+  from { box-shadow: 0 0 10px #f1c40f, inset 0 0 5px #f1c40f; }
+  to { box-shadow: 0 0 20px #f1c40f, inset 0 0 15px #f1c40f; }
+}

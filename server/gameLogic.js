@@ -38,7 +38,8 @@ export const getGameConfig = () => {
     jakubSetsPerRound: 2,
     totalRounds: 6,
     maxPower: 6,
-    maxUnitsPerSet: 5
+    maxUnitsPerSet: 5,
+    mercyVariant: 1
   };
   if (fs.existsSync(GAME_CONFIG_FILE)) {
     try {
@@ -79,10 +80,14 @@ export const getGameData = (gameId) => {
   let players = fs.existsSync(playersPath) ? JSON.parse(fs.readFileSync(playersPath, 'utf8')) : JSON.parse(JSON.stringify(DEFAULT_PLAYERS));
   let history = fs.existsSync(historyPath) ? JSON.parse(fs.readFileSync(historyPath, 'utf8')) : [];
   const gameConfig = getGameConfig();
-  let gameState = fs.existsSync(statePath) ? JSON.parse(fs.readFileSync(statePath, 'utf8')) : { phase: 'setup', currentRound: 1, totalRounds: gameConfig.totalRounds, currentPlayerIndex: 0, playerOrder: [1, 2, 3, 4], passedPlayers: [], availableGenerals: [...RACES], setName: 'default', gameStatus: 'active' };
+  let gameState = fs.existsSync(statePath) ? JSON.parse(fs.readFileSync(statePath, 'utf8')) : { phase: 'setup', currentRound: 1, totalRounds: gameConfig.totalRounds, currentPlayerIndex: 0, playerOrder: [1, 2, 3, 4], passedPlayers: [], availableGenerals: [...RACES], setName: 'default', gameStatus: 'active', manualPlayers: [], mercyVariant: gameConfig.mercyVariant || 1 };
   
   // Ensure totalRounds is always present
   if (gameState.totalRounds === undefined) gameState.totalRounds = gameConfig.totalRounds;
+  // Ensure manualPlayers is always an array
+  if (!gameState.manualPlayers) gameState.manualPlayers = [];
+  // Ensure mercyVariant is present
+  if (gameState.mercyVariant === undefined) gameState.mercyVariant = gameConfig.mercyVariant || 1;
   
   let sets;
   if (fs.existsSync(setsPath)) {
@@ -128,10 +133,12 @@ export const saveFullState = (gameId, data) => {
     fs.writeFileSync(path.join(gamePath, 'history.log'), logContent);
   }
   const meta = {}; 
-  const keys = ['phase', 'currentRound', 'totalRounds', 'currentPlayerIndex', 'playerOrder', 'passedPlayers', 'availableGenerals', 'setName', 'gameStatus', 'jakubAngerIncreased', 'jakubTurnExecuted', 'events', '_lastLoggedPhase', 'turnActionExecuted'];
+  const keys = ['phase', 'currentRound', 'totalRounds', 'currentPlayerIndex', 'playerOrder', 'passedPlayers', 'availableGenerals', 'setName', 'gameStatus', 'jakubAngerIncreased', 'jakubTurnExecuted', 'events', '_lastLoggedPhase', 'turnActionExecuted', 'magnetismCount', 'manualPlayers'];
   
+  let phaseChanged = false;
   // Log phase transition if it changed
   if (data.phase && data._lastLoggedPhase !== data.phase) {
+    phaseChanged = true;
     const phaseName = data.phase.toUpperCase().replace('_', ' ');
     if (!data.history) data.history = [];
     
@@ -148,56 +155,85 @@ export const saveFullState = (gameId, data) => {
 
   keys.forEach(k => { if (data[k] !== undefined) meta[k] = data[k]; });
   fs.writeFileSync(path.join(gamePath, 'state.json'), JSON.stringify(meta, null, 2));
+
+  if (phaseChanged) {
+    createSnapshot(gameId, data);
+  }
 };
 
-export const backupRound = (gameId, round) => {
+export const createSnapshot = (gameId, data) => {
   const gamePath = ensureGameDir(gameId);
+  const snapshotsDir = path.join(gamePath, 'snapshots');
+  if (!fs.existsSync(snapshotsDir)) fs.mkdirSync(snapshotsDir, { recursive: true });
+  
+  const timestamp = Date.now();
+  const snapshotId = `${data.currentRound}_${data.phase}_${timestamp}`;
+  const snapshotDir = path.join(snapshotsDir, snapshotId);
+  fs.mkdirSync(snapshotDir, { recursive: true });
+  
   const files = ['map', 'players', 'sets', 'state', 'history'];
   files.forEach(f => {
     const src = path.join(gamePath, `${f}.json`);
-    const dest = path.join(gamePath, `${f}_round_${round}.json`);
+    const dest = path.join(snapshotDir, `${f}.json`);
     if (fs.existsSync(src)) {
       fs.copyFileSync(src, dest);
     }
   });
 };
 
-export const restoreRound = (gameId, round) => {
+export const restoreSnapshot = (gameId, snapshotId) => {
   const gamePath = ensureGameDir(gameId);
-  const files = ['map', 'players', 'sets', 'state', 'history'];
+  const snapshotsDir = path.join(gamePath, 'snapshots');
+  const snapshotDir = path.join(snapshotsDir, snapshotId);
   
-  // Restore round files to main files
+  if (!fs.existsSync(snapshotDir)) throw new Error('Snapshot not found');
+  
+  const files = ['map', 'players', 'sets', 'state', 'history'];
   files.forEach(f => {
-    const src = path.join(gamePath, `${f}_round_${round}.json`);
+    const src = path.join(snapshotDir, `${f}.json`);
     const dest = path.join(gamePath, `${f}.json`);
     if (fs.existsSync(src)) {
       fs.copyFileSync(src, dest);
     }
   });
   
-  // Delete subsequent saves (round > target round)
-  const allFiles = fs.readdirSync(gamePath);
-  allFiles.forEach(file => {
-    const match = file.match(/^.+_round_(\d+)\.json$/);
-    if (match) {
-      const fileRound = parseInt(match[1]);
-      if (fileRound > round) {
-        fs.unlinkSync(path.join(gamePath, file));
+  // Extract target timestamp from snapshotId
+  const match = snapshotId.match(/_(\d+)$/);
+  if (match) {
+    const targetTimestamp = parseInt(match[1], 10);
+    // Delete newer snapshots
+    const allSnapshots = fs.readdirSync(snapshotsDir);
+    allSnapshots.forEach(snap => {
+      const snapMatch = snap.match(/_(\d+)$/);
+      if (snapMatch) {
+        const snapTimestamp = parseInt(snapMatch[1], 10);
+        if (snapTimestamp > targetTimestamp) {
+          fs.rmSync(path.join(snapshotsDir, snap), { recursive: true, force: true });
+        }
       }
-    }
-  });
+    });
+  }
 };
 
-export const getAvailableRoundSaves = (gameId) => {
+export const getAvailableSnapshots = (gameId) => {
   const gamePath = ensureGameDir(gameId);
-  if (!fs.existsSync(gamePath)) return [];
-  const files = fs.readdirSync(gamePath);
-  const rounds = [];
+  const snapshotsDir = path.join(gamePath, 'snapshots');
+  if (!fs.existsSync(snapshotsDir)) return [];
+  
+  const files = fs.readdirSync(snapshotsDir);
+  const snapshots = [];
   files.forEach(file => {
-    const match = file.match(/^state_round_(\d+)\.json$/);
+    const match = file.match(/^(\d+)_([^_]+)_(\d+)$/);
     if (match) {
-      rounds.push(parseInt(match[1]));
+      snapshots.push({
+        id: file,
+        round: parseInt(match[1], 10),
+        phase: match[2],
+        timestamp: parseInt(match[3], 10)
+      });
     }
   });
-  return rounds.sort((a, b) => a - b);
+  
+  // Sort descending (newest first)
+  return snapshots.sort((a, b) => b.timestamp - a.timestamp);
 };

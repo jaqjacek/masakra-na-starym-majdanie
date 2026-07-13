@@ -575,6 +575,7 @@ function App() {
     workState.phase = 'player_phase';
     workState.currentPlayerIndex = 0;
     workState.passedPlayers = [];
+    workState.playerOrder = [...workState.players].sort((a, b) => b.points - a.points).map(p => p.id);
     addLog(workState, `--- Start Fazy Graczy (Runda ${workState.currentRound}) ---`);
     updateGameWithSync(workState);
   }, [gameState, addLog, updateGameWithSync]);

@@ -188,6 +188,7 @@ export const useAutoplay = ({
           workState.currentPlayerIndex = 0;
           workState.passedPlayers = [];
           workState.turnActionExecuted = false;
+          workState.playerOrder = [...workState.players].sort((a, b) => b.points - a.points).map(p => p.id);
           addLog(workState, `--- Start Fazy Graczy (Runda ${workState.currentRound}) ---`);
           await updateGameWithSync(workState);
           return;

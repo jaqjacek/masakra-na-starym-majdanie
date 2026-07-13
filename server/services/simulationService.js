@@ -160,8 +160,9 @@ export function runDetailedSimulation(set, uploadedSets, uploadedEvents) {
       roundData.generals[p.name] = p.generalOf;
     });
     let passed = new Set();
+    const placementOrder = [...players].sort((a, b) => b.points - a.points).map(p => p.id);
     while (passed.size < players.length) {
-      for (const id of playerOrder) {
+      for (const id of placementOrder) {
         if (passed.has(id)) continue;
         const p = players.find(x => x.id === id);
         const pool = { ...setsData.pawns };
@@ -398,8 +399,9 @@ export function runBasicSimulation(set, uploadedSets, uploadedEvents) {
       }
     });
     let passed = new Set();
+    const placementOrder = [...players].sort((a, b) => b.points - a.points).map(p => p.id);
     while (passed.size < players.length) {
-      for (const id of playerOrder) {
+      for (const id of placementOrder) {
         if (passed.has(id)) continue;
         const p = players.find(x => x.id === id);
         const pool = { ...setsData.pawns };
@@ -659,8 +661,9 @@ export function runFullSimulation(setsConfig, inputGameConfig, uploadedEvents) {
     });
     
     let passed = new Set();
+    const placementOrder = [...players].sort((a, b) => b.points - a.points).map(p => p.id);
     while (passed.size < players.length) {
-      for (const id of playerOrder) {
+      for (const id of placementOrder) {
         if (passed.has(id)) continue;
         const p = players.find(x => x.id === id);
         const pool = { ...setsData.pawns };

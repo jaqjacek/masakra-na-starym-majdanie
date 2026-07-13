@@ -626,8 +626,9 @@ function App() {
       
       advanceTurn(workState);
       updateGameWithSync(workState);
+      setIsFullAutoplay(true);
     }
-  }, [gameState, updateGameWithSync, addLog, playerId, advanceTurn]);
+  }, [gameState, updateGameWithSync, addLog, playerId, advanceTurn, setIsFullAutoplay]);
 
   const handleDeselectGeneral = useCallback((targetPlayerId) => {
     const workState = JSON.parse(JSON.stringify(gameState));

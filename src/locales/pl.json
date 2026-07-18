@@ -155,7 +155,7 @@
   "rules_flow_p4_title": "Faza Jakuba",
   "rules_flow_p4_desc": "Jakub porusza się i przeprowadza czystkę na planszy. Ta faza jest w pełni zautomatyzowana.",
   "rules_flow_p5_title": "Faza Wydarzeń",
-  "rules_flow_p5_desc": "Dobierana jest nowa karta wydarzenia, która modyfikuje zasady gry na kolejną rundę.",
+  "rules_flow_p5_desc": "Dobierana jest nowa karta wydarzenia, która modyfikuje zasady gry na kolejną rundę. Wyjątkiem jest wielki finał – w ostatniej rundzie, zamiast rozpatrywać nowe wydarzenie, następuje podsumowanie zmagań i przeprowadzana jest punktacja końcowa!",
   "rules_scoring_title": "Punktacja Band (Wystawianie)",
   "rules_scoring_intro": "Punkty zwycięstwa są przyznawane Hersztowi danej bandy za każdym razem, gdy zestaw zawierający pionki tej bandy zostanie umieszczony na planszy. Wartość punktów zależy od odległości od Jakuba i obecności innych pionków:",
   "rules_scoring_vampire_title": "Wampiry (V)",

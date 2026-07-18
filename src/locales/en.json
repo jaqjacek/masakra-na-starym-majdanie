@@ -155,7 +155,7 @@
   "rules_flow_p4_title": "Jakub Phase",
   "rules_flow_p4_desc": "Jakub moves and cleanses the board. This phase is fully automated.",
   "rules_flow_p5_title": "Event Phase",
-  "rules_flow_p5_desc": "A new event card is drawn and applied. Events can change rules, limits, or spawn pawns.",
+  "rules_flow_p5_desc": "A new event card is drawn and applied. Events can change rules, limits, or spawn pawns. The only exception is the grand finale – in the final round, instead of resolving a new event, the struggles are concluded and the final scoring takes place!",
   "rules_scoring_title": "Band Scoring (Placement)",
   "rules_scoring_intro": "Victory points are awarded to the Herszt of a band whenever a set containing pawns of that band is placed on the board. The points awarded depend on the distance from Jakub and the presence of other pawns:",
   "rules_scoring_vampire_title": "Vampires (V)",

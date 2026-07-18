@@ -458,8 +458,10 @@ const GameRulesPage = () => {
               </div>
             </li>
             <li>
-              <strong>{t('rules_jakub_p3_title')}</strong>
-              <p>{t('rules_jakub_p3_desc')}</p>
+              <div className="mechanic-box" style={{ background: '#f4ecf7', borderColor: '#8e44ad', margin: '15px 0' }}>
+                <h5>{t('rules_jakub_p3_title')}</h5>
+                <p style={{ margin: 0 }}>{t('rules_jakub_p3_desc')}</p>
+              </div>
             </li>
           </ol>
 

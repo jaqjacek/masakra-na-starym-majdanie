@@ -2,6 +2,7 @@ import React from 'react';
 import '../../assets/css/rules.css';
 import { useTranslation } from '../../hooks/useTranslation';
 
+import html2pdf from 'html2pdf.js';
 import packageJson from '../../../package.json';
 
 import coverImg from '../../assets/img/Cover_01_1k.jpg';
@@ -68,25 +69,42 @@ const GameRulesPage = () => {
     return lang === 'pl' ? plOverrideImg : defaultEnImg;
   };
 
+  const contentRef = React.useRef(null);
+
   const handlePrint = () => {
-    const originalTitle = document.title;
-    
     const now = new Date();
     const pad = (n) => n.toString().padStart(2, '0');
-    // Using underscores and hyphens because colons are invalid in filenames on some OS
     const dateStr = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}_${pad(now.getHours())}_${pad(now.getMinutes())}`;
+    const filename = `masakra_v${packageJson.version}_${dateStr}.pdf`;
     
-    document.title = `masakra_v${packageJson.version}_${dateStr}`;
+    const element = contentRef.current;
     
-    window.print();
-    
-    setTimeout(() => {
-      document.title = originalTitle;
-    }, 500);
+    // Temporarily hide .no-print elements since html2pdf captures the screen state
+    const noPrintElements = element.querySelectorAll('.no-print');
+    noPrintElements.forEach(el => {
+      el.dataset.originalDisplay = el.style.display;
+      el.style.display = 'none';
+    });
+
+    const opt = {
+      margin:       15,
+      filename:     filename,
+      image:        { type: 'jpeg', quality: 0.98 },
+      html2canvas:  { scale: 2, useCORS: true },
+      jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' },
+      pagebreak:    { mode: ['avoid-all', 'css', 'legacy'] }
+    };
+
+    html2pdf().from(element).set(opt).save().then(() => {
+      // Restore .no-print elements
+      noPrintElements.forEach(el => {
+        el.style.display = el.dataset.originalDisplay || '';
+      });
+    });
   };
 
   return (
-    <div className="rulebook-wrapper">
+    <div className="rulebook-wrapper" ref={contentRef}>
       <div className="rulebook-cover-container">
         <img src={coverImg} alt="Game Cover" className="rulebook-cover-bg" />
       </div>

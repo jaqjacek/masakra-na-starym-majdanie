@@ -15,16 +15,6 @@ const GameHeader = ({ counters, maxPool, pawnsInPlayLimit, playerOrder = [], cur
   };
 
   return (
-    <div className="game-status-horizontal">
-      <div className="pawn-pool-counters">
-        {SUMMARY_PAWN_IDS.map(id => (
-          <div key={id} className="status-item race-summary" title={t('pawn_pool_counter_tooltip', { race: raceNames[id] || id, sum: maxPool[id] || 0, limit: limits[id] || 0, defaultValue: `Pula: ${raceNames[id] || id} (Suma: ${maxPool[id] || 0}, Limit w grze: ${limits[id] || 0})` })}>
-            <div className={`set-icon ${id}`}></div>
-            <span>{counters.onBoard[id] || 0}/{limits[id] || 0}</span>
-          </div>
-        ))}
-      </div>
-
       <div className="player-order-track">
         <span className="order-label">{t('turn_order_label', { defaultValue: 'TURA:' })}</span>
         {playerOrder.map((pid) => {
@@ -39,6 +29,15 @@ const GameHeader = ({ counters, maxPool, pawnsInPlayLimit, playerOrder = [], cur
             </div>
           );
         })}
+      </div>
+
+      <div className="pawn-pool-counters">
+        {SUMMARY_PAWN_IDS.map(id => (
+          <div key={id} className="status-item race-summary" title={t('pawn_pool_counter_tooltip', { race: raceNames[id] || id, sum: maxPool[id] || 0, limit: limits[id] || 0, defaultValue: `Pula: ${raceNames[id] || id} (Suma: ${maxPool[id] || 0}, Limit w grze: ${limits[id] || 0})` })}>
+            <div className={`set-icon ${id}`}></div>
+            <span>{counters.onBoard[id] || 0}/{limits[id] || 0}</span>
+          </div>
+        ))}
       </div>
     </div>
   );

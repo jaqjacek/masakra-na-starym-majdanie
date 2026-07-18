@@ -1,13 +1,13 @@
 /* Rulebook Styling - Magazine Style */
 .rulebook-wrapper {
-  max-width: 1200px;
-  margin: 0 auto;
+  max-width: 210mm; /* A4 Width */
+  margin: 40px auto;
   padding: 0; /* Remove padding to let cover go edge-to-edge */
   background-color: #f4f1ea; /* "Old paper" color */
   color: #2c3e50;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   box-shadow: 0 0 50px rgba(0,0,0,0.5);
-  min-height: 100vh;
+  min-height: 297mm; /* Minimum 1 A4 page height */
   user-select: text;
   -webkit-user-select: text;
 }
@@ -397,18 +397,34 @@
 
 /* PDF / Print Specifics */
 @media print {
-  body { background: white; }
+  @page {
+    size: A4 portrait;
+    margin: 15mm;
+  }
+  body, html {
+    margin: 0;
+    padding: 0;
+    background: white;
+  }
   .rulebook-wrapper {
     box-shadow: none;
     margin: 0;
     padding: 0;
+    max-width: 100%;
     width: 100%;
   }
   .no-print { display: none; }
   a { text-decoration: none; color: black; }
-  .rule-section, .general-card, .pawn-showcase-item {
+  
+  /* Avoid breaking elements in half */
+  .rule-section, .general-card, .pawn-showcase-item, .mechanic-box, .faq-item, .carousel-container-rules, img, li, p {
     break-inside: avoid;
     page-break-inside: avoid;
+  }
+
+  h2, h3, h4, h5 {
+    break-after: avoid;
+    page-break-after: avoid;
   }
 }
 

@@ -296,10 +296,10 @@ const GameRulesPage = () => {
               <li><strong>{t('rules_flow_geometry_dist').split(':')[0]}:</strong>{t('rules_flow_geometry_dist').split(':')[1]}</li>
               <li><strong>{t('rules_flow_geometry_jakub_dist').split(':')[0]}:</strong>{t('rules_flow_geometry_jakub_dist').split(':')[1]}</li>
             </ul>
-            <div className="element-example" style={{ marginTop: '20px', textAlign: 'center' }}>
-              <img src={boardDistanceExampleImg} alt="Przykłady odległości" className="rule-screenshot" style={{ maxWidth: '100%', height: 'auto' }} />
-              <p className="caption">{t('rules_flow_geometry_caption')}</p>
-            </div>
+          </div>
+          <div className="element-example" style={{ marginTop: '20px', textAlign: 'center' }}>
+            <img src={boardDistanceExampleImg} alt="Przykłady odległości" className="rule-screenshot" style={{ maxWidth: '100%', height: 'auto' }} />
+            <p className="caption">{t('rules_flow_geometry_caption')}</p>
           </div>
 
           <div className="mechanic-box" style={{ background: '#fcf3cf', borderColor: '#f1c40f', marginBottom: '15px' }}>

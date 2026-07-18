@@ -142,7 +142,7 @@
   "rules_flow_tie_title": "Zasada Remisu",
   "rules_flow_tie_desc": "W sytuacjach remisowych obowiązują następujące zasady: 1) Kolejność graczy: przy remisie punktowym dotychczasowa kolejność pozostaje bez zmian. 2) Cel Jakuba: w przypadku równego poziomu furii o wyborze ofiary decyduje Hierarchia Band. Przy tzw. remisie absolutnym uruchamiany jest Niepohamowany Zwierzęcy Magnetyzm. 3) Zwycięstwo: przy równej liczbie punktów na koniec gry, wygrywa gracz dowodzący bandą wyżej w Hierarchii Band.",
   "rules_flow_fury_title": "Furia (Gniew Jakuba)",
-  "rules_flow_fury_desc": "Poziom gniewu Jakuba na daną bandę. Mieści się w przedziale od 0 do 20. Oznaczana jest za pomocą żetonów na torze w Panelu Jakuba.",
+  "rules_flow_fury_desc": "Poziom gniewu Jakuba na daną bandę. Nie ma górnego limitu. Oznaczana jest za pomocą żetonów na torze w Panelu Jakuba.",
   "rules_flow_range_title": "Zasięg Jakuba",
   "rules_flow_range_desc": "Zasięg ruchu Jakuba. Bazowy zasięg wynosi 1. Jeśli furia Jakuba na którąkolwiek z band wynosi 10 lub więcej, zasięg rośnie o 1 za każdą taką bandę.",
   "rules_flow_p1_title": "I. Przygotowanie (Początek Gry i Rund)",

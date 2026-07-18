@@ -142,7 +142,7 @@
   "rules_flow_tie_title": "Tie Rule",
   "rules_flow_tie_desc": "If two or more players have the same number of points, their order does not change. If there is a tie for the winner, the player leading the band higher in the Band Hierarchy wins.",
   "rules_flow_fury_title": "Fury (Jakub's Wrath)",
-  "rules_flow_fury_desc": "Jakub's level of anger towards a given band. Range: 0 to 20. Represented by tokens on the track in Jakub's Panel.",
+  "rules_flow_fury_desc": "Jakub's level of anger towards a given band. There is no upper limit. Represented by tokens on the track in Jakub's Panel.",
   "rules_flow_range_title": "Jakub's Range",
   "rules_flow_range_desc": "Jakub's movement range. The base range is 1. If Jakub's fury towards any band is 10 or greater, the range increases by 1 for each such band.",
   "rules_flow_p1_title": "I. Preparation (Beginning of Game and Rounds)",

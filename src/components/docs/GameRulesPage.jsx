@@ -296,47 +296,28 @@ const GameRulesPage = () => {
 
           <h2>{t('rules_phases_title')}</h2>
           <p>{t('rules_flow_intro')}</p>
-          <div className="phase-flow-container">
-            <div className="phase-card">
-              <div className="phase-num">I</div>
-              <div className="phase-card-content">
-                <strong>{t('rules_flow_p1_title')}</strong>
-                <p>{t('rules_flow_p1_desc')}</p>
-              </div>
-            </div>
-
-            <div className="phase-card">
-              <div className="phase-num">II</div>
-              <div className="phase-card-content">
-                <strong>{t('rules_flow_p2_title')}</strong>
-                <p>{t('rules_flow_p2_desc')}</p>
-              </div>
-            </div>
-
-            <div className="phase-card">
-              <div className="phase-num">III</div>
-              <div className="phase-card-content">
-                <strong>{t('rules_flow_p3_title')}</strong>
-                <p>{t('rules_flow_p3_desc')}</p>
-              </div>
-            </div>
-
-            <div className="phase-card">
-              <div className="phase-num">IV</div>
-              <div className="phase-card-content">
-                <strong>{t('rules_flow_p4_title')}</strong>
-                <p>{t('rules_flow_p4_desc')}</p>
-              </div>
-            </div>
-
-            <div className="phase-card">
-              <div className="phase-num">V</div>
-              <div className="phase-card-content">
-                <strong>{t('rules_flow_p5_title')}</strong>
-                <p>{t('rules_flow_p5_desc')}</p>
-              </div>
-            </div>
-          </div>
+          <ol>
+            <li>
+              <strong>{t('rules_flow_p1_title')}</strong>
+              <p>{t('rules_flow_p1_desc')}</p>
+            </li>
+            <li>
+              <strong>{t('rules_flow_p2_title')}</strong>
+              <p>{t('rules_flow_p2_desc')}</p>
+            </li>
+            <li>
+              <strong>{t('rules_flow_p3_title')}</strong>
+              <p>{t('rules_flow_p3_desc')}</p>
+            </li>
+            <li>
+              <strong>{t('rules_flow_p4_title')}</strong>
+              <p>{t('rules_flow_p4_desc')}</p>
+            </li>
+            <li>
+              <strong>{t('rules_flow_p5_title')}</strong>
+              <p>{t('rules_flow_p5_desc')}</p>
+            </li>
+          </ol>
         </section>
       </div>
 

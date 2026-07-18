@@ -293,22 +293,22 @@ const GameRulesPage = () => {
           <div className="mechanic-box" style={{ background: '#fcf3cf', borderColor: '#f1c40f', marginBottom: '15px' }}>
             <h4>{t('rules_flow_hierarchy_title')}</h4>
             <p>{t('rules_flow_hierarchy_desc')}</p>
-            <div className="pawn-showcase compact" style={{ justifyContent: 'center', marginTop: '10px' }}>
+            <div className="pawn-showcase compact" style={{ justifyContent: 'center', marginTop: '10px', flexDirection: 'column' }}>
               <div className="pawn-showcase-item">
                 <img src={vampireIcon} alt="V" />
                 <span>{t('vampire')} (V)</span>
               </div>
-              <div style={{ fontSize: '1.5em', alignSelf: 'center', color: '#7f8c8d' }}>➔</div>
+              <div style={{ fontSize: '1.5em', alignSelf: 'center', color: '#7f8c8d' }}>⬇</div>
               <div className="pawn-showcase-item">
                 <img src={werewolfIcon} alt="W" />
                 <span>{t('werewolf')} (W)</span>
               </div>
-              <div style={{ fontSize: '1.5em', alignSelf: 'center', color: '#7f8c8d' }}>➔</div>
+              <div style={{ fontSize: '1.5em', alignSelf: 'center', color: '#7f8c8d' }}>⬇</div>
               <div className="pawn-showcase-item">
                 <img src={ghostIcon} alt="G" />
                 <span>{t('ghost')} (G)</span>
               </div>
-              <div style={{ fontSize: '1.5em', alignSelf: 'center', color: '#7f8c8d' }}>➔</div>
+              <div style={{ fontSize: '1.5em', alignSelf: 'center', color: '#7f8c8d' }}>⬇</div>
               <div className="pawn-showcase-item">
                 <img src={bardakIcon} alt="B" />
                 <span>{t('bardak')} (B)</span>

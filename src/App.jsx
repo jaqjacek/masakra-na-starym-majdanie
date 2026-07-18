@@ -1027,7 +1027,7 @@ function App() {
             currentPlayerIndex={gameState.currentPlayerIndex} 
             passedPlayers={gameState.passedPlayers} 
             currentRound={gameState.currentRound}
-            totalRounds={totalRounds}
+            totalRounds={gameState.totalRounds || TOTAL_GAME_ROUNDS}
           />
           <PlayersPanel 
             players={gameState.players || []} 

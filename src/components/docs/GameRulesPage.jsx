@@ -295,7 +295,7 @@ const GameRulesPage = () => {
             <p>{t('rules_flow_range_desc')}</p>
           </div>
 
-          <h3>{t('rules_phases_title')}</h3>
+          <h2>{t('rules_phases_title')}</h2>
           <div className="phase-flow-container">
             <div className="phase-card">
               <div className="phase-num">I</div>

@@ -147,7 +147,7 @@
   "rules_flow_range_desc": "Zasięg ruchu Jakuba. Bazowy zasięg wynosi 1. Jeśli furia Jakuba na którąkolwiek z band wynosi 10 lub więcej, zasięg rośnie o 1 za każdą taką bandę.",
   "rules_phases_title": "Przebieg rundy",
   "rules_flow_p1_title": "Przygotowanie (Początek Gry i Rund)",
-  "rules_flow_p1_desc": "Na początku każdej rundy gracze dobierają zestawy. Jeśli talia dobierania jest pusta, stos kart odrzuconych jest tasowany i staje się nową talią.",
+  "rules_flow_p1_desc": "Na początku każdej rundy gracze dobierają zestawy. Jeśli talia dobierania jest pusta, stos kart odrzuconych jest tasowany i staje się nową talią. Dodatkowo Jakub otrzymuje 2 losowe zestawy i uaktualnia o nie swoją furię na tę rundę.",
   "rules_flow_p2_title": "Faza Hersztów (Wybór Dowództwa)",
   "rules_flow_p2_desc": "W pierwszej rundzie gracze wybierają generała (kolejno: Gracz 1, Gracz 2, Gracz 3). W kolejnych rundach jako pierwszy wybiera gracz z najmniejszą liczbą punktów (w przypadku remisu kolejność się nie zmienia).",
   "rules_flow_p3_title": "Faza Graczy",

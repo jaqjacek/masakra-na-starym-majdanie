@@ -147,7 +147,7 @@
   "rules_flow_range_desc": "Jakub's movement range. The base range is 1. If Jakub's fury towards any band is 10 or greater, the range increases by 1 for each such band.",
   "rules_phases_title": "Round Flow",
   "rules_flow_p1_title": "Preparation (Beginning of Game and Rounds)",
-  "rules_flow_p1_desc": "At the beginning of each round, players draw sets. If the draw pile is empty, the discard pile is reshuffled and becomes the new draw pile.",
+  "rules_flow_p1_desc": "At the beginning of each round, players draw sets. If the draw pile is empty, the discard pile is reshuffled and becomes the new draw pile. Additionally, Jakub receives 2 random sets and updates his fury for the round based on them.",
   "rules_flow_p2_title": "General Phase (Choice of Command)",
   "rules_flow_p2_desc": "In the first round, players choose a general (in the order: Player 1, Player 2, Player 3). In subsequent rounds, the player with the lowest number of points chooses first (and if there is a tie, the order does not change).",
   "rules_flow_p3_title": "Player Phase",

@@ -15,6 +15,7 @@ const GameHeader = ({ counters, maxPool, pawnsInPlayLimit, playerOrder = [], cur
   };
 
   return (
+    <div className="game-status-horizontal">
       <div className="player-order-track">
         <span className="order-label">{t('turn_order_label', { defaultValue: 'TURA:' })}</span>
         {playerOrder.map((pid) => {

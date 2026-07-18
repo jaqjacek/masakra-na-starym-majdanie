@@ -198,7 +198,7 @@
   "rules_end_bonus_ghosts": "Ghosts: 2 points for each region containing only Ghosts, 1 point if Ghosts are the majority.",
   "rules_end_bonus_bardaks": "Bardaks: 1 point for each region where Bardaks are in majority.",
   "rules_end_tie": "Tie Rule:",
-  "rules_end_tie_desc": "If scores are tied, the winner is determined by the Band Hierarchy (Vampires > Werewolves > Ghosts > Bardaks).",
+  "rules_end_tie_desc": "Any ties are resolved by the Band Hierarchy.",
   "rules_faq_title": "Frequently Asked Questions (FAQ)",
   "rules_faq_q1": "Is this a stupid random game?",
   "rules_faq_a1": "Yes! If you don't like it, get lost.",

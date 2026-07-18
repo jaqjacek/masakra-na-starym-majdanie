@@ -531,8 +531,7 @@ const GameRulesPage = () => {
             <li><strong>{t('rules_end_bonus_bardaks').split(':')[0]}:</strong>{t('rules_end_bonus_bardaks').split(':')[1]}</li>
           </ul>
 
-          <h3>{t('rules_end_tie')}</h3>
-          <p>{t('rules_end_tie_desc')}</p>
+          <p style={{ marginTop: '20px', fontStyle: 'italic' }}>{t('rules_end_tie_desc')}</p>
         </section>
 
         <section className="rule-section faq-section-container">

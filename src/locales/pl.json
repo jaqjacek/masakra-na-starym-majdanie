@@ -198,7 +198,7 @@
   "rules_end_bonus_ghosts": "Duchy: 2 punkty za każdy region zawierający wyłącznie Duchy, 1 punkt jeśli Duchy stanowią większość w regionie.",
   "rules_end_bonus_bardaks": "Bardaki: 1 punkt za każdy region, w którym Bardaki stanowią większość.",
   "rules_end_tie": "Zasada Remisu:",
-  "rules_end_tie_desc": "Jeśli po podliczeniu punktów końcowych występuje remis, zwycięzcą zostaje gracz kontrolujący herszta bandy stojącej wyżej w Hierarchii Band (Wampiry > Wilkołaki > Duchy > Bardaki).",
+  "rules_end_tie_desc": "Wszelkie remisy rozstrzygane są przez Hierarchię Band.",
   "rules_faq_title": "Najczęściej Zadawane Pytania (FAQ)",
   "rules_faq_q1": "Czy to jest głupia losowa gra?",
   "rules_faq_a1": "Tak! Nie podoba się to wypier...z koszulę.",

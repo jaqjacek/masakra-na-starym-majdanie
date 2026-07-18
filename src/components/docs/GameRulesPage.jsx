@@ -553,6 +553,11 @@ const GameRulesPage = () => {
               <div className="faq-question">{t('rules_faq_q4')}</div>
               <div className="faq-answer">{t('rules_faq_a4')}</div>
             </div>
+            
+            <div className="faq-item">
+              <div className="faq-question">{t('rules_faq_q5')}</div>
+              <div className="faq-answer">{t('rules_faq_a5')}</div>
+            </div>
           </div>
         </section>
       </div>

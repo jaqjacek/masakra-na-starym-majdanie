@@ -2,6 +2,8 @@ import React from 'react';
 import '../../assets/css/rules.css';
 import { useTranslation } from '../../hooks/useTranslation';
 
+import packageJson from '../../../package.json';
+
 import coverImg from '../../assets/img/Cover_01_1k.jpg';
 import titleImgPl from '../../assets/img/Title_1k.jpg';
 import titleImgEn from '../../assets/img/Title_1k_en.jpg';
@@ -66,6 +68,23 @@ const GameRulesPage = () => {
     return lang === 'pl' ? plOverrideImg : defaultEnImg;
   };
 
+  const handlePrint = () => {
+    const originalTitle = document.title;
+    
+    const now = new Date();
+    const pad = (n) => n.toString().padStart(2, '0');
+    // Using underscores and hyphens because colons are invalid in filenames on some OS
+    const dateStr = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}_${pad(now.getHours())}_${pad(now.getMinutes())}`;
+    
+    document.title = `masakra_v${packageJson.version}_${dateStr}`;
+    
+    window.print();
+    
+    setTimeout(() => {
+      document.title = originalTitle;
+    }, 500);
+  };
+
   return (
     <div className="rulebook-wrapper">
       <div className="rulebook-cover-container">
@@ -82,7 +101,7 @@ const GameRulesPage = () => {
         </button>
         <button 
           className="no-print" 
-          onClick={() => window.print()}
+          onClick={handlePrint}
           style={{ float: 'right', background: '#27ae60', color: 'white', border: 'none', padding: '8px 15px', cursor: 'pointer', borderRadius: '4px' }}
         >
           {t('rules_pdf')}

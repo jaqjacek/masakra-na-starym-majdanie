@@ -8,6 +8,8 @@
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   box-shadow: 0 0 50px rgba(0,0,0,0.5);
   min-height: 100vh;
+  user-select: text;
+  -webkit-user-select: text;
 }
 
 .rulebook-cover-container {

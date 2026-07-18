@@ -175,7 +175,7 @@
   "rules_scoring_ex6": "Example 6: Vampire placed at distance 2. Distance is 2, so it gets 4 - 2 = 2 points base, no punishment. Total: 2 points.",
   "rules_jakub_title": "Fury and Hunt of Jakub",
   "rules_jakub_p1_title": "1. Cleansing in Current Sector:",
-  "rules_jakub_p1_desc": "Before moving, Jakub destroys pawns of angry bands in his sector. For each destroyed pawn, the Herszt loses 1 point, anger drops by 1, and the pawn is returned to reinforcements.",
+  "rules_jakub_p1_desc": "Before moving, Jakub destroys pawns of angry bands in his sector, but only up to the level of his Fury. For each destroyed pawn, the Herszt of that band loses 1 point. After each destroyed pawn, Jakub's fury towards that band drops by 1. The fury towards a given band can never fall below 0.",
   "rules_jakub_p2_title": "2. Target Search and Movement:",
   "rules_jakub_p2_desc": "If Jakub still has anger and no targets in his sector, he moves towards the highest anger target. Range depends on anger. Tie-break cascade is used.",
   "rules_jakub_magnetism_title": "⚡ Unstoppable Animal Magnetism (You can't stop this)",

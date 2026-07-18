@@ -62,6 +62,14 @@ import scoreExampleW3Img from '../../assets/img/socre_example_w3.png';
 import scoreExampleW3B2Img from '../../assets/img/socre_example_w3_b2.png';
 import scoreExampleW4G2Img from '../../assets/img/socre_example_w4_g2.png';
 
+const PageBreak = () => (
+  <div className="pdf-page-break">
+    <div className="no-print pdf-page-break-visual">
+      <span>✂ Podział strony w PDF</span>
+    </div>
+  </div>
+);
+
 const GameRulesPage = () => {
   const { t, lang } = useTranslation();
 
@@ -133,6 +141,7 @@ const GameRulesPage = () => {
 
       <div className="rulebook-full-width">
         <section className="rule-section">
+          <PageBreak />
           <h2>{t('rules_story_title')}</h2>
           <p className="flavor-text">
             {t('rules_story_flavor')}
@@ -146,6 +155,7 @@ const GameRulesPage = () => {
         </section>
 
         <section className="rule-section">
+          <PageBreak />
           <h2>{t('rules_drama_title')}</h2>
           <div className="generals-grid">
             <div className="general-card">
@@ -199,6 +209,7 @@ const GameRulesPage = () => {
 
       <div className="rulebook-full-width">
         <section className="rule-section">
+          <PageBreak />
           <h2>{t('rules_elements_title')}</h2>
           <ul>
             <li>
@@ -273,6 +284,7 @@ const GameRulesPage = () => {
         </section>
 
         <section className="rule-section">
+          <PageBreak />
           <h2>{t('rules_flow_title')}</h2>
 
           <h3>{t('rules_flow_concepts')}</h3>
@@ -331,6 +343,7 @@ const GameRulesPage = () => {
             <p>{t('rules_flow_range_desc')}</p>
           </div>
 
+          <PageBreak />
           <h2>{t('rules_phases_title')}</h2>
           <p>{t('rules_flow_intro')}</p>
           <ol>
@@ -360,6 +373,7 @@ const GameRulesPage = () => {
 
       <div className="rulebook-full-width">
         <section className="rule-section">
+          <PageBreak />
           <h2>{t('rules_scoring_title')}</h2>
           <p>{t('rules_scoring_intro')}</p>
           
@@ -455,6 +469,7 @@ const GameRulesPage = () => {
         </section>
 
         <section className="rule-section">
+          <PageBreak />
           <h2>{t('rules_jakub_title')}</h2>
           <ol>
             <li>
@@ -539,6 +554,7 @@ const GameRulesPage = () => {
 
       <div className="rulebook-full-width">
         <section className="rule-section">
+          <PageBreak />
           <h2>{t('rules_end_title')}</h2>
           
           <h3>{t('rules_end_bonuses')}</h3>
@@ -553,6 +569,7 @@ const GameRulesPage = () => {
         </section>
 
         <section className="rule-section faq-section-container">
+          <PageBreak />
           <h2>{t('rules_faq_title')}</h2>
           <div className="faq-container">
             <div className="faq-item">

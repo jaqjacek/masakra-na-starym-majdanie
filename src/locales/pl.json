@@ -140,7 +140,7 @@
   "rules_flow_hierarchy_title": "Hierarchia Band (Starszeństwo)",
   "rules_flow_hierarchy_desc": "Rozstrzyga wszelkie sytuacje remisu w grze. Starszeństwo band od najwyższego do najniższego:",
   "rules_flow_tie_title": "Zasada Remisu",
-  "rules_flow_tie_desc": "Przy ustalaniu kolejności graczy jak jest remis w punktach to kolejność tych graczy nie zmienia się. Przy wyborze celu Jakuba Hierarchia band jak jest remis rozstrzyga się kaskadowo, a przy absolutnym remisie Niepochamowany zwierzęcy Magnetyzm. Przy ustalaniu zwycięzcy decyduje gracz prowadzący herszta bandy według Hierarchii Band.",
+  "rules_flow_tie_desc": "W sytuacjach remisowych obowiązują następujące zasady: 1) Kolejność graczy: przy remisie punktowym dotychczasowa kolejność pozostaje bez zmian. 2) Cel Jakuba: w przypadku równego poziomu furii o wyborze ofiary decyduje Hierarchia Band. Przy tzw. remisie absolutnym uruchamiany jest Niepohamowany Zwierzęcy Magnetyzm. 3) Zwycięstwo: przy równej liczbie punktów na koniec gry, wygrywa gracz dowodzący bandą wyżej w Hierarchii Band.",
   "rules_flow_fury_title": "Furia (Gniew Jakuba)",
   "rules_flow_fury_desc": "Poziom gniewu Jakuba na daną bandę. Mieści się w przedziale od 0 do 20. Oznaczana jest za pomocą żetonów na torze w Panelu Jakuba.",
   "rules_flow_range_title": "Zasięg Jakuba",

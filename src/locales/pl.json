@@ -177,7 +177,7 @@
   "rules_jakub_p1_title": "1. Czystka w obecnym sektorze:",
   "rules_jakub_p1_desc": "Zanim Jakub wykona jakikolwiek ruch, najpierw niszczy pionki w sektorze, w którym się aktualnie znajduje. Niszczy pionki danej bandy tylko do wysokości swojej Furii. Za każdego zabitego pionka Herszt danej bandy traci 1 punkt. Po każdym zabitym pionku furia Jakuba na daną bandę zmniejsza się o 1. Furia na daną bandę nigdy nie może być mniejsza niż 0.",
   "rules_jakub_p2_title": "2. Poszukiwanie Celu i Ruch:",
-  "rules_jakub_p2_desc": "Jeśli Jakub wciąż posiada Furię, a w jego obecnym sektorze nie ma już pionków band, na które jest wściekły, decyduje się na ruch w kierunku celu o najwyższym poziomie furii. Rozstrzyganie remisów odbywa się kaskadowo.",
+  "rules_jakub_p2_desc": "Jeśli Jakub wciąż posiada Furię, a w jego obecnym sektorze nie ma już pionków band, na które jest wściekły, decyduje się na ruch w kierunku celu o najwyższym poziomie furii. Rozstrzyganie remisów odbywa się kaskadowo według zasady \"Hierarchia Band\".",
   "rules_jakub_magnetism_title": "⚡ Niepochamowany Zwierzęcy Magnetyzm (Tego nie pochamujesz)",
   "rules_jakub_magnetism_desc": "Jeśli po sprawdzeniu wszystkich band z furią > 0 regiony są nadal w absolutnym remisie, wszystkie pionki (każdej bandy) z wszystkich remisowych regionów zostają przyciągnięte do sektora, w którym stoi Jakub. Jakub nie wykonuje ruchu.",
   "rules_jakub_witness_title": "Punkty Świadka Jakuba",

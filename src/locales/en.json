@@ -177,7 +177,7 @@
   "rules_jakub_p1_title": "1. Cleansing in Current Sector:",
   "rules_jakub_p1_desc": "Before moving, Jakub destroys pawns of angry bands in his sector, but only up to the level of his Fury. For each destroyed pawn, the Herszt of that band loses 1 point. After each destroyed pawn, Jakub's fury towards that band drops by 1. The fury towards a given band can never fall below 0.",
   "rules_jakub_p2_title": "2. Target Search and Movement:",
-  "rules_jakub_p2_desc": "If Jakub still has anger and no targets in his sector, he moves towards the highest anger target. Range depends on anger. Tie-break cascade is used.",
+  "rules_jakub_p2_desc": "If Jakub still has anger and no targets in his sector, he moves towards the highest anger target. Range depends on anger. Ties are resolved via the \"Band Hierarchy\" cascade.",
   "rules_jakub_magnetism_title": "⚡ Unstoppable Animal Magnetism (You can't stop this)",
   "rules_jakub_magnetism_desc": "If there is an absolute tie between sectors after checking all angry bands, pawns from all tied sectors are pulled to Jakub's sector. Jakub does not move.",
   "rules_jakub_witness_title": "Punkty Świadka Jakuba",

@@ -2,7 +2,7 @@ import React from 'react';
 import { PAWN_TYPES, SUMMARY_PAWN_IDS } from '../constants/pawnTypes';
 import { useTranslation } from '../hooks/useTranslation';
 
-const GameHeader = ({ counters, maxPool, pawnsInPlayLimit, playerOrder = [], currentPlayerIndex, passedPlayers = [] }) => {
+const GameHeader = ({ counters, maxPool, pawnsInPlayLimit, playerOrder = [], currentPlayerIndex, passedPlayers = [], currentRound, totalRounds }) => {
   const { t } = useTranslation();
   const currentActiveId = playerOrder[currentPlayerIndex];
   const limits = pawnsInPlayLimit || maxPool;
@@ -16,6 +16,7 @@ const GameHeader = ({ counters, maxPool, pawnsInPlayLimit, playerOrder = [], cur
 
   return (
     <div className="game-status-horizontal">
+      <span className="round-indicator">R:{currentRound}/{totalRounds}</span>
       <div className="player-order-track">
         <span className="order-label">{t('turn_order_label', { defaultValue: 'TURA:' })}</span>
         {playerOrder.map((pid) => {

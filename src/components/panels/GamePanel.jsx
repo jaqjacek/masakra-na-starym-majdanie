@@ -49,8 +49,7 @@ const GamePanel = ({
         
         <div className="game-id-info">
           ID: <strong>{gameId}</strong> 
-          <span className="phase-indicator">{gameState.phase}</span> 
-          <span className="round-indicator">R:{gameState.currentRound}/{totalRounds}</span>
+          <span className="phase-indicator">{gameState.phase}</span>
         </div>
 
         <button className="scoring-summary-btn main-panel-btn" onClick={onOpenScoring}>{t('scoring')}</button>

@@ -100,7 +100,7 @@ const GameRulesPage = () => {
       image:        { type: 'jpeg', quality: 0.98 },
       html2canvas:  { scale: 2, useCORS: true },
       jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' },
-      pagebreak:    { mode: ['avoid-all', 'css', 'legacy'] }
+      pagebreak:    { mode: ['css', 'legacy'] }
     };
 
     html2pdf().from(element).set(opt).save().then(() => {
@@ -407,6 +407,7 @@ const GameRulesPage = () => {
             </div>
           </div>
 
+          <PageBreak />
           <h3 style={{ marginTop: '30px' }}>{t('rules_scoring_example_title')}</h3>
           
           <div className="carousel-container-rules">
@@ -499,6 +500,7 @@ const GameRulesPage = () => {
             </li>
           </ol>
 
+          <PageBreak />
           <h3 style={{ marginTop: '20px' }}>{t('rules_jakub_example_title')}</h3>
           
           <div className="carousel-container-rules">

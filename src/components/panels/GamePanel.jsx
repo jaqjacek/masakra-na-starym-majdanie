@@ -5,7 +5,7 @@ const GamePanel = ({
   gameId, 
   gameState, 
   updateGameWithSync,
-  totalRounds, 
+  _totalRounds, 
   isMenuOpen, 
   setIsMenuOpen, 
   isFullAutoplay, 

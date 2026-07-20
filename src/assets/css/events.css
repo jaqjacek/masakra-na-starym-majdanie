@@ -4,21 +4,24 @@
   right: 10px;
   width: 500px;
   max-height: 80vh;
-  background: #2c2c2c;
-  border: 2px solid #555;
+  background-image: linear-gradient(rgba(0,0,0,0.25), rgba(0,0,0,0.25)), url('/src/assets/img/dark_wood_frame.png');
+  background-size: cover;
+  border: 3px solid #5d4037;
+  outline: 1px solid #ffd54f;
+  outline-offset: -4px;
   border-radius: 8px;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+  box-shadow: 0 12px 30px rgba(0,0,0,0.85), inset 0 0 20px rgba(0,0,0,0.65);
   z-index: 1000;
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  color: #ddd;
+  color: #eee;
 }
 
 .events-panel-header {
   padding: 12px;
-  background: #333;
-  border-bottom: 1px solid #444;
+  background: rgba(0, 0, 0, 0.4);
+  border-bottom: 2px solid #5d4037;
   display: flex;
   justify-content: space-between;
   align-items: center;

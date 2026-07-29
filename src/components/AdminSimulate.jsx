@@ -226,7 +226,7 @@ const AdminSimulate = () => {
       {/* Control Actions Bar */}
       <div className="admin-actions-bar simulation-controls">
         <div className="control-group">
-          <label style={{ color: '#aaa', fontSize: '14px', marginRight: '8px' }}>
+          <label className="control-label-text">
             {t('admin_simulate_set_label', { defaultValue: 'Game Set:' })}
           </label>
           <select value={selectedSet} onChange={(e) => setSelectedSet(e.target.value)}>
@@ -236,7 +236,7 @@ const AdminSimulate = () => {
         </div>
 
         <div className="control-group">
-          <label style={{ color: '#aaa', fontSize: '14px', marginRight: '8px' }}>
+          <label className="control-label-text">
             {t('admin_simulate_count_label', { defaultValue: 'Monte Carlo Games:' })}
           </label>
           <select value={gameCount} onChange={(e) => setGameCount(Number(e.target.value))}>
@@ -252,7 +252,6 @@ const AdminSimulate = () => {
           className="action-button upload-btn" 
           onClick={startParallelSimulation} 
           disabled={isSimulating}
-          style={{ minWidth: '140px' }}
         >
           {isSimulating 
             ? t('admin_simulate_running_status', { progress, defaultValue: `Simulating... (${progress}%)` }) 
@@ -284,7 +283,7 @@ const AdminSimulate = () => {
           <div className="simulation-summary-header">
             <div>
               <h2>{t('admin_simulate_results_title', { defaultValue: 'Simulation Analytics Report' })}</h2>
-              <p style={{ color: '#bbb', marginTop: '4px' }}>
+              <p className="control-label-text">
                 {t('admin_simulate_analytics_summary', { count: report.totalGames.toLocaleString(), defaultValue: `Analyzed ${report.totalGames.toLocaleString()} game sessions across parallel worker threads` })}
               </p>
             </div>
@@ -303,13 +302,13 @@ const AdminSimulate = () => {
           </div>
 
           {/* Section: Game Closeness & Catch-Up Strategy Charts */}
-          <div className="game-closeness-section" style={{ marginBottom: '2.5rem' }}>
-            <h3 style={{ color: '#ffd54f', fontSize: '1.4rem', borderBottom: '2px solid #555', paddingBottom: '0.6rem', marginBottom: '1.5rem' }}>
+          <div className="game-closeness-section">
+            <h3 className="section-header-title">
               🎯 {t('admin_simulate_closeness_section_title', { defaultValue: 'Game Closeness & Catch-Up Analytics' })}
             </h3>
 
             {/* 3 Analytics Bar Charts Grid */}
-            <div className="charts-grid-three" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '1.5rem' }}>
+            <div className="charts-grid-three">
               {/* Chart 1: Catch-up General Selections */}
               <div className="simulation-chart-box">
                 <h3>{t('admin_simulate_catchup_chart_title', { defaultValue: 'General Picked by Last-Place Player' })}</h3>
@@ -375,7 +374,7 @@ const AdminSimulate = () => {
 
           {/* Detailed Performance Table */}
           <div className="simulation-table-container">
-            <h3 style={{ marginBottom: '12px', color: '#ffd54f' }}>
+            <h3 className="table-section-title">
               {t('admin_simulate_table_title', { defaultValue: 'Detailed Herszt Performance Breakdown' })}
             </h3>
             <table className="admin-events-table">
@@ -421,7 +420,7 @@ const AdminSimulate = () => {
           {/* 10 Detailed Game-by-Game Line Charts Section */}
           {report.gameSeries && report.gameSeries.length > 0 && (
             <div className="detailed-charts-section" style={{ marginTop: '2.5rem' }}>
-              <h3 style={{ color: '#ffd54f', fontSize: '1.4rem', borderBottom: '2px solid #555', paddingBottom: '0.6rem', marginBottom: '1.5rem' }}>
+              <h3 className="section-header-title">
                 📊 {t('admin_simulate_detailed_charts_title', { defaultValue: 'Detailed Game-by-Game Line Charts (First 100 Sessions)' })}
               </h3>
               

@@ -901,4 +901,30 @@
   font-weight: bold;
 }
 
+.control-label-text {
+  color: #aaa;
+  font-size: 14px;
+  margin-right: 8px;
+}
+
+.charts-grid-three {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 1.5rem;
+}
+
+.section-header-title {
+  color: #ffd54f;
+  font-size: 1.4rem;
+  border-bottom: 2px solid #555;
+  padding-bottom: 0.6rem;
+  margin-bottom: 1.5rem;
+}
+
+.table-section-title {
+  margin-bottom: 12px;
+  color: #ffd54f;
+}
+
+
 

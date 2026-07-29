@@ -10,7 +10,8 @@
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "test": "node --test tests/*.test.js"
+    "test": "node --test tests/*.test.js",
+    "simulate:parallel": "node tests/run_parallel_simulations.js"
   },
   "dependencies": {
     "@scalar/express-api-reference": "^0.10.11",

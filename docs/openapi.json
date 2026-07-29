@@ -260,6 +260,37 @@
         }
       }
     },
+    "/api/simulate/job": {
+      "post": {
+        "summary": "Submit Parallel Monte Carlo Simulation Job",
+        "description": "Spawns Node.js Worker Threads across CPU cores to run high-volume Monte Carlo simulations asynchronously.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "count": { "type": "integer", "default": 1000, "description": "Number of simulations to run" },
+                  "sets": { "type": "object", "description": "Optional sets configuration" },
+                  "game": { "type": "object", "description": "Optional game configuration" },
+                  "events": { "type": "array", "description": "Optional events array" }
+                }
+              }
+            }
+          }
+        },
+        "responses": { "200": { "description": "Job created" } }
+      }
+    },
+    "/api/simulate/job/{jobId}": {
+      "get": {
+        "summary": "Get Parallel Simulation Job Status & Progress",
+        "parameters": [
+          { "name": "jobId", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "responses": { "200": { "description": "Job status, progress percent, and final balance report when completed" } }
+      }
+    },
     "/api/simulate/batch": {
       "post": {
         "summary": "Run Batch Simulation",

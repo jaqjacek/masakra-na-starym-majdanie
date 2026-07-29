@@ -1,9 +1,64 @@
 import express from 'express';
 import multer from 'multer';
 import { runDetailedSimulation, runBasicSimulation, runFullSimulation } from '../services/simulationService.js';
+import { SimulationJobManager } from '../services/simulationJobManager.js';
 
 const router = express.Router();
 const upload = multer();
+
+/**
+ * Submit parallel simulation job (runs on Worker Threads)
+ */
+router.post('/job', (req, res) => {
+  try {
+    const { count = 1000, sets, game, events } = req.body || {};
+    const io = req.app.get('io');
+
+    const job = SimulationJobManager.createJob({
+      count: parseInt(count, 10) || 1000,
+      setsConfig: sets,
+      gameConfig: game,
+      eventsConfig: events,
+      io
+    });
+
+    res.json({
+      message: 'Parallel simulation job started',
+      jobId: job.id,
+      totalGames: job.totalGames,
+      numWorkers: job.numWorkers,
+      status: job.status
+    });
+  } catch (err) {
+    console.error('Failed to create simulation job:', err);
+    res.status(500).json({ error: 'Failed to create parallel simulation job' });
+  }
+});
+
+/**
+ * Check parallel simulation job status and progress / results
+ */
+router.get('/job/:jobId', (req, res) => {
+  const { jobId } = req.params;
+  const job = SimulationJobManager.getJob(jobId);
+  if (!job) {
+    return res.status(404).json({ error: 'Job not found' });
+  }
+
+  const progressPercent = Number(((job.completedGames / job.totalGames) * 100).toFixed(1));
+
+  res.json({
+    id: job.id,
+    status: job.status,
+    completedGames: job.completedGames,
+    totalGames: job.totalGames,
+    progressPercent,
+    numWorkers: job.numWorkers,
+    durationMs: job.endTime ? (job.endTime - job.startTime) : (Date.now() - job.startTime),
+    report: job.report || null,
+    error: job.error || null
+  });
+});
 
 router.post('/detailed', (req, res) => {
   const { set } = req.query;

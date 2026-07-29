@@ -431,7 +431,7 @@
   "games": "Games",
   "games_per_sec": "games/sec",
   "admin_simulate_running_status": "Simulating... ({progress}%)",
-  "admin_simulate_parallel_btn": "⚡ Run {count} Games (Workers)",
+  "admin_simulate_parallel_btn": "⚡ RUN",
   "admin_simulate_progress_title": "Executing Worker Threads Batch Simulation",
   "admin_simulate_imbalance_score": "Band Imbalance Score",
   "admin_simulate_kpi_games": "Total Games",

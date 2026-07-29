@@ -431,7 +431,7 @@
   "games": "Gier",
   "games_per_sec": "gier/sek",
   "admin_simulate_running_status": "Symulowanie... ({progress}%)",
-  "admin_simulate_parallel_btn": "⚡ Uruchom {count} Gier (Wątki)",
+  "admin_simulate_parallel_btn": "⚡ URUCHOM",
   "admin_simulate_progress_title": "Wykonywanie Współbieżnej Symulacji Wątkami Worker",
   "admin_simulate_imbalance_score": "Wskaźnik Nierównowagi Band",
   "admin_simulate_kpi_games": "Suma Rozegranych Gier",

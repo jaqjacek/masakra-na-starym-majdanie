@@ -252,11 +252,11 @@ const AdminSimulate = () => {
           className="action-button upload-btn" 
           onClick={startParallelSimulation} 
           disabled={isSimulating}
-          style={{ minWidth: '220px' }}
+          style={{ minWidth: '140px' }}
         >
           {isSimulating 
-            ? t('admin_simulate_running_status', { defaultValue: `Simulating... (${progress}%)` }) 
-            : t('admin_simulate_parallel_btn', { defaultValue: `⚡ Run ${gameCount.toLocaleString()} Games (Workers)` })}
+            ? t('admin_simulate_running_status', { progress, defaultValue: `Simulating... (${progress}%)` }) 
+            : t('admin_simulate_parallel_btn', { defaultValue: '⚡ RUN' })}
         </button>
       </div>
 

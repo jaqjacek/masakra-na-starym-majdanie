@@ -1,7 +1,7 @@
 import React from 'react';
 
-// Renders visual effects like explosions and floating points over the board.
-// Requires visualEffects array: [{ id, type: 'explosion' | 'text', regionId, race, text, timestamp, x, y }]
+// Renders visual effects like explosions, floating points, and Zwierzęcy Magnetyzm aura shockwaves over the board.
+// Requires visualEffects array: [{ id, type: 'explosion' | 'text' | 'magnetism', regionId, race, text, timestamp, x, y }]
 const VisualEffectsManager = ({ visualEffects, regions, visible = true }) => {
   if (!visible || !visualEffects || visualEffects.length === 0) return null;
 
@@ -13,7 +13,6 @@ const VisualEffectsManager = ({ visualEffects, regions, visible = true }) => {
 
         // Base coordinates based on 6x6 grid.
         // x and y in region are 0-5.
-        // We'll calculate the center of the region.
         const leftPercent = (region.x + 0.5) * (100 / 6);
         const topPercent = (region.y + 0.5) * (100 / 6);
 
@@ -21,6 +20,23 @@ const VisualEffectsManager = ({ visualEffects, regions, visible = true }) => {
           left: `${leftPercent}%`,
           top: `${topPercent}%`,
         };
+
+        if (effect.type === 'magnetism' || effect.isMagnetism) {
+          return (
+            <React.Fragment key={effect.id}>
+              <div 
+                className="magnetism-aura-effect"
+                style={style}
+              />
+              <div 
+                className="effect-floating-text magnetism-banner"
+                style={style}
+              >
+                {effect.text || 'ZWIERZĘCY MAGNETYZM!'}
+              </div>
+            </React.Fragment>
+          );
+        }
 
         if (effect.type === 'explosion') {
           return (
@@ -42,7 +58,7 @@ const VisualEffectsManager = ({ visualEffects, regions, visible = true }) => {
           return (
             <div 
               key={effect.id} 
-              className={`effect-floating-text race-${effect.race} ${effect.isPositive ? 'positive' : ''} ${effect.isMagnetism ? 'magnetism' : ''}`}
+              className={`effect-floating-text race-${effect.race} ${effect.isPositive ? 'positive' : ''}`}
               style={style}
             >
               {effect.text}

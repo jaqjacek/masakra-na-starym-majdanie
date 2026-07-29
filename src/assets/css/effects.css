@@ -186,3 +186,50 @@
   from { box-shadow: 0 0 10px #f1c40f, inset 0 0 5px #f1c40f; }
   to { box-shadow: 0 0 20px #f1c40f, inset 0 0 15px #f1c40f; }
 }
+
+/* Zwierzęcy Magnetyzm Aura & Shockwave Effects */
+.magnetism-aura-effect {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 100px;
+  height: 100px;
+  margin-top: -50px;
+  margin-left: -50px;
+  border-radius: 50%;
+  pointer-events: none;
+  background: radial-gradient(circle, rgba(231, 76, 60, 0.6) 0%, rgba(241, 196, 15, 0.3) 50%, rgba(0, 0, 0, 0) 70%);
+  border: 3px solid #f1c40f;
+  box-shadow: 0 0 25px #e74c3c, inset 0 0 20px #f1c40f;
+  animation: magnetism-shockwave 1.8s cubic-bezier(0.1, 0.8, 0.3, 1) forwards;
+  z-index: 95;
+}
+
+@keyframes magnetism-shockwave {
+  0% {
+    transform: scale(0.2);
+    opacity: 1;
+    border-color: #ffd54f;
+  }
+  50% {
+    transform: scale(1.8);
+    opacity: 0.8;
+    border-color: #e74c3c;
+  }
+  100% {
+    transform: scale(2.8);
+    opacity: 0;
+    border-color: #f39c12;
+  }
+}
+
+.effect-floating-text.magnetism-banner {
+  font-size: 2.2rem;
+  font-family: 'Cinzel', serif;
+  font-weight: 900;
+  color: #ffd54f;
+  text-shadow: 0 0 15px #e74c3c, 0 0 30px #f39c12, 2px 2px 4px #000;
+  letter-spacing: 2px;
+  animation: float-up-fade 2s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+}
+

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { io } from 'socket.io-client';
 import { 
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Cell
 } from 'recharts';
@@ -6,8 +7,9 @@ import { PAWN_TYPES } from '../constants/pawnTypes';
 import { RACES } from '../constants/game';
 import { SERVER_URL } from '../constants/constants';
 import { useTranslation } from '../hooks/useTranslation';
-import { useGameContext } from '../hooks/useGameContext';
 import '../assets/css/admin.css';
+
+const fallbackSocket = io(SERVER_URL);
 
 const getRaceColor = (raceId) => PAWN_TYPES.find(p => p.id === raceId)?.color || '#ccc';
 
@@ -19,7 +21,7 @@ const getImbalanceBadgeClass = (score) => {
 
 const AdminSimulate = () => {
   const { t } = useTranslation();
-  const { socket } = useGameContext();
+  const socket = fallbackSocket;
 
   const [availableSets, setAvailableSets] = useState([]);
   const [selectedSet, setSelectedSet] = useState('');

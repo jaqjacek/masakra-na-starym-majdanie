@@ -52,3 +52,23 @@ test('SimulationJobManager - executes parallel job using Worker Threads', async 
   assert.strictEqual(job.report.totalGames, 20);
   assert.ok(typeof job.report.bandImbalanceScore === 'number');
 });
+
+test('SimulationJobManager - handles named set config objects without length error', async () => {
+  const job = SimulationJobManager.createJob({ 
+    count: 10, 
+    setsConfig: { name: 'set_default' } 
+  });
+
+  await new Promise((resolve) => {
+    const check = setInterval(() => {
+      if (job.status === 'completed' || job.status === 'failed') {
+        clearInterval(check);
+        resolve();
+      }
+    }, 50);
+  });
+
+  assert.strictEqual(job.status, 'completed');
+  assert.ok(job.report);
+  assert.strictEqual(job.report.totalGames, 10);
+});

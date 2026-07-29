@@ -2,8 +2,8 @@
   "openapi": "3.0.0",
   "info": {
     "title": "MASAKRA na Starym Majdanie API",
-    "description": "Interactive API Documentation for the MASAKRA na Starym Majdanie Game Engine.",
-    "version": "1.13.0"
+    "description": "Interactive API Documentation for the MASAKRA na Starym Majdanie Game Engine. Real-time actions use Socket.io events (action:placeSet, action:movePawn, action:selectGeneral, action:kablowanieSet, action:passTurn).",
+    "version": "1.18.0"
   },
   "servers": [
     {
@@ -155,14 +155,16 @@
         "responses": { "200": { "description": "Current game state JSON" } }
       },
       "post": {
-        "summary": "Save Game State",
+        "summary": "Save Game State (Deprecated)",
+        "deprecated": true,
+        "description": "DEPRECATED: Use Socket.io event actions (action:placeSet, action:movePawn, etc.) instead of HTTP POST state dumps.",
         "parameters": [
           { "name": "gameId", "in": "path", "required": true, "schema": { "type": "string" } }
         ],
         "requestBody": {
           "content": { "application/json": { "schema": { "type": "object" } } }
         },
-        "responses": { "200": { "description": "State saved" } }
+        "responses": { "200": { "description": "State saved (Deprecated fallback)" } }
       },
       "delete": {
         "summary": "Reset Board",

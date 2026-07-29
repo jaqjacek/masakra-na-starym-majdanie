@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { io } from 'socket.io-client';
-import { fetchMap, updateMap } from '../services/api';
+import { fetchMap } from '../services/api';
 import { INITIAL_STATE } from '../constants/game';
 import { SERVER_URL, HISTORY_LIMIT } from '../constants/constants';
 
@@ -60,10 +60,15 @@ export const useGameState = () => {
     return () => socket.off('boardUpdate', handleUpdate);
   }, [gameId, isAdminPath]);
 
-  const updateGameWithSync = useCallback(async (newState) => {
+  const dispatchAction = useCallback((actionName, payload = {}) => {
+    if (!gameId) return;
+    socket.emit(`action:${actionName}`, { gameId, playerId, ...payload });
+  }, [gameId, playerId]);
+
+  const updateGameWithSync = useCallback((newState) => {
     if (!gameId) return;
     setGameState(newState);
-    try { await updateMap(gameId, newState); } catch (err) { console.error('Sync failed:', err); }
+    socket.emit('action:syncState', { gameId, state: newState });
   }, [gameId]);
 
   const addLog = useCallback((state, text, metadata = {}) => {
@@ -89,7 +94,9 @@ export const useGameState = () => {
     currentPath,
     setCurrentPath,
     isAdminPath,
+    dispatchAction,
     updateGameWithSync,
-    addLog
+    addLog,
+    socket
   };
 };

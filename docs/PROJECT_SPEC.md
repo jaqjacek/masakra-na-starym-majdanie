@@ -76,7 +76,7 @@
 - **Shift + Click (Points/Counters):** Increase value.
 - **Ctrl + Click (Points/Counters):** Decrease value.
 
-## 6. Project Status (Current: v1.17.0)
+## 6. Project Status (Current: v1.18.0)
 - **Implemented:** Manual & Automated gameplay, Dockerization, Deployment scripts, multi-phase logic, refined scoring, UI polishing, cascading tie-breaker system, and Niepochamowany Zwierzęcy Magnetyzm mechanic.
 - **Next Steps:** Enhancing simulation accuracy and AI strategies.
 

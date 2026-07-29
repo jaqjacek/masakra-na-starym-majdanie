@@ -40,16 +40,16 @@ export function aggregateSimulationResults(rawResults) {
 
   const catchUpChoices = { vampire: 0, werewolf: 0, ghost: 0, bardak: 0 };
   const closeness1st2nd = {
-    '0-2 pts (Tight)': 0,
-    '3-5 pts (Close)': 0,
-    '6-10 pts (Moderate)': 0,
-    '>10 pts (Decisive)': 0
+    '0 - 5 pts': 0,
+    '6 - 10 pts': 0,
+    '11 - 15 pts': 0,
+    '> 15 pts': 0
   };
   const blowout1st4th = {
-    '<10 pts (Tight Spread)': 0,
-    '10-20 pts (Normal Gap)': 0,
-    '21-30 pts (Wide Gap)': 0,
-    '>30 pts (Blowout)': 0
+    '0 - 20 pts': 0,
+    '21 - 40 pts': 0,
+    '41 - 60 pts': 0,
+    '> 60 pts': 0
   };
 
   const gameSeries = rawResults.slice(0, 100).map((result, idx) => {
@@ -113,17 +113,17 @@ export function aggregateSimulationResults(rawResults) {
     }
 
     if (scoreDiff1st2nd !== undefined) {
-      if (scoreDiff1st2nd <= 2) closeness1st2nd['0-2 pts (Tight)'] += 1;
-      else if (scoreDiff1st2nd <= 5) closeness1st2nd['3-5 pts (Close)'] += 1;
-      else if (scoreDiff1st2nd <= 10) closeness1st2nd['6-10 pts (Moderate)'] += 1;
-      else closeness1st2nd['>10 pts (Decisive)'] += 1;
+      if (scoreDiff1st2nd <= 5) closeness1st2nd['0 - 5 pts'] += 1;
+      else if (scoreDiff1st2nd <= 10) closeness1st2nd['6 - 10 pts'] += 1;
+      else if (scoreDiff1st2nd <= 15) closeness1st2nd['11 - 15 pts'] += 1;
+      else closeness1st2nd['> 15 pts'] += 1;
     }
 
     if (scoreDiff !== undefined) {
-      if (scoreDiff < 10) blowout1st4th['<10 pts (Tight Spread)'] += 1;
-      else if (scoreDiff <= 20) blowout1st4th['10-20 pts (Normal Gap)'] += 1;
-      else if (scoreDiff <= 30) blowout1st4th['21-30 pts (Wide Gap)'] += 1;
-      else blowout1st4th['>30 pts (Blowout)'] += 1;
+      if (scoreDiff <= 20) blowout1st4th['0 - 20 pts'] += 1;
+      else if (scoreDiff <= 40) blowout1st4th['21 - 40 pts'] += 1;
+      else if (scoreDiff <= 60) blowout1st4th['41 - 60 pts'] += 1;
+      else blowout1st4th['> 60 pts'] += 1;
     }
   });
 

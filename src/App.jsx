@@ -234,7 +234,7 @@ function App() {
       }
     }
     prevRegionsRef.current = gameState.regions;
-  }, [gameState.regions]);
+  }, [gameState.regions, gameState.magnetismPullRegions]);
 
   const prevHistoryLengthRef = React.useRef(0);
   useEffect(() => {

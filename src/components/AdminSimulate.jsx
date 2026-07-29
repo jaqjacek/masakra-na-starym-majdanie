@@ -25,8 +25,9 @@ const ChartBox = ({ title, dataKeySuffix, data }) => {
             <XAxis dataKey="game" stroke="#888" hide />
             <YAxis stroke="#888" />
             <Tooltip 
-              contentStyle={{ backgroundColor: '#333', border: '1px solid #666', borderRadius: '6px', padding: '8px 12px' }}
+              contentStyle={{ backgroundColor: '#333', border: '1px solid #ffd54f', borderRadius: '6px', padding: '8px 12px' }}
               labelStyle={{ color: '#ffd54f', fontWeight: 'bold' }}
+              cursor={{ stroke: '#ffd54f', strokeWidth: 1.5, strokeDasharray: '4 4' }}
             />
             {RACES.map(race => (
               <Line 
@@ -58,8 +59,9 @@ const ScoreDiffChartBox = ({ title, data }) => {
             <XAxis dataKey="game" stroke="#888" hide />
             <YAxis stroke="#888" />
             <Tooltip 
-              contentStyle={{ backgroundColor: '#333', border: '1px solid #666', borderRadius: '6px', padding: '8px 12px' }}
+              contentStyle={{ backgroundColor: '#333', border: '1px solid #ffd54f', borderRadius: '6px', padding: '8px 12px' }}
               labelStyle={{ color: '#ffd54f', fontWeight: 'bold' }}
+              cursor={{ stroke: '#ffd54f', strokeWidth: 1.5, strokeDasharray: '4 4' }}
             />
             <Line 
               type="monotone" 
@@ -319,8 +321,9 @@ const AdminSimulate = () => {
                       <XAxis dataKey="name" stroke="#ccc" />
                       <YAxis stroke="#ccc" />
                       <Tooltip 
-                        contentStyle={{ backgroundColor: '#333', border: '1px solid #666', borderRadius: '6px' }}
+                        contentStyle={{ backgroundColor: '#333', border: '1px solid #ffd54f', borderRadius: '6px' }}
                         formatter={(val) => [`${val.toLocaleString()} picks`, 'Total Selections']}
+                        cursor={{ fill: 'rgba(255, 213, 79, 0.12)', stroke: '#ffd54f', strokeWidth: 2, rx: 4 }}
                       />
                       <Bar dataKey="picks" name="Selections">
                         {catchUpData.map((entry, index) => (
@@ -342,8 +345,9 @@ const AdminSimulate = () => {
                       <XAxis dataKey="bucket" stroke="#ccc" interval={0} style={{ fontSize: '11px' }} />
                       <YAxis stroke="#ccc" />
                       <Tooltip 
-                        contentStyle={{ backgroundColor: '#333', border: '1px solid #666', borderRadius: '6px' }}
+                        contentStyle={{ backgroundColor: '#333', border: '1px solid #ffd54f', borderRadius: '6px' }}
                         formatter={(val) => [`${val.toLocaleString()} games`, 'Frequency']}
+                        cursor={{ fill: 'rgba(255, 213, 79, 0.12)', stroke: '#ffd54f', strokeWidth: 2, rx: 4 }}
                       />
                       <Bar dataKey="count" fill="#2ecc71" name="Games Count" />
                     </BarChart>
@@ -361,8 +365,9 @@ const AdminSimulate = () => {
                       <XAxis dataKey="bucket" stroke="#ccc" interval={0} style={{ fontSize: '11px' }} />
                       <YAxis stroke="#ccc" />
                       <Tooltip 
-                        contentStyle={{ backgroundColor: '#333', border: '1px solid #666', borderRadius: '6px' }}
+                        contentStyle={{ backgroundColor: '#333', border: '1px solid #ffd54f', borderRadius: '6px' }}
                         formatter={(val) => [`${val.toLocaleString()} games`, 'Frequency']}
+                        cursor={{ fill: 'rgba(255, 213, 79, 0.12)', stroke: '#ffd54f', strokeWidth: 2, rx: 4 }}
                       />
                       <Bar dataKey="count" fill="#e74c3c" name="Games Count" />
                     </BarChart>

@@ -38,6 +38,25 @@ export function aggregateSimulationResults(rawResults) {
 
   let totalMagnetismCount = 0;
 
+  const gameSeries = rawResults.slice(0, 100).map((result, idx) => {
+    const gameEntry = { game: idx + 1 };
+    RACES.forEach(race => {
+      const raceData = result.analytics[race] || {};
+      gameEntry[`${race}_afterR1`] = raceData.afterR1 || 0;
+      gameEntry[`${race}_fewestPointsChoice`] = raceData.fewestPointsChoice || 0;
+      gameEntry[`${race}_total`] = raceData.total || 0;
+      gameEntry[`${race}_finalBonus`] = raceData.finalBonus || 0;
+      gameEntry[`${race}_killed`] = raceData.killed || 0;
+      gameEntry[`${race}_swiadekJakubaPoints`] = raceData.swiadekJakubaPoints || 0;
+      gameEntry[`${race}_setPlacement`] = raceData.setPlacement || 0;
+      gameEntry[`${race}_passing`] = raceData.passing || 0;
+      gameEntry[`${race}_mercyPoints`] = raceData.mercyPoints || 0;
+    });
+    gameEntry.scoreDiff = result.scoreDiff || 0;
+    gameEntry.scoreDiff1st2nd = result.scoreDiff1st2nd || 0;
+    return gameEntry;
+  });
+
   rawResults.forEach(r => {
     const { analytics } = r;
     if (analytics.magnetismCount) {
@@ -91,7 +110,8 @@ export function aggregateSimulationResults(rawResults) {
     totalGames,
     totalMagnetismCount,
     bandImbalanceScore: imbalanceScore,
-    races: raceStats
+    races: raceStats,
+    gameSeries
   };
 }
 

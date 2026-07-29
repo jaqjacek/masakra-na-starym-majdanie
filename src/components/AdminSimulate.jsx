@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { io } from 'socket.io-client';
 import { 
-  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Cell
+  BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Cell
 } from 'recharts';
 import { PAWN_TYPES } from '../constants/pawnTypes';
 import { RACES } from '../constants/game';
@@ -19,6 +19,77 @@ const getImbalanceBadgeClass = (score) => {
   return 'badge-danger';
 };
 
+const ChartBox = ({ title, dataKeySuffix, data }) => {
+  const { t } = useTranslation();
+  return (
+    <div className="simulation-chart-box">
+      <h3>{title}</h3>
+      <div className="chart-wrapper small">
+        <ResponsiveContainer width="100%" height={260}>
+          <LineChart data={data}>
+            <CartesianGrid strokeDasharray="3 3" stroke="#444" />
+            <XAxis dataKey="game" stroke="#888" hide />
+            <YAxis stroke="#888" />
+            <Tooltip 
+              contentStyle={{ backgroundColor: '#333', border: '1px solid #666', borderRadius: '6px', padding: '8px 12px' }}
+              labelStyle={{ color: '#ffd54f', fontWeight: 'bold' }}
+            />
+            {RACES.map(race => (
+              <Line 
+                key={race} 
+                type="monotone" 
+                dataKey={`${race}_${dataKeySuffix}`} 
+                stroke={getRaceColor(race)} 
+                strokeWidth={2} 
+                dot={false} 
+                name={t(race)}
+              />
+            ))}
+          </LineChart>
+        </ResponsiveContainer>
+      </div>
+    </div>
+  );
+};
+
+const ScoreDiffChartBox = ({ title, data }) => {
+  const { t } = useTranslation();
+  return (
+    <div className="simulation-chart-box">
+      <h3>{title}</h3>
+      <div className="chart-wrapper small">
+        <ResponsiveContainer width="100%" height={260}>
+          <LineChart data={data}>
+            <CartesianGrid strokeDasharray="3 3" stroke="#444" />
+            <XAxis dataKey="game" stroke="#888" hide />
+            <YAxis stroke="#888" />
+            <Tooltip 
+              contentStyle={{ backgroundColor: '#333', border: '1px solid #666', borderRadius: '6px', padding: '8px 12px' }}
+              labelStyle={{ color: '#ffd54f', fontWeight: 'bold' }}
+            />
+            <Line 
+              type="monotone" 
+              dataKey="scoreDiff" 
+              stroke="#9b59b6" 
+              strokeWidth={2.5} 
+              dot={false} 
+              name={t('admin_simulate_legend_1st_last', { defaultValue: '1st vs Last' })}
+            />
+            <Line 
+              type="monotone" 
+              dataKey="scoreDiff1st2nd" 
+              stroke="#2ecc71" 
+              strokeWidth={2.5} 
+              dot={false} 
+              name={t('admin_simulate_legend_1st_2nd', { defaultValue: '1st vs 2nd' })}
+            />
+          </LineChart>
+        </ResponsiveContainer>
+      </div>
+    </div>
+  );
+};
+
 const AdminSimulate = () => {
   const { t } = useTranslation();
   const socket = fallbackSocket;
@@ -32,6 +103,17 @@ const AdminSimulate = () => {
   const [progress, setProgress] = useState(0);
   const [completedGames, setCompletedGames] = useState(0);
   const [report, setReport] = useState(null);
+
+  const [elapsedSec, setElapsedSec] = useState(0.1);
+
+  useEffect(() => {
+    if (!isSimulating) return;
+    const start = Date.now();
+    const interval = setInterval(() => {
+      setElapsedSec(Math.max(0.1, Number(((Date.now() - start) / 1000).toFixed(1))));
+    }, 200);
+    return () => clearInterval(interval);
+  }, [isSimulating]);
 
   const fetchSets = async () => {
     try {
@@ -72,17 +154,6 @@ const AdminSimulate = () => {
       socket.off('simulation:completed', handleCompleted);
     };
   }, [socket, currentJobId, gameCount]);
-
-  const [elapsedSec, setElapsedSec] = useState(0.1);
-
-  useEffect(() => {
-    if (!isSimulating) return;
-    const start = Date.now();
-    const interval = setInterval(() => {
-      setElapsedSec(Math.max(0.1, Number(((Date.now() - start) / 1000).toFixed(1))));
-    }, 200);
-    return () => clearInterval(interval);
-  }, [isSimulating]);
 
   const startParallelSimulation = async () => {
     setIsSimulating(true);
@@ -239,7 +310,7 @@ const AdminSimulate = () => {
             </div>
           </div>
 
-          {/* Charts Row */}
+          {/* Summary Bar Charts Row */}
           <div className="charts-grid-two">
             {/* Win Rate Bar Chart */}
             <div className="simulation-chart-box">
@@ -331,6 +402,37 @@ const AdminSimulate = () => {
               </tbody>
             </table>
           </div>
+
+          {/* 10 Detailed Game-by-Game Line Charts Section */}
+          {report.gameSeries && report.gameSeries.length > 0 && (
+            <div className="detailed-charts-section" style={{ marginTop: '2.5rem' }}>
+              <h3 style={{ color: '#ffd54f', fontSize: '1.4rem', borderBottom: '2px solid #555', paddingBottom: '0.6rem', marginBottom: '1.5rem' }}>
+                📊 {t('admin_simulate_detailed_charts_title', { defaultValue: 'Detailed Game-by-Game Line Charts (First 100 Sessions)' })}
+              </h3>
+              
+              <div className="charts-grid">
+                <ChartBox title={t('admin_simulate_chart1_title', { defaultValue: '1. Points After Round 1 (Early Game)' })} dataKeySuffix="afterR1" data={report.gameSeries} />
+                <ChartBox title={t('admin_simulate_chart2_title', { defaultValue: '2. General Selection by Player with Fewest Points' })} dataKeySuffix="fewestPointsChoice" data={report.gameSeries} />
+                <ChartBox title={t('admin_simulate_chart3_title', { defaultValue: '3. Łączne punkty zdobyte przez rasę w całej grze (Suma z 12 rund)' })} dataKeySuffix="total" data={report.gameSeries} />
+                <ChartBox title={t('admin_simulate_chart4_title', { defaultValue: '4. Final Phase Bonus Points' })} dataKeySuffix="finalBonus" data={report.gameSeries} />
+                <ChartBox title={t('admin_simulate_chart5_title', { defaultValue: '5. Punkty Świadka Jakuba' })} dataKeySuffix="swiadekJakubaPoints" data={report.gameSeries} />
+                <ChartBox title={t('admin_simulate_chart6_title', { defaultValue: '6. Pawns Killed by Jakub (Total)' })} dataKeySuffix="killed" data={report.gameSeries} />
+                <ChartBox title={t('admin_simulate_chart7_title', { defaultValue: '7. Set Placement Points (Total in Game)' })} dataKeySuffix="setPlacement" data={report.gameSeries} />
+                <ScoreDiffChartBox title={t('admin_simulate_chart8_title', { defaultValue: '8. Score Difference: 1st vs Last & 1st vs 2nd (Final)' })} data={report.gameSeries} />
+                <ChartBox title={t('admin_simulate_chart9_title', { defaultValue: '9. Punkty za kablowanie Jakubowi (Razem)' })} dataKeySuffix="passing" data={report.gameSeries} />
+                <ChartBox title={t('admin_simulate_chart10_title', { defaultValue: '10. Punkty z Miłosierdzia Jakuba (Razem)' })} dataKeySuffix="mercyPoints" data={report.gameSeries} />
+              </div>
+
+              <div className="custom-legend-row large" style={{ marginTop: '1.5rem' }}>
+                {RACES.map(race => (
+                  <div key={race} className="legend-stat-item">
+                    <div className={`legend-dot ${race}`} style={{ backgroundColor: getRaceColor(race) }}></div>
+                    <span className="legend-label">{t(race).toUpperCase()}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       )}
     </div>

@@ -450,6 +450,11 @@
   "admin_simulate_hdr_swiadek": "Świadek Pts",
   "admin_simulate_hdr_mercy": "Mercy Pts",
   "admin_simulate_detailed_charts_title": "Detailed Game-by-Game Line Charts (First 100 Sessions)",
+  "admin_simulate_closeness_section_title": "Game Closeness & Catch-Up Strategy Analytics",
+  "admin_simulate_catchup_chart_title": "General Picked by Last-Place Player",
+  "admin_simulate_closeness_chart_title": "1st vs 2nd Margin (Match Closeness)",
+  "admin_simulate_blowout_chart_title": "1st vs 4th Margin (Blowout / Spread)",
+  "admin_simulate_hdr_catchup": "Catch-Up Picks",
   "jakub_range_label": "Range:",
   "jakub_anger_level_title": "Anger Level",
   "jakub_sets_title": "Sets"

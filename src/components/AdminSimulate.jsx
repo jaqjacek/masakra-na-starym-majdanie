@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { io } from 'socket.io-client';
 import { 
-  BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Cell
+  BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell
 } from 'recharts';
 import { PAWN_TYPES } from '../constants/pawnTypes';
 import { RACES } from '../constants/game';
@@ -13,19 +13,13 @@ const fallbackSocket = io(SERVER_URL);
 
 const getRaceColor = (raceId) => PAWN_TYPES.find(p => p.id === raceId)?.color || '#ccc';
 
-const getImbalanceBadgeClass = (score) => {
-  if (score < 10) return 'badge-success';
-  if (score <= 20) return 'badge-warning';
-  return 'badge-danger';
-};
-
 const ChartBox = ({ title, dataKeySuffix, data }) => {
   const { t } = useTranslation();
   return (
     <div className="simulation-chart-box">
       <h3>{title}</h3>
       <div className="chart-wrapper small">
-        <ResponsiveContainer width="100%" height={260}>
+        <ResponsiveContainer width="100%" height={250}>
           <LineChart data={data}>
             <CartesianGrid strokeDasharray="3 3" stroke="#444" />
             <XAxis dataKey="game" stroke="#888" hide />
@@ -58,7 +52,7 @@ const ScoreDiffChartBox = ({ title, data }) => {
     <div className="simulation-chart-box">
       <h3>{title}</h3>
       <div className="chart-wrapper small">
-        <ResponsiveContainer width="100%" height={260}>
+        <ResponsiveContainer width="100%" height={250}>
           <LineChart data={data}>
             <CartesianGrid strokeDasharray="3 3" stroke="#444" />
             <XAxis dataKey="game" stroke="#888" hide />
@@ -206,17 +200,26 @@ const AdminSimulate = () => {
     }, 300);
   };
 
-  const winRateChartData = report ? RACES.map(race => ({
+  const gamesPerSec = isSimulating ? Math.round(completedGames / elapsedSec) : 0;
+
+  // Prepare Catch-Up Choices Chart Data
+  const catchUpData = report?.catchUpChoices ? RACES.map(race => ({
     name: t(race).toUpperCase(),
-    race,
-    winRate: report.races[race]?.winRate || 0,
-    wins: report.races[race]?.wins || 0,
-    meanScore: report.races[race]?.meanScore || 0,
-    stdDev: report.races[race]?.stdDevScore || 0,
+    picks: report.catchUpChoices[race] || 0,
     color: getRaceColor(race)
   })) : [];
 
-  const gamesPerSec = isSimulating ? Math.round(completedGames / elapsedSec) : 0;
+  // Prepare 1st vs 2nd Closeness Chart Data
+  const closenessData = report?.closeness1st2nd ? Object.keys(report.closeness1st2nd).map(bucket => ({
+    bucket,
+    count: report.closeness1st2nd[bucket]
+  })) : [];
+
+  // Prepare 1st vs 4th Blowout Chart Data
+  const blowoutData = report?.blowout1st4th ? Object.keys(report.blowout1st4th).map(bucket => ({
+    bucket,
+    count: report.blowout1st4th[bucket]
+  })) : [];
 
   return (
     <div className="admin-page-content">
@@ -277,20 +280,13 @@ const AdminSimulate = () => {
       {/* Results Dashboard */}
       {report && (
         <div className="simulation-dashboard">
-          {/* Header & Imbalance KPI */}
+          {/* Header */}
           <div className="simulation-summary-header">
             <div>
               <h2>{t('admin_simulate_results_title', { defaultValue: 'Simulation Analytics Report' })}</h2>
               <p style={{ color: '#bbb', marginTop: '4px' }}>
                 {t('admin_simulate_analytics_summary', { count: report.totalGames.toLocaleString(), defaultValue: `Analyzed ${report.totalGames.toLocaleString()} game sessions across parallel worker threads` })}
               </p>
-            </div>
-            
-            <div className="imbalance-kpi-badge">
-              <span className="kpi-label">{t('admin_simulate_imbalance_score', { defaultValue: 'Band Imbalance Score' })}:</span>
-              <span className={`kpi-badge ${getImbalanceBadgeClass(report.bandImbalanceScore)}`}>
-                {report.bandImbalanceScore}%
-              </span>
             </div>
           </div>
 
@@ -304,54 +300,75 @@ const AdminSimulate = () => {
               <span className="kpi-card-title">{t('admin_simulate_kpi_magnetism', { defaultValue: 'Magnetism Triggers' })}</span>
               <span className="kpi-card-val">{report.totalMagnetismCount.toLocaleString()}</span>
             </div>
-            <div className="kpi-card">
-              <span className="kpi-card-title">{t('admin_simulate_kpi_target_balance', { defaultValue: 'Ideal Balance / Band' })}</span>
-              <span className="kpi-card-val" style={{ color: '#2ecc71' }}>25.0%</span>
-            </div>
           </div>
 
-          {/* Summary Bar Charts Row */}
-          <div className="charts-grid-two">
-            {/* Win Rate Bar Chart */}
-            <div className="simulation-chart-box">
-              <h3>{t('admin_simulate_winrate_chart_title', { defaultValue: 'Band Win Rate (%) Distribution' })}</h3>
-              <div className="chart-wrapper">
-                <ResponsiveContainer width="100%" height={280}>
-                  <BarChart data={winRateChartData}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#444" />
-                    <XAxis dataKey="name" stroke="#ccc" />
-                    <YAxis stroke="#ccc" unit="%" domain={[0, 100]} />
-                    <Tooltip 
-                      contentStyle={{ backgroundColor: '#333', border: '1px solid #666', borderRadius: '6px' }}
-                      formatter={(val) => [`${val}%`, 'Win Rate']}
-                    />
-                    <Bar dataKey="winRate" name="Win Rate %">
-                      {winRateChartData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={entry.color} />
-                      ))}
-                    </Bar>
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
-            </div>
+          {/* Section: Game Closeness & Catch-Up Strategy Charts */}
+          <div className="game-closeness-section" style={{ marginBottom: '2.5rem' }}>
+            <h3 style={{ color: '#ffd54f', fontSize: '1.4rem', borderBottom: '2px solid #555', paddingBottom: '0.6rem', marginBottom: '1.5rem' }}>
+              🎯 {t('admin_simulate_closeness_section_title', { defaultValue: 'Game Closeness & Catch-Up Analytics' })}
+            </h3>
 
-            {/* Mean Score vs StdDev Bar Chart */}
-            <div className="simulation-chart-box">
-              <h3>{t('admin_simulate_meanscore_chart_title', { defaultValue: 'Mean Score & Score Variance (StdDev)' })}</h3>
-              <div className="chart-wrapper">
-                <ResponsiveContainer width="100%" height={280}>
-                  <BarChart data={winRateChartData}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#444" />
-                    <XAxis dataKey="name" stroke="#ccc" />
-                    <YAxis stroke="#ccc" />
-                    <Tooltip 
-                      contentStyle={{ backgroundColor: '#333', border: '1px solid #666', borderRadius: '6px' }}
-                    />
-                    <Legend />
-                    <Bar dataKey="meanScore" fill="#3498db" name="Mean Final Score" />
-                    <Bar dataKey="stdDev" fill="#e74c3c" name="StdDev Score Variance" />
-                  </BarChart>
-                </ResponsiveContainer>
+            {/* 3 Analytics Bar Charts Grid */}
+            <div className="charts-grid-three" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '1.5rem' }}>
+              {/* Chart 1: Catch-up General Selections */}
+              <div className="simulation-chart-box">
+                <h3>{t('admin_simulate_catchup_chart_title', { defaultValue: 'General Picked by Last-Place Player' })}</h3>
+                <div className="chart-wrapper">
+                  <ResponsiveContainer width="100%" height={260}>
+                    <BarChart data={catchUpData}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="#444" />
+                      <XAxis dataKey="name" stroke="#ccc" />
+                      <YAxis stroke="#ccc" />
+                      <Tooltip 
+                        contentStyle={{ backgroundColor: '#333', border: '1px solid #666', borderRadius: '6px' }}
+                        formatter={(val) => [`${val.toLocaleString()} picks`, 'Total Selections']}
+                      />
+                      <Bar dataKey="picks" name="Selections">
+                        {catchUpData.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={entry.color} />
+                        ))}
+                      </Bar>
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+
+              {/* Chart 2: 1st vs 2nd Place Margin (Game Closeness) */}
+              <div className="simulation-chart-box">
+                <h3>{t('admin_simulate_closeness_chart_title', { defaultValue: '1st vs 2nd Margin (Match Closeness)' })}</h3>
+                <div className="chart-wrapper">
+                  <ResponsiveContainer width="100%" height={260}>
+                    <BarChart data={closenessData}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="#444" />
+                      <XAxis dataKey="bucket" stroke="#ccc" interval={0} style={{ fontSize: '11px' }} />
+                      <YAxis stroke="#ccc" />
+                      <Tooltip 
+                        contentStyle={{ backgroundColor: '#333', border: '1px solid #666', borderRadius: '6px' }}
+                        formatter={(val) => [`${val.toLocaleString()} games`, 'Frequency']}
+                      />
+                      <Bar dataKey="count" fill="#2ecc71" name="Games Count" />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+
+              {/* Chart 3: 1st vs 4th Place Blowout Margin */}
+              <div className="simulation-chart-box">
+                <h3>{t('admin_simulate_blowout_chart_title', { defaultValue: '1st vs 4th Margin (Blowout / Spread)' })}</h3>
+                <div className="chart-wrapper">
+                  <ResponsiveContainer width="100%" height={260}>
+                    <BarChart data={blowoutData}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="#444" />
+                      <XAxis dataKey="bucket" stroke="#ccc" interval={0} style={{ fontSize: '11px' }} />
+                      <YAxis stroke="#ccc" />
+                      <Tooltip 
+                        contentStyle={{ backgroundColor: '#333', border: '1px solid #666', borderRadius: '6px' }}
+                        formatter={(val) => [`${val.toLocaleString()} games`, 'Frequency']}
+                      />
+                      <Bar dataKey="count" fill="#e74c3c" name="Games Count" />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
               </div>
             </div>
           </div>
@@ -359,15 +376,14 @@ const AdminSimulate = () => {
           {/* Detailed Performance Table */}
           <div className="simulation-table-container">
             <h3 style={{ marginBottom: '12px', color: '#ffd54f' }}>
-              {t('admin_simulate_table_title', { defaultValue: 'Detailed Band Breakdown' })}
+              {t('admin_simulate_table_title', { defaultValue: 'Detailed Herszt Performance Breakdown' })}
             </h3>
             <table className="admin-events-table">
               <thead>
                 <tr>
-                  <th>{t('admin_simulate_hdr_band', { defaultValue: 'Band' })}</th>
-                  <th>{t('admin_simulate_hdr_winrate', { defaultValue: 'Win Rate %' })}</th>
-                  <th>{t('admin_simulate_hdr_wins', { defaultValue: 'Wins' })}</th>
-                  <th>{t('admin_simulate_hdr_mean', { defaultValue: 'Mean Score' })}</th>
+                  <th>{t('admin_simulate_hdr_band', { defaultValue: 'Herszt / Role' })}</th>
+                  <th>{t('admin_simulate_hdr_catchup', { defaultValue: 'Catch-Up Picks' })}</th>
+                  <th>{t('admin_simulate_hdr_mean', { defaultValue: 'Mean Final Points' })}</th>
                   <th>{t('admin_simulate_hdr_stddev', { defaultValue: 'StdDev' })}</th>
                   <th>{t('admin_simulate_hdr_minmax', { defaultValue: 'Min / Max' })}</th>
                   <th>{t('admin_simulate_hdr_killed', { defaultValue: 'Pawns Killed' })}</th>
@@ -386,10 +402,9 @@ const AdminSimulate = () => {
                       </td>
                       <td>
                         <span className="badge-winrate" style={{ backgroundColor: getRaceColor(race) + '33', color: getRaceColor(race), border: `1px solid ${getRaceColor(race)}` }}>
-                          {rStats.winRate}%
+                          {(report.catchUpChoices[race] || 0).toLocaleString()} picks
                         </span>
                       </td>
-                      <td>{rStats.wins.toLocaleString()}</td>
                       <td>{rStats.meanScore}</td>
                       <td>±{rStats.stdDevScore}</td>
                       <td>{rStats.minScore} / {rStats.maxScore}</td>
@@ -413,7 +428,7 @@ const AdminSimulate = () => {
               <div className="charts-grid">
                 <ChartBox title={t('admin_simulate_chart1_title', { defaultValue: '1. Points After Round 1 (Early Game)' })} dataKeySuffix="afterR1" data={report.gameSeries} />
                 <ChartBox title={t('admin_simulate_chart2_title', { defaultValue: '2. General Selection by Player with Fewest Points' })} dataKeySuffix="fewestPointsChoice" data={report.gameSeries} />
-                <ChartBox title={t('admin_simulate_chart3_title', { defaultValue: '3. Łączne punkty zdobyte przez rasę w całej grze (Suma z 12 rund)' })} dataKeySuffix="total" data={report.gameSeries} />
+                <ChartBox title={t('admin_simulate_chart3_title', { defaultValue: '3. Total points scored by band in full game (Sum of 12 rounds)' })} dataKeySuffix="total" data={report.gameSeries} />
                 <ChartBox title={t('admin_simulate_chart4_title', { defaultValue: '4. Final Phase Bonus Points' })} dataKeySuffix="finalBonus" data={report.gameSeries} />
                 <ChartBox title={t('admin_simulate_chart5_title', { defaultValue: '5. Punkty Świadka Jakuba' })} dataKeySuffix="swiadekJakubaPoints" data={report.gameSeries} />
                 <ChartBox title={t('admin_simulate_chart6_title', { defaultValue: '6. Pawns Killed by Jakub (Total)' })} dataKeySuffix="killed" data={report.gameSeries} />

@@ -450,6 +450,11 @@
   "admin_simulate_hdr_swiadek": "Punkty Świadka",
   "admin_simulate_hdr_mercy": "Punkty Miłosierdzia",
   "admin_simulate_detailed_charts_title": "Szczegółowe Wykresy Liniowe Gier (Pierwsze 100 Sesji)",
+  "admin_simulate_closeness_section_title": "Analiza Bliskości Gier i Strategii Nadrabiania",
+  "admin_simulate_catchup_chart_title": "Wybór Generała przez Gracza z Najmniejszą Liczbą Punktów",
+  "admin_simulate_closeness_chart_title": "Różnica 1st vs 2nd Place (Bliskość Meczu)",
+  "admin_simulate_blowout_chart_title": "Różnica 1st vs 4th Place (Dominacja / Przewaga)",
+  "admin_simulate_hdr_catchup": "Wybory z Ostatniego Miejsca",
   "jakub_range_label": "Zasięg:",
   "jakub_anger_level_title": "Poziom Furii",
   "jakub_sets_title": "Zestawy"

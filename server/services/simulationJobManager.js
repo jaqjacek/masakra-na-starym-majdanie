@@ -38,10 +38,24 @@ export function aggregateSimulationResults(rawResults) {
 
   let totalMagnetismCount = 0;
 
+  const catchUpChoices = { vampire: 0, werewolf: 0, ghost: 0, bardak: 0 };
+  const closeness1st2nd = {
+    '0-2 pts (Tight)': 0,
+    '3-5 pts (Close)': 0,
+    '6-10 pts (Moderate)': 0,
+    '>10 pts (Decisive)': 0
+  };
+  const blowout1st4th = {
+    '<10 pts (Tight Spread)': 0,
+    '10-20 pts (Normal Gap)': 0,
+    '21-30 pts (Wide Gap)': 0,
+    '>30 pts (Blowout)': 0
+  };
+
   const gameSeries = rawResults.slice(0, 100).map((result, idx) => {
     const gameEntry = { game: idx + 1 };
     RACES.forEach(race => {
-      const raceData = result.analytics[race] || {};
+      const raceData = result.analytics?.[race] || {};
       gameEntry[`${race}_afterR1`] = raceData.afterR1 || 0;
       gameEntry[`${race}_fewestPointsChoice`] = raceData.fewestPointsChoice || 0;
       gameEntry[`${race}_total`] = raceData.total || 0;
@@ -58,36 +72,58 @@ export function aggregateSimulationResults(rawResults) {
   });
 
   rawResults.forEach(r => {
-    const { analytics } = r;
-    if (analytics.magnetismCount) {
-      totalMagnetismCount += analytics.magnetismCount;
+    const { analytics, scoreDiff, scoreDiff1st2nd } = r;
+    if (analytics) {
+      if (analytics.magnetismCount) {
+        totalMagnetismCount += analytics.magnetismCount;
+      }
+
+      RACES.forEach(race => {
+        if (analytics[race] && analytics[race].fewestPointsChoice) {
+          catchUpChoices[race] += analytics[race].fewestPointsChoice;
+        }
+      });
+
+      // Determine winner
+      let winnerRace = null;
+      let highestTotal = -1;
+      RACES.forEach(race => {
+        const raceData = analytics[race];
+        if (!raceData) return;
+        const totalScore = raceData.total || 0;
+        raceStats[race].scores.push(totalScore);
+        raceStats[race].totalKilled += raceData.killed || 0;
+        raceStats[race].totalSwiadekPoints += raceData.swiadekJakubaPoints || 0;
+        raceStats[race].totalMercyPoints += raceData.mercyPoints || 0;
+        raceStats[race].totalSetPlacement += raceData.setPlacement || 0;
+        raceStats[race].totalPassing += raceData.passing || 0;
+
+        if (totalScore > raceStats[race].maxScore) raceStats[race].maxScore = totalScore;
+        if (totalScore < raceStats[race].minScore) raceStats[race].minScore = totalScore;
+
+        if (totalScore > highestTotal) {
+          highestTotal = totalScore;
+          winnerRace = race;
+        }
+      });
+
+      if (winnerRace) {
+        raceStats[winnerRace].wins += 1;
+      }
     }
 
-    // Determine winner
-    let winnerRace = null;
-    let highestTotal = -1;
-    RACES.forEach(race => {
-      const raceData = analytics[race];
-      if (!raceData) return;
-      const totalScore = raceData.total || 0;
-      raceStats[race].scores.push(totalScore);
-      raceStats[race].totalKilled += raceData.killed || 0;
-      raceStats[race].totalSwiadekPoints += raceData.swiadekJakubaPoints || 0;
-      raceStats[race].totalMercyPoints += raceData.mercyPoints || 0;
-      raceStats[race].totalSetPlacement += raceData.setPlacement || 0;
-      raceStats[race].totalPassing += raceData.passing || 0;
+    if (scoreDiff1st2nd !== undefined) {
+      if (scoreDiff1st2nd <= 2) closeness1st2nd['0-2 pts (Tight)'] += 1;
+      else if (scoreDiff1st2nd <= 5) closeness1st2nd['3-5 pts (Close)'] += 1;
+      else if (scoreDiff1st2nd <= 10) closeness1st2nd['6-10 pts (Moderate)'] += 1;
+      else closeness1st2nd['>10 pts (Decisive)'] += 1;
+    }
 
-      if (totalScore > raceStats[race].maxScore) raceStats[race].maxScore = totalScore;
-      if (totalScore < raceStats[race].minScore) raceStats[race].minScore = totalScore;
-
-      if (totalScore > highestTotal) {
-        highestTotal = totalScore;
-        winnerRace = race;
-      }
-    });
-
-    if (winnerRace) {
-      raceStats[winnerRace].wins += 1;
+    if (scoreDiff !== undefined) {
+      if (scoreDiff < 10) blowout1st4th['<10 pts (Tight Spread)'] += 1;
+      else if (scoreDiff <= 20) blowout1st4th['10-20 pts (Normal Gap)'] += 1;
+      else if (scoreDiff <= 30) blowout1st4th['21-30 pts (Wide Gap)'] += 1;
+      else blowout1st4th['>30 pts (Blowout)'] += 1;
     }
   });
 
@@ -103,7 +139,6 @@ export function aggregateSimulationResults(rawResults) {
     winRates.push(stats.winRate);
   });
 
-  // Calculate Band Imbalance Score (stdDev of win percentages around 25%)
   const imbalanceScore = Number(calculateStdDev(winRates, 25).toFixed(2));
 
   return {
@@ -111,6 +146,9 @@ export function aggregateSimulationResults(rawResults) {
     totalMagnetismCount,
     bandImbalanceScore: imbalanceScore,
     races: raceStats,
+    catchUpChoices,
+    closeness1st2nd,
+    blowout1st4th,
     gameSeries
   };
 }

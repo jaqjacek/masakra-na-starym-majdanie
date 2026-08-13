@@ -92,7 +92,7 @@ const Footer = () => {
               title={t('choose_language', { defaultValue: 'Wybierz język / Choose language' })}
             >
               <span className="search-icon">🔍</span>
-              <span className="lang-flag">{currentLangItem.flag}</span>
+              <span className="lang-flag-corner">{currentLangItem.flag}</span>
             </button>
           </div>
           <span className="version-badge">{VERSION_INFO.tag}</span>

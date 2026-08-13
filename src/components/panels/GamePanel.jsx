@@ -205,7 +205,7 @@ const GamePanel = ({
                   }
                 }} 
               />
-              😇 Faza Miłosierdzia
+              {t('options_mercy_phase', { defaultValue: '😇 Mercy Phase' })}
             </label>
             <label className="options-checkbox-label">
               <input 

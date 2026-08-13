@@ -391,7 +391,7 @@ const AdminSimulate = () => {
                   <th>{t('admin_simulate_hdr_stddev', { defaultValue: 'StdDev' })}</th>
                   <th>{t('admin_simulate_hdr_minmax', { defaultValue: 'Min / Max' })}</th>
                   <th>{t('admin_simulate_hdr_killed', { defaultValue: 'Pawns Killed' })}</th>
-                  <th>{t('admin_simulate_hdr_swiadek', { defaultValue: 'Świadek Pts' })}</th>
+                  <th>{t('admin_simulate_hdr_swiadek', { defaultValue: 'Witness Pts' })}</th>
                   <th>{t('admin_simulate_hdr_mercy', { defaultValue: 'Mercy Pts' })}</th>
                 </tr>
               </thead>
@@ -434,12 +434,12 @@ const AdminSimulate = () => {
                 <ChartBox title={t('admin_simulate_chart2_title', { defaultValue: '2. General Selection by Player with Fewest Points' })} dataKeySuffix="fewestPointsChoice" data={report.gameSeries} />
                 <ChartBox title={t('admin_simulate_chart3_title', { defaultValue: '3. Total points scored by band in full game (Sum of 12 rounds)' })} dataKeySuffix="total" data={report.gameSeries} />
                 <ChartBox title={t('admin_simulate_chart4_title', { defaultValue: '4. Final Phase Bonus Points' })} dataKeySuffix="finalBonus" data={report.gameSeries} />
-                <ChartBox title={t('admin_simulate_chart5_title', { defaultValue: '5. Punkty Świadka Jakuba' })} dataKeySuffix="swiadekJakubaPoints" data={report.gameSeries} />
+                <ChartBox title={t('admin_simulate_chart5_title', { defaultValue: '5. Jakub Witness Points' })} dataKeySuffix="swiadekJakubaPoints" data={report.gameSeries} />
                 <ChartBox title={t('admin_simulate_chart6_title', { defaultValue: '6. Pawns Killed by Jakub (Total)' })} dataKeySuffix="killed" data={report.gameSeries} />
                 <ChartBox title={t('admin_simulate_chart7_title', { defaultValue: '7. Set Placement Points (Total in Game)' })} dataKeySuffix="setPlacement" data={report.gameSeries} />
                 <ScoreDiffChartBox title={t('admin_simulate_chart8_title', { defaultValue: '8. Score Difference: 1st vs Last & 1st vs 2nd (Final)' })} data={report.gameSeries} />
-                <ChartBox title={t('admin_simulate_chart9_title', { defaultValue: '9. Punkty za kablowanie Jakubowi (Razem)' })} dataKeySuffix="passing" data={report.gameSeries} />
-                <ChartBox title={t('admin_simulate_chart10_title', { defaultValue: '10. Punkty z Miłosierdzia Jakuba (Razem)' })} dataKeySuffix="mercyPoints" data={report.gameSeries} />
+                <ChartBox title={t('admin_simulate_chart9_title', { defaultValue: '9. Points for snitching to Jakub (Total)' })} dataKeySuffix="passing" data={report.gameSeries} />
+                <ChartBox title={t('admin_simulate_chart10_title', { defaultValue: '10. Jakub Mercy Points (Total)' })} dataKeySuffix="mercyPoints" data={report.gameSeries} />
               </div>
 
               <div className="custom-legend-row large" style={{ marginTop: '1.5rem' }}>

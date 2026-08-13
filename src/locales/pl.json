@@ -458,5 +458,16 @@
   "admin_simulate_hdr_catchup": "Wybory z Ostatniego Miejsca",
   "jakub_range_label": "Zasięg:",
   "jakub_anger_level_title": "Poziom Furii",
-  "jakub_sets_title": "Zestawy"
+  "jakub_sets_title": "Zestawy",
+  "options_mercy_phase": "😇 Faza Miłosierdzia",
+  "stats_mercy_disabled_tooltip": "Faza Miłosierdzia wyłączona",
+  "stats_no_mercy": "Brak miłosierdzia",
+  "stats_tooltip_killed": "Zabici przez Jakuba",
+  "stats_killed": "Zabici",
+  "stats_tooltip_played_sets": "Zagrane zestawy",
+  "stats_played_sets": "Zestawy",
+  "animal_magnetism_banner": "ZWIERZĘCY MAGNETYZM!",
+  "animal_magnetism_text": "Niepohamowany Zwierzęcy Magnetyzm",
+  "pdf_page_break": "✂ Podział strony w PDF",
+  "admin_mercy_phase_chart_title": "😇 Faza Miłosierdzia - Skumulowane punkty na koniec rundy"
 }

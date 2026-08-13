@@ -274,7 +274,7 @@ function App() {
               type: 'text',
               regionId: log.regionId,
               race: 'vampire', // to give it a red color
-              text: `Niepochamowany zwierzęcy Magnetyzm`,
+              text: t('animal_magnetism_text', { defaultValue: 'Unstoppable Animal Magnetism' }),
               isMagnetism: true,
               timestamp: Date.now()
             });
@@ -767,16 +767,16 @@ function App() {
                   <span className="metric-label">{t('stats_passing')}</span>
                   <span className="metric-value">+{passing}</span>
                 </div>
-                <div className="metric-item mercy-metric" title={gameState.mercyActive === false ? "Faza Miłosierdzia wyłączona" : t('stats_tooltip_mercy', { defaultValue: 'Punkty z Miłosierdzia Jakuba' })}>
-                  <span className="metric-label">😇 {t('stats_mercy', { defaultValue: 'Miłosierdzie' })}</span>
-                  <span className="metric-value">{gameState.mercyActive === false ? "Brak miłosierdzia" : `+${mercy}`}</span>
+                <div className="metric-item mercy-metric" title={gameState.mercyActive === false ? t('stats_mercy_disabled_tooltip', { defaultValue: 'Mercy Phase disabled' }) : t('stats_tooltip_mercy', { defaultValue: 'Points from Jakub\'s Mercy' })}>
+                  <span className="metric-label">😇 {t('stats_mercy', { defaultValue: 'Mercy' })}</span>
+                  <span className="metric-value">{gameState.mercyActive === false ? t('stats_no_mercy', { defaultValue: 'No mercy' }) : `+${mercy}`}</span>
                 </div>
-                <div className="metric-item killed-metric" title="Zabici przez Jakuba">
-                  <span className="metric-label">💀 Zabici</span>
+                <div className="metric-item killed-metric" title={t('stats_tooltip_killed', { defaultValue: 'Killed by Jakub' })}>
+                  <span className="metric-label">💀 {t('stats_killed', { defaultValue: 'Killed' })}</span>
                   <span className="metric-value">-{killed}</span>
                 </div>
-                <div className="metric-item sets-metric" title="Zagrane zestawy">
-                  <span className="metric-label">🃏 Zestawy</span>
+                <div className="metric-item sets-metric" title={t('stats_tooltip_played_sets', { defaultValue: 'Played sets' })}>
+                  <span className="metric-label">🃏 {t('stats_played_sets', { defaultValue: 'Sets' })}</span>
                   <span className="metric-value">{setsCount}</span>
                 </div>
               </div>

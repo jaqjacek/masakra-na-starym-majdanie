@@ -458,5 +458,16 @@
   "admin_simulate_hdr_catchup": "Volby z Posledního Místa",
   "jakub_range_label": "Dosah:",
   "jakub_anger_level_title": "Úroveň Zuřivosti",
-  "jakub_sets_title": "Sady"
+  "jakub_sets_title": "Sady",
+  "options_mercy_phase": "😇 Fáze Milosrdenství",
+  "stats_mercy_disabled_tooltip": "Fáze Milosrdenství vypnuta",
+  "stats_no_mercy": "Bez milosrdenství",
+  "stats_tooltip_killed": "Zabiti Jakubem",
+  "stats_killed": "Zabitých",
+  "stats_tooltip_played_sets": "Zahrané sady",
+  "stats_played_sets": "Sady",
+  "animal_magnetism_banner": "ZVÍŘECÍ MAGNETISMUS!",
+  "animal_magnetism_text": "Nezkrotný Zvířecí Magnetismus",
+  "pdf_page_break": "✂ Zlom stránky v PDF",
+  "admin_mercy_phase_chart_title": "😇 Fáze Milosrdenství - Skumulované body na konci kola"
 }

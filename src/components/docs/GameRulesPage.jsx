@@ -62,13 +62,16 @@ import scoreExampleW3Img from '../../assets/img/socre_example_w3.png';
 import scoreExampleW3B2Img from '../../assets/img/socre_example_w3_b2.png';
 import scoreExampleW4G2Img from '../../assets/img/socre_example_w4_g2.png';
 
-const PageBreak = () => (
-  <div className="pdf-page-break">
-    <div className="no-print pdf-page-break-visual">
-      <span>✂ Podział strony w PDF</span>
+const PageBreak = () => {
+  const { t } = useTranslation();
+  return (
+    <div className="pdf-page-break">
+      <div className="no-print pdf-page-break-visual">
+        <span>{t('pdf_page_break', { defaultValue: '✂ PDF Page Break' })}</span>
+      </div>
     </div>
-  </div>
-);
+  );
+};
 
 const GameRulesPage = () => {
   const { t, lang } = useTranslation();

@@ -1,8 +1,10 @@
 import React from 'react';
+import { useTranslation } from '../../hooks/useTranslation';
 
-// Renders visual effects like explosions, floating points, and Zwierzęcy Magnetyzm aura shockwaves over the board.
+// Renders visual effects like explosions, floating points, and animal magnetism aura shockwaves over the board.
 // Requires visualEffects array: [{ id, type: 'explosion' | 'text' | 'magnetism', regionId, race, text, timestamp, x, y }]
 const VisualEffectsManager = ({ visualEffects, regions, visible = true }) => {
+  const { t } = useTranslation();
   if (!visible || !visualEffects || visualEffects.length === 0) return null;
 
   return (
@@ -32,7 +34,7 @@ const VisualEffectsManager = ({ visualEffects, regions, visible = true }) => {
                 className="effect-floating-text magnetism-banner"
                 style={style}
               >
-                {effect.text || 'ZWIERZĘCY MAGNETYZM!'}
+                {effect.text || t('animal_magnetism_banner', { defaultValue: 'ANIMAL MAGNETISM!' })}
               </div>
             </React.Fragment>
           );

@@ -5,8 +5,10 @@ import { SERVER_URL } from '../../constants/constants';
 import SetsPanel from './SetsPanel';
 
 import Footer from '../Footer';
+import { useTranslation } from '../../hooks/useTranslation';
 
 const AdminPanel = () => {
+  const { t } = useTranslation();
   const [history, setHistory] = useState([]); // Array of { data, setName, id }
   const [isSimulating, setIsSimulating] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -309,7 +311,9 @@ const AdminPanel = () => {
 
                 {entry.mercyData && (
                   <>
-                    <h3 style={{ margin: '1.5rem 0 0.5rem 0', color: '#ffd54f', textAlign: 'center' }}>😇 Faza Miłosierdzia - Skumulowane punkty na koniec rundy</h3>
+                    <h3 style={{ margin: '1.5rem 0 0.5rem 0', color: '#ffd54f', textAlign: 'center' }}>
+                      {t('admin_mercy_phase_chart_title', { defaultValue: '😇 Jakub\'s Mercy Phase - Cumulative points at end of round' })}
+                    </h3>
                     <div className="chart-wrapper">
                       <ResponsiveContainer width="100%" height={300}>
                         <LineChart data={entry.mercyData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>

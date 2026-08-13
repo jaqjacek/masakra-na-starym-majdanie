@@ -23,11 +23,11 @@ const Footer = () => {
       <div className="footer-content">
         <div className="language-selector" style={{ display: 'flex', gap: '8px', marginRight: '16px' }}>
           <button 
-            onClick={() => changeLanguage('en')} 
-            className={`lang-btn ${lang === 'en' ? 'active' : ''}`}
+            onClick={() => changeLanguage('fi')} 
+            className={`lang-btn ${lang === 'fi' ? 'active' : ''}`}
             style={{ 
               background: 'none', 
-              border: lang === 'en' ? '1px solid #fff' : '1px solid transparent', 
+              border: lang === 'fi' ? '1px solid #fff' : '1px solid transparent', 
               borderRadius: '4px', 
               cursor: 'pointer', 
               fontSize: '18px', 
@@ -35,16 +35,16 @@ const Footer = () => {
               display: 'flex',
               alignItems: 'center'
             }}
-            title="English"
+            title="Suomi"
           >
-            🇬🇧
+            🇫🇮
           </button>
           <button 
-            onClick={() => changeLanguage('pl')} 
-            className={`lang-btn ${lang === 'pl' ? 'active' : ''}`}
+            onClick={() => changeLanguage('sv')} 
+            className={`lang-btn ${lang === 'sv' ? 'active' : ''}`}
             style={{ 
               background: 'none', 
-              border: lang === 'pl' ? '1px solid #fff' : '1px solid transparent', 
+              border: lang === 'sv' ? '1px solid #fff' : '1px solid transparent', 
               borderRadius: '4px', 
               cursor: 'pointer', 
               fontSize: '18px', 
@@ -52,60 +52,9 @@ const Footer = () => {
               display: 'flex',
               alignItems: 'center'
             }}
-            title="Polski"
+            title="Svenska"
           >
-            🇵🇱
-          </button>
-          <button 
-            onClick={() => changeLanguage('cs')} 
-            className={`lang-btn ${lang === 'cs' ? 'active' : ''}`}
-            style={{ 
-              background: 'none', 
-              border: lang === 'cs' ? '1px solid #fff' : '1px solid transparent', 
-              borderRadius: '4px', 
-              cursor: 'pointer', 
-              fontSize: '18px', 
-              padding: '2px 6px',
-              display: 'flex',
-              alignItems: 'center'
-            }}
-            title="Čeština"
-          >
-            🇨🇿
-          </button>
-          <button 
-            onClick={() => changeLanguage('de')} 
-            className={`lang-btn ${lang === 'de' ? 'active' : ''}`}
-            style={{ 
-              background: 'none', 
-              border: lang === 'de' ? '1px solid #fff' : '1px solid transparent', 
-              borderRadius: '4px', 
-              cursor: 'pointer', 
-              fontSize: '18px', 
-              padding: '2px 6px',
-              display: 'flex',
-              alignItems: 'center'
-            }}
-            title="Deutsch"
-          >
-            🇩🇪
-          </button>
-          <button 
-            onClick={() => changeLanguage('es')} 
-            className={`lang-btn ${lang === 'es' ? 'active' : ''}`}
-            style={{ 
-              background: 'none', 
-              border: lang === 'es' ? '1px solid #fff' : '1px solid transparent', 
-              borderRadius: '4px', 
-              cursor: 'pointer', 
-              fontSize: '18px', 
-              padding: '2px 6px',
-              display: 'flex',
-              alignItems: 'center'
-            }}
-            title="Español"
-          >
-            🇪🇸
+            🇸🇪
           </button>
           <button 
             onClick={() => changeLanguage('it')} 
@@ -142,11 +91,11 @@ const Footer = () => {
             🇫🇷
           </button>
           <button 
-            onClick={() => changeLanguage('fi')} 
-            className={`lang-btn ${lang === 'fi' ? 'active' : ''}`}
+            onClick={() => changeLanguage('cs')} 
+            className={`lang-btn ${lang === 'cs' ? 'active' : ''}`}
             style={{ 
               background: 'none', 
-              border: lang === 'fi' ? '1px solid #fff' : '1px solid transparent', 
+              border: lang === 'cs' ? '1px solid #fff' : '1px solid transparent', 
               borderRadius: '4px', 
               cursor: 'pointer', 
               fontSize: '18px', 
@@ -154,16 +103,16 @@ const Footer = () => {
               display: 'flex',
               alignItems: 'center'
             }}
-            title="Suomi"
+            title="Čeština"
           >
-            🇫🇮
+            🇨🇿
           </button>
           <button 
-            onClick={() => changeLanguage('sv')} 
-            className={`lang-btn ${lang === 'sv' ? 'active' : ''}`}
+            onClick={() => changeLanguage('es')} 
+            className={`lang-btn ${lang === 'es' ? 'active' : ''}`}
             style={{ 
               background: 'none', 
-              border: lang === 'sv' ? '1px solid #fff' : '1px solid transparent', 
+              border: lang === 'es' ? '1px solid #fff' : '1px solid transparent', 
               borderRadius: '4px', 
               cursor: 'pointer', 
               fontSize: '18px', 
@@ -171,9 +120,60 @@ const Footer = () => {
               display: 'flex',
               alignItems: 'center'
             }}
-            title="Svenska"
+            title="Español"
           >
-            🇸🇪
+            🇪🇸
+          </button>
+          <button 
+            onClick={() => changeLanguage('de')} 
+            className={`lang-btn ${lang === 'de' ? 'active' : ''}`}
+            style={{ 
+              background: 'none', 
+              border: lang === 'de' ? '1px solid #fff' : '1px solid transparent', 
+              borderRadius: '4px', 
+              cursor: 'pointer', 
+              fontSize: '18px', 
+              padding: '2px 6px',
+              display: 'flex',
+              alignItems: 'center'
+            }}
+            title="Deutsch"
+          >
+            🇩🇪
+          </button>
+          <button 
+            onClick={() => changeLanguage('en')} 
+            className={`lang-btn ${lang === 'en' ? 'active' : ''}`}
+            style={{ 
+              background: 'none', 
+              border: lang === 'en' ? '1px solid #fff' : '1px solid transparent', 
+              borderRadius: '4px', 
+              cursor: 'pointer', 
+              fontSize: '18px', 
+              padding: '2px 6px',
+              display: 'flex',
+              alignItems: 'center'
+            }}
+            title="English"
+          >
+            🇬🇧
+          </button>
+          <button 
+            onClick={() => changeLanguage('pl')} 
+            className={`lang-btn ${lang === 'pl' ? 'active' : ''}`}
+            style={{ 
+              background: 'none', 
+              border: lang === 'pl' ? '1px solid #fff' : '1px solid transparent', 
+              borderRadius: '4px', 
+              cursor: 'pointer', 
+              fontSize: '18px', 
+              padding: '2px 6px',
+              display: 'flex',
+              alignItems: 'center'
+            }}
+            title="Polski"
+          >
+            🇵🇱
           </button>
         </div>
         <span className="version-badge">{VERSION_INFO.tag}</span>

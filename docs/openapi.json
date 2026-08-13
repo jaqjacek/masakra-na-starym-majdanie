@@ -137,13 +137,174 @@
           }
         ],
         "responses": {
-          "200": {
-            "description": "Set duplicated successfully"
-          },
-          "404": {
-            "description": "Source set not found"
-          }
+          "200": { "description": "Set duplicated successfully" },
+          "404": { "description": "Source set not found" }
         }
+      }
+    },
+    "/api/sets/save/{setName}": {
+      "post": {
+        "summary": "Save set configuration",
+        "parameters": [
+          { "name": "setName", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "setsData": { "type": "object", "description": "Sets configuration data" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Set saved and cleaned successfully" },
+          "404": { "description": "Set not found" }
+        }
+      }
+    },
+    "/api/sets/sort/{setName}": {
+      "post": {
+        "summary": "Sort pawns and piles in set",
+        "parameters": [
+          { "name": "setName", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "responses": {
+          "200": { "description": "Set sorted successfully" },
+          "404": { "description": "Set not found" }
+        }
+      }
+    },
+    "/api/sets/default/{setName}": {
+      "post": {
+        "summary": "Set set as global default for new games",
+        "parameters": [
+          { "name": "setName", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "setsData": { "type": "object", "description": "Optional set payload to save and apply" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Set configured as default" },
+          "404": { "description": "Source set not found" }
+        }
+      }
+    },
+    "/api/events": {
+      "get": {
+        "summary": "List Available Event Lists",
+        "responses": { "200": { "description": "Array of event list names" } }
+      }
+    },
+    "/api/events/all": {
+      "get": {
+        "summary": "Get Master Events List",
+        "description": "Returns the complete master list of all possible game events from events_all.json.",
+        "responses": {
+          "200": { "description": "Master events array" },
+          "404": { "description": "Master events file not found" }
+        }
+      }
+    },
+    "/api/events/details/{listName}": {
+      "get": {
+        "summary": "Get Event List Details",
+        "parameters": [
+          { "name": "listName", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "responses": {
+          "200": { "description": "Event list items array" },
+          "404": { "description": "Event list not found" }
+        }
+      }
+    },
+    "/api/events/create": {
+      "post": {
+        "summary": "Create a New Event List",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["name"],
+                "properties": {
+                  "name": { "type": "string", "description": "Name for the new event list" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Event list created" },
+          "400": { "description": "Invalid name or list already exists" }
+        }
+      }
+    },
+    "/api/events/save/{listName}": {
+      "post": {
+        "summary": "Save Event List",
+        "parameters": [
+          { "name": "listName", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "eventsData": { "type": "array", "items": { "type": "object" }, "description": "Events array" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Event list saved successfully" },
+          "404": { "description": "Event list not found" }
+        }
+      }
+    },
+    "/api/events/default/{listName}": {
+      "post": {
+        "summary": "Set Default Event List",
+        "parameters": [
+          { "name": "listName", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "eventsData": { "type": "array", "items": { "type": "object" }, "description": "Optional events array payload" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Event list set as default" },
+          "404": { "description": "Source event list not found" }
+        }
+      }
+    },
+    "/api/map": {
+      "delete": {
+        "summary": "Delete All Games",
+        "description": "Deletes all active game sessions and cleans the server/games directory.",
+        "responses": { "200": { "description": "All games deleted" } }
       }
     },
     "/api/map/{gameId}": {
@@ -193,6 +354,28 @@
         "responses": { "200": { "description": "Game initialized" } }
       }
     },
+    "/api/map/{gameId}/add": {
+      "get": {
+        "summary": "Add Pawn to Region",
+        "parameters": [
+          { "name": "gameId", "in": "path", "required": true, "schema": { "type": "string" } },
+          { "name": "region", "in": "query", "required": true, "schema": { "type": "integer" } },
+          { "name": "pawn", "in": "query", "required": true, "schema": { "type": "string" } }
+        ],
+        "responses": { "200": { "description": "Pawn added" }, "400": { "description": "Invalid region" } }
+      }
+    },
+    "/api/map/{gameId}/remove": {
+      "get": {
+        "summary": "Remove Pawn from Region",
+        "parameters": [
+          { "name": "gameId", "in": "path", "required": true, "schema": { "type": "string" } },
+          { "name": "region", "in": "query", "required": true, "schema": { "type": "integer" } },
+          { "name": "pawn", "in": "query", "required": true, "schema": { "type": "string" } }
+        ],
+        "responses": { "200": { "description": "Pawn removed" }, "400": { "description": "Pawn not found in region" } }
+      }
+    },
     "/api/map/{gameId}/event-phase": {
       "post": {
         "summary": "Execute Event Phase",
@@ -223,20 +406,20 @@
     },
     "/api/map/{gameId}/saves": {
       "get": {
-        "summary": "List Round Saves",
-        "description": "Returns a list of round numbers for which backup saves exist in the game session directory.",
+        "summary": "List Available Snapshots",
+        "description": "Returns a list of saved round snapshots for the specified game session.",
         "parameters": [
           { "name": "gameId", "in": "path", "required": true, "schema": { "type": "string" } }
         ],
         "responses": {
           "200": {
-            "description": "List of round numbers retrieved successfully",
+            "description": "List of snapshot IDs retrieved successfully",
             "content": {
               "application/json": {
                 "schema": {
                   "type": "object",
                   "properties": {
-                    "saves": { "type": "array", "items": { "type": "integer" } }
+                    "saves": { "type": "array", "items": { "type": "string" } }
                   }
                 }
               }
@@ -245,18 +428,17 @@
         }
       }
     },
-    "/api/map/{gameId}/load-round/{round}": {
+    "/api/map/{gameId}/load-snapshot/{snapshotId}": {
       "post": {
-        "summary": "Load Round Save",
-        "description": "Restores the state of a specific round from backup files, updates the game state, deletes all backups of subsequent rounds, and broadcasts the state.",
+        "summary": "Restore Game Snapshot",
+        "description": "Restores the game state from a specific snapshot and broadcasts to all connected players.",
         "parameters": [
           { "name": "gameId", "in": "path", "required": true, "schema": { "type": "string" } },
-          { "name": "round", "in": "path", "required": true, "schema": { "type": "integer" } }
+          { "name": "snapshotId", "in": "path", "required": true, "schema": { "type": "string" } }
         ],
         "responses": {
-          "200": { "description": "Round save loaded and state restored successfully" },
-          "400": { "description": "Invalid round number" },
-          "500": { "description": "Failed to load round save" }
+          "200": { "description": "Snapshot restored successfully" },
+          "500": { "description": "Failed to load snapshot" }
         }
       }
     },

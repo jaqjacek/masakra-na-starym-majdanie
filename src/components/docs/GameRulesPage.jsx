@@ -4,6 +4,7 @@ import { useTranslation } from '../../hooks/useTranslation';
 
 import html2pdf from 'html2pdf.js';
 import packageJson from '../../../package.json';
+import Footer from '../Footer';
 
 import coverImg from '../../assets/img/Cover_01_1k.jpg';
 import titleImgPl from '../../assets/img/Title_1k.jpg';
@@ -605,6 +606,9 @@ const GameRulesPage = () => {
       <footer className="rulebook-footer">
         <p>{t('rules_footer_note')}</p>
       </footer>
+      <div className="no-print">
+        <Footer />
+      </div>
     </div>
   );
 };

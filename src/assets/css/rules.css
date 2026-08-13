@@ -1,7 +1,7 @@
 /* Rulebook Styling - Magazine Style */
 .rulebook-wrapper {
   max-width: 210mm; /* A4 Width */
-  margin: 40px auto;
+  margin: 40px auto 60px auto;
   padding: 0; /* Remove padding to let cover go edge-to-edge */
   background-color: #f4f1ea; /* "Old paper" color */
   color: #2c3e50;

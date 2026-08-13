@@ -1,523 +1,1611 @@
+// Multi-language Translation Engine for Game Logs
 export const raceMaps = {
-  zh: {
-    'Wampiry': '吸血鬼', 'Wilkołaki': '狼人', 'Duchy': '幽灵', 'Bardaki': '巴尔达克',
-    'vampire': '吸血鬼', 'werewolf': '狼人', 'ghost': '幽灵', 'bardak': '巴尔达克',
-    'V': '吸血鬼', 'W': '狼人', 'G': '幽灵', 'B': '巴尔达克'
+  "pl": {
+    "Wampiry": "Wampiry",
+    "Wilkołaki": "Wilkołaki",
+    "Duchy": "Duchy",
+    "Bardaki": "Bardaki",
+    "vampire": "Wampiry",
+    "werewolf": "Wilkołaki",
+    "ghost": "Duchy",
+    "bardak": "Bardaki",
+    "V": "Wampiry",
+    "W": "Wilkołaki",
+    "G": "Duchy",
+    "B": "Bardaki"
   },
-  ja: {
-    'Wampiry': '吸血鬼', 'Wilkołaki': '人狼', 'Duchy': '亡霊', 'Bardaki': 'バルダック',
-    'vampire': '吸血鬼', 'werewolf': '人狼', 'ghost': '亡霊', 'bardak': 'バルダック',
-    'V': '吸血鬼', 'W': '人狼', 'G': '亡霊', 'B': 'バルダック'
+  "en": {
+    "Wampiry": "Vampires",
+    "Wilkołaki": "Werewolves",
+    "Duchy": "Ghosts",
+    "Bardaki": "Bardaks",
+    "vampire": "Vampires",
+    "werewolf": "Werewolves",
+    "ghost": "Ghosts",
+    "bardak": "Bardaks",
+    "V": "Vampires",
+    "W": "Werewolves",
+    "G": "Ghosts",
+    "B": "Bardaks"
   },
-  ko: {
-    'Wampiry': '뱀파이어', 'Wilkołaki': '늑대인간', 'Duchy': '유령', 'Bardaki': '바르닥',
-    'vampire': '뱀파이어', 'werewolf': '늑대인간', 'ghost': '유령', 'bardak': '바르닥',
-    'V': '뱀파이어', 'W': '늑대인간', 'G': '유령', 'B': '바르닥'
+  "zh": {
+    "Wampiry": "吸血鬼",
+    "Wilkołaki": "狼人",
+    "Duchy": "幽灵",
+    "Bardaki": "巴尔达克",
+    "vampire": "吸血鬼",
+    "werewolf": "狼人",
+    "ghost": "幽灵",
+    "bardak": "巴尔达克",
+    "V": "吸血鬼",
+    "W": "狼人",
+    "G": "幽灵",
+    "B": "巴尔达克"
   },
-  uk: {
-    'Wampiry': 'Вампіри', 'Wilkołaki': 'Вовкулаки', 'Duchy': 'Привиди', 'Bardaki': 'Бардаки',
-    'vampire': 'Вампіри', 'werewolf': 'Вовкулаки', 'ghost': 'Привиди', 'bardak': 'Бардаки',
-    'V': 'Вампіри', 'W': 'Вовкулаки', 'G': 'Привиди', 'B': 'Бардаки'
+  "ja": {
+    "Wampiry": "吸血鬼",
+    "Wilkołaki": "人狼",
+    "Duchy": "亡霊",
+    "Bardaki": "バルダック",
+    "vampire": "吸血鬼",
+    "werewolf": "人狼",
+    "ghost": "亡霊",
+    "bardak": "バルダック",
+    "V": "吸血鬼",
+    "W": "人狼",
+    "G": "亡霊",
+    "B": "バルダック"
   },
-  ru: {
-    'Wampiry': 'Вампиры', 'Wilkołaki': 'Оборотни', 'Duchy': 'Призраки', 'Bardaki': 'Бардаки',
-    'vampire': 'Вампиры', 'werewolf': 'Оборотни', 'ghost': 'Призраки', 'bardak': 'Бардаки',
-    'V': 'Вампиры', 'W': 'Оборотни', 'G': 'Призраки', 'B': 'Бардаки'
+  "ko": {
+    "Wampiry": "뱀파이어",
+    "Wilkołaki": "늑대인간",
+    "Duchy": "유령",
+    "Bardaki": "바르닥",
+    "vampire": "뱀파이어",
+    "werewolf": "늑대인간",
+    "ghost": "유령",
+    "bardak": "바르닥",
+    "V": "뱀파이어",
+    "W": "늑대인간",
+    "G": "유령",
+    "B": "바르닥"
   },
-  pt: {
-    'Wampiry': 'Vampiros', 'Wilkołaki': 'Lobisomens', 'Duchy': 'Fantasmas', 'Bardaki': 'Bardaks',
-    'vampire': 'Vampiros', 'werewolf': 'Lobisomens', 'ghost': 'Fantasmas', 'bardak': 'Bardaks',
-    'V': 'Vampiros', 'W': 'Lobisomens', 'G': 'Fantasmas', 'B': 'Bardaks'
+  "ru": {
+    "Wampiry": "Вампиры",
+    "Wilkołaki": "Оборотни",
+    "Duchy": "Призраки",
+    "Bardaki": "Бардаки",
+    "vampire": "Вампиры",
+    "werewolf": "Оборотни",
+    "ghost": "Призраки",
+    "bardak": "Бардаки",
+    "V": "Вампиры",
+    "W": "Оборотни",
+    "G": "Призраки",
+    "B": "Бардаки"
   },
-  cs: {
-    'Wampiry': 'Upíři', 'Wilkołaki': 'Vlkodlaci', 'Duchy': 'Duchové', 'Bardaki': 'Bardaci',
-    'vampire': 'Upíři', 'werewolf': 'Vlkodlaci', 'ghost': 'Duchové', 'bardak': 'Bardaci',
-    'V': 'Upíři', 'W': 'Vlkodlaci', 'G': 'Duchové', 'B': 'Bardaci'
+  "uk": {
+    "Wampiry": "Вампіри",
+    "Wilkołaki": "Вовкулаки",
+    "Duchy": "Привиди",
+    "Bardaki": "Бардаки",
+    "vampire": "Вампіри",
+    "werewolf": "Вовкулаки",
+    "ghost": "Привиди",
+    "bardak": "Бардаки",
+    "V": "Вампіри",
+    "W": "Вовкулаки",
+    "G": "Привиди",
+    "B": "Бардаки"
   },
-  de: {
-    'Wampiry': 'Vampire', 'Wilkołaki': 'Werwölfe', 'Duchy': 'Geister', 'Bardaki': 'Bardaken',
-    'vampire': 'Vampire', 'werewolf': 'Werwölfe', 'ghost': 'Geister', 'bardak': 'Bardaken',
-    'V': 'Vampire', 'W': 'Werwölfe', 'G': 'Geister', 'B': 'Bardaken'
+  "de": {
+    "Wampiry": "Vampire",
+    "Wilkołaki": "Werwölfe",
+    "Duchy": "Geister",
+    "Bardaki": "Bardaken",
+    "vampire": "Vampire",
+    "werewolf": "Werwölfe",
+    "ghost": "Geister",
+    "bardak": "Bardaken",
+    "V": "Vampire",
+    "W": "Werwölfe",
+    "G": "Geister",
+    "B": "Bardaken"
   },
-  es: {
-    'Wampiry': 'Vampiros', 'Wilkołaki': 'Hombres Lobo', 'Duchy': 'Fantasmas', 'Bardaki': 'Bardaks',
-    'vampire': 'Vampiros', 'werewolf': 'Hombres Lobo', 'ghost': 'Fantasmas', 'bardak': 'Bardaks',
-    'V': 'Vampiros', 'W': 'Hombres Lobo', 'G': 'Fantasmas', 'B': 'Bardaks'
+  "es": {
+    "Wampiry": "Vampiros",
+    "Wilkołaki": "Hombres Lobo",
+    "Duchy": "Fantasmas",
+    "Bardaki": "Bardaks",
+    "vampire": "Vampiros",
+    "werewolf": "Hombres Lobo",
+    "ghost": "Fantasmas",
+    "bardak": "Bardaks",
+    "V": "Vampiros",
+    "W": "Hombres Lobo",
+    "G": "Fantasmas",
+    "B": "Bardaks"
   },
-  it: {
-    'Wampiry': 'Vampiri', 'Wilkołaki': 'Licantropi', 'Duchy': 'Spettri', 'Bardaki': 'Bardak',
-    'vampire': 'Vampiri', 'werewolf': 'Licantropi', 'ghost': 'Spettri', 'bardak': 'Bardak',
-    'V': 'Vampiri', 'W': 'Licantropi', 'G': 'Spettri', 'B': 'Bardak'
+  "fr": {
+    "Wampiry": "Vampires",
+    "Wilkołaki": "Loups-Garous",
+    "Duchy": "Fantômes",
+    "Bardaki": "Bardaks",
+    "vampire": "Vampires",
+    "werewolf": "Loups-Garous",
+    "ghost": "Fantômes",
+    "bardak": "Bardaks",
+    "V": "Vampires",
+    "W": "Loups-Garous",
+    "G": "Fantômes",
+    "B": "Bardaks"
   },
-  fr: {
-    'Wampiry': 'Vampires', 'Wilkołaki': 'Loups-Garous', 'Duchy': 'Fantômes', 'Bardaki': 'Bardaks',
-    'vampire': 'Vampires', 'werewolf': 'Loups-Garous', 'ghost': 'Fantômes', 'bardak': 'Bardaks',
-    'V': 'Vampires', 'W': 'Loups-Garous', 'G': 'Fantômes', 'B': 'Bardaks'
+  "it": {
+    "Wampiry": "Vampiri",
+    "Wilkołaki": "Licantropi",
+    "Duchy": "Spettri",
+    "Bardaki": "Bardak",
+    "vampire": "Vampiri",
+    "werewolf": "Licantropi",
+    "ghost": "Spettri",
+    "bardak": "Bardak",
+    "V": "Vampiri",
+    "W": "Licantropi",
+    "G": "Spettri",
+    "B": "Bardak"
   },
-  fi: {
-    'Wampiry': 'Vampyyrit', 'Wilkołaki': 'Ihmissudet', 'Duchy': 'Aaveet', 'Bardaki': 'Bardakit',
-    'vampire': 'Vampyyrit', 'werewolf': 'Ihmissudet', 'ghost': 'Aaveet', 'bardak': 'Bardakit',
-    'V': 'Vampyyrit', 'W': 'Ihmissudet', 'G': 'Aaveet', 'B': 'Bardakit'
+  "cs": {
+    "Wampiry": "Upíři",
+    "Wilkołaki": "Vlkodlaci",
+    "Duchy": "Duchové",
+    "Bardaki": "Bardaci",
+    "vampire": "Upíři",
+    "werewolf": "Vlkodlaci",
+    "ghost": "Duchové",
+    "bardak": "Bardaci",
+    "V": "Upíři",
+    "W": "Vlkodlaci",
+    "G": "Duchové",
+    "B": "Bardaci"
   },
-  sv: {
-    'Wampiry': 'Vampyrer', 'Wilkołaki': 'Varulvar', 'Duchy': 'Spöken', 'Bardaki': 'Bardaker',
-    'vampire': 'Vampyrer', 'werewolf': 'Varulvar', 'ghost': 'Spöken', 'bardak': 'Bardaker',
-    'V': 'Vampyrer', 'W': 'Varulvar', 'G': 'Spöken', 'B': 'Bardaker'
+  "pt": {
+    "Wampiry": "Vampiros",
+    "Wilkołaki": "Lobisomens",
+    "Duchy": "Fantasmas",
+    "Bardaki": "Bardaks",
+    "vampire": "Vampiros",
+    "werewolf": "Lobisomens",
+    "ghost": "Fantasmas",
+    "bardak": "Bardaks",
+    "V": "Vampiros",
+    "W": "Lobisomens",
+    "G": "Fantasmas",
+    "B": "Bardaks"
   },
-  en: {
-    'Wampiry': 'Vampires', 'Wilkołaki': 'Werewolves', 'Duchy': 'Ghosts', 'Bardaki': 'Bardaks',
-    'vampire': 'Vampires', 'werewolf': 'Werewolves', 'ghost': 'Ghosts', 'bardak': 'Bardaks',
-    'V': 'Vampires', 'W': 'Werewolves', 'G': 'Ghosts', 'B': 'Bardaks'
+  "fi": {
+    "Wampiry": "Vampyyrit",
+    "Wilkołaki": "Ihmissudet",
+    "Duchy": "Aaveet",
+    "Bardaki": "Bardakit",
+    "vampire": "Vampyyrit",
+    "werewolf": "Ihmissudet",
+    "ghost": "Aaveet",
+    "bardak": "Bardakit",
+    "V": "Vampyyrit",
+    "W": "Ihmissudet",
+    "G": "Aaveet",
+    "B": "Bardakit"
+  },
+  "sv": {
+    "Wampiry": "Vampyrer",
+    "Wilkołaki": "Varulvar",
+    "Duchy": "Spöken",
+    "Bardaki": "Bardaker",
+    "vampire": "Vampyrer",
+    "werewolf": "Varulvar",
+    "ghost": "Spöken",
+    "bardak": "Bardaker",
+    "V": "Vampyrer",
+    "W": "Varulvar",
+    "G": "Spöken",
+    "B": "Bardaker"
   }
 };
 
 export const getRace = (race, lang) => {
-  const map = raceMaps[lang] || raceMaps['en'];
-  return map[race] || race;
+  const map = raceMaps[lang] || raceMaps['en'] || raceMaps['pl'];
+  return (map && map[race]) || race;
+};
+
+export const dicts = {
+  "pl": {
+    "race_V": "Wampiry",
+    "race_W": "Wilkołaki",
+    "race_G": "Duchy",
+    "race_B": "Bardaki"
+  },
+  "en": {
+    "race_V": "Vampires",
+    "race_W": "Werewolves",
+    "race_G": "Ghosts",
+    "race_B": "Bardaks",
+    "player": "Player",
+    "set": "Set",
+    "board": "Board:",
+    "sector": "Sector [",
+    "in_sector": "in sector",
+    "in_region": "in region",
+    "from_sector": "from sector",
+    "phase_setup": "--- Start of SETUP ---",
+    "phase_general": "--- Start of GENERALS PHASE ---",
+    "phase_player": "--- Start of PLAYERS PHASE ---",
+    "phase_jakub": "--- Start of JAKUB'S PHASE ---",
+    "phase_event": "--- Start of EVENT PHASE ---",
+    "phase_player_round": "--- Start of Player Phase (Round {0}) ---",
+    "jakub_hunt_started": "--- Jakub's Hunt Started ---",
+    "event_phase_started": "--- Event Phase Started ---",
+    "final_scoring_phase": "--- FINAL SCORING PHASE (08:00) ---",
+    "event_phase_title": "--- EVENT PHASE ---",
+    "final_scoring_round": "--- FINAL SCORING (Round 12) ---",
+    "round_header": "--- Round {0} / {1} ---",
+    "refilled_hands": "Round {0}: Refilled players' hands to {1} sets.",
+    "reshuffle_discard": "Reshuffling discard pile back into draw pile.",
+    "event_deck_exhausted": "Event deck exhausted. Reshuffled discarded events back into the deck.",
+    "no_events": "No available events in the deck.",
+    "event_drawn": "EVENT DRAWN: [{0}] {1}",
+    "manual_event": "--- Manual Event: [{0}] {1} ---",
+    "effect": "Effect: {0}",
+    "activated": "Activated: {0}",
+    "fury_changes": "Fury changes: {0} (Range: {1})",
+    "limit_changes": "Limit changes: {0}",
+    "no_fury_changes": "No fury changes.",
+    "no_limit_changes": "No limit changes.",
+    "support_sets": "Support: +{0} set per player (Total: {1}).",
+    "support_no_sets": "Support: No sets available to distribute.",
+    "great_wipe": "Great Wipe: Eliminated pawns in sectors: {0} (Total: {1}).",
+    "great_wipe_none": "Great Wipe: No pawns to eliminate.",
+    "moved_pawns": "Moved pawns from ({0},{1}) to ({2},{3}): {4} (Total: {5}).",
+    "no_pawns_to_move": "No pawns in ({0},{1}) to move.",
+    "moved_prefix": "Moved: {0}",
+    "killed_prefix": "Killed: {0}",
+    "penalties_prefix": "Penalties: {0}",
+    "escaped_prefix": "Escaped: {0}",
+    "deserted_prefix": "Deserted: {0}",
+    "bardak_penalty": "Bardak General lost {0} pts",
+    "witness_awarded": "Witness points awarded:",
+    "mercy_phase_title": "😇 Jakub's Mercy Phase:",
+    "witness_log": "🔥 Witness: {0} ({1}) gets +{2} pts for surviving near Jakub.",
+    "mercy_log": "😇 Mercy: {0} ({1}) gets +{2} pts for remaining fury.",
+    "mercy_rem_log": "Player {0} ({1}) gets +{2} pts from Mercy ({3} fury remaining).",
+    "final_score_log": "Final Score: Player {0} (+{1} for {2});",
+    "final_bonus_log": "Player {0} ({1}) gets +{2} bonus pts (End Bonus).",
+    "game_over_winner": "GAME OVER! Winner: Player {0} ({1} pts).",
+    "game_over_tie": "GAME OVER! TIE: {0} ({1} pts)!",
+    "chose_general": "Player {0} chose General: {1}",
+    "resigned_general": "Player {0} resigned from General of: {1}",
+    "drew_sets": "Player {0} drew sets.",
+    "placed_set_detail": "Player {0} placed Set {1} in sector [{2},{3}] [{4}] | Board: {5}",
+    "placed_set_manual": "Manually: Set {0} placed in [{1},{2}] [{3}] | Board: {4}",
+    "placed_set_simple": "Player {0} placed Set {1} [{2}] | Board: {3}",
+    "placed_set_region": "Player {0} placed Set {1} in region [{2},{3}].",
+    "given_set_manual": "Manually: Given Set {0} to Player {1}",
+    "move_log": "Move: {0} from [{1},{2}] to [{3},{4}]",
+    "added_log": "Added {0} in sector [{1},{2}]",
+    "passed_snitched_excess": "Player {0} passed & snitched {1} excess sets. Jakub's fury updated.",
+    "snitched_set_range": "Player {0} snitched with set {1}. Fury updated | Range: {2}",
+    "snitched_set_range_auto": "Set {0} snitched to Jakub. Fury updated | Range: {1}",
+    "snitched_set_pt": "Player {0} snitched with set {1} for 1 pt.",
+    "snitched_set_pt_auto": "Set {0} snitched for 1 pt.",
+    "snitched_set_auto": "Set {0} snitched to Jakub.",
+    "passed_empty": "Player {0} made an empty move and passed.",
+    "passed_turn": "Player {0} passed turn.",
+    "passed": "Player {0} passed.",
+    "jakub_seized_range": "Jakub seized Set {0}. Fury/Range updated.",
+    "jakub_seized": "Jakub seized Set {0}. Fury updated.",
+    "jakub_seized_pool": "Jakub seized Set {0} from pool.",
+    "jakub_fury_subsided": "Jakub's fury subsided. Hunt ended.",
+    "jakub_ends_hunt": "Jakub ends his hunt.",
+    "jakub_range_reset": "Jakub's range reset to 1.",
+    "magnetism_log": "UNSTOPPABLE ANIMAL MAGNETISM! All pawns from {0} pulled to Jakub's sector [{1},{2}]!",
+    "jakub_chasing": "Jakub moves to [{0},{1}] (range {2}), chasing {3} (Fury: {4} | {5} units).",
+    "jakub_killed": "Jakub killed {0}x {1} in sector [{2},{3}]. Faction fury drops to {4}."
+  },
+  "zh": {
+    "race_V": "吸血鬼",
+    "race_W": "狼人",
+    "race_G": "幽灵",
+    "race_B": "巴尔达克",
+    "player": "玩家",
+    "set": "套组",
+    "board": "棋盘:",
+    "sector": "区域 [",
+    "in_sector": "在区域",
+    "in_region": "在区域",
+    "from_sector": "从区域",
+    "phase_setup": "--- 准备阶段开始 ---",
+    "phase_general": "--- 头领阶段开始 ---",
+    "phase_player": "--- 玩家阶段开始 ---",
+    "phase_jakub": "--- 雅库布阶段开始 ---",
+    "phase_event": "--- 事件阶段开始 ---",
+    "phase_player_round": "--- 玩家阶段开始（第{0}轮） ---",
+    "jakub_hunt_started": "--- 雅库布的狩猎开始 ---",
+    "event_phase_started": "--- 事件阶段开始 ---",
+    "final_scoring_phase": "--- 终局计分阶段 (08:00) ---",
+    "event_phase_title": "--- 事件阶段 ---",
+    "final_scoring_round": "--- 终局计分（第12轮） ---",
+    "round_header": "--- 第 {0} / {1} 轮 ---",
+    "refilled_hands": "第 {0} 轮: 玩家手牌已补充至 {1} 套。",
+    "reshuffle_discard": "弃牌堆已重新洗入抽牌堆。",
+    "event_deck_exhausted": "事件牌堆耗尽，弃牌已重新洗入牌堆。",
+    "no_events": "牌堆中无可用事件。",
+    "event_drawn": "抽取事件: [{0}] {1}",
+    "manual_event": "--- 手动事件: [{0}] {1} ---",
+    "effect": "效果: {0}",
+    "activated": "激活事件: {0}",
+    "fury_changes": "愤怒值变动: {0}（射程更新为 {1}）",
+    "limit_changes": "阵营上限变动: {0}",
+    "no_fury_changes": "愤怒值无变化。",
+    "no_limit_changes": "阵营上限无变化。",
+    "support_sets": "支援: 每位玩家分发 {0} 套额外套组（总计: {1}）。",
+    "support_no_sets": "支援: 无可用套组可分发。",
+    "great_wipe": "大清洗: 清除了区域内的棋子: {0}（总计: {1}）。",
+    "great_wipe_none": "大清洗: 目标区域内无棋子可清除。",
+    "moved_pawns": "移动棋子从 ({0},{1}) 到 ({2},{3}): {4}（总计: {5}）。",
+    "no_pawns_to_move": "区域 ({0},{1}) 内无棋子可移动。",
+    "moved_prefix": "移动: {0}",
+    "killed_prefix": "击杀: {0}",
+    "penalties_prefix": "惩罚: {0}",
+    "escaped_prefix": "逃跑: {0}",
+    "deserted_prefix": "逃兵: {0}",
+    "bardak_penalty": "惩罚: 巴尔达克头领失去 {0} 分",
+    "witness_awarded": "雅库布见证者积分已结算:",
+    "mercy_phase_title": "😇 雅库布仁慈阶段:",
+    "witness_log": "🔥 雅库布见证者: {0} ({1}) 因在雅库布附近幸存获得 +{2} 额外积分。",
+    "mercy_log": "😇 雅库布仁慈: {0} ({1}) 因剩余愤怒值获得 +{2} 分。",
+    "mercy_rem_log": "玩家 {0} ({1}) 从仁慈阶段获得 {2} 分（雅库布剩余 {3} 点愤怒值）。",
+    "final_score_log": "终局计分: 玩家 {0} ({2} 阵营获得 +{1} 分);",
+    "final_bonus_log": "玩家 {0} ({1}) 获得 {2} 点额外积分（终局奖励）。",
+    "game_over_winner": "游戏结束！胜利者: 玩家 {0}（得分: {1}）。",
+    "game_over_tie": "游戏结束！平局: {0}（得分: {1}）！",
+    "chose_general": "玩家 {0} 选择了头领: {1}",
+    "resigned_general": "玩家 {0} 放弃了 {1} 头领身份",
+    "drew_sets": "玩家 {0} 抽取了套组。",
+    "placed_set_detail": "玩家 {0} 在区域 [{2},{3}] 放置了套组 {1} [{4}] | 棋盘: {5}",
+    "placed_set_manual": "手动: 套组 {0} 放置在区域 [{1},{2}] [{3}] | 棋盘: {4}",
+    "placed_set_simple": "玩家 {0} 放置了套组 {1} [{2}] | 棋盘: {3}",
+    "placed_set_region": "玩家 {0} 在区域 [{2},{3}] 放置了套组 {1}。",
+    "given_set_manual": "手动: 已将套组 {0} 发给玩家 {1}",
+    "move_log": "移动: {0} 从 [{1},{2}] 移动到 [{3},{4}]",
+    "added_log": "在区域 [{1},{2}] 添加了 {0}",
+    "passed_snitched_excess": "玩家 {0} 过牌并向雅库布告密了 {1} 套多余套组。雅库布愤怒值已更新。",
+    "snitched_set_range": "玩家 {0} 用套组 {1} 向雅库布告密。愤怒值已更新 | 射程: {2}",
+    "snitched_set_range_auto": "套组 {0} 已告密给雅库布。愤怒值已更新 | 射程: {1}",
+    "snitched_set_pt": "玩家 {0} 用套组 {1} 向雅库布告密并获得 1 分。",
+    "snitched_set_pt_auto": "套组 {0} 已告密给雅库布并获得 1 分。",
+    "snitched_set_auto": "套组 {0} 已告密给雅库布。",
+    "passed_empty": "玩家 {0} 空过并结束回合。",
+    "passed_turn": "玩家 {0} 结束了回合。",
+    "passed": "玩家 {0} 过牌。",
+    "jakub_seized_range": "雅库布夺取了套组 {0}。愤怒值/射程已立即更新。",
+    "jakub_seized": "雅库布夺取了套组 {0}。愤怒值已立即更新。",
+    "jakub_seized_pool": "雅库布从公共池夺取了套组 {0}。",
+    "jakub_fury_subsided": "雅库布的愤怒平息了。狩猎结束。",
+    "jakub_ends_hunt": "雅库布结束了狩猎。",
+    "jakub_range_reset": "雅库布的射程重置为 1。",
+    "magnetism_log": "无法阻挡的野性吸引力！所有来自 {0} 区域的阵营均被吸引到雅库布所在的区域 [{1},{2}]！",
+    "jakub_chasing": "雅库布移动到 [{0},{1}]（射程 {2}），追杀 {3}（愤怒值: {4} | 区域内包含 {5} 个单位）。",
+    "jakub_killed": "雅库布在区域 [{2},{3}] 击杀了 {0}x {1}。该阵营愤怒值降至 {4}。"
+  },
+  "ja": {
+    "race_V": "吸血鬼",
+    "race_W": "人狼",
+    "race_G": "亡霊",
+    "race_B": "バルダック",
+    "player": "プレイヤー",
+    "set": "セット",
+    "board": "盤面:",
+    "sector": "セクター [",
+    "in_sector": "セクター内",
+    "in_region": "地域内",
+    "from_sector": "セクターから",
+    "phase_setup": "--- 準備フェーズ開始 ---",
+    "phase_general": "--- 指揮官フェーズ開始 ---",
+    "phase_player": "--- プレイヤーフェーズ開始 ---",
+    "phase_jakub": "--- ヤクブフェーズ開始 ---",
+    "phase_event": "--- イベントフェーズ開始 ---",
+    "phase_player_round": "--- プレイヤーフェーズ開始（第{0}ラウンド） ---",
+    "jakub_hunt_started": "--- ヤクブの狩り開始 ---",
+    "event_phase_started": "--- イベントフェーズ開始 ---",
+    "final_scoring_phase": "--- 最終得点計算フェーズ (08:00) ---",
+    "event_phase_title": "--- イベントフェーズ ---",
+    "final_scoring_round": "--- 最終得点計算（第12ラウンド） ---",
+    "round_header": "--- ラウンド {0} / {1} ---",
+    "refilled_hands": "ラウンド {0}: プレイヤーの手札を{1}セットに補充。",
+    "reshuffle_discard": "捨て札を山札に混ぜてシャッフル。",
+    "event_deck_exhausted": "イベント山札切れ。捨て札をシャッフルして戻しました。",
+    "no_events": "山札に利用可能なイベントがありません。",
+    "event_drawn": "引いたイベント: [{0}] {1}",
+    "manual_event": "--- 手動イベント: [{0}] {1} ---",
+    "effect": "効果: {0}",
+    "activated": "発動: {0}",
+    "fury_changes": "怒り変動: {0}（射程: {1}）",
+    "limit_changes": "上限変動: {0}",
+    "no_fury_changes": "怒りの変化なし。",
+    "no_limit_changes": "上限の変化なし。",
+    "support_sets": "支援: 全員に+{0}セット配布（合計: {1}）。",
+    "support_no_sets": "支援: 配布可能なセットがありません。",
+    "great_wipe": "大浄化: 駒を消去: {0}（合計: {1}）。",
+    "great_wipe_none": "大浄化: 消去対象の駒がありません。",
+    "moved_pawns": "駒を移動 ({0},{1}) -> ({2},{3}): {4}（合計: {5}）。",
+    "no_pawns_to_move": "({0},{1}) に移動する駒がありません。",
+    "moved_prefix": "移動: {0}",
+    "killed_prefix": "撃破: {0}",
+    "penalties_prefix": "ペナルティ: {0}",
+    "escaped_prefix": "逃走: {0}",
+    "deserted_prefix": "脱走: {0}",
+    "bardak_penalty": "バルダック指揮官が{0}点失点",
+    "witness_awarded": "ヤクブ目撃点付与:",
+    "mercy_phase_title": "😇 ヤクブの慈悲フェーズ:",
+    "witness_log": "🔥 目撃者: {0} ({1}) がヤクブ付近で生存 +{2}点。",
+    "mercy_log": "😇 慈悲: {0} ({1}) が残存怒りにより +{2}点。",
+    "mercy_rem_log": "プレイヤー{0} ({1}) 慈悲により+{2}点（ヤクブの怒り残り{3}）。",
+    "final_score_log": "最終スコア: プレイヤー{0} ({2}で+{1}点);",
+    "final_bonus_log": "プレイヤー{0} ({1}) が+{2}ボーナス点獲得（最終ボーナス）。",
+    "game_over_winner": "ゲーム終了！勝者: プレイヤー{0} ({1}点)。",
+    "game_over_tie": "ゲーム終了！引き分け: {0} ({1}点)！",
+    "chose_general": "プレイヤー{0}が指揮官を選択: {1}",
+    "resigned_general": "プレイヤー{0}が{1}の指揮官を辞任",
+    "drew_sets": "プレイヤー{0}がセットを引きました。",
+    "placed_set_detail": "プレイヤー{0}がセット{1}をセクター[{2},{3}] [{4}] に配置 | 盤面: {5}",
+    "placed_set_manual": "手動: セット{0}を [{1},{2}] [{3}] に配置 | 盤面: {4}",
+    "placed_set_simple": "プレイヤー{0}がセット{1} [{2}] を配置 | 盤面: {3}",
+    "placed_set_region": "プレイヤー{0}がセット{1}を地域[{2},{3}]に配置。",
+    "given_set_manual": "手動: セット{0}をプレイヤー{1}に配布",
+    "move_log": "移動: {0} を [{1},{2}] から [{3},{4}] へ",
+    "added_log": "セクター[{1},{2}]に {0} を追加",
+    "passed_snitched_excess": "プレイヤー{0}がパスし、{1}セットをヤクブに密告。怒り更新。",
+    "snitched_set_range": "プレイヤー{0}がセット{1}をヤクブに密告。怒り更新 | 射程: {2}",
+    "snitched_set_range_auto": "セット{0}がヤクブに密告されました。怒り更新 | 射程: {1}",
+    "snitched_set_pt": "プレイヤー{0}がセット{1}をヤクブに密告（1点獲得）。",
+    "snitched_set_pt_auto": "セット{0}がヤクブに密告されました（1点獲得）。",
+    "snitched_set_auto": "セット{0}がヤクブに密告されました。",
+    "passed_empty": "プレイヤー{0}が何もせずパスしました。",
+    "passed_turn": "プレイヤー{0}が手番をパスしました。",
+    "passed": "プレイヤー{0}がパスしました。",
+    "jakub_seized_range": "ヤクブがセット{0}を強奪。怒り/射程即時更新。",
+    "jakub_seized": "ヤクブがセット{0}を強奪。怒り即時更新。",
+    "jakub_seized_pool": "ヤクブがプールからセット{0}を強奪。",
+    "jakub_fury_subsided": "ヤクブの怒りが鎮まりました。狩り終了。",
+    "jakub_ends_hunt": "ヤクブが狩りを終了しました。",
+    "jakub_range_reset": "ヤクブの射程が1にリセット。",
+    "magnetism_log": "圧倒的動物磁力！セクター{0}の全勢力がヤクブのセクター[{1},{2}]に引き寄せられました！",
+    "jakub_chasing": "ヤクブが[{0},{1}]へ移動（射程{2}）、{3}を追撃（怒り: {4} | {5}体）。",
+    "jakub_killed": "ヤクブがセクター[{2},{3}]で{0}体の{1}を撃破。怒り低下 -> {4}。"
+  },
+  "ko": {
+    "race_V": "뱀파이어",
+    "race_W": "늑대인간",
+    "race_G": "유령",
+    "race_B": "바르닥",
+    "player": "플레이어",
+    "set": "세트",
+    "board": "보드:",
+    "sector": "구역 [",
+    "in_sector": "구역 내",
+    "in_region": "지역 내",
+    "from_sector": "구역에서",
+    "phase_setup": "--- 준비 단계 시작 ---",
+    "phase_general": "--- 우두머리 단계 시작 ---",
+    "phase_player": "--- 플레이어 단계 시작 ---",
+    "phase_jakub": "--- 야쿠프 단계 시작 ---",
+    "phase_event": "--- 이벤트 단계 시작 ---",
+    "phase_player_round": "--- 플레이어 단계 시작 (제{0}라운드) ---",
+    "jakub_hunt_started": "--- 야쿠프의 사냥 시작 ---",
+    "event_phase_started": "--- 이벤트 단계 시작 ---",
+    "final_scoring_phase": "--- 최종 점수 계산 단계 (08:00) ---",
+    "event_phase_title": "--- 이벤트 단계 ---",
+    "final_scoring_round": "--- 최종 점수 계산 (제12라운드) ---",
+    "round_header": "--- 라운드 {0} / {1} ---",
+    "refilled_hands": "라운드 {0}: 플레이어 손패를 {1}세트로 보충.",
+    "reshuffle_discard": "버린 카드 더미를 덱에 섞음.",
+    "event_deck_exhausted": "이벤트 덱 소진. 버린 카드를 덱에 다시 섞었습니다.",
+    "no_events": "덱에 사용 가능한 이벤트가 없습니다.",
+    "event_drawn": "뽑은 이벤트: [{0}] {1}",
+    "manual_event": "--- 수동 이벤트: [{0}] {1} ---",
+    "effect": "효과: {0}",
+    "activated": "발동: {0}",
+    "fury_changes": "분노 변동: {0} (사거리: {1})",
+    "limit_changes": "한도 변동: {0}",
+    "no_fury_changes": "분노 변동 없음.",
+    "no_limit_changes": "한도 변동 없음.",
+    "support_sets": "지원: 각 플레이어에게 +{0}세트 지급 (총: {1}).",
+    "support_no_sets": "지원: 지급 가능한 세트가 없습니다.",
+    "great_wipe": "대청소: 구역 내 말 제거: {0} (총: {1}).",
+    "great_wipe_none": "대청소: 제거할 말이 없습니다.",
+    "moved_pawns": "말 이동 ({0},{1}) -> ({2},{3}): {4} (총: {5}).",
+    "no_pawns_to_move": "({0},{1})에 이동할 말이 없습니다.",
+    "moved_prefix": "이동: {0}",
+    "killed_prefix": "처치: {0}",
+    "penalties_prefix": "페널티: {0}",
+    "escaped_prefix": "탈출: {0}",
+    "deserted_prefix": "탈영: {0}",
+    "bardak_penalty": "바르닥 우두머리가 {0}점 감점",
+    "witness_awarded": "야쿠프 목격자 점수 부여:",
+    "mercy_phase_title": "😇 야쿠프의 자비 단계:",
+    "witness_log": "🔥 목격자: {0} ({1}) 야쿠프 주변 생존으로 +{2}점.",
+    "mercy_log": "😇 자비: {0} ({1}) 잔여 분노로 +{2}점 획득.",
+    "mercy_rem_log": "플레이어 {0} ({1}) 자비로 +{2}점 (야쿠프 분노 {3} 남음).",
+    "final_score_log": "최종 점수: 플레이어 {0} ({2}로 +{1}점);",
+    "final_bonus_log": "플레이어 {0} ({1}) +{2} 보너스 점수 획득 (최종 보너스).",
+    "game_over_winner": "게임 종료！승자: 플레이어 {0} ({1}점).",
+    "game_over_tie": "게임 종료！무승부: {0} ({1}점)！",
+    "chose_general": "플레이어 {0} 우두머리 선택: {1}",
+    "resigned_general": "플레이어 {0} {1} 우두머리 사임",
+    "drew_sets": "플레이어 {0}이 세트를 뽑았습니다.",
+    "placed_set_detail": "플레이어 {0}이 구역 [{2},{3}] [{4}]에 세트 {1}를 배치 | 보드: {5}",
+    "placed_set_manual": "수동: 세트 {0}을 [{1},{2}] [{3}]에 배치 | 보드: {4}",
+    "placed_set_simple": "플레이어 {0}이 세트 {1} [{2}]를 배치 | 보드: {3}",
+    "placed_set_region": "플레이어 {0}이 지역 [{2},{3}]에 세트 {1}를 배치.",
+    "given_set_manual": "수동: 플레이어 {1}에게 세트 {0} 지급",
+    "move_log": "이동: {0}를 [{1},{2}]에서 [{3},{4}]로",
+    "added_log": "구역 [{1},{2}]에 {0} 추가",
+    "passed_snitched_excess": "플레이어 {0} 패스 및 초과 세트 {1}개 고발. 분노 갱신.",
+    "snitched_set_range": "플레이어 {0}이 세트 {1}로 야쿠프에게 고발. 분노 갱신 | 사거리: {2}",
+    "snitched_set_range_auto": "세트 {0}이 야쿠프에게 고발됨. 분노 갱신 | 사거리: {1}",
+    "snitched_set_pt": "플레이어 {0}이 세트 {1}로 야쿠프에게 고발하여 1점 획득.",
+    "snitched_set_pt_auto": "세트 {0}이 고발되어 1점 획득.",
+    "snitched_set_auto": "세트 {0}이 야쿠프에게 고발됨.",
+    "passed_empty": "플레이어 {0} 행동 없이 패스.",
+    "passed_turn": "플레이어 {0} 턴 종료.",
+    "passed": "플레이어 {0} 패스.",
+    "jakub_seized_range": "야쿠프가 세트 {0} 탈취. 분노/사거리 즉시 갱신.",
+    "jakub_seized": "야쿠프가 세트 {0} 탈취. 분노 즉시 갱신.",
+    "jakub_seized_pool": "야쿠프가 풀에서 세트 {0} 탈취.",
+    "jakub_fury_subsided": "야쿠프의 분노가 가라앉음. 사냥 종료.",
+    "jakub_ends_hunt": "야쿠프가 사냥을 마쳤습니다.",
+    "jakub_range_reset": "야쿠프의 사거리가 1로 초기화됨.",
+    "magnetism_log": "막을 수 없는 야수 자철력! 구역 {0}의 모든 말이 야쿠프 구역 [{1},{2}]으로 끌려왔습니다!",
+    "jakub_chasing": "야쿠프가 [{0},{1}]로 이동 (사거리 {2}), {3} 추격 (분노: {4} | {5}개).",
+    "jakub_killed": "야쿠프가 구역 [{2},{3}]에서 {0}개의 {1} 처치. 분노 하락 -> {4}."
+  },
+  "ru": {
+    "race_V": "Вампиры",
+    "race_W": "Оборотни",
+    "race_G": "Призраки",
+    "race_B": "Бардаки",
+    "player": "Игрок",
+    "set": "Набор",
+    "board": "Поле:",
+    "sector": "Сектор [",
+    "in_sector": "в секторе",
+    "in_region": "в регионе",
+    "from_sector": "из сектора",
+    "phase_setup": "--- Начало ПОДГОТОВКИ ---",
+    "phase_general": "--- Начало ФАЗЫ ГЛАВАРЕЙ ---",
+    "phase_player": "--- Начало ФАЗЫ ИГРОКОВ ---",
+    "phase_jakub": "--- Начало ФАЗЫ ЯКУБА ---",
+    "phase_event": "--- Начало ФАЗЫ СОБЫТИЙ ---",
+    "phase_player_round": "--- Начало Фазы Игроков (Раунд {0}) ---",
+    "jakub_hunt_started": "--- Охота Якуба Началась ---",
+    "event_phase_started": "--- Начало Фазы Событий ---",
+    "final_scoring_phase": "--- ФАЗА ФИНАЛЬНОГО ПОДСЧЁТА (08:00) ---",
+    "event_phase_title": "--- ФАЗА СОБЫТИЙ ---",
+    "final_scoring_round": "--- ФИНАЛЬНЫЙ ПОДСЧЁТ (Раунд 12) ---",
+    "round_header": "--- Раунд {0} / {1} ---",
+    "refilled_hands": "Раунд {0}: Руки игроков пополнены до {1} наборов.",
+    "reshuffle_discard": "Сброс перемешан обратно в колоду.",
+    "event_deck_exhausted": "Колода событий исчерпана. Сброс перемешан обратно.",
+    "no_events": "В колоде нет доступных событий.",
+    "event_drawn": "ВЫТЯНУТО СОБЫТИЕ: [{0}] {1}",
+    "manual_event": "--- Ручное Событие: [{0}] {1} ---",
+    "effect": "Эффект: {0}",
+    "activated": "Активировано: {0}",
+    "fury_changes": "Изменения ярости: {0} (Дальность: {1})",
+    "limit_changes": "Изменения лимитов банд: {0}",
+    "no_fury_changes": "Нет изменений ярости.",
+    "no_limit_changes": "Нет изменений лимитов.",
+    "support_sets": "Поддержка: Раздано по {0} доп. набору каждому игроку (Всего: {1}).",
+    "support_no_sets": "Поддержка: Нет наборов для раздачи.",
+    "great_wipe": "Великая Чистка: Уничтожены фишки в: {0} (Всего: {1}).",
+    "great_wipe_none": "Великая Чистка: Нет фишек для уничтожения.",
+    "moved_pawns": "Перемещены фишки из ({0},{1}) в ({2},{3}): {4} (Всего: {5}).",
+    "no_pawns_to_move": "В секторе ({0},{1}) нет фишек для перемещения.",
+    "moved_prefix": "Перемещено: {0}",
+    "killed_prefix": "Убито: {0}",
+    "penalties_prefix": "Штрафы: {0}",
+    "escaped_prefix": "Сбежали: {0}",
+    "deserted_prefix": "Дезертировали: {0}",
+    "bardak_penalty": "Главарь Бардаков потерял {0} очков",
+    "witness_awarded": "Очки Свидетеля Якуба начислены:",
+    "mercy_phase_title": "😇 Фаза Милосердия Якуба:",
+    "witness_log": "🔥 Свидетель Якуба: {0} ({1}) получает +{2} бонусных очков за выживание рядом с Якубом.",
+    "mercy_log": "😇 Милосердие: {0} ({1}) получает +{2} очков за оставшуюся ярость.",
+    "mercy_rem_log": "Игрок {0} ({1}) получает +{2} очков из Фазы Милосердия (осталось {3} ярости).",
+    "final_score_log": "Финальный Подсчёт: Игрок {0} (+{1} за банду {2});",
+    "final_bonus_log": "Игрок {0} ({1}) получает +{2} бонусных очков (Финальный Бонус).",
+    "game_over_winner": "КОНЕЦ ИГРЫ! Победитель: Игрок {0} ({1} очков).",
+    "game_over_tie": "КОНЕЦ ИГРЫ! НИЧЬЯ: {0} ({1} очков)!",
+    "chose_general": "Игрок {0} выбрал Главаря: {1}",
+    "resigned_general": "Игрок {0} отказался от звания Главаря: {1}",
+    "drew_sets": "Игрок {0} взял наборы.",
+    "placed_set_detail": "Игрок {0} выставил Набор {1} в секторе [{2},{3}] [{4}] | Поле: {5}",
+    "placed_set_manual": "Вручную: Набор {0} выставлен в [{1},{2}] [{3}] | Поле: {4}",
+    "placed_set_simple": "Игрок {0} выставил Набор {1} [{2}] | Поле: {3}",
+    "placed_set_region": "Игрок {0} выставил Набор {1} в регионе [{2},{3}].",
+    "given_set_manual": "Вручную: Выдан Набор {0} Игроку {1}",
+    "move_log": "Перемещение: {0} из [{1},{2}] в [{3},{4}]",
+    "added_log": "Добавлен {0} в секторе [{1},{2}]",
+    "passed_snitched_excess": "Игрок {0} спасовал и сдал {1} лишних наборов. Ярость Якуба обновлена.",
+    "snitched_set_range": "Игрок {0} сдал набор {1} Якубу. Ярость обновлена | Дальность: {2}",
+    "snitched_set_range_auto": "Набор {0} сдан Якубу. Ярость обновлена | Дальность: {1}",
+    "snitched_set_pt": "Игрок {0} сдал набор {1} Якубу за 1 очко.",
+    "snitched_set_pt_auto": "Набор {0} сдан Якубу за 1 очко.",
+    "snitched_set_auto": "Набор {0} сдан Якубу.",
+    "passed_empty": "Игрок {0} спасовал ход.",
+    "passed_turn": "Игрок {0} спасовал ход.",
+    "passed": "Игрок {0} спасовал.",
+    "jakub_seized_range": "Якуб захватил Набор {0}. Ярость/Дальность обновлены немедленно.",
+    "jakub_seized": "Якуб захватил Набор {0}. Ярость обновлена немедленно.",
+    "jakub_seized_pool": "Якуб захватил Набор {0} из пула.",
+    "jakub_fury_subsided": "Ярость Якуба утихла. Охота завершена.",
+    "jakub_ends_hunt": "Якуб завершает охоту.",
+    "jakub_range_reset": "Дальность Якуба сброшена до 1.",
+    "magnetism_log": "НЕУДЕРЖИМЫЙ ЖИВОТНЫЙ МАГНЕТИЗМ! Все банды из секторов {0} притянуты в сектор Якуба [{1},{2}]!",
+    "jakub_chasing": "Якуб перемещается на [{0},{1}] (дальность {2}), преследуя {3} (Ярость: {4} | {5} единиц).",
+    "jakub_killed": "Якуб убил {0}x {1} в секторе [{2},{3}]. Ярость падает до {4}."
+  },
+  "uk": {
+    "race_V": "Вампіри",
+    "race_W": "Вовкулаки",
+    "race_G": "Привиди",
+    "race_B": "Бардаки",
+    "player": "Гравець",
+    "set": "Сет",
+    "board": "Дошка:",
+    "sector": "Сектор [",
+    "in_sector": "у секторі",
+    "in_region": "у регіоні",
+    "from_sector": "з сектора",
+    "phase_setup": "--- Початок ПІДГОТОВКИ ---",
+    "phase_general": "--- Початок ФАЗИ ВАТАЖКІВ ---",
+    "phase_player": "--- Початок ФАЗИ ГРАВЦІВ ---",
+    "phase_jakub": "--- Початок ФАЗИ ЯКУБА ---",
+    "phase_event": "--- Початок ФАЗИ ПОДІЙ ---",
+    "phase_player_round": "--- Початок Фази Гравців (Раунд {0}) ---",
+    "jakub_hunt_started": "--- Полювання Якуба Розпочато ---",
+    "event_phase_started": "--- Початок Фази Подій ---",
+    "final_scoring_phase": "--- ФАЗА ФІНАЛЬНОГО ПІДРАХУНКУ (08:00) ---",
+    "event_phase_title": "--- ФАЗА ПОДІЙ ---",
+    "final_scoring_round": "--- ФІНАЛЬНИЙ ПІДРАХУНОК (Раунд 12) ---",
+    "round_header": "--- Раунд {0} / {1} ---",
+    "refilled_hands": "Раунд {0}: Руки гравців поповнено до {1} сетів.",
+    "reshuffle_discard": "Скидання перемішано назад у колоду.",
+    "event_deck_exhausted": "Колода подій вичерпана. Скинуті події перемішані назад.",
+    "no_events": "У колоді немає доступних подій.",
+    "event_drawn": "ВИТЯГНУТА ПОДІЯ: [{0}] {1}",
+    "manual_event": "--- Ручна Подія: [{0}] {1} ---",
+    "effect": "Ефект: {0}",
+    "activated": "Активовано: {0}",
+    "fury_changes": "Зміни люті: {0} (Радіус: {1})",
+    "limit_changes": "Зміни лімітів банд: {0}",
+    "no_fury_changes": "Немає змін люті.",
+    "no_limit_changes": "Немає змін лімітів.",
+    "support_sets": "Підтримка: Роздано по {0} дод. сету кожному гравцю (Разом: {1}).",
+    "support_no_sets": "Підтримка: Немає доступних сетів для роздачі.",
+    "great_wipe": "Велике Очищення: Знищено фішки у секторах: {0} (Разом: {1}).",
+    "great_wipe_none": "Велике Очищення: Немає фішок для знищення.",
+    "moved_pawns": "Переміщено фішки з ({0},{1}) до ({2},{3}): {4} (Разом: {5}).",
+    "no_pawns_to_move": "У секторі ({0},{1}) немає фішок для переміщення.",
+    "moved_prefix": "Переміщено: {0}",
+    "killed_prefix": "Вбито: {0}",
+    "penalties_prefix": "Штрафи: {0}",
+    "escaped_prefix": "Втекли: {0}",
+    "deserted_prefix": "Дезертирували: {0}",
+    "bardak_penalty": "Ватажок Бардаків втратив {0} очок",
+    "witness_awarded": "Очки Свідка Якуба нараховано:",
+    "mercy_phase_title": "😇 Фаза Милосердя Якуба:",
+    "witness_log": "🔥 Свідок Якуба: {0} ({1}) отримує +{2} бонусних очок за виживання поруч з Якубом.",
+    "mercy_log": "😇 Милосердя: {0} ({1}) отримує +{2} очок за залишок люті.",
+    "mercy_rem_log": "Гравець {0} ({1}) отримує +{2} очок з Фази Милосердя (залишилось {3} люті).",
+    "final_score_log": "Фінальний Підрахунок: Гравець {0} (+{1} за банду {2});",
+    "final_bonus_log": "Гравець {0} ({1}) отримує +{2} бонусних очок (Фінальний Бонус).",
+    "game_over_winner": "КІНЕЦЬ ГРИ! Переможець: Гравець {0} ({1} очок).",
+    "game_over_tie": "КІНЕЦЬ ГРИ! НІЧИЯ: {0} ({1} очок)!",
+    "chose_general": "Гравець {0} обрав Ватажка: {1}",
+    "resigned_general": "Гравець {0} відмовився від звання Ватажка: {1}",
+    "drew_sets": "Гравець {0} взяв сети.",
+    "placed_set_detail": "Гравець {0} виставив Сет {1} у секторі [{2},{3}] [{4}] | Дошка: {5}",
+    "placed_set_manual": "Вручну: Сет {0} виставлено у [{1},{2}] [{3}] | Дошка: {4}",
+    "placed_set_simple": "Гравець {0} виставив Сет {1} [{2}] | Дошка: {3}",
+    "placed_set_region": "Гравець {0} виставив Сет {1} у регіоні [{2},{3}].",
+    "given_set_manual": "Вручну: Видано Сет {0} Гравцю {1}",
+    "move_log": "Переміщення: {0} з [{1},{2}] до [{3},{4}]",
+    "added_log": "Додано {0} у секторі [{1},{2}]",
+    "passed_snitched_excess": "Гравець {0} спасував і здав {1} зайвих сетів. Лють Якуба оновлена.",
+    "snitched_set_range": "Гравець {0} здав сет {1} Якубу. Лють оновлена | Радіус: {2}",
+    "snitched_set_range_auto": "Сет {0} здано Якубу. Лють оновлена | Радіус: {1}",
+    "snitched_set_pt": "Гравець {0} здав сет {1} Якубу за 1 очко.",
+    "snitched_set_pt_auto": "Сет {0} здано Якубу за 1 очко.",
+    "snitched_set_auto": "Сет {0} здано Якубу.",
+    "passed_empty": "Гравець {0} спасував хід.",
+    "passed_turn": "Гравець {0} спасував хід.",
+    "passed": "Гравець {0} спасував.",
+    "jakub_seized_range": "Якуб захопив Сет {0}. Лють/Радіус оновлено негайно.",
+    "jakub_seized": "Якуб захопив Сет {0}. Лють оновлено негайно.",
+    "jakub_seized_pool": "Якуб захопив Сет {0} з пулу.",
+    "jakub_fury_subsided": "Лють Якуба вщухла. Полювання завершено.",
+    "jakub_ends_hunt": "Якуб завершує полювання.",
+    "jakub_range_reset": "Радіус Якуба скинуто до 1.",
+    "magnetism_log": "НЕСТРИМНИЙ ТВАРИННИЙ МАГНЕТИЗМ! Всі банди із секторів {0} притягнуто до сектора Якуба [{1},{2}]!",
+    "jakub_chasing": "Якуб переміщується на [{0},{1}] (радіус {2}), переслідуючи {3} (Лють: {4} | {5} одиниць).",
+    "jakub_killed": "Якуб вбив {0}x {1} у секторі [{2},{3}]. Лють падає до {4}."
+  },
+  "de": {
+    "race_V": "Vampire",
+    "race_W": "Werwölfe",
+    "race_G": "Geister",
+    "race_B": "Bardaken",
+    "player": "Spieler",
+    "set": "Set",
+    "board": "Spielbrett:",
+    "sector": "Sektor [",
+    "in_sector": "in Sektor",
+    "in_region": "in Region",
+    "from_sector": "aus Sektor",
+    "phase_setup": "--- Beginn VORBEREITUNG ---",
+    "phase_general": "--- Beginn ANFÜHRERPHASE ---",
+    "phase_player": "--- Beginn SPIELERPHASE ---",
+    "phase_jakub": "--- Beginn JAKUB-PHASE ---",
+    "phase_event": "--- Beginn EREIGNISPHASE ---",
+    "phase_player_round": "--- Beginn Spielerphase (Runde {0}) ---",
+    "jakub_hunt_started": "--- Jakubs Jagd Gestartet ---",
+    "event_phase_started": "--- Beginn der Ereignisphase ---",
+    "final_scoring_phase": "--- SCHLUSSWERTUNGSPHASE (08:00) ---",
+    "event_phase_title": "--- EREIGNISPHASE ---",
+    "final_scoring_round": "--- SCHLUSSWERTUNG (Runde 12) ---",
+    "round_header": "--- Runde {0} / {1} ---",
+    "refilled_hands": "Runde {0}: Spielerhände auf {1} Sets aufgefüllt.",
+    "reshuffle_discard": "Ablagestapel wird in den Nachziehstapel gemischt.",
+    "event_deck_exhausted": "Ereignisstapel leer. Abgelegte Ereignisse eingemischt.",
+    "no_events": "Keine Ereignisse verfügbar.",
+    "event_drawn": "GEZOGENES EREIGNIS: [{0}] {1}",
+    "manual_event": "--- Manuelles Ereignis: [{0}] {1} ---",
+    "effect": "Effekt: {0}",
+    "activated": "Aktiviert: {0}",
+    "fury_changes": "Wutänderungen: {0} (Reichweite: {1})",
+    "limit_changes": "Limitänderungen: {0}",
+    "no_fury_changes": "Keine Wutänderungen.",
+    "no_limit_changes": "Keine Limitänderungen.",
+    "support_sets": "Unterstützung: +{0} Set pro Spieler (Gesamt: {1}).",
+    "support_no_sets": "Unterstützung: Keine Sets verfügbar.",
+    "great_wipe": "Große Säuberung: Figuren eliminiert in: {0} (Gesamt: {1}).",
+    "great_wipe_none": "Große Säuberung: Keine Figuren zu eliminieren.",
+    "moved_pawns": "Figuren bewegt von ({0},{1}) nach ({2},{3}): {4} (Gesamt: {5}).",
+    "no_pawns_to_move": "Keine Figuren in ({0},{1}) zum Bewegen.",
+    "moved_prefix": "Bewegt: {0}",
+    "killed_prefix": "Getötet: {0}",
+    "penalties_prefix": "Strafen: {0}",
+    "escaped_prefix": "Geflohen: {0}",
+    "deserted_prefix": "Desertiert: {0}",
+    "bardak_penalty": "Bardaken-Anführer verlor {0} Punkte",
+    "witness_awarded": "Zeugenpunkte vergeben:",
+    "mercy_phase_title": "😇 Jakubs Gnadenphase:",
+    "witness_log": "🔥 Zeuge: {0} ({1}) erhält +{2} Pkt. fürs Überleben nahe Jakub.",
+    "mercy_log": "😇 Gnade: {0} ({1}) erhält +{2} Pkt. für verbleibende Wut.",
+    "mercy_rem_log": "Spieler {0} ({1}) +{2} Pkt. aus Gnade ({3} Wut übrig).",
+    "final_score_log": "Endstand: Spieler {0} (+{1} für {2});",
+    "final_bonus_log": "Spieler {0} ({1}) erhält +{2} Bonuspunkte (Endbonus).",
+    "game_over_winner": "SPIEL ENDE! Gewinner: Spieler {0} ({1} Pkt.).",
+    "game_over_tie": "SPIEL ENDE! UNENTSCHIEDEN: {0} ({1} Pkt.)!",
+    "chose_general": "Spieler {0} wählte Anführer: {1}",
+    "resigned_general": "Spieler {0} trat als Anführer von {1} zurück",
+    "drew_sets": "Spieler {0} zog Sets.",
+    "placed_set_detail": "Spieler {0} platzierte Set {1} in Sektor [{2},{3}] [{4}] | Spielbrett: {5}",
+    "placed_set_manual": "Manuell: Set {0} platziert in [{1},{2}] [{3}] | Spielbrett: {4}",
+    "placed_set_simple": "Spieler {0} platzierte Set {1} [{2}] | Spielbrett: {3}",
+    "placed_set_region": "Spieler {0} platzierte Set {1} in Region [{2},{3}].",
+    "given_set_manual": "Manuell: Set {0} an Spieler {1} gegeben",
+    "move_log": "Bewegung: {0} von [{1},{2}] nach [{3},{4}]",
+    "added_log": "{0} in Sektor [{1},{2}] hinzugefügt",
+    "passed_snitched_excess": "Spieler {0} passte und verriet {1} überschüssige Sets. Wut aktualisiert.",
+    "snitched_set_range": "Spieler {0} verriet Jakub mit Set {1}. Wut aktualisiert | Reichweite: {2}",
+    "snitched_set_range_auto": "Set {0} an Jakub verraten. Wut aktualisiert | Reichweite: {1}",
+    "snitched_set_pt": "Spieler {0} verriet Jakub mit Set {1} für 1 Pkt.",
+    "snitched_set_pt_auto": "Set {0} verraten für 1 Pkt.",
+    "snitched_set_auto": "Set {0} an Jakub verraten.",
+    "passed_empty": "Spieler {0} passte ohne Aktion.",
+    "passed_turn": "Spieler {0} beendete den Zug.",
+    "passed": "Spieler {0} passte.",
+    "jakub_seized_range": "Jakub übernahm Set {0}. Wut/Reichweite sofort aktualisiert.",
+    "jakub_seized": "Jakub übernahm Set {0}. Wut sofort aktualisiert.",
+    "jakub_seized_pool": "Jakub übernahm Set {0} aus dem Pool.",
+    "jakub_fury_subsided": "Jakubs Wut legte sich. Jagd beendet.",
+    "jakub_ends_hunt": "Jakub beendet seine Jagd.",
+    "jakub_range_reset": "Jakubs Reichweite auf 1 zurückgesetzt.",
+    "magnetism_log": "UNAUFHALTSAMER TIERISCHER MAGNETISMUS! Alle Einheiten aus Sektoren {0} wurden in Jakubs Sektor [{1},{2}] gezogen!",
+    "jakub_chasing": "Jakub bewegt sich nach [{0},{1}] (Reichweite {2}), jagt {3} (Wut: {4} | {5} Einheiten).",
+    "jakub_killed": "Jakub tötete {0}x {1} in Sektor [{2},{3}]. Wut sinkt auf {4}."
+  },
+  "es": {
+    "race_V": "Vampiros",
+    "race_W": "Hombres Lobo",
+    "race_G": "Fantasmas",
+    "race_B": "Bardaks",
+    "player": "Jugador",
+    "set": "Set",
+    "board": "Tablero:",
+    "sector": "Sector [",
+    "in_sector": "en sector",
+    "in_region": "en región",
+    "from_sector": "del sector",
+    "phase_setup": "--- Inicio de PREPARACIÓN ---",
+    "phase_general": "--- Inicio de FASE DE LÍDERES ---",
+    "phase_player": "--- Inicio de FASE DE JUGADORES ---",
+    "phase_jakub": "--- Inicio de FASE DE JAKUB ---",
+    "phase_event": "--- Inicio de FASE DE EVENTOS ---",
+    "phase_player_round": "--- Inicio de Fase de Jugadores (Ronda {0}) ---",
+    "jakub_hunt_started": "--- Caza de Jakub Iniciada ---",
+    "event_phase_started": "--- Inicio de Fase de Eventos ---",
+    "final_scoring_phase": "--- FASE DE PUNTUACIÓN FINAL (08:00) ---",
+    "event_phase_title": "--- FASE DE EVENTOS ---",
+    "final_scoring_round": "--- PUNTUACIÓN FINAL (Ronda 12) ---",
+    "round_header": "--- Ronda {0} / {1} ---",
+    "refilled_hands": "Ronda {0}: Manos de jugadores rellenadas a {1} sets.",
+    "reshuffle_discard": "Barajando pila de descartes al mazo de robo.",
+    "event_deck_exhausted": "Mazo de eventos agotado. Descartes barajados de vuelta.",
+    "no_events": "No hay eventos disponibles en el mazo.",
+    "event_drawn": "EVENTO ROBADO: [{0}] {1}",
+    "manual_event": "--- Evento Manual: [{0}] {1} ---",
+    "effect": "Efecto: {0}",
+    "activated": "Activado: {0}",
+    "fury_changes": "Cambios de furia: {0} (Alcance: {1})",
+    "limit_changes": "Cambios de límites: {0}",
+    "no_fury_changes": "Sin cambios de furia.",
+    "no_limit_changes": "Sin cambios de límites.",
+    "support_sets": "Apoyo: +{0} set por jugador (Total: {1}).",
+    "support_no_sets": "Apoyo: No hay sets disponibles.",
+    "great_wipe": "Gran Limpieza: Peones eliminados en: {0} (Total: {1}).",
+    "great_wipe_none": "Gran Limpieza: Sin peones para eliminar.",
+    "moved_pawns": "Peones movidos de ({0},{1}) a ({2},{3}): {4} (Total: {5}).",
+    "no_pawns_to_move": "No hay peones en ({0},{1}) para mover.",
+    "moved_prefix": "Movidos: {0}",
+    "killed_prefix": "Muertos: {0}",
+    "penalties_prefix": "Penalizaciones: {0}",
+    "escaped_prefix": "Escaparon: {0}",
+    "deserted_prefix": "Desertaron: {0}",
+    "bardak_penalty": "Líder de Bardaks perdió {0} pts",
+    "witness_awarded": "Puntos de Testigo otorgados:",
+    "mercy_phase_title": "😇 Fase de Piedad de Jakub:",
+    "witness_log": "🔥 Testigo: {0} ({1}) gana +{2} pts por sobrevivir cerca de Jakub.",
+    "mercy_log": "😇 Piedad: {0} ({1}) gana +{2} pts por furia restante.",
+    "mercy_rem_log": "Jugador {0} ({1}) +{2} pts de Piedad ({3} furia restante).",
+    "final_score_log": "Puntuación Final: Jugador {0} (+{1} por {2});",
+    "final_bonus_log": "Jugador {0} ({1}) gana +{2} puntos bono (Bono Final).",
+    "game_over_winner": "¡FIN DEL JUEGO! Ganador: Jugador {0} ({1} pts).",
+    "game_over_tie": "¡FIN DEL JUEGO! EMPATE: {0} ({1} pts)!",
+    "chose_general": "Jugador {0} eligió Líder: {1}",
+    "resigned_general": "Jugador {0} renunció a Líder de: {1}",
+    "drew_sets": "Jugador {0} robó sets.",
+    "placed_set_detail": "Jugador {0} colocó Set {1} en sector [{2},{3}] [{4}] | Tablero: {5}",
+    "placed_set_manual": "Manualmente: Set {0} colocado en [{1},{2}] [{3}] | Tablero: {4}",
+    "placed_set_simple": "Jugador {0} colocó Set {1} [{2}] | Tablero: {3}",
+    "placed_set_region": "Jugador {0} colocó Set {1} en región [{2},{3}].",
+    "given_set_manual": "Manualmente: Set {0} entregado a Jugador {1}",
+    "move_log": "Movimiento: {0} de [{1},{2}] a [{3},{4}]",
+    "added_log": "Añadido {0} en sector [{1},{2}]",
+    "passed_snitched_excess": "Jugador {0} pasó y delató {1} sets sobrantes. Furia actualizada.",
+    "snitched_set_range": "Jugador {0} delató a Jakub con set {1}. Furia actualizada | Alcance: {2}",
+    "snitched_set_range_auto": "Set {0} delatado a Jakub. Furia actualizada | Alcance: {1}",
+    "snitched_set_pt": "Jugador {0} delató a Jakub con set {1} por 1 pt.",
+    "snitched_set_pt_auto": "Set {0} delatado por 1 pt.",
+    "snitched_set_auto": "Set {0} delatado a Jakub.",
+    "passed_empty": "Jugador {0} pasó su turno.",
+    "passed_turn": "Jugador {0} pasó el turno.",
+    "passed": "Jugador {0} pasó.",
+    "jakub_seized_range": "Jakub tomó el Set {0}. Furia/Alcance actualizados de inmediato.",
+    "jakub_seized": "Jakub tomó el Set {0}. Furia actualizada de inmediato.",
+    "jakub_seized_pool": "Jakub tomó el Set {0} de la reserva.",
+    "jakub_fury_subsided": "La furia de Jakub se calmó. Caza finalizada.",
+    "jakub_ends_hunt": "Jakub finaliza su caza.",
+    "jakub_range_reset": "Alcance de Jakub restablecido a 1.",
+    "magnetism_log": "¡MAGNETISMO ANIMAL IMPARABLE! ¡Todas las bandas de sectores {0} atraídas a [{1},{2}]!",
+    "jakub_chasing": "Jakub se mueve a [{0},{1}] (alcance {2}), persiguiendo {3} (Furia: {4} | {5} unidades).",
+    "jakub_killed": "Jakub mató {0}x {1} en sector [{2},{3}]. Furia cae a {4}."
+  },
+  "fr": {
+    "race_V": "Vampires",
+    "race_W": "Loups-Garous",
+    "race_G": "Fantômes",
+    "race_B": "Bardaks",
+    "player": "Joueur",
+    "set": "Set",
+    "board": "Plateau :",
+    "sector": "Secteur [",
+    "in_sector": "dans le secteur",
+    "in_region": "dans la région",
+    "from_sector": "du secteur",
+    "phase_setup": "--- Début de PRÉPARATION ---",
+    "phase_general": "--- Début de PHASE DES CHEFS ---",
+    "phase_player": "--- Début de PHASE DES JOUEURS ---",
+    "phase_jakub": "--- Début de PHASE DE JAKUB ---",
+    "phase_event": "--- Début de PHASE D'ÉVÉNEMENTS ---",
+    "phase_player_round": "--- Début de Phase des Joueurs (Round {0}) ---",
+    "jakub_hunt_started": "--- Traque de Jakub Lancée ---",
+    "event_phase_started": "--- Lancement de la Phase d'Événements ---",
+    "final_scoring_phase": "--- PHASE DE DÉCOMPTE FINAL (08:00) ---",
+    "event_phase_title": "--- PHASE D'ÉVÉNEMENTS ---",
+    "final_scoring_round": "--- DÉCOMPTE FINAL (Round 12) ---",
+    "round_header": "--- Round {0} / {1} ---",
+    "refilled_hands": "Round {0}: Mains des joueurs réapprovisionnées à {1} sets.",
+    "reshuffle_discard": "Mélange de la défausse dans la pioche.",
+    "event_deck_exhausted": "Pioche d'événements épuisée. Défausse remélangée.",
+    "no_events": "Aucun événement disponible dans la pioche.",
+    "event_drawn": "ÉVÉNEMENT PIOCHÉ : [{0}] {1}",
+    "manual_event": "--- Événement Manuel : [{0}] {1} ---",
+    "effect": "Effet : {0}",
+    "activated": "Activé : {0}",
+    "fury_changes": "Changements de rage : {0} (Portée : {1})",
+    "limit_changes": "Changements de limites : {0}",
+    "no_fury_changes": "Aucun changement de rage.",
+    "no_limit_changes": "Aucun changement de limites.",
+    "support_sets": "Soutien : +{0} set par joueur (Total : {1}).",
+    "support_no_sets": "Soutien : Aucun set disponible.",
+    "great_wipe": "Grand Nettoyage : Pions éliminés dans : {0} (Total : {1}).",
+    "great_wipe_none": "Grand Nettoyage : Aucun pion à éliminer.",
+    "moved_pawns": "Pions déplacés de ({0},{1}) à ({2},{3}) : {4} (Total : {5}).",
+    "no_pawns_to_move": "Aucun pion en ({0},{1}) à déplacer.",
+    "moved_prefix": "Déplacé : {0}",
+    "killed_prefix": "Tué : {0}",
+    "penalties_prefix": "Pénalités : {0}",
+    "escaped_prefix": "Échappé : {0}",
+    "deserted_prefix": "Déserté : {0}",
+    "bardak_penalty": "Le Chef des Bardaks a perdu {0} pts",
+    "witness_awarded": "Points de Témoin attribués :",
+    "mercy_phase_title": "😇 Phase de Clémence de Jakub :",
+    "witness_log": "🔥 Témoin : {0} ({1}) gagne +{2} pts pour avoir survécu près de Jakub.",
+    "mercy_log": "😇 Clémence : {0} ({1}) gagne +{2} pts pour la rage restante.",
+    "mercy_rem_log": "Joueur {0} ({1}) +{2} pts de Clémence ({3} rage restante).",
+    "final_score_log": "Score Final : Joueur {0} (+{1} pour {2});",
+    "final_bonus_log": "Joueur {0} ({1}) gagne +{2} points bonus (Bonus Final).",
+    "game_over_winner": "FIN DE PARTIE ! Vainqueur : Joueur {0} ({1} pts).",
+    "game_over_tie": "FIN DE PARTIE ! ÉGALITÉ : {0} ({1} pts) !",
+    "chose_general": "Joueur {0} a choisi comme Chef : {1}",
+    "resigned_general": "Joueur {0} a démissionné de Chef de : {1}",
+    "drew_sets": "Joueur {0} a pioché des sets.",
+    "placed_set_detail": "Joueur {0} a posé le Set {1} dans le secteur [{2},{3}] [{4}] | Plateau : {5}",
+    "placed_set_manual": "Manuellement : Set {0} posé dans [{1},{2}] [{3}] | Plateau : {4}",
+    "placed_set_simple": "Joueur {0} a posé le Set {1} [{2}] | Plateau : {3}",
+    "placed_set_region": "Joueur {0} a posé le Set {1} dans la région [{2},{3}].",
+    "given_set_manual": "Manuellement : Set {0} donné au Joueur {1}",
+    "move_log": "Déplacement : {0} de [{1},{2}] vers [{3},{4}]",
+    "added_log": "Ajouté {0} dans le secteur [{1},{2}]",
+    "passed_snitched_excess": "Joueur {0} a passé et dénoncé {1} sets excédentaires. Rage mise à jour.",
+    "snitched_set_range": "Joueur {0} a dénoncé à Jakub avec le set {1}. Rage mise à jour | Portée : {2}",
+    "snitched_set_range_auto": "Set {0} dénoncé à Jakub. Rage mise à jour | Portée : {1}",
+    "snitched_set_pt": "Joueur {0} a dénoncé à Jakub avec le set {1} pour 1 pt.",
+    "snitched_set_pt_auto": "Set {0} dénoncé pour 1 pt.",
+    "snitched_set_auto": "Set {0} dénoncé à Jakub.",
+    "passed_empty": "Joueur {0} a passé son tour.",
+    "passed_turn": "Joueur {0} a passé son tour.",
+    "passed": "Joueur {0} a passé.",
+    "jakub_seized_range": "Jakub a saisi le Set {0}. Rage/Portée mises à jour immédiatement.",
+    "jakub_seized": "Jakub a saisi le Set {0}. Rage mise à jour immédiatement.",
+    "jakub_seized_pool": "Jakub a saisi le Set {0} de la réserve.",
+    "jakub_fury_subsided": "La rage de Jakub est retombée. Traque terminée.",
+    "jakub_ends_hunt": "Jakub termine sa traque.",
+    "jakub_range_reset": "Portée de Jakub réinitialisée à 1.",
+    "magnetism_log": "MAGNÉTISME ANIMAL INARRÊTABLE ! Toutes les bandes des secteurs {0} ont été attirées vers le secteur de Jakub [{1},{2}] !",
+    "jakub_chasing": "Jakub se déplace en [{0},{1}] (portée {2}), traquant {3} (Rage : {4} | {5} unités).",
+    "jakub_killed": "Jakub a tué {0}x {1} dans le secteur [{2},{3}]. La rage tombe à {4}."
+  },
+  "it": {
+    "race_V": "Vampiri",
+    "race_W": "Licantropi",
+    "race_G": "Spettri",
+    "race_B": "Bardak",
+    "player": "Giocatore",
+    "set": "Set",
+    "board": "Tabellone:",
+    "sector": "Settore [",
+    "in_sector": "nel settore",
+    "in_region": "nella regione",
+    "from_sector": "dal settore",
+    "phase_setup": "--- Inizio PREPARAZIONE ---",
+    "phase_general": "--- Inizio FASE LEADER ---",
+    "phase_player": "--- Inizio FASE GIOCATORI ---",
+    "phase_jakub": "--- Inizio FASE DI JAKUB ---",
+    "phase_event": "--- Inizio FASE EVENTI ---",
+    "phase_player_round": "--- Inizio Fase Giocatori (Round {0}) ---",
+    "jakub_hunt_started": "--- Caccia di Jakub Iniziata ---",
+    "event_phase_started": "--- Inizio Fase Eventi ---",
+    "final_scoring_phase": "--- FASE DI PUNTEGGIO FINALE (08:00) ---",
+    "event_phase_title": "--- FASE EVENTI ---",
+    "final_scoring_round": "--- PUNTEGGIO FINALE (Round 12) ---",
+    "round_header": "--- Round {0} / {1} ---",
+    "refilled_hands": "Round {0}: Mani dei giocatori riempite a {1} set.",
+    "reshuffle_discard": "Rimescolamento degli scarti nel mazzo di pesca.",
+    "event_deck_exhausted": "Mazzo eventi esaurito. Eventi scartati rimescolati nel mazzo.",
+    "no_events": "Nessun evento disponibile nel mazzo.",
+    "event_drawn": "EVENTO PESCATO: [{0}] {1}",
+    "manual_event": "--- Evento Manuale: [{0}] {1} ---",
+    "effect": "Effetto: {0}",
+    "activated": "Attivato: {0}",
+    "fury_changes": "Cambiamenti di furia: {0} (Portata: {1})",
+    "limit_changes": "Cambiamenti limiti: {0}",
+    "no_fury_changes": "Nessun cambiamento di furia.",
+    "no_limit_changes": "Nessun cambiamento di limiti.",
+    "support_sets": "Supporto: +{0} set a giocatore (Totale: {1}).",
+    "support_no_sets": "Supporto: Nessun set disponibile.",
+    "great_wipe": "Grande Pulizia: Pedine eliminate in: {0} (Totale: {1}).",
+    "great_wipe_none": "Grande Pulizia: Nessuna pedina da eliminare.",
+    "moved_pawns": "Pedine spostate da ({0},{1}) a ({2},{3}): {4} (Totale: {5}).",
+    "no_pawns_to_move": "Nessuna pedina in ({0},{1}) da spostare.",
+    "moved_prefix": "Spostato: {0}",
+    "killed_prefix": "Ucciso: {0}",
+    "penalties_prefix": "Penalità: {0}",
+    "escaped_prefix": "Fuggito: {0}",
+    "deserted_prefix": "Disertato: {0}",
+    "bardak_penalty": "Il Leader dei Bardak ha perso {0} pt",
+    "witness_awarded": "Punti Testimone assegnati:",
+    "mercy_phase_title": "😇 Fase di Clemenza di Jakub:",
+    "witness_log": "🔥 Testimone: {0} ({1}) ottiene +{2} pt per essere sopravvissuto vicino a Jakub.",
+    "mercy_log": "😇 Clemenza: {0} ({1}) ottiene +{2} pt per la furia rimanente.",
+    "mercy_rem_log": "Giocatore {0} ({1}) +{2} pt da Clemenza ({3} furia rimasta).",
+    "final_score_log": "Punteggio Finale: Giocatore {0} (+{1} per {2});",
+    "final_bonus_log": "Giocatore {0} ({1}) ottiene +{2} punti bonus (Bonus Finale).",
+    "game_over_winner": "FINE GIOCO! Vincitore: Giocatore {0} ({1} pt).",
+    "game_over_tie": "FINE GIOCO! PARITÀ: {0} ({1} pt)!",
+    "chose_general": "Giocatore {0} ha scelto Leader: {1}",
+    "resigned_general": "Giocatore {0} ha rinunciato a Leader di: {1}",
+    "drew_sets": "Giocatore {0} ha pescato set.",
+    "placed_set_detail": "Giocatore {0} ha piazzato il Set {1} nel settore [{2},{3}] [{4}] | Tabellone: {5}",
+    "placed_set_manual": "Manualmente: Set {0} piazzato in [{1},{2}] [{3}] | Tabellone: {4}",
+    "placed_set_simple": "Giocatore {0} ha piazzato il Set {1} [{2}] | Tabellone: {3}",
+    "placed_set_region": "Giocatore {0} ha piazzato il Set {1} nella regione [{2},{3}].",
+    "given_set_manual": "Manualmente: Set {0} dato al Giocatore {1}",
+    "move_log": "Movimento: {0} da [{1},{2}] a [{3},{4}]",
+    "added_log": "Aggiunto {0} nel settore [{1},{2}]",
+    "passed_snitched_excess": "Giocatore {0} ha passato e soffiato {1} set in eccesso. Furia aggiornata.",
+    "snitched_set_range": "Giocatore {0} ha soffiato a Jakub con set {1}. Furia aggiornata | Portata: {2}",
+    "snitched_set_range_auto": "Set {0} soffiato a Jakub. Furia aggiornata | Portata: {1}",
+    "snitched_set_pt": "Giocatore {0} ha soffiato a Jakub con set {1} per 1 pt.",
+    "snitched_set_pt_auto": "Set {0} soffiato per 1 pt.",
+    "snitched_set_auto": "Set {0} soffiato a Jakub.",
+    "passed_empty": "Giocatore {0} ha passato il turno.",
+    "passed_turn": "Giocatore {0} ha passato il turno.",
+    "passed": "Giocatore {0} ha passato.",
+    "jakub_seized_range": "Jakub ha preso il Set {0}. Furia/Portata aggiornate immediatamente.",
+    "jakub_seized": "Jakub ha preso il Set {0}. Furia aggiornata immediatamente.",
+    "jakub_seized_pool": "Jakub ha preso il Set {0} dalla riserva.",
+    "jakub_fury_subsided": "La furia di Jakub si è placata. Caccia terminata.",
+    "jakub_ends_hunt": "Jakub termina la caccia.",
+    "jakub_range_reset": "Portata di Jakub reimpostata a 1.",
+    "magnetism_log": "MAGNETISMO ANIMALE INARRESTABILE! Tutte le fazioni dei settori {0} sono state attratte nel settore di Jakub [{1},{2}]!",
+    "jakub_chasing": "Jakub si sposta in [{0},{1}] (portata {2}), inseguendo {3} (Furia: {4} | {5} unità).",
+    "jakub_killed": "Jakub ha ucciso {0}x {1} nel settore [{2},{3}]. Furia scende a {4}."
+  },
+  "cs": {
+    "race_V": "Upíři",
+    "race_W": "Vlkodlaci",
+    "race_G": "Duchové",
+    "race_B": "Bardaci",
+    "player": "Hráč",
+    "set": "Sada",
+    "board": "Deska:",
+    "sector": "Sektor [",
+    "in_sector": "v sektoru",
+    "in_region": "v oblasti",
+    "from_sector": "ze sektoru",
+    "phase_setup": "--- Začátek PŘÍPRAVY ---",
+    "phase_general": "--- Začátek FÁZE VŮDCŮ ---",
+    "phase_player": "--- Začátek FÁZE HRÁČŮ ---",
+    "phase_jakub": "--- Začátek FÁZE JAKUBA ---",
+    "phase_event": "--- Začátek FÁZE UDÁLOSTÍ ---",
+    "phase_player_round": "--- Začátek Fáze Hráčů (Kolo {0}) ---",
+    "jakub_hunt_started": "--- Lov Jakuba Zahájen ---",
+    "event_phase_started": "--- Zahájení Fáze Událostí ---",
+    "final_scoring_phase": "--- FÁZE ZÁVĚREČNÉHO BODOVÁNÍ (08:00) ---",
+    "event_phase_title": "--- FÁZE UDÁLOSTÍ ---",
+    "final_scoring_round": "--- ZÁVĚREČNÉ BODOVÁNÍ (12. Kolo) ---",
+    "round_header": "--- Kolo {0} / {1} ---",
+    "refilled_hands": "Kolo {0}: Ruce hráčů doplněny na {1} sad.",
+    "reshuffle_discard": "Přemíchání odkládacího balíčku zpět do dobíracího balíčku.",
+    "event_deck_exhausted": "Balíček událostí došel. Odhozené události byly zamíchány zpět do balíčku.",
+    "no_events": "V balíčku nejsou žádné dostupné události.",
+    "event_drawn": "VYLOSOVÁNA UDÁLOST: [{0}] {1}",
+    "manual_event": "--- Manuální Událost: [{0}] {1} ---",
+    "effect": "Efekt: {0}",
+    "activated": "Aktivováno: {0}",
+    "fury_changes": "Změny zuřivosti: {0} (Dosah: {1})",
+    "limit_changes": "Změny limitů band: {0}",
+    "no_fury_changes": "Žádné změny zuřivosti.",
+    "no_limit_changes": "Žádné změny limitů.",
+    "support_sets": "Podpora: +{0} sada pro každého hráče (Celkem: {1}).",
+    "support_no_sets": "Podpora: Žádné dostupné sady k rozdání.",
+    "great_wipe": "Velká Očista: Eliminovány figurky v: {0} (Celkem: {1}).",
+    "great_wipe_none": "Velká Očista: Žádné figurky k eliminaci.",
+    "moved_pawns": "Přesunuty figurky z ({0},{1}) do ({2},{3}): {4} (Celkem: {5}).",
+    "no_pawns_to_move": "V sektoru ({0},{1}) nejsou žádné figurky k přesunu.",
+    "moved_prefix": "Přesunuto: {0}",
+    "killed_prefix": "Zabito: {0}",
+    "penalties_prefix": "Tresty: {0}",
+    "escaped_prefix": "Uprchli: {0}",
+    "deserted_prefix": "Dezertovali: {0}",
+    "bardak_penalty": "Vůdce Bardaků ztratil {0} bodů",
+    "witness_awarded": "Body Svědka Jakuba uděleny:",
+    "mercy_phase_title": "😇 Fáze Jakubova Slitování:",
+    "witness_log": "🔥 Svědek: {0} ({1}) získává +{2} b. za přežití v blízkosti Jakuba.",
+    "mercy_log": "😇 Slitování: {0} ({1}) získává +{2} b. za zbývající zuřivost.",
+    "mercy_rem_log": "Hráč {0} ({1}) +{2} b. ze Slitování (zbývá {3} zuřivosti).",
+    "final_score_log": "Závěrečné Skóre: Hráč {0} (+{1} za {2});",
+    "final_bonus_log": "Hráč {0} ({1}) získává +{2} bonusových bodů (Konečný Bonus).",
+    "game_over_winner": "KONEC HRY! Vítěz: Hráč {0} ({1} b.).",
+    "game_over_tie": "KONEC HRY! REMÍZA: {0} ({1} b.)!",
+    "chose_general": "Hráč {0} zvolil Vůdce: {1}",
+    "resigned_general": "Hráč {0} se vzdal vedení bandy: {1}",
+    "drew_sets": "Hráč {0} dobral sady.",
+    "placed_set_detail": "Hráč {0} vyložil Sadu {1} v sektoru [{2},{3}] [{4}] | Deska: {5}",
+    "placed_set_manual": "Ručně: Sada {0} vyložena v [{1},{2}] [{3}] | Deska: {4}",
+    "placed_set_simple": "Hráč {0} vyložil Sadu {1} [{2}] | Deska: {3}",
+    "placed_set_region": "Hráč {0} vyložil Sadu {1} v oblasti [{2},{3}].",
+    "given_set_manual": "Ručně: Předána Sada {0} Hráči {1}",
+    "move_log": "Pohyb: {0} z [{1},{2}] do [{3},{4}]",
+    "added_log": "Přidán {0} v sektoru [{1},{2}]",
+    "passed_snitched_excess": "Hráč {0} pasoval a udal {1} přebytečných sad Jakubovi. Zuřivost aktualizována.",
+    "snitched_set_range": "Hráč {0} udal Jakuba sadou {1}. Zuřivost aktualizována | Dosah: {2}",
+    "snitched_set_range_auto": "Sada {0} udána Jakubovi. Zuřivost aktualizována | Dosah: {1}",
+    "snitched_set_pt": "Hráč {0} udal Jakuba sadou {1} za 1 bod.",
+    "snitched_set_pt_auto": "Sada {0} udána za 1 bod.",
+    "snitched_set_auto": "Sada {0} udána Jakubovi.",
+    "passed_empty": "Hráč {0} zahrál prázdný tah a pasoval.",
+    "passed_turn": "Hráč {0} pasoval tah.",
+    "passed": "Hráč {0} pasoval.",
+    "jakub_seized_range": "Jakub převzal Sadu {0}. Zuřivost/Dosah okamžitě aktualizovány.",
+    "jakub_seized": "Jakub převzal Sadu {0}. Zuřivost okamžitě aktualizována.",
+    "jakub_seized_pool": "Jakub převzal Sadu {0} z banku.",
+    "jakub_fury_subsided": "Jakubova zuřivost opadla. Lov skončil.",
+    "jakub_ends_hunt": "Jakub ukončuje svůj lov.",
+    "jakub_range_reset": "Jakubův dosah resetován na 1.",
+    "magnetism_log": "NEZASTAVITELNÝ ZVÍŘECÍ MAGNETISMUS! Všechny bandy ze sektorů {0} byly přitaženy do Jakubova sektoru [{1},{2}]!",
+    "jakub_chasing": "Jakub se přesunul na [{0},{1}] (dosah {2}), pronásleduje {3} (Zuřivost: {4} | {5} jednotek).",
+    "jakub_killed": "Jakub zabil {0}x {1} v sektoru [{2},{3}]. Zuřivost klesá na {4}."
+  },
+  "pt": {
+    "race_V": "Vampiros",
+    "race_W": "Lobisomens",
+    "race_G": "Fantasmas",
+    "race_B": "Bardaks",
+    "player": "Jogador",
+    "set": "Conjunto",
+    "board": "Tabuleiro:",
+    "sector": "Setor [",
+    "in_sector": "no setor",
+    "in_region": "na região",
+    "from_sector": "do setor",
+    "phase_setup": "--- Início da PREPARAÇÃO ---",
+    "phase_general": "--- Início da FASE DE LÍDERES ---",
+    "phase_player": "--- Início da FASE DOS JOGADORES ---",
+    "phase_jakub": "--- Início da FASE DE JAKUB ---",
+    "phase_event": "--- Início da FASE DE EVENTOS ---",
+    "phase_player_round": "--- Início da Fase dos Jogadores (Rodada {0}) ---",
+    "jakub_hunt_started": "--- Caçada de Jakub Iniciada ---",
+    "event_phase_started": "--- Início da Fase de Eventos ---",
+    "final_scoring_phase": "--- FASE DE PONTUAÇÃO FINAL (08:00) ---",
+    "event_phase_title": "--- FASE DE EVENTOS ---",
+    "final_scoring_round": "--- PONTUAÇÃO FINAL (Rodada 12) ---",
+    "round_header": "--- Rodada {0} / {1} ---",
+    "refilled_hands": "Rodada {0}: Mãos dos jogadores reabastecidas para {1} conjuntos.",
+    "reshuffle_discard": "Embaralhando descarte de volta ao baralho.",
+    "event_deck_exhausted": "Baralho de eventos esgotado. Eventos descartados reembaralhados.",
+    "no_events": "Nenhum evento disponível no baralho.",
+    "event_drawn": "EVENTO SORTEADO: [{0}] {1}",
+    "manual_event": "--- Evento Manual: [{0}] {1} ---",
+    "effect": "Efeito: {0}",
+    "activated": "Ativado: {0}",
+    "fury_changes": "Mudanças de fúria: {0} (Alcance: {1})",
+    "limit_changes": "Mudanças de limites: {0}",
+    "no_fury_changes": "Sem alterações de fúria.",
+    "no_limit_changes": "Sem alterações de limites.",
+    "support_sets": "Apoio: +{0} conjunto por jogador (Total: {1}).",
+    "support_no_sets": "Apoio: Nenhum conjunto disponível.",
+    "great_wipe": "Grande Limpeza: Peões eliminados em: {0} (Total: {1}).",
+    "great_wipe_none": "Grande Limpeza: Nenhum peão para eliminar.",
+    "moved_pawns": "Peões movidos de ({0},{1}) para ({2},{3}): {4} (Total: {5}).",
+    "no_pawns_to_move": "Nenhum peão em ({0},{1}) para mover.",
+    "moved_prefix": "Movido: {0}",
+    "killed_prefix": "Morto: {0}",
+    "penalties_prefix": "Penalidades: {0}",
+    "escaped_prefix": "Escaparam: {0}",
+    "deserted_prefix": "Desertaram: {0}",
+    "bardak_penalty": "Líder dos Bardaks perdeu {0} pts",
+    "witness_awarded": "Pontos de Testemunha concedidos:",
+    "mercy_phase_title": "😇 Fase de Misericórdia de Jakub:",
+    "witness_log": "🔥 Testemunha: {0} ({1}) ganha +{2} pts por sobreviver perto de Jakub.",
+    "mercy_log": "😇 Misericórdia: {0} ({1}) ganha +{2} pts pela fúria restante.",
+    "mercy_rem_log": "Jogador {0} ({1}) +{2} pts de Misericórdia ({3} fúria restante).",
+    "final_score_log": "Pontuação Final: Jogador {0} (+{1} por {2});",
+    "final_bonus_log": "Jogador {0} ({1}) ganha +{2} pontos bônus (Bônus Final).",
+    "game_over_winner": "FIM DE JOGO! Vencedor: Jogador {0} ({1} pts).",
+    "game_over_tie": "FIM DE JOGO! EMPATE: {0} ({1} pts)!",
+    "chose_general": "Jogador {0} escolheu Líder: {1}",
+    "resigned_general": "Jogador {0} renunciou ao cargo de Líder de: {1}",
+    "drew_sets": "Jogador {0} comprou conjuntos.",
+    "placed_set_detail": "Jogador {0} colocou Conjunto {1} no setor [{2},{3}] [{4}] | Tabuleiro: {5}",
+    "placed_set_manual": "Manualmente: Conjunto {0} colocado em [{1},{2}] [{3}] | Tabuleiro: {4}",
+    "placed_set_simple": "Jogador {0} colocou Conjunto {1} [{2}] | Tabuleiro: {3}",
+    "placed_set_region": "Jogador {0} colocou Conjunto {1} na região [{2},{3}].",
+    "given_set_manual": "Manualmente: Entregue Conjunto {0} ao Jogador {1}",
+    "move_log": "Movimento: {0} de [{1},{2}] para [{3},{4}]",
+    "added_log": "Adicionado {0} no setor [{1},{2}]",
+    "passed_snitched_excess": "Jogador {0} passou e delatou {1} conjuntos excedentes. Fúria atualizada.",
+    "snitched_set_range": "Jogador {0} delatou a Jakub com conjunto {1}. Fúria atualizada | Alcance: {2}",
+    "snitched_set_range_auto": "Conjunto {0} delatado a Jakub. Fúria atualizada | Alcance: {1}",
+    "snitched_set_pt": "Jogador {0} delatou a Jakub com conjunto {1} por 1 pt.",
+    "snitched_set_pt_auto": "Conjunto {0} delatado por 1 pt.",
+    "snitched_set_auto": "Conjunto {0} delatado a Jakub.",
+    "passed_empty": "Jogador {0} passou a vez.",
+    "passed_turn": "Jogador {0} passou a vez.",
+    "passed": "Jogador {0} passou.",
+    "jakub_seized_range": "Jakub tomou o Conjunto {0}. Fúria/Alcance atualizados imediatamente.",
+    "jakub_seized": "Jakub tomou o Conjunto {0}. Fúria atualizada imediatamente.",
+    "jakub_seized_pool": "Jakub tomou o Conjunto {0} da reserva.",
+    "jakub_fury_subsided": "A fúria de Jakub cessou. Caçada encerrada.",
+    "jakub_ends_hunt": "Jakub encerra sua caçada.",
+    "jakub_range_reset": "Alcance de Jakub redefinido para 1.",
+    "magnetism_log": "MAGNETISMO ANIMAL INCONTROLÁVEL! Todas as facções dos setores {0} foram atraídas para o setor de Jakub [{1},{2}]!",
+    "jakub_chasing": "Jakub se move para [{0},{1}] (alcance {2}), perseguindo {3} (Fúria: {4} | {5} unidades).",
+    "jakub_killed": "Jakub matou {0}x {1} no setor [{2},{3}]. Fúria cai para {4}."
+  },
+  "fi": {
+    "race_V": "Vampyyrit",
+    "race_W": "Ihmissudet",
+    "race_G": "Aaveet",
+    "race_B": "Bardakit",
+    "player": "Pelaaja",
+    "set": "Setti",
+    "board": "Pelilauta:",
+    "sector": "Sektori [",
+    "in_sector": "sektorissa",
+    "in_region": "alueella",
+    "from_sector": "sektorista",
+    "phase_setup": "--- VALMISTELUVAIHE ALKAA ---",
+    "phase_general": "--- JOHTAJAVAIHE ALKAA ---",
+    "phase_player": "--- PELAAJAVAIHE ALKAA ---",
+    "phase_jakub": "--- JAKUB-VAIHE ALKAA ---",
+    "phase_event": "--- TAPAHTUMAVAIHE ALKAA ---",
+    "phase_player_round": "--- Pelaajavaihe alkaa (Kierros {0}) ---",
+    "jakub_hunt_started": "--- Jakubin Jahti Alkoi ---",
+    "event_phase_started": "--- Tapahtumavaihe Alkoi ---",
+    "final_scoring_phase": "--- LOPPUPISTEYTYSVAIHE (08:00) ---",
+    "event_phase_title": "--- TAPAHTUMAVAIHE ---",
+    "final_scoring_round": "--- LOPPUPISTEYTYS (Kierros 12) ---",
+    "round_header": "--- Kierros {0} / {1} ---",
+    "refilled_hands": "Kierros {0}: Pelaajien kädet täydennetty {1} settiin.",
+    "reshuffle_discard": "Poistopakka sekoitettu takaisin nostopakkaan.",
+    "event_deck_exhausted": "Tapahtumaprosessi tyhjä. Poistetut kortit sekoitettu takaisin.",
+    "no_events": "Pakassa ei ole tapahtumia.",
+    "event_drawn": "NOSTETTU TAPAHTUMA: [{0}] {1}",
+    "manual_event": "--- Manuaalinen Tapahtuma: [{0}] {1} ---",
+    "effect": "Vaikutus: {0}",
+    "activated": "Aktivoitu: {0}",
+    "fury_changes": "Raivon muutokset: {0} (Kantama: {1})",
+    "limit_changes": "Rajoitusten muutokset: {0}",
+    "no_fury_changes": "Ei muutoksia raivossa.",
+    "no_limit_changes": "Ei muutoksia rajoissa.",
+    "support_sets": "Tuki: +{0} setti kullekin pelaajalle (Yhteensä: {1}).",
+    "support_no_sets": "Tuki: Ei jaettavia settejä.",
+    "great_wipe": "Suuri Puhdistus: Nappuloita poistettu sektoreista: {0} (Yhteensä: {1}).",
+    "great_wipe_none": "Suuri Puhdistus: Ei poistettavia nappuloita.",
+    "moved_pawns": "Nappuloita siirretty ({0},{1}) -> ({2},{3}): {4} (Yhteensä: {5}).",
+    "no_pawns_to_move": "Sektorissa ({0},{1}) ei ole siirrettäviä nappuloita.",
+    "moved_prefix": "Siirretty: {0}",
+    "killed_prefix": "Tuhottu: {0}",
+    "penalties_prefix": "Rangaistukset: {0}",
+    "escaped_prefix": "Paenneet: {0}",
+    "deserted_prefix": "Karanneet: {0}",
+    "bardak_penalty": "Bardak-johtaja menetti {0} pistettä",
+    "witness_awarded": "Jakubin todistajapisteet jaettu:",
+    "mercy_phase_title": "😇 Jakubin Armovaihe:",
+    "witness_log": "🔥 Todistaja: {0} ({1}) saa +{2} pistettä selviytymisestä Jakubin lähellä.",
+    "mercy_log": "😇 Armo: {0} ({1}) saa +{2} pistettä jäljellä olevasta raivosta.",
+    "mercy_rem_log": "Pelaaja {0} ({1}) saa +{2} pistettä Armovaiheesta (Jakubilla jäljellä {3} raivoa).",
+    "final_score_log": "Loppupisteet: Pelaaja {0} (+{1} klaanista {2});",
+    "final_bonus_log": "Pelaaja {0} ({1}) saa +{2} bonuspistettä (Loppubonus).",
+    "game_over_winner": "PELI PÄÄTTYI! Voittaja: Pelaaja {0} ({1} pistettä).",
+    "game_over_tie": "PELI PÄÄTTYI! TASAPELI: {0} ({1} pistettä)!",
+    "chose_general": "Pelaaja {0} valitsi Johtajan: {1}",
+    "resigned_general": "Pelaaja {0} luopui Johtajuudesta: {1}",
+    "drew_sets": "Pelaaja {0} nosti settejä.",
+    "placed_set_detail": "Pelaaja {0} asetti Setin {1} sektoriin [{2},{3}] [{4}] | Pelilauta: {5}",
+    "placed_set_manual": "Manuaalisesti: Setti {0} asetettu sektoriin [{1},{2}] [{3}] | Pelilauta: {4}",
+    "placed_set_simple": "Pelaaja {0} asetti Setin {1} [{2}] | Pelilauta: {3}",
+    "placed_set_region": "Pelaaja {0} asetti Setin {1} alueelle [{2},{3}].",
+    "given_set_manual": "Manuaalisesti: Annettu Setti {0} Pelaajalle {1}",
+    "move_log": "Siirto: {0} sektorista [{1},{2}] sektoriin [{3},{4}]",
+    "added_log": "Lisätty {0} sektoriin [{1},{2}]",
+    "passed_snitched_excess": "Pelaaja {0} passasi ja kavalsi {1} ylimääräistä settiä. Jakubin raivo päivitetty.",
+    "snitched_set_range": "Pelaaja {0} kavalsi Jakubille setillä {1}. Raivo päivitetty | Kantama: {2}",
+    "snitched_set_range_auto": "Setti {0} kavallettu Jakubille. Raivo päivitetty | Kantama: {1}",
+    "snitched_set_pt": "Pelaaja {0} kavalsi Jakubille setillä {1} ja sai 1 pisteen.",
+    "snitched_set_pt_auto": "Setti {0} kavallettu 1 pisteestä.",
+    "snitched_set_auto": "Setti {0} kavallettu Jakubille.",
+    "passed_empty": "Pelaaja {0} passasi tekemättä toimintoa.",
+    "passed_turn": "Pelaaja {0} passasi vuoron.",
+    "passed": "Pelaaja {0} passasi.",
+    "jakub_seized_range": "Jakub kaappasi Setin {0}. Raivo/Kantama päivitetty.",
+    "jakub_seized": "Jakub kaappasi Setin {0}. Raivo päivitetty.",
+    "jakub_seized_pool": "Jakub kaappasi Setin {0} pöydältä.",
+    "jakub_fury_subsided": "Jakubin raivo laantui. Jahti päättyi.",
+    "jakub_ends_hunt": "Jakub lopettaa jahtinsa.",
+    "jakub_range_reset": "Jakubin kantama nollattu arvoon 1.",
+    "magnetism_log": "PYSÄYTTÄMÄTÖN ELÄIMELLINEN MAGNETISMI! Kaikki klaanit sektoreista {0} vedettiin Jakubin sektoriin [{1},{2}]!",
+    "jakub_chasing": "Jakub liikkuu ruutuun [{0},{1}] (kantama {2}), jahtaa klaania {3} (Raivo: {4} | {5} yksikköä).",
+    "jakub_killed": "Jakub tuhosi {0}x {1} sektorissa [{2},{3}]. Klaanin raivo laski arvoon {4}."
+  },
+  "sv": {
+    "race_V": "Vampyrer",
+    "race_W": "Varulvar",
+    "race_G": "Spöken",
+    "race_B": "Bardaker",
+    "player": "Spelare",
+    "set": "Set",
+    "board": "Spelbräde:",
+    "sector": "Sektor [",
+    "in_sector": "i sektor",
+    "in_region": "i region",
+    "from_sector": "från sektor",
+    "phase_setup": "--- Start av FÖRBEREDELSE ---",
+    "phase_general": "--- Start av LEDARFAS ---",
+    "phase_player": "--- Start av SPELARFAS ---",
+    "phase_jakub": "--- Start av JAKUBS FAS ---",
+    "phase_event": "--- Start av HÄNDELSEFAS ---",
+    "phase_player_round": "--- Start av Spelarfas (Runda {0}) ---",
+    "jakub_hunt_started": "--- Jakubs Jakt Påbörjad ---",
+    "event_phase_started": "--- Händelsefas Påbörjad ---",
+    "final_scoring_phase": "--- SLUTPOÄNGSFAS (08:00) ---",
+    "event_phase_title": "--- HÄNDELSEFAS ---",
+    "final_scoring_round": "--- SLUTPOÄNG (Runda 12) ---",
+    "round_header": "--- Runda {0} / {1} ---",
+    "refilled_hands": "Runda {0}: Spelarnas händer påfyllda till {1} set.",
+    "reshuffle_discard": "Blandar om slänghögen till draghögen.",
+    "event_deck_exhausted": "Händelsehögen slut. Slängda händelser blandade tillbaka.",
+    "no_events": "Inga tillgängliga händelser i leken.",
+    "event_drawn": "DRAGET HÄNDELSE: [{0}] {1}",
+    "manual_event": "--- Manuell Händelse: [{0}] {1} ---",
+    "effect": "Effekt: {0}",
+    "activated": "Aktiverad: {0}",
+    "fury_changes": "Raseriändringar: {0} (Räckvidd: {1})",
+    "limit_changes": "Gränsändringar: {0}",
+    "no_fury_changes": "Inga raseriändringar.",
+    "no_limit_changes": "Inga gränsändringar.",
+    "support_sets": "Stöd: +{0} set per spelare (Totalt: {1}).",
+    "support_no_sets": "Stöd: Inga tillgängliga set att dela ut.",
+    "great_wipe": "Stora Rensningen: Pjäser eliminerade i: {0} (Totalt: {1}).",
+    "great_wipe_none": "Stora Rensningen: Inga pjäser att eliminera.",
+    "moved_pawns": "Pjäser flyttade från ({0},{1}) till ({2},{3}): {4} (Totalt: {5}).",
+    "no_pawns_to_move": "Inga pjäser i ({0},{1}) att flytta.",
+    "moved_prefix": "Flyttat: {0}",
+    "killed_prefix": "Dödat: {0}",
+    "penalties_prefix": "Straff: {0}",
+    "escaped_prefix": "Flydde: {0}",
+    "deserted_prefix": "Deserterade: {0}",
+    "bardak_penalty": "Bardak-ledaren förlorade {0} poäng",
+    "witness_awarded": "Jakubs vittnespoäng utdelade:",
+    "mercy_phase_title": "😇 Jakubs Nådfas:",
+    "witness_log": "🔥 Vittne: {0} ({1}) får +{2} poäng för att ha överlevt nära Jakub.",
+    "mercy_log": "😇 Nåd: {0} ({1}) får +{2} poäng för återstående raseri.",
+    "mercy_rem_log": "Spelare {0} ({1}) får +{2} poäng från Nådfasen ({3} raseri kvar).",
+    "final_score_log": "Slutpoäng: Spelare {0} (+{1} för {2});",
+    "final_bonus_log": "Spelare {0} ({1}) får +{2} bonuspoäng (Slutbonus).",
+    "game_over_winner": "SPELET SLUT! Vinnare: Spelare {0} ({1} poäng).",
+    "game_over_tie": "SPELET SLUT! OAVGJORT: {0} ({1} poäng)!",
+    "chose_general": "Spelare {0} valde Ledare: {1}",
+    "resigned_general": "Spelare {0} avgick som Ledare för: {1}",
+    "drew_sets": "Spelare {0} drog set.",
+    "placed_set_detail": "Spelare {0} placerade Set {1} i sektor [{2},{3}] [{4}] | Spelbräde: {5}",
+    "placed_set_manual": "Manuellt: Set {0} placerat i [{1},{2}] [{3}] | Spelbräde: {4}",
+    "placed_set_simple": "Spelare {0} placerade Set {1} [{2}] | Spelbräde: {3}",
+    "placed_set_region": "Spelare {0} placerade Set {1} i region [{2},{3}].",
+    "given_set_manual": "Manuellt: Gav Set {0} till Spelare {1}",
+    "move_log": "Flytt: {0} från [{1},{2}] till [{3},{4}]",
+    "added_log": "Lade till {0} i sektor [{1},{2}]",
+    "passed_snitched_excess": "Spelare {0} passade och tjallade {1} överflödiga set. Jakubs raseri uppdaterat.",
+    "snitched_set_range": "Spelare {0} tjallade till Jakub med set {1}. Raseri uppdaterat | Räckvidd: {2}",
+    "snitched_set_range_auto": "Set {0} tjallat till Jakub. Raseri uppdaterat | Räckvidd: {1}",
+    "snitched_set_pt": "Spelare {0} tjallade till Jakub med set {1} för 1 poäng.",
+    "snitched_set_pt_auto": "Set {0} tjallat för 1 poäng.",
+    "snitched_set_auto": "Set {0} tjallat till Jakub.",
+    "passed_empty": "Spelare {0} passade utan åtgärd.",
+    "passed_turn": "Spelare {0} passade turen.",
+    "passed": "Spelare {0} passade.",
+    "jakub_seized_range": "Jakub beslagtog Set {0}. Raseri/Räckvidd uppdaterat.",
+    "jakub_seized": "Jakub beslagtog Set {0}. Raseri uppdaterat.",
+    "jakub_seized_pool": "Jakub beslagtog Set {0} från bordet.",
+    "jakub_fury_subsided": "Jakubs raseri lade sig. Jakten avslutad.",
+    "jakub_ends_hunt": "Jakub avslutar sin jakt.",
+    "jakub_range_reset": "Jakubs räckvidd återställd till 1.",
+    "magnetism_log": "OSTOPPBAR DJURISK MAGNETISM! Alla gäng från sektorerna {0} drogs till Jakubs sektor [{1},{2}]!",
+    "jakub_chasing": "Jakub flyttar till [{0},{1}] (räckvidd {2}), jagar {3} (Raseri: {4} | {5} enheter).",
+    "jakub_killed": "Jakub dödade {0}x {1} i sektor [{2},{3}]. Raseri sjunker till {4}."
+  }
+};
+
+function fmt(template, ...args) {
+  if (!template) return '';
+  return template.replace(/\{(\d+)\}/g, (_, i) => args[i] !== undefined ? args[i] : '');
+}
+
+const localizeInnerString = (str, lang, d, getR) => {
+  if (!str) return '';
+  let res = str;
+  if (d.board) res = res.replace(/Plansza:/g, d.board);
+  if (d.sector) res = res.replace(/Sektor \[/g, d.sector);
+  if (d.in_sector) res = res.replace(/w sektorze/g, d.in_sector);
+  if (d.in_region) res = res.replace(/w regionie/g, d.in_region);
+  if (d.from_sector) res = res.replace(/z sektora/g, d.from_sector);
+  if (d.set) res = res.replace(/Zestaw ([A-Za-z0-9_-]+)/g, `${d.set} $1`);
+  if (d.player) res = res.replace(/Gracz (\d+)/g, `${d.player} $1`);
+
+  ['Wampiry', 'Wilkołaki', 'Duchy', 'Bardaki'].forEach(race => {
+    res = res.replace(new RegExp(race, 'g'), getR(race));
+  });
+  return res;
 };
 
 export const translateLog = (text, lang, tFunc) => {
   if (!text) return '';
   if (lang === 'pl') return text;
 
-  const targetLang = raceMaps[lang] ? lang : 'en';
+  const d = dicts[lang] || dicts['en'];
+  const getR = (r) => getRace(r, lang);
+  const loc = (s) => localizeInnerString(s, lang, d, getR);
   let t = text;
 
-  // ====================================================
-  // 1. CHINESE TRANSLATIONS (zh)
-  // ====================================================
-  if (targetLang === 'zh') {
-    // Headers
-    t = t.replace(/--- Start of SETUP ---/gi, "--- 准备阶段开始 ---")
-         .replace(/--- Start of GENERAL PHASE ---/gi, "--- 头领阶段开始 ---")
-         .replace(/--- Start of PLAYER PHASE ---/gi, "--- 玩家阶段开始 ---")
-         .replace(/--- Start of JAKUB PHASE ---/gi, "--- 雅库布阶段开始 ---")
-         .replace(/--- Start of EVENT PHASE ---/gi, "--- 事件阶段开始 ---")
-         .replace(/--- Start Fazy Graczy \(Runda (\d+)\) ---/g, "--- 玩家阶段开始（第$1轮） ---")
-         .replace(/--- Start Fazy Graczy ---/g, "--- 玩家阶段开始 ---")
-         .replace(/--- Start Fazy Generałów ---/g, "--- 头领阶段开始 ---")
-         .replace(/--- Start Fazy Jakuba ---/g, "--- 雅库布阶段开始 ---")
-         .replace(/--- Łowy Jakuba Rozpoczęte ---/g, "--- 雅库布的狩猎开始 ---")
-         .replace(/--- Rozpoczęcie Fazy Wydarzeń ---/g, "--- 事件阶段开始 ---")
-         .replace(/--- FAZA PUNKTACJI KOŃCOWEJ \(08:00\) ---/g, "--- 终局计分阶段 (08:00) ---")
-         .replace(/--- FAZA EVENTU ---/g, "--- 事件阶段 ---")
-         .replace(/--- PUNKTACJA KOŃCOWA \(Runda 12\) ---/g, "--- 终局计分（第12轮） ---")
-         .replace(/--- Runda (\d+) \/ (\d+) ---/g, "--- 第 $1 / $2 轮 ---")
-         .replace(/Runda (\d+): Uzupełniono ręce graczy do (\d+) zestawów\./g, "第 $1 轮: 玩家手牌已补充至 $2 套。")
-         .replace(/Przetasowywanie stosu odrzuconego do talii dobierania\./g, "弃牌堆已重新洗入抽牌堆。")
-         .replace(/Przetasowanie stosu odrzuconego z powrotem do talii dobierania\./g, "弃牌堆已重新洗入抽牌堆。")
-         .replace(/Talia wydarzeń wyczerpała się\. Przetasowano odrzucone wydarzenia z powrotem do talii\./g, "事件牌堆耗尽，弃牌已重新洗入牌堆。")
-         .replace(/Brak dostępnych wydarzeń w talii\./g, "牌堆中无可用事件。");
+  // 1. Phases and Headers
+  if (t === '--- Start of SETUP ---') return d.phase_setup || t;
+  if (t === '--- Start of GENERAL PHASE ---' || t === '--- Start Fazy Generałów ---') return d.phase_general || t;
+  if (t === '--- Start of PLAYER PHASE ---' || t === '--- Start Fazy Graczy ---') return d.phase_player || t;
+  if (t === '--- Start of JAKUB PHASE ---' || t === '--- Start Fazy Jakuba ---') return d.phase_jakub || t;
+  if (t === '--- Start of EVENT PHASE ---' || t === '--- Rozpoczęcie Fazy Wydarzeń ---') return d.event_phase_started || t;
+  if (t === '--- Łowy Jakuba Rozpoczęte ---') return d.jakub_hunt_started || t;
+  if (t === '--- FAZA PUNKTACJI KOŃCOWEJ (08:00) ---') return d.final_scoring_phase || t;
+  if (t === '--- FAZA EVENTU ---') return d.event_phase_title || t;
+  if (t === '--- PUNKTACJA KOŃCOWA (Runda 12) ---') return d.final_scoring_round || t;
+  if (t === 'Przetasowywanie stosu odrzuconego do talii dobierania.' || t === 'Przetasowanie stosu odrzuconego z powrotem do talii dobierania.') return d.reshuffle_discard || t;
+  if (t === 'Talia wydarzeń wyczerpała się. Przetasowano odrzucone wydarzenia z powrotem do talii.') return d.event_deck_exhausted || t;
+  if (t === 'Brak dostępnych wydarzeń w talii.') return d.no_events || t;
+  if (t === 'Furia Jakuba opadła. Łowy zakończone.') return d.jakub_fury_subsided || t;
+  if (t === 'Jakub kończy swoje łowy.') return d.jakub_ends_hunt || t;
+  if (t === 'Zasięg Jakuba zresetowany do 1.') return d.jakub_range_reset || t;
+  if (t === 'Punkty Świadka Jakuba przyznane:') return d.witness_awarded || t;
+  if (t === '😇 Faza Miłosierdzia Jakuba:') return d.mercy_phase_title || t;
+  if (t === 'Brak zmian furii.') return d.no_fury_changes || t;
+  if (t === 'Brak zmian limitów band.') return d.no_limit_changes || t;
+  if (t === 'Wsparcie: Brak dostępnych zestawów do rozdania.') return d.support_no_sets || t;
+  if (t === 'Wielkie Czyszczenie: Brak pionków na celowanych sektorach do wyeliminowania.') return d.great_wipe_none || t;
 
-    // Events
-    t = t.replace(/WYLOSOWANO WYDARZENIE: \[(\d+)\] (.*)/g, (m, id, title) => {
-      const trTitle = tFunc ? tFunc(`event.${id}.title`, { defaultValue: title }) : title;
-      return `抽取事件: [${id}] ${trTitle}`;
-    });
-    t = t.replace(/--- Ręczne Wydarzenie: \[(\d+)\] (.*) ---/g, (m, id, title) => {
-      const trTitle = tFunc ? tFunc(`event.${id}.title`, { defaultValue: title }) : title;
-      return `--- 手动事件: [${id}] ${trTitle} ---`;
-    });
-    t = t.replace(/Efekt: (.*)/g, "效果: $1")
-         .replace(/Aktywowano wydarzenie: (.*)/g, "激活事件: $1")
-         .replace(/Zmiany furii: (.*?) \(Zasięg zaktualizowany do (\d+)\)/g, (m, ch, r) => {
-           let rch = ch;
-           ['Wampiry', 'Wilkołaki', 'Duchy', 'Bardaki'].forEach(race => {
-             rch = rch.replace(new RegExp(race, 'g'), getRace(race, 'zh'));
-           });
-           return `愤怒值变动: ${rch}（射程更新为 ${r}）`;
-         })
-         .replace(/Zmiany limitów band: (.*)/g, (m, ch) => {
-           let rch = ch;
-           ['Wampiry', 'Wilkołaki', 'Duchy', 'Bardaki'].forEach(race => {
-             rch = rch.replace(new RegExp(race, 'g'), getRace(race, 'zh'));
-           });
-           return `阵营上限变动: ${rch}`;
-         })
-         .replace(/Brak zmian furii\./g, "愤怒值无变化。")
-         .replace(/Brak zmian limitów band\./g, "阵营上限无变化。")
-         .replace(/Wsparcie: Rozdano po (\d+) dodatkowym zestawie każdemu graczowi \(Suma: (\d+)\)\./g, "支援: 每位玩家分发 $1 套额外套组（总计: $2）。")
-         .replace(/Wsparcie: Brak dostępnych zestawów do rozdania\./g, "支援: 无可用套组可分发。")
-         .replace(/Wielkie Czyszczenie: Wyeliminowano pionki na sektorach: (.*?) \(Suma: (\d+)\)\./g, (m, sec, sum) => {
-           let s = sec;
-           ['Wampiry', 'Wilkołaki', 'Duchy', 'Bardaki'].forEach(race => {
-             s = s.replace(new RegExp(race, 'g'), getRace(race, 'zh'));
-           });
-           return `大清洗: 清除了区域内的棋子: ${s}（总计: ${sum}）。`;
-         })
-         .replace(/Wielkie Czyszczenie: Brak pionków na celowanych sektorach do wyeliminowania\./g, "大清洗: 目标区域内无棋子可清除。")
-         .replace(/Przeniesiono pionki z \((\d+),(\d+)\) do \((\d+),(\d+)\): (.*?) \(Suma: (\d+)\)\./g, (m, x1, y1, x2, y2, pw, sum) => {
-           let p = pw;
-           ['Wampiry', 'Wilkołaki', 'Duchy', 'Bardaki'].forEach(race => {
-             p = p.replace(new RegExp(race, 'g'), getRace(race, 'zh'));
-           });
-           return `移动棋子从 (${x1},${y1}) 到 (${x2},${y2}): ${p}（总计: ${sum}）。`;
-         })
-         .replace(/Brak pionków w sektorze \((\d+),(\d+)\) do przeniesienia\./g, "区域 ($1,$2) 内无棋子可移动。")
-         .replace(/Przeniesiono: (.*)/g, "移动: $1")
-         .replace(/Zabito: (.*)/g, "击杀: $1")
-         .replace(/Kary: Generał Bardaków stracił (\d+) pkt/g, "惩罚: 巴尔达克头领失去 $1 分")
-         .replace(/Kary: (.*)/g, "惩罚: $1")
-         .replace(/Uciekli: (.*)/g, "逃跑: $1")
-         .replace(/Zdezerterowali: (.*)/g, "逃兵: $1");
+  let m;
 
-    // Scoring & End Game (BEFORE general Gracz replacements)
-    t = t.replace(/🔥 Świadek Jakuba: Gracz (\d+) \((.*?)\) zdobywa (\d+) bonusowych punktów za przeżycie w pobliżu Jakuba\./g, (m, p, race, pts) => {
-           return `🔥 雅库布见证者: 玩家 ${p} (${getRace(race, 'zh')}) 因在雅库布附近幸存获得 +${pts} 额外积分。`;
-         })
-         .replace(/🔥 Świadek Jakuba: (.*?) \((.*?)\) zdobywa (\d+) bonusowych punktów za przeżycie w pobliżu Jakuba\./g, (m, p, race, pts) => {
-           return `🔥 雅库布见证者: ${p} (${getRace(race, 'zh')}) 因在雅库布附近幸存获得 +${pts} 额外积分。`;
-         })
-         .replace(/Punkty Świadka Jakuba przyznane:/g, "雅库布见证者积分已结算:")
-         .replace(/😇 Faza Miłosierdzia Jakuba:/g, "😇 雅库布仁慈阶段:")
-         .replace(/😇 Miłosierdzie Jakuba: Gracz (\d+) \((.*?)\) otrzymuje \+(\d+) pkt za pozostałą furię\./g, (m, p, race, pts) => {
-           return `😇 雅库布仁慈: 玩家 ${p} (${getRace(race, 'zh')}) 因剩余愤怒值获得 +${pts} 分。`;
-         })
-         .replace(/Gracz (\d+) \((.*?)\) otrzymuje (\d+) pkt\. z Fazy Miłosierdzia \(pozostało (\d+) furii u Jakuba\)\./g, (m, p, race, pts, rem) => {
-           return `玩家 ${p} (${getRace(race, 'zh')}) 从仁慈阶段获得 ${pts} 分（雅库布剩余 ${rem} 点愤怒值）。`;
-         })
-         .replace(/Punktacja Końcowa: Gracz (\d+) \(\+(\d+) za bandę (.*?)\);/g, (m, p, pts, race) => {
-           return `终局计分: 玩家 ${p} (${getRace(race, 'zh')} 阵营获得 +${pts} 分);`;
-         })
-         .replace(/Gracz (\d+) \((.*?)\) zdobywa (\d+) punktów bonusowych \(Bonus Końcowy\)\./g, (m, p, race, pts) => {
-           return `玩家 ${p} (${getRace(race, 'zh')}) 获得 ${pts} 点额外积分（终局奖励）。`;
-         })
-         .replace(/KONIEC GRY! Zwycięzca: Gracz (\d+) z liczbą punktów: (\d+)\./g, "游戏结束！胜利者: 玩家 $1（得分: $2）。")
-         .replace(/KONIEC GRY! REMIS pomiędzy graczami: (.*?) z liczbą punktów: (\d+)!/g, "游戏结束！平局: $1（得分: $2）！");
+  if ((m = t.match(/^--- Start Fazy Graczy \(Runda (\d+)\) ---$/))) return fmt(d.phase_player_round, m[1]);
+  if ((m = t.match(/^--- Runda (\d+) \/ (\d+) ---$/))) return fmt(d.round_header, m[1], m[2]);
+  if ((m = t.match(/^Runda (\d+): Uzupełniono ręce graczy do (\d+) zestawów\.$/))) return fmt(d.refilled_hands, m[1], m[2]);
 
-    // Generals
-    t = t.replace(/Gracz (\d+) wybrał Generała bandy: (Wampiry|Wilkołaki|Duchy|Bardaki|vampire|werewolf|ghost|bardak|V|W|G|B)/g, (m, p1, p2) => {
-      return `玩家 ${p1} 选择了头领: ${getRace(p2, 'zh')}`;
-    });
-    t = t.replace(/Gracz (\d+) wybrał Generała: (Wampiry|Wilkołaki|Duchy|Bardaki|vampire|werewolf|ghost|bardak|V|W|G|B)/g, (m, p1, p2) => {
-      return `玩家 ${p1} 选择了头领: ${getRace(p2, 'zh')}`;
-    });
-    t = t.replace(/Gracz (\d+) zrezygnował z bycia Generałem bandy: (Wampiry|Wilkołaki|Duchy|Bardaki|vampire|werewolf|ghost|bardak|V|W|G|B)/g, (m, p1, p2) => {
-      return `玩家 ${p1} 放弃了 ${getRace(p2, 'zh')} 头领身份`;
-    });
+  // Events
+  if ((m = t.match(/^WYLOSOWANO WYDARZENIE: \[([^\]]+)\] (.*)$/))) {
+    const title = tFunc ? tFunc(`event.${m[1]}.title`, { defaultValue: m[2] }) : m[2];
+    return fmt(d.event_drawn, m[1], title);
+  }
+  if ((m = t.match(/^--- Ręczne Wydarzenie: \[([^\]]+)\] (.*) ---$/))) {
+    const title = tFunc ? tFunc(`event.${m[1]}.title`, { defaultValue: m[2] }) : m[2];
+    return fmt(d.manual_event, m[1], title);
+  }
+  if ((m = t.match(/^Efekt: (.*)$/))) return fmt(d.effect, loc(m[1]));
+  if ((m = t.match(/^Aktywowano wydarzenie: (.*)$/))) return fmt(d.activated, loc(m[1]));
+  if ((m = t.match(/^Zmiany furii: (.*?) \(Zasięg zaktualizowany do (\d+)\)$/))) return fmt(d.fury_changes, loc(m[1]), m[2]);
+  if ((m = t.match(/^Zmiany limitów band: (.*)$/))) return fmt(d.limit_changes, loc(m[1]));
+  if ((m = t.match(/^Wsparcie: Rozdano po (\d+) dodatkowym zestawie każdemu graczowi \(Suma: (\d+)\)\.$/))) return fmt(d.support_sets, m[1], m[2]);
+  if ((m = t.match(/^Wielkie Czyszczenie: Wyeliminowano pionki na sektorach: (.*?) \(Suma: (\d+)\)\.$/))) return fmt(d.great_wipe, loc(m[1]), m[2]);
+  if ((m = t.match(/^Przeniesiono pionki z \((\d+),(\d+)\) do \((\d+),(\d+)\): (.*?) \(Suma: (\d+)\)\.$/))) return fmt(d.moved_pawns, m[1], m[2], m[3], m[4], loc(m[5]), m[6]);
+  if ((m = t.match(/^Brak pionków w sektorze \((\d+),(\d+)\) do przeniesienia\.$/))) return fmt(d.no_pawns_to_move, m[1], m[2]);
+  if ((m = t.match(/^Kary: Generał Bardaków stracił (\d+) pkt$/))) return fmt(d.bardak_penalty, m[1]);
+  if ((m = t.match(/^Przeniesiono: (.*)$/))) return fmt(d.moved_prefix, loc(m[1]));
+  if ((m = t.match(/^Zabito: (.*)$/))) return fmt(d.killed_prefix, loc(m[1]));
+  if ((m = t.match(/^Kary: (.*)$/))) return fmt(d.penalties_prefix, loc(m[1]));
+  if ((m = t.match(/^Uciekli: (.*)$/))) return fmt(d.escaped_prefix, loc(m[1]));
+  if ((m = t.match(/^Zdezerterowali: (.*)$/))) return fmt(d.deserted_prefix, loc(m[1]));
 
-    // Moves & Pass & Snitching
-    t = t.replace(/Gracz (\d+) dobrał zestawy\./g, "玩家 $1 抽取了套组。")
-         .replace(/Gracz (\d+) wystawił Zestaw (.*?) w sektorze \[(\d+),(\d+)\] \[(.*?)\] \| Plansza: (.*)/g,
-          "玩家 $1 在区域 [$3,$4] 放置了套组 $2 [$5] | 棋盘: $6")
-         .replace(/Ręcznie: Zestaw (.*?) wystawiony w sektorze \[(\d+),(\d+)\] \[(.*?)\] \| Plansza: (.*)/g,
-          "手动: 套组 $1 放置在区域 [$2,$3] [$4] | 棋盘: $5")
-         .replace(/Gracz (\d+) wystawił Zestaw (.*?) \[(.*?)\] \| Plansza: (.*)/g,
-          "玩家 $1 放置了套组 $2 [$3] | 棋盘: $4")
-         .replace(/Gracz (\d+) wystawił Zestaw (.*?) w regionie \[(\d+),(\d+)\]\./g,
-          "玩家 $1 在区域 [$3,$4] 放置了套组 $2。")
-         .replace(/Ręcznie: Rozdano Zestaw (.*?) Graczowi (\d+)/g,
-          "手动: 已将套组 $1 发给玩家 $2")
-         .replace(/Ruch: (.*?) przeniesiony z \[(\d+),(\d+)\] do \[(\d+),(\d+)\]/g, (m, type, x1, y1, x2, y2) => {
-           return `移动: ${getRace(type, 'zh')} 从 [${x1},${y1}] 移动到 [${x2},${y2}]`;
-         })
-         .replace(/Dodano (.*?) w sektorze \[(\d+),(\d+)\]/g, (m, type, x, y) => {
-           return `在区域 [${x},${y}] 添加了 ${getRace(type, 'zh')}`;
-         })
-         .replace(/Gracz (\d+) spasował i podkablował (\d+) nadmiarowych zestawów\. Furia Jakuba zaktualizowana\./g,
-          "玩家 $1 过牌并向雅库布告密了 $2 套多余套组。雅库布愤怒值已更新。")
-         .replace(/Gracz (\d+) podkablował Jakubowi zestawem (.*?)\. Furia zaktualizowana \| Range: (\d+)/g,
-          "玩家 $1 用套组 $2 向雅库布告密。愤怒值已更新 | 射程: $3")
-         .replace(/Zestaw (.*?) został podkablowany Jakubowi\. Furia zaktualizowana \| Range: (\d+)/g,
-          "套组 $1 已告密给雅库布。愤怒值已更新 | 射程: $2")
-         .replace(/Gracz (\d+) podkablował Jakubowi zestawem (.*?) za 1 pkt\./g,
-          "玩家 $1 用套组 $2 向雅库布告密并获得 1 分。")
-         .replace(/Zestaw (.*?) został podkablowany Jakubowi za 1 pkt\./g,
-          "套组 $1 已告密给雅库布并获得 1 分。")
-         .replace(/Zestaw (.*?) został podkablowany Jakubowi\./g,
-          "套组 $1 已告密给雅库布。")
-         .replace(/Gracz (\d+) złożył pusty ruch i spasował\./g, "玩家 $1 空过并结束回合。")
-         .replace(/Gracz (\d+) spasował turę\./g, "玩家 $1 结束了回合。")
-         .replace(/Gracz (\d+) spasował\./g, "玩家 $1 过牌。")
-         .replace(/Gracz (\d+)/g, "玩家 $1");
-
-    // Jakub
-    t = t.replace(/Jakub przejął Zestaw (.*?)\. Furia\/Zasięg zaktualizowane natychmiast\./g, "雅库布夺取了套组 $1。愤怒值/射程已立即更新。")
-         .replace(/Jakub przejął Zestaw (.*?)\. Furia zaktualizowana natychmiast\./g, "雅库布夺取了套组 $1。愤怒值已立即更新。")
-         .replace(/Jakub przejął Zestaw (.*?) z puli\./g, "雅库布从公共池夺取了套组 $1。")
-         .replace(/Furia Jakuba opadła\. Łowy zakończone\./g, "雅库布的愤怒平息了。狩猎结束。")
-         .replace(/Jakub kończy swoje łowy\./g, "雅库布结束了狩猎。")
-         .replace(/Zasięg Jakuba zresetowany do 1\./g, "雅库布的射程重置为 1。")
-         .replace(/NIEPOCHAMOWANY ZWIERZĘCY MAGNETYZM! \(Tego nie pochamujesz\) Wszystkie bandy z sektorów (.*?) zostały przyciągnięte do sektora Jakuba \[(.*?),(.*?)\]!/g,
-          "无法阻挡的野性吸引力！所有来自 $1 区域的阵营均被吸引到雅库布所在的区域 [$2,$3]！")
-         .replace(/Jakub przemieszcza się na \[(\d+),(\d+)\] w zasięgu (\d+), ścigając (.*?) \(Furia: (\d+) \| Region zawiera (\d+) jednostek\)\./g, (m, x, y, r, race, anger, count) => {
-           return `雅库布移动到 [${x},${y}]（射程 ${r}），追杀 ${getRace(race, 'zh')}（愤怒值: ${anger} | 区域内包含 ${count} 个单位）。`;
-         })
-         .replace(/Jakub zabił (\d+)x (.*?) w sektorze \[(\d+),(\d+)\]\. Furia rasy spada do (\d+)\./g, (m, kCount, race, x, y, anger) => {
-           return `雅库布在区域 [${x},${y}] 击杀了 ${kCount}x ${getRace(race, 'zh')}。该阵营愤怒值降至 ${anger}。`;
-         });
-
-    // Board & Keywords
-    t = t.replace(/Plansza:/g, "棋盘:")
-         .replace(/Sektor \[/g, "区域 [")
-         .replace(/w sektorze/g, "在区域")
-         .replace(/w regionie/g, "在区域")
-         .replace(/z sektora/g, "从区域")
-         .replace(/Zestaw ([A-Za-z0-9_-]+)/g, "套组 $1")
-         .replace(/z \((\d+),(\d+)\) -> \((\d+),(\d+)\)/g, "从 ($1,$2) -> ($3,$4)");
-
-    ['Wampiry', 'Wilkołaki', 'Duchy', 'Bardaki'].forEach(race => {
-      t = t.replace(new RegExp(race, 'g'), getRace(race, 'zh'));
-    });
-
-    return t;
+  // Witness & Mercy & End
+  if ((m = t.match(/^🔥 Świadek Jakuba: (.*?) \((.*?)\) zdobywa (\d+) bonusowych punktów za przeżycie w pobliżu Jakuba\.$/))) {
+    return fmt(d.witness_log, loc(m[1]), getR(m[2]), m[3]);
+  }
+  if ((m = t.match(/^😇 Miłosierdzie Jakuba: (.*?) \((.*?)\) otrzymuje \+(\d+) pkt za pozostałą furię\.$/))) {
+    return fmt(d.mercy_log, loc(m[1]), getR(m[2]), m[3]);
+  }
+  if ((m = t.match(/^Gracz (\d+) \((.*?)\) otrzymuje (\d+) pkt\. z Fazy Miłosierdzia \(pozostało (\d+) furii u Jakuba\)\.$/))) {
+    return fmt(d.mercy_rem_log, m[1], getR(m[2]), m[3], m[4]);
+  }
+  if ((m = t.match(/^Punktacja Końcowa: Gracz (\d+) \(\+(\d+) za bandę (.*?)\);$/))) {
+    return fmt(d.final_score_log, m[1], m[2], getR(m[3]));
+  }
+  if ((m = t.match(/^Gracz (\d+) \((.*?)\) zdobywa (\d+) punktów bonusowych \(Bonus Końcowy\)\.$/))) {
+    return fmt(d.final_bonus_log, m[1], getR(m[2]), m[3]);
+  }
+  if ((m = t.match(/^KONIEC GRY! Zwycięzca: Gracz (\d+) z liczbą punktów: (\d+)\.$/))) {
+    return fmt(d.game_over_winner, m[1], m[2]);
+  }
+  if ((m = t.match(/^KONIEC GRY! REMIS pomiędzy graczami: (.*?) z liczbą punktów: (\d+)!$/))) {
+    return fmt(d.game_over_tie, loc(m[1]), m[2]);
   }
 
-  // ====================================================
-  // 2. STANDARD MULTILINGUAL & ENGLISH DEFAULT
-  // ====================================================
-  if (targetLang === 'cs') {
-    t = t.replace(/--- Start of SETUP ---/gi, "--- Začátek PŘÍPRAVY ---")
-         .replace(/--- Start of GENERAL PHASE ---/gi, "--- Začátek FÁZE VŮDCŮ ---")
-         .replace(/--- Start of PLAYER PHASE ---/gi, "--- Začátek FÁZE HRÁČŮ ---")
-         .replace(/--- Start of JAKUB PHASE ---/gi, "--- Začátek FÁZE JAKUBA ---")
-         .replace(/--- Start of EVENT PHASE ---/gi, "--- Začátek FÁZE UDÁLOSTÍ ---")
-         .replace(/--- Start Fazy Graczy \(Runda (\d+)\) ---/g, "--- Začátek Fáze Hráčů (Kolo $1) ---")
-         .replace(/--- Start Fazy Graczy ---/g, "--- Začátek Fáze Hráčů ---")
-         .replace(/--- Start Fazy Generałów ---/g, "--- Začátek Fáze Vůdců ---")
-         .replace(/--- Start Fazy Jakuba ---/g, "--- Začátek Fáze Jakuba ---")
-         .replace(/--- Łowy Jakuba Rozpoczęte ---/g, "--- Lov Jakuba Zahájen ---")
-         .replace(/--- Rozpoczęcie Fazy Wydarzeń ---/g, "--- Zahájení Fáze Událostí ---")
-         .replace(/--- FAZA PUNKTACJI KOŃCOWEJ \(08:00\) ---/g, "--- FÁZE ZÁVĚREČNÉHO BODOVÁNÍ (08:00) ---")
-         .replace(/--- FAZA EVENTU ---/g, "--- FÁZE UDÁLOSTÍ ---")
-         .replace(/--- PUNKTACJA KOŃCOWA \(Runda 12\) ---/g, "--- ZÁVĚREČNÉ BODOVÁNÍ (12. Kolo) ---")
-         .replace(/--- Runda (\d+) \/ (\d+) ---/g, "--- Kolo $1 / $2 ---")
-         .replace(/Runda (\d+): Uzupełniono ręce graczy do (\d+) zestawów\./g, "Kolo $1: Ruce hráčů doplněny na $2 sad.")
-         .replace(/Przetasowywanie stosu odrzuconego do talii dobierania\./g, "Přemíchání odkládacího balíčku zpět do dobíracího balíčku.")
-         .replace(/Przetasowanie stosu odrzuconego z powrotem do talii dobierania\./g, "Přemíchání odkládacího balíčku zpět do dobíracího balíčku.")
-         .replace(/Talia wydarzeń wyczerpała się\. Przetasowano odrzucone wydarzenia z powrotem do talii\./g, "Balíček událostí došel. Odhozené události byly zamíchány zpět do balíčku.")
-         .replace(/Brak dostępnych wydarzeń w talii\./g, "V balíčku nejsou žádné dostupné události.");
-  } else if (targetLang === 'de') {
-    t = t.replace(/--- Start of SETUP ---/gi, "--- Beginn VORBEREITUNG ---")
-         .replace(/--- Start of GENERAL PHASE ---/gi, "--- Beginn ANFÜHRERPHASE ---")
-         .replace(/--- Start of PLAYER PHASE ---/gi, "--- Beginn SPIELERPHASE ---")
-         .replace(/--- Start of JAKUB PHASE ---/gi, "--- Beginn JAKUB-PHASE ---")
-         .replace(/--- Start of EVENT PHASE ---/gi, "--- Beginn EREIGNISPHASE ---")
-         .replace(/--- Start Fazy Graczy \(Runda (\d+)\) ---/g, "--- Beginn Spielerphase (Runde $1) ---")
-         .replace(/--- Start Fazy Graczy ---/g, "--- Beginn Spielerphase ---")
-         .replace(/--- Start Fazy Generałów ---/g, "--- Beginn Anführerphase ---")
-         .replace(/--- Start Fazy Jakuba ---/g, "--- Beginn Jakub-Phase ---")
-         .replace(/--- Łowy Jakuba Rozpoczęte ---/g, "--- Jakubs Jagd Gestartet ---")
-         .replace(/--- Rozpoczęcie Fazy Wydarzeń ---/g, "--- Beginn der Ereignisphase ---")
-         .replace(/--- FAZA PUNKTACJI KOŃCOWEJ \(08:00\) ---/g, "--- SCHLUSSWERTUNGSPHASE (08:00) ---")
-         .replace(/--- FAZA EVENTU ---/g, "--- EREIGNISPHASE ---")
-         .replace(/--- PUNKTACJA KOŃCOWA \(Runda 12\) ---/g, "--- SCHLUSSWERTUNG (Runde 12) ---")
-         .replace(/--- Runda (\d+) \/ (\d+) ---/g, "--- Runde $1 / $2 ---")
-         .replace(/Runda (\d+): Uzupełniono ręce graczy do (\d+) zestawów\./g, "Runde $1: Spielerhände auf $2 Sets aufgefüllt.")
-         .replace(/Przetasowywanie stosu odrzuconego do talii dobierania\./g, "Ablagestapel wird in den Nachziehstapel gemischt.")
-         .replace(/Przetasowanie stosu odrzuconego z powrotem do talii dobierania\./g, "Ablagestapel wird in den Nachziehstapel gemischt.")
-         .replace(/Talia wydarzeń wyczerpała się\. Przetasowano odrzucone wydarzenia z powrotem do talii\./g, "Ereignisstapel leer. Abgelegte Ereignisse wurden eingemischt.")
-         .replace(/Brak dostępnych wydarzeń w talii\./g, "Keine Ereignisse im Stapel verfügbar.");
-  } else if (targetLang === 'ja') {
-    t = t.replace(/--- Start of SETUP ---/gi, "--- 準備フェーズ開始 ---")
-         .replace(/--- Start of GENERAL PHASE ---/gi, "--- 指揮官フェーズ開始 ---")
-         .replace(/--- Start of PLAYER PHASE ---/gi, "--- プレイヤーフェーズ開始 ---")
-         .replace(/--- Start of JAKUB PHASE ---/gi, "--- ヤクブフェーズ開始 ---")
-         .replace(/--- Start of EVENT PHASE ---/gi, "--- イベントフェーズ開始 ---")
-         .replace(/--- Start Fazy Graczy \(Runda (\d+)\) ---/g, "--- プレイヤーフェーズ開始（第$1ラウンド） ---")
-         .replace(/--- Start Fazy Graczy ---/g, "--- プレイヤーフェーズ開始 ---")
-         .replace(/--- Start Fazy Generałów ---/g, "--- 指揮官フェーズ開始 ---")
-         .replace(/--- Start Fazy Jakuba ---/g, "--- ヤクブフェーズ開始 ---")
-         .replace(/--- Łowy Jakuba Rozpoczęte ---/g, "--- ヤクブの狩り開始 ---")
-         .replace(/--- Rozpoczęcie Fazy Wydarzeń ---/g, "--- イベントフェーズ開始 ---")
-         .replace(/--- FAZA PUNKTACJI KOŃCOWEJ \(08:00\) ---/g, "--- 最終得点計算フェーズ (08:00) ---")
-         .replace(/--- FAZA EVENTU ---/g, "--- イベントフェーズ ---")
-         .replace(/--- PUNKTACJA KOŃCOWA \(Runda 12\) ---/g, "--- 最終得点計算（第12ラウンド） ---")
-         .replace(/--- Runda (\d+) \/ (\d+) ---/g, "--- ラウンド $1 / $2 ---")
-         .replace(/Runda (\d+): Uzupełniono ręce graczy do (\d+) zestawów\./g, "ラウンド $1: プレイヤーの手札を$2セットに補充。")
-         .replace(/Przetasowywanie stosu odrzuconego do talii dobierania\./g, "捨て札を山札に混ぜてシャッフル。")
-         .replace(/Przetasowanie stosu odrzuconego z powrotem do talii dobierania\./g, "捨て札を山札に混ぜてシャッフル。")
-         .replace(/Talia wydarzeń wyczerpała się\. Przetasowano odrzucone wydarzenia z powrotem do talii\./g, "イベント山札切れ。捨て札をシャッフルして戻しました。")
-         .replace(/Brak dostępnych wydarzeń w talii\./g, "山札に利用可能なイベントがありません。");
-  } else {
-    // English & standard international default
-    t = t.replace(/--- Start of SETUP ---/gi, "--- Start of SETUP ---")
-         .replace(/--- Start of GENERAL PHASE ---/gi, "--- Start of GENERALS PHASE ---")
-         .replace(/--- Start of PLAYER PHASE ---/gi, "--- Start of PLAYERS PHASE ---")
-         .replace(/--- Start of JAKUB PHASE ---/gi, "--- Start of JAKUB'S PHASE ---")
-         .replace(/--- Start of EVENT PHASE ---/gi, "--- Start of EVENT PHASE ---")
-         .replace(/--- Start Fazy Graczy \(Runda (\d+)\) ---/g, "--- Start of Player Phase (Round $1) ---")
-         .replace(/--- Start Fazy Graczy ---/g, "--- Start of Player Phase ---")
-         .replace(/--- Start Fazy Generałów ---/g, "--- Start of Generals Phase ---")
-         .replace(/--- Start Fazy Jakuba ---/g, "--- Start of Jakub's Phase ---")
-         .replace(/--- Łowy Jakuba Rozpoczęte ---/g, "--- Jakub's Hunt Started ---")
-         .replace(/--- Rozpoczęcie Fazy Wydarzeń ---/g, "--- Event Phase Started ---")
-         .replace(/--- FAZA PUNKTACJI KOŃCOWEJ \(08:00\) ---/g, "--- FINAL SCORING PHASE (08:00) ---")
-         .replace(/--- FAZA EVENTU ---/g, "--- EVENT PHASE ---")
-         .replace(/--- PUNKTACJA KOŃCOWA \(Runda 12\) ---/g, "--- FINAL SCORING (Round 12) ---")
-         .replace(/--- Runda (\d+) \/ (\d+) ---/g, "--- Round $1 / $2 ---")
-         .replace(/Runda (\d+): Uzupełniono ręce graczy do (\d+) zestawów\./g, "Round $1: Refilled players' hands to $2 sets.")
-         .replace(/Przetasowywanie stosu odrzuconego do talii dobierania\./g, "Reshuffling discard pile back into draw pile.")
-         .replace(/Przetasowanie stosu odrzuconego z powrotem do talii dobierania\./g, "Reshuffling discard pile back into draw pile.")
-         .replace(/Talia wydarzeń wyczerpała się\. Przetasowano odrzucone wydarzenia z powrotem do talii\./g, "Event deck exhausted. Reshuffled discarded events back into the deck.")
-         .replace(/Brak dostępnych wydarzeń w talii\./g, "No available events in the deck.");
+  // Generals
+  if ((m = t.match(/^Gracz (\d+) wybrał Generała(?: bandy)?: (.*)$/))) {
+    return fmt(d.chose_general, m[1], getR(m[2]));
+  }
+  if ((m = t.match(/^Gracz (\d+) zrezygnował z bycia Generałem bandy: (.*)$/))) {
+    return fmt(d.resigned_general, m[1], getR(m[2]));
   }
 
-  // 2. Events Lookups
-  t = t.replace(/WYLOSOWANO WYDARZENIE: \[(\d+)\] (.*)/g, (m, id, title) => {
-    const translatedTitle = tFunc ? tFunc(`event.${id}.title`, { defaultValue: title }) : title;
-    const prefix = {
-      cs: 'VYLOSOVÁNA UDÁLOST:', de: 'GEZOGENES EREIGNIS:', es: 'EVENTO ROBADO:',
-      it: 'EVENTO PESCATO:', fr: 'ÉVÉNEMENT PIOCHÉ :', fi: 'NOSTETTU TAPAHTUMA:',
-      sv: 'DRAGEN HÄNDELSE:', ja: '引いたイベント:', uk: 'ВИТЯГНУТА ПОДІЯ:',
-      ru: 'ВЫТЯНУТО СОБЫТИЕ:', pt: 'EVENTO SORTEADO:', ko: '뽑은 이벤트:',
-      en: 'EVENT DRAWN:'
-    }[targetLang] || 'EVENT DRAWN:';
-    return `${prefix} [${id}] ${translatedTitle}`;
-  });
+  // Placements & Moves
+  if ((m = t.match(/^Gracz (\d+) dobrał zestawy\.$/))) return fmt(d.drew_sets, m[1]);
+  if ((m = t.match(/^Gracz (\d+) wystawił Zestaw (.*?) w sektorze \[([^\]]+),([^\]]+)\] \[(.*?)\] \| Plansza: (.*)$/))) {
+    return fmt(d.placed_set_detail, m[1], m[2], m[3], m[4], loc(m[5]), loc(m[6]));
+  }
+  if ((m = t.match(/^Ręcznie: Zestaw (.*?) wystawiony w sektorze \[([^\]]+),([^\]]+)\] \[(.*?)\] \| Plansza: (.*)$/))) {
+    return fmt(d.placed_set_manual, m[1], m[2], m[3], loc(m[4]), loc(m[5]));
+  }
+  if ((m = t.match(/^Gracz (\d+) wystawił Zestaw (.*?) \[(.*?)\] \| Plansza: (.*)$/))) {
+    return fmt(d.placed_set_simple, m[1], m[2], loc(m[3]), loc(m[4]));
+  }
+  if ((m = t.match(/^Gracz (\d+) wystawił Zestaw (.*?) w regionie \[([^\]]+),([^\]]+)\]\.$/))) {
+    return fmt(d.placed_set_region, m[1], m[2], m[3], m[4]);
+  }
+  if ((m = t.match(/^Ręcznie: Rozdano Zestaw (.*?) Graczowi (\d+)$/))) {
+    return fmt(d.given_set_manual, m[1], m[2]);
+  }
+  if ((m = t.match(/^Ruch: (.*?) przeniesiony z \[([^\]]+),([^\]]+)\] do \[([^\]]+),([^\]]+)\]$/))) {
+    return fmt(d.move_log, getR(m[1]), m[2], m[3], m[4], m[5]);
+  }
+  if ((m = t.match(/^Dodano (.*?) w sektorze \[([^\]]+),([^\]]+)\]$/))) {
+    return fmt(d.added_log, getR(m[1]), m[2], m[3]);
+  }
 
-  t = t.replace(/--- Ręczne Wydarzenie: \[(\d+)\] (.*) ---/g, (m, id, title) => {
-    const translatedTitle = tFunc ? tFunc(`event.${id}.title`, { defaultValue: title }) : title;
-    const prefix = {
-      cs: 'Manuální Událost:', de: 'Manuelles Ereignis:', es: 'Evento Manual:',
-      it: 'Evento Manuale:', fr: 'Événement Manuel :', fi: 'Manuaalinen Tapahtuma:',
-      sv: 'Manuell Händelse:', ja: '手動イベント:', uk: 'Ручна Подія:',
-      ru: 'Ручное Событие:', pt: 'Evento Manual:', ko: '수동 이벤트:',
-      en: 'Manual Event:'
-    }[targetLang] || 'Manual Event:';
-    return `--- ${prefix} [${id}] ${translatedTitle} ---`;
-  });
+  // Snitching & Passing
+  if ((m = t.match(/^Gracz (\d+) spasował i podkablował (\d+) nadmiarowych zestawów\. Furia Jakuba zaktualizowana\.$/))) {
+    return fmt(d.passed_snitched_excess, m[1], m[2]);
+  }
+  if ((m = t.match(/^Gracz (\d+) podkablował Jakubowi zestawem (.*?)\. Furia zaktualizowana \| Range: (\d+)$/))) {
+    return fmt(d.snitched_set_range, m[1], m[2], m[3]);
+  }
+  if ((m = t.match(/^Zestaw (.*?) został podkablowany Jakubowi\. Furia zaktualizowana \| Range: (\d+)$/))) {
+    return fmt(d.snitched_set_range_auto, m[1], m[2]);
+  }
+  if ((m = t.match(/^Gracz (\d+) podkablował Jakubowi zestawem (.*?) za 1 pkt\.$/))) {
+    return fmt(d.snitched_set_pt, m[1], m[2]);
+  }
+  if ((m = t.match(/^Zestaw (.*?) został podkablowany Jakubowi za 1 pkt\.$/))) {
+    return fmt(d.snitched_set_pt_auto, m[1]);
+  }
+  if ((m = t.match(/^Zestaw (.*?) został podkablowany Jakubowi\.$/))) {
+    return fmt(d.snitched_set_auto, m[1]);
+  }
+  if ((m = t.match(/^Gracz (\d+) złożył pusty ruch i spasował\.$/))) return fmt(d.passed_empty, m[1]);
+  if ((m = t.match(/^Gracz (\d+) spasował turę\.$/))) return fmt(d.passed_turn, m[1]);
+  if ((m = t.match(/^Gracz (\d+) spasował\.$/))) return fmt(d.passed, m[1]);
 
-  // 3. Event Effects & Anger/Limits
-  t = t.replace(/Efekt: (.*)/g, (m, d) => `Effect: ${d}`)
-       .replace(/Aktywowano wydarzenie: (.*)/g, (m, name) => `Activated: ${name}`)
-       .replace(/Zmiany furii: (.*?) \(Zasięg zaktualizowany do (\d+)\)/g, (m, changes, r) => {
-         let ch = changes;
-         ['Wampiry', 'Wilkołaki', 'Duchy', 'Bardaki'].forEach(race => {
-           ch = ch.replace(new RegExp(race, 'g'), getRace(race, targetLang));
-         });
-         return `Fury changes: ${ch} (Range: ${r})`;
-       })
-       .replace(/Zmiany limitów band: (.*)/g, (m, changes) => {
-         let ch = changes;
-         ['Wampiry', 'Wilkołaki', 'Duchy', 'Bardaki'].forEach(race => {
-           ch = ch.replace(new RegExp(race, 'g'), getRace(race, targetLang));
-         });
-         return `Limit changes: ${ch}`;
-       })
-       .replace(/Brak zmian furii\./g, "No fury changes.")
-       .replace(/Brak zmian limitów band\./g, "No limit changes.")
-       .replace(/Wsparcie: Rozdano po (\d+) dodatkowym zestawie każdemu graczowi \(Suma: (\d+)\)\./g, "Support: +$1 set per player (Total: $2).")
-       .replace(/Wsparcie: Brak dostępnych zestawów do rozdania\./g, "Support: No sets available to distribute.")
-       .replace(/Wielkie Czyszczenie: Wyeliminowano pionki na sektorach: (.*?) \(Suma: (\d+)\)\./g, (m, sectors, sum) => {
-         let s = sectors;
-         ['Wampiry', 'Wilkołaki', 'Duchy', 'Bardaki'].forEach(race => {
-           s = s.replace(new RegExp(race, 'g'), getRace(race, targetLang));
-         });
-         return `Great Wipe: Eliminated pawns in sectors: ${s} (Total: ${sum}).`;
-       })
-       .replace(/Wielkie Czyszczenie: Brak pionków na celowanych sektorach do wyeliminowania\./g, "Great Wipe: No pawns to eliminate.")
-       .replace(/Przeniesiono pionki z \((\d+),(\d+)\) do \((\d+),(\d+)\): (.*?) \(Suma: (\d+)\)\./g, (m, x1, y1, x2, y2, pawns, sum) => {
-         let p = pawns;
-         ['Wampiry', 'Wilkołaki', 'Duchy', 'Bardaki'].forEach(race => {
-           p = p.replace(new RegExp(race, 'g'), getRace(race, targetLang));
-         });
-         return `Moved (${x1},${y1}) -> (${x2},${y2}): ${p} (Total: ${sum}).`;
-       })
-       .replace(/Brak pionków w sektorze \((\d+),(\d+)\) do przeniesienia\./g, "No pawns in ($1,$2) to move.")
-       .replace(/Przeniesiono: (.*)/g, "Moved: $1")
-       .replace(/Zabito: (.*)/g, "Killed: $1")
-       .replace(/Kary: (.*)/g, "Penalties: $1")
-       .replace(/Uciekli: (.*)/g, "Escaped: $1")
-       .replace(/Zdezerterowali: (.*)/g, "Deserted: $1")
-       .replace(/Generał Bardaków stracił (\d+) pkt/g, "Bardak General lost $1 pts");
+  // Jakub hunt
+  if ((m = t.match(/^Jakub przejął Zestaw (.*?)\. Furia\/Zasięg zaktualizowane natychmiast\.$/))) return fmt(d.jakub_seized_range, m[1]);
+  if ((m = t.match(/^Jakub przejął Zestaw (.*?)\. Furia zaktualizowana natychmiast\.$/))) return fmt(d.jakub_seized, m[1]);
+  if ((m = t.match(/^Jakub przejął Zestaw (.*?) z puli\.$/))) return fmt(d.jakub_seized_pool, m[1]);
+  if ((m = t.match(/^NIEPOCHAMOWANY ZWIERZĘCY MAGNETYZM! \(Tego nie pochamujesz\) Wszystkie bandy z sektorów (.*?) zostały przyciągnięte do sektora Jakuba \[([^\]]+),([^\]]+)\]!$/))) {
+    return fmt(d.magnetism_log, loc(m[1]), m[2], m[3]);
+  }
+  if ((m = t.match(/^Jakub przemieszcza się na \[([^\]]+),([^\]]+)\] w zasięgu (\d+), ścigając (.*?) \(Furia: (\d+) \| Region zawiera (\d+) jednostek\)\.$/))) {
+    return fmt(d.jakub_chasing, m[1], m[2], m[3], getR(m[4]), m[5], m[6]);
+  }
+  if ((m = t.match(/^Jakub zabił (\d+)x (.*?) w sektorze \[([^\]]+),([^\]]+)\]\. Furia rasy spada do (\d+)\.$/))) {
+    return fmt(d.jakub_killed, m[1], getR(m[2]), m[3], m[4], m[5]);
+  }
 
-  // 4. Scoring & End Game (BEFORE general Gracz replacements)
-  t = t.replace(/🔥 Świadek Jakuba: (.*?) \((.*?)\) zdobywa (\d+) bonusowych punktów za przeżycie w pobliżu Jakuba\./g, (m, p, race, pts) => {
-         return `🔥 Witness: ${p} (${getRace(race, targetLang)}) gets +${pts} pts for surviving near Jakub.`;
-       })
-       .replace(/Punkty Świadka Jakuba przyznane:/g, "Witness points awarded:")
-       .replace(/😇 Faza Miłosierdzia Jakuba:/g, "😇 Jakub's Mercy Phase:")
-       .replace(/😇 Miłosierdzie Jakuba: (.*?) \((.*?)\) otrzymuje \+(\d+) pkt za pozostałą furię\./g, (m, p, race, pts) => {
-         return `😇 Mercy: ${p} (${getRace(race, targetLang)}) +${pts} pts for remaining fury.`;
-       })
-       .replace(/Gracz (\d+) \((.*?)\) otrzymuje (\d+) pkt\. z Fazy Miłosierdzia \(pozostało (\d+) furii u Jakuba\)\./g, (m, p, race, pts, rem) => {
-         return `Player ${p} (${getRace(race, targetLang)}) +${pts} pts from Mercy (${rem} fury remaining).`;
-       })
-       .replace(/Punktacja Końcowa: Gracz (\d+) \(\+(\d+) za bandę (.*?)\);/g, (m, p, pts, race) => {
-         return `Final Score: Player ${p} (+${pts} for ${getRace(race, targetLang)});`;
-       })
-       .replace(/Gracz (\d+) \((.*?)\) zdobywa (\d+) punktów bonusowych \(Bonus Końcowy\)\./g, (m, p, race, pts) => {
-         return `Player ${p} (${getRace(race, targetLang)}) gets +${pts} bonus pts (End Bonus).`;
-       })
-       .replace(/KONIEC GRY! Zwycięzca: Gracz (\d+) z liczbą punktów: (\d+)\./g, "GAME OVER! Winner: Player $1 ($2 pts).")
-       .replace(/KONIEC GRY! REMIS pomiędzy graczami: (.*?) z liczbą punktów: (\d+)!/g, "GAME OVER! TIE: $1 ($2 pts)!");
-
-  // 5. Generals Selection / Resignation
-  t = t.replace(/Gracz (\d+) wybrał Generała bandy: (Wampiry|Wilkołaki|Duchy|Bardaki|vampire|werewolf|ghost|bardak|V|W|G|B)/g, (m, p1, p2) => {
-    return `Player ${p1} chose General: ${getRace(p2, targetLang)}`;
-  });
-  t = t.replace(/Gracz (\d+) wybrał Generała: (Wampiry|Wilkołaki|Duchy|Bardaki|vampire|werewolf|ghost|bardak|V|W|G|B)/g, (m, p1, p2) => {
-    return `Player ${p1} chose General: ${getRace(p2, targetLang)}`;
-  });
-  t = t.replace(/Gracz (\d+) zrezygnował z bycia Generałem bandy: (Wampiry|Wilkołaki|Duchy|Bardaki|vampire|werewolf|ghost|bardak|V|W|G|B)/g, (m, p1, p2) => {
-    return `Player ${p1} resigned from General of: ${getRace(p2, targetLang)}`;
-  });
-
-  // 6. Player Moves & Pass & Snitching
-  t = t.replace(/Gracz (\d+) dobrał zestawy\./g, "Player $1 drew sets.")
-       .replace(/Gracz (\d+) wystawił Zestaw (.*?) w sektorze \[(\d+),(\d+)\] \[(.*?)\] \| Plansza: (.*)/g,
-        "Player $1 placed Set $2 in sector [$3,$4] [$5] | Board: $6")
-       .replace(/Ręcznie: Zestaw (.*?) wystawiony w sektorze \[(\d+),(\d+)\] \[(.*?)\] \| Plansza: (.*)/g,
-        "Manually: Set $1 placed in [$2,$3] [$4] | Board: $5")
-       .replace(/Gracz (\d+) wystawił Zestaw (.*?) \[(.*?)\] \| Plansza: (.*)/g,
-        "Player $1 placed Set $2 [$3] | Board: $4")
-       .replace(/Gracz (\d+) wystawił Zestaw (.*?) w regionie \[(\d+),(\d+)\]\./g,
-        "Player $1 placed Set $2 in region [$3,$4].")
-       .replace(/Ręcznie: Rozdano Zestaw (.*?) Graczowi (\d+)/g,
-        "Manually: Given Set $1 to Player $2")
-       .replace(/Ruch: (.*?) przeniesiony z \[(\d+),(\d+)\] do \[(\d+),(\d+)\]/g, (m, type, x1, y1, x2, y2) => {
-         return `Move: ${getRace(type, targetLang)} from [${x1},${y1}] to [${x2},${y2}]`;
-       })
-       .replace(/Dodano (.*?) w sektorze \[(\d+),(\d+)\]/g, (m, type, x, y) => {
-         return `Added ${getRace(type, targetLang)} in [${x},${y}]`;
-       });
-
-  t = t.replace(/Gracz (\d+) spasował i podkablował (\d+) nadmiarowych zestawów\. Furia Jakuba zaktualizowana\./g,
-        "Player $1 passed & snitched $2 excess sets. Jakub's fury updated.")
-       .replace(/Gracz (\d+) podkablował Jakubowi zestawem (.*?)\. Furia zaktualizowana \| Range: (\d+)/g,
-        "Player $1 snitched with set $2. Fury updated | Range: $3")
-       .replace(/Zestaw (.*?) został podkablowany Jakubowi\. Furia zaktualizowana \| Range: (\d+)/g,
-        "Set $1 snitched to Jakub. Fury updated | Range: $2")
-       .replace(/Gracz (\d+) podkablował Jakubowi zestawem (.*?) za 1 pkt\./g,
-        "Player $1 snitched with set $2 for 1 pt.")
-       .replace(/Zestaw (.*?) został podkablowany Jakubowi za 1 pkt\./g,
-        "Set $1 snitched for 1 pt.")
-       .replace(/Zestaw (.*?) został podkablowany Jakubowi\./g,
-        "Set $1 snitched to Jakub.")
-       .replace(/Gracz (\d+) złożył pusty ruch i spasował\./g, "Player $1 made an empty move and passed.")
-       .replace(/Gracz (\d+) spasował turę\./g, "Player $1 passed turn.")
-       .replace(/Gracz (\d+) spasował\./g, "Player $1 passed.")
-       .replace(/Gracz (\d+)/g, "Player $1");
-
-  // 7. Jakub Actions & Magnetism
-  t = t.replace(/Jakub przejął Zestaw (.*?)\. Furia\/Zasięg zaktualizowane natychmiast\./g, "Jakub seized Set $1. Fury/Range updated.")
-       .replace(/Jakub przejął Zestaw (.*?)\. Furia zaktualizowana natychmiast\./g, "Jakub seized Set $1. Fury updated.")
-       .replace(/Jakub przejął Zestaw (.*?) z puli\./g, "Jakub seized Set $1 from pool.")
-       .replace(/Furia Jakuba opadła\. Łowy zakończone\./g, "Jakub's fury subsided. Hunt ended.")
-       .replace(/Jakub kończy swoje łowy\./g, "Jakub ends his hunt.")
-       .replace(/Zasięg Jakuba zresetowany do 1\./g, "Jakub's range reset to 1.")
-       .replace(/NIEPOCHAMOWANY ZWIERZĘCY MAGNETYZM! \(Tego nie pochamujesz\) Wszystkie bandy z sektorów (.*?) zostały przyciągnięte do sektora Jakuba \[(.*?),(.*?)\]!/g,
-        "UNSTOPPABLE ANIMAL MAGNETISM! All pawns from $1 pulled to Jakub's sector [$2,$3]!")
-       .replace(/Jakub przemieszcza się na \[(\d+),(\d+)\] w zasięgu (\d+), ścigając (.*?) \(Furia: (\d+) \| Region zawiera (\d+) jednostek\)\./g, (m, x, y, r, race, anger, count) => {
-         return `Jakub moves to [${x},${y}] (range ${r}), chasing ${getRace(race, targetLang)} (Fury: ${anger} | ${count} units).`;
-       })
-       .replace(/Jakub zabił (\d+)x (.*?) w sektorze \[(\d+),(\d+)\]\. Furia rasy spada do (\d+)\./g, (m, kCount, race, x, y, anger) => {
-         return `Jakub killed ${kCount}x ${getRace(race, targetLang)} in [${x},${y}]. Faction fury drops to ${anger}.`;
-       });
-
-  // 8. Board & Keywords translation
-  t = t.replace(/Plansza:/g, "Board:")
-       .replace(/Sektor \[/g, "Sector [")
-       .replace(/w sektorze/g, "in sector")
-       .replace(/w regionie/g, "in region")
-       .replace(/z sektora/g, "from sector")
-       .replace(/Zestaw ([A-Za-z0-9_-]+)/g, "Set $1")
-       .replace(/z \((\d+),(\d+)\) -> \((\d+),(\d+)\)/g, "from ($1,$2) -> ($3,$4)");
-
-  ['Wampiry', 'Wilkołaki', 'Duchy', 'Bardaki'].forEach(race => {
-    t = t.replace(new RegExp(race, 'g'), getRace(race, targetLang));
-  });
-
-  return t;
+  // Global words replacement fallback
+  return loc(t);
 };

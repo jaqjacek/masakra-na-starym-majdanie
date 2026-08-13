@@ -10,13 +10,26 @@ export default defineConfig({
   server: {
     proxy: {
       '/api': {
-        target: process.env.VITE_SERVER_URL || config.SERVER_URL || 'http://localhost:3001',
+        target: (process.env.VITE_SERVER_URL || config.SERVER_URL || 'http://127.0.0.1:3001').replace('localhost', '127.0.0.1'),
         changeOrigin: true,
+        configure: (proxy) => {
+          proxy.on('error', (_err, _req, res) => {
+            if (res && res.writeHead) {
+              res.writeHead(503, { 'Content-Type': 'application/json' });
+              res.end(JSON.stringify({ error: 'Backend server unavailable' }));
+            }
+          });
+        }
       },
       '/socket.io': {
-        target: process.env.VITE_SERVER_URL || config.SERVER_URL || 'http://localhost:3001',
+        target: (process.env.VITE_SERVER_URL || config.SERVER_URL || 'http://127.0.0.1:3001').replace('localhost', '127.0.0.1'),
         ws: true,
         changeOrigin: true,
+        configure: (proxy) => {
+          proxy.on('error', (_err) => {
+            // Suppress unhandled socket hang-up during server restart
+          });
+        }
       }
     }
   },

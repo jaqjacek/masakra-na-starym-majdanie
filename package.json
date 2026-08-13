@@ -14,7 +14,7 @@
     "simulate:parallel": "node tests/run_parallel_simulations.js"
   },
   "dependencies": {
-    "@scalar/express-api-reference": "^0.10.11",
+    "@scalar/express-api-reference": "^0.10.13",
     "cors": "^2.8.6",
     "express": "^5.2.1",
     "html2pdf.js": "^0.14.0",
@@ -27,14 +27,14 @@
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
-    "@types/react": "^19.2.17",
-    "@types/react-dom": "^19.2.3",
-    "@vitejs/plugin-react": "^6.0.2",
-    "eslint": "^10.7.0",
+    "@types/react": "^19.2.18",
+    "@types/react-dom": "^19.2.4",
+    "@vitejs/plugin-react": "^6.0.5",
+    "eslint": "^10.8.1",
     "eslint-plugin-react-hooks": "^7.1.1",
-    "eslint-plugin-react-refresh": "^0.5.3",
-    "globals": "^17.6.0",
+    "eslint-plugin-react-refresh": "^0.5.4",
+    "globals": "^17.11.0",
     "react-is": "^19.2.7",
-    "vite": "^8.1.5"
+    "vite": "^8.2.1"
   }
 }

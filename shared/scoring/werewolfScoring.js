@@ -30,9 +30,15 @@ export class WerewolfScoring {
 
   static findBestPlacement(regions, emptyRegions, placeableSets) {
     let best = null;
+    const jakubRegion = regions.find(r => r.pawns.jakub?.length > 0);
     placeableSets.forEach(set => {
       emptyRegions.forEach(region => {
-        const dist = region.jakubDistance;
+        const dist = jakubRegion 
+          ? Math.max(
+              Math.abs((region.x !== undefined ? region.x : region.id % 6) - (jakubRegion.x !== undefined ? jakubRegion.x : jakubRegion.id % 6)),
+              Math.abs((region.y !== undefined ? region.y : Math.floor(region.id / 6)) - (jakubRegion.y !== undefined ? jakubRegion.y : Math.floor(jakubRegion.id / 6)))
+            )
+          : (region.jakubDistance !== undefined ? region.jakubDistance : 3);
         const pts = WerewolfScoring.calculate(regions, region, dist, set.content.werewolf || 0);
         if (!best || pts > best.pts) {
           best = { set, region, pts };

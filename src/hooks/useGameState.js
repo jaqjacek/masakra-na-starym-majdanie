@@ -4,7 +4,7 @@ import { fetchMap } from '../services/api';
 import { INITIAL_STATE } from '../constants/game';
 import { SERVER_URL, HISTORY_LIMIT } from '../constants/constants';
 
-const socket = io(SERVER_URL);
+const socket = io(SERVER_URL || undefined);
 
 const getTime = () => new Date().toLocaleTimeString();
 

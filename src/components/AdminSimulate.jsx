@@ -9,7 +9,7 @@ import { SERVER_URL } from '../constants/constants';
 import { useTranslation } from '../hooks/useTranslation';
 import '../assets/css/admin.css';
 
-const fallbackSocket = io(SERVER_URL);
+const fallbackSocket = io(SERVER_URL || undefined);
 
 const getRaceColor = (raceId) => PAWN_TYPES.find(p => p.id === raceId)?.color || '#ccc';
 

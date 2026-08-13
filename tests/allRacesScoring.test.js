@@ -165,3 +165,53 @@ test('Punktacja zestawów mieszanych przez calculatePlacementPoints', () => {
     B: 2                                           // 2 (bo dist > 1)
   });
 });
+
+test('Punktacja Duchów na ścianach poziomych (góra/dół) i pionowych (lewo/prawo)', () => {
+  const board = new Board(6);
+  const regions = board.generateEmpty();
+
+  // Jakub w centrum (2,2) -> index 14
+  const jakubIdx = 2 * 6 + 2;
+  regions[jakubIdx].pawns.jakub = [{ range: 1, anger: { vampire: 0, werewolf: 0, ghost: 0, bardak: 0 } }];
+
+  // 1. Ściana pozioma górna (x: 2, y: 0) -> dist = 2 (bezpieczny), distToEdge = 0
+  const topIdx = 0 * 6 + 2; // (2,0)
+  const topScore = Scoring.calculatePlacementPoints(regions, regions[topIdx], { ghost: 1 });
+  assert.strictEqual(topScore.G, 2, 'Top wall should give 2 points for 1 ghost');
+
+  // 2. Ściana pozioma dolna (x: 2, y: 5) -> dist = 3 (bezpieczny), distToEdge = 0
+  const bottomIdx = 5 * 6 + 2; // (2,5)
+  const bottomScore = Scoring.calculatePlacementPoints(regions, regions[bottomIdx], { ghost: 1 });
+  assert.strictEqual(bottomScore.G, 2, 'Bottom wall should give 2 points for 1 ghost');
+
+  // 3. Ściana pionowa lewa (x: 0, y: 2) -> dist = 2 (bezpieczny), distToEdge = 0
+  const leftIdx = 2 * 6 + 0; // (0,2)
+  const leftScore = Scoring.calculatePlacementPoints(regions, regions[leftIdx], { ghost: 1 });
+  assert.strictEqual(leftScore.G, 2, 'Left wall should give 2 points for 1 ghost');
+
+  // 4. Ściana pionowa prawa (x: 5, y: 2) -> dist = 3 (bezpieczny), distToEdge = 0
+  const rightIdx = 2 * 6 + 5; // (5,2)
+  const rightScore = Scoring.calculatePlacementPoints(regions, regions[rightIdx], { ghost: 1 });
+  assert.strictEqual(rightScore.G, 2, 'Right wall should give 2 points for 1 ghost');
+
+  // Wszystkie 4 ściany dają IDENTYCZNE punkty (2 pkt za 1 ducha, 4 pkt za 2 duchy)
+  const multiGhostSet = { ghost: 2 };
+  assert.strictEqual(Scoring.calculatePlacementPoints(regions, regions[topIdx], multiGhostSet).G, 4);
+  assert.strictEqual(Scoring.calculatePlacementPoints(regions, regions[bottomIdx], multiGhostSet).G, 4);
+  assert.strictEqual(Scoring.calculatePlacementPoints(regions, regions[leftIdx], multiGhostSet).G, 4);
+  assert.strictEqual(Scoring.calculatePlacementPoints(regions, regions[rightIdx], multiGhostSet).G, 4);
+
+  // 5. Ruch Jakuba: Przenosimy Jakuba na (2, 1) - sąsiaduje z górną ścianą (2,0)
+  delete regions[jakubIdx].pawns.jakub;
+  const newJakubIdx = 1 * 6 + 2; // (2,1)
+  regions[newJakubIdx].pawns.jakub = [{ range: 1, anger: {} }];
+
+  // Teraz górna ściana ma dist = 1 (kara Jakuba -> 2 - 1 = 1 pkt)
+  const topScoreNearJakub = Scoring.calculatePlacementPoints(regions, regions[topIdx], { ghost: 1 });
+  assert.strictEqual(topScoreNearJakub.G, 1, 'Top wall near Jakub gives 1 point');
+
+  // A lewa ściana (0,2) ma dist = 2 (bezpieczna -> 2 pkt)
+  const leftScoreFarJakub = Scoring.calculatePlacementPoints(regions, regions[leftIdx], { ghost: 1 });
+  assert.strictEqual(leftScoreFarJakub.G, 2, 'Left wall far from Jakub gives 2 points');
+});
+

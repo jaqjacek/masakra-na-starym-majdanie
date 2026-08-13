@@ -8,17 +8,20 @@ export class GhostScoring {
    * @returns {number} Points gained
    */
   static calculate(targetRegion, dist, jakubRange, gCount) {
-    if (gCount <= 0) return 0;
+    if (gCount <= 0 || !targetRegion) return 0;
     
+    const rx = targetRegion.x !== undefined ? targetRegion.x : (targetRegion.id !== undefined ? targetRegion.id % 6 : 0);
+    const ry = targetRegion.y !== undefined ? targetRegion.y : (targetRegion.id !== undefined ? Math.floor(targetRegion.id / 6) : 0);
+
     const distToEdge = Math.min(
-      targetRegion.x, 
-      5 - targetRegion.x, 
-      targetRegion.y, 
-      5 - targetRegion.y
+      rx, 
+      5 - rx, 
+      ry, 
+      5 - ry
     );
     
     let perPawn = 2 - distToEdge;
-    if (dist <= jakubRange) {
+    if (dist <= 1) {
       perPawn -= 1;
     }
     
@@ -29,11 +32,16 @@ export class GhostScoring {
     let best = null;
     const jakubRegion = regions.find(r => r.pawns.jakub?.length > 0);
     const jakub = jakubRegion?.pawns.jakub[0];
-    const jakubRange = jakub ? (jakub.range !== undefined ? Math.max(1, jakub.range) : 1) : 0;
+    const jakubRange = jakub ? (jakub.range !== undefined ? Math.max(1, jakub.range) : 1) : 1;
     
     placeableSets.forEach(set => {
       emptyRegions.forEach(region => {
-        const dist = region.jakubDistance;
+        const dist = jakubRegion 
+          ? Math.max(
+              Math.abs((region.x !== undefined ? region.x : region.id % 6) - (jakubRegion.x !== undefined ? jakubRegion.x : jakubRegion.id % 6)),
+              Math.abs((region.y !== undefined ? region.y : Math.floor(region.id / 6)) - (jakubRegion.y !== undefined ? jakubRegion.y : Math.floor(jakubRegion.id / 6)))
+            )
+          : (region.jakubDistance !== undefined ? region.jakubDistance : 3);
         const pts = GhostScoring.calculate(region, dist, jakubRange, set.content.ghost || 0);
         
         if (!best) {

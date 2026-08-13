@@ -4,12 +4,11 @@ import config from '../../server_config.json' with { type: 'json' };
  * Global game configuration constants.
  */
 
-// Use server_config.json for dev, but in production we can default to relative paths
-// if config.SERVER_URL is not set or matches dev default.
-export const SERVER_URL = (typeof import.meta.env !== 'undefined' ? import.meta.env.VITE_SERVER_URL : null) || 
-  ((config.SERVER_URL && config.SERVER_URL !== 'http://localhost:3001') 
-    ? config.SERVER_URL 
-    : (typeof import.meta.env !== 'undefined' && import.meta.env.PROD ? '' : 'http://localhost:3001'));
+// Universal SERVER_URL: defaults to '' (relative path) so it uses the active host/port (Docker, localhost, LAN IP).
+// Overridable via VITE_SERVER_URL environment variable if needed.
+export const SERVER_URL = (typeof import.meta.env !== 'undefined' && import.meta.env.VITE_SERVER_URL)
+  ? import.meta.env.VITE_SERVER_URL
+  : '';
 export const TOTAL_GAME_ROUNDS = 12;
 export const INITIAL_HAND_SIZE = 5;
 export const MAX_HAND_SIZE = 3;

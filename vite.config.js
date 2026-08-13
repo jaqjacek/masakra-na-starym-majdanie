@@ -12,6 +12,11 @@ export default defineConfig({
       '/api': {
         target: process.env.VITE_SERVER_URL || config.SERVER_URL || 'http://localhost:3001',
         changeOrigin: true,
+      },
+      '/socket.io': {
+        target: process.env.VITE_SERVER_URL || config.SERVER_URL || 'http://localhost:3001',
+        ws: true,
+        changeOrigin: true,
       }
     }
   },

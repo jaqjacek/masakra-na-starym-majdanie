@@ -12,18 +12,23 @@ export class BardakScoring {
 
   static findBestPlacement(regions, emptyRegions, placeableSets) {
     let best = null;
+    const jakubRegion = regions.find(r => r.pawns.jakub?.length > 0);
     placeableSets.forEach(set => {
       emptyRegions.forEach(region => {
-        const dist = region.jakubDistance;
+        const dist = jakubRegion 
+          ? Math.max(
+              Math.abs((region.x !== undefined ? region.x : region.id % 6) - (jakubRegion.x !== undefined ? jakubRegion.x : jakubRegion.id % 6)),
+              Math.abs((region.y !== undefined ? region.y : Math.floor(region.id / 6)) - (jakubRegion.y !== undefined ? jakubRegion.y : Math.floor(jakubRegion.id / 6)))
+            )
+          : (region.jakubDistance !== undefined ? region.jakubDistance : 3);
         const pts = BardakScoring.calculate(dist, set.content.bardak || 0);
         if (!best) {
-          best = { set, region, pts };
+          best = { set, region, pts, dist };
         } else {
-          const bestDist = best.region.jakubDistance;
-          if (dist > bestDist) {
-            best = { set, region, pts };
-          } else if (dist === bestDist && pts > best.pts) {
-            best = { set, region, pts };
+          if (dist > best.dist) {
+            best = { set, region, pts, dist };
+          } else if (dist === best.dist && pts > best.pts) {
+            best = { set, region, pts, dist };
           }
         }
       });

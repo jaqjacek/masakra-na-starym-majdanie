@@ -12,18 +12,24 @@ export class Scoring {
    */
   static getChebyshevDistance(r1, r2) {
     if (!r1 || !r2) return 999;
-    return Math.max(Math.abs(r1.x - r2.x), Math.abs(r1.y - r2.y));
+    const x1 = r1.x !== undefined ? r1.x : (r1.id !== undefined ? r1.id % 6 : 0);
+    const y1 = r1.y !== undefined ? r1.y : (r1.id !== undefined ? Math.floor(r1.id / 6) : 0);
+    const x2 = r2.x !== undefined ? r2.x : (r2.id !== undefined ? r2.id % 6 : 0);
+    const y2 = r2.y !== undefined ? r2.y : (r2.id !== undefined ? Math.floor(r2.id / 6) : 0);
+    return Math.max(Math.abs(x1 - x2), Math.abs(y1 - y2));
   }
 
   static calculatePlacementPoints(regions, targetRegion, setContent) {
     if (!regions || !targetRegion) return { V: 0, W: 0, G: 0, B: 0 };
     const jakubRegion = regions.find(r => r && r.pawns && r.pawns.jakub?.length > 0);
-    const dist = targetRegion.jakubDistance !== undefined 
-      ? targetRegion.jakubDistance 
-      : Scoring.getChebyshevDistance(targetRegion, jakubRegion);
+    // If Jakub is on board, always compute live distance to current Jakub position.
+    // Fall back to targetRegion.jakubDistance (e.g. for mock test fixtures without Jakub pawn).
+    const dist = jakubRegion 
+      ? Scoring.getChebyshevDistance(targetRegion, jakubRegion)
+      : (targetRegion.jakubDistance !== undefined ? targetRegion.jakubDistance : 3);
     
     const jakub = jakubRegion?.pawns?.jakub?.[0];
-    const jakubRange = jakub ? (jakub.range !== undefined ? Math.max(1, jakub.range) : 1) : 0;
+    const jakubRange = jakub ? (jakub.range !== undefined ? Math.max(1, jakub.range) : 1) : 1;
 
     const content = setContent || {};
 

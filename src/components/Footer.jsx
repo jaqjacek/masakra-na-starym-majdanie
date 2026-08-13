@@ -73,6 +73,108 @@ const Footer = () => {
           >
             🇨🇿
           </button>
+          <button 
+            onClick={() => changeLanguage('de')} 
+            className={`lang-btn ${lang === 'de' ? 'active' : ''}`}
+            style={{ 
+              background: 'none', 
+              border: lang === 'de' ? '1px solid #fff' : '1px solid transparent', 
+              borderRadius: '4px', 
+              cursor: 'pointer', 
+              fontSize: '18px', 
+              padding: '2px 6px',
+              display: 'flex',
+              alignItems: 'center'
+            }}
+            title="Deutsch"
+          >
+            🇩🇪
+          </button>
+          <button 
+            onClick={() => changeLanguage('es')} 
+            className={`lang-btn ${lang === 'es' ? 'active' : ''}`}
+            style={{ 
+              background: 'none', 
+              border: lang === 'es' ? '1px solid #fff' : '1px solid transparent', 
+              borderRadius: '4px', 
+              cursor: 'pointer', 
+              fontSize: '18px', 
+              padding: '2px 6px',
+              display: 'flex',
+              alignItems: 'center'
+            }}
+            title="Español"
+          >
+            🇪🇸
+          </button>
+          <button 
+            onClick={() => changeLanguage('it')} 
+            className={`lang-btn ${lang === 'it' ? 'active' : ''}`}
+            style={{ 
+              background: 'none', 
+              border: lang === 'it' ? '1px solid #fff' : '1px solid transparent', 
+              borderRadius: '4px', 
+              cursor: 'pointer', 
+              fontSize: '18px', 
+              padding: '2px 6px',
+              display: 'flex',
+              alignItems: 'center'
+            }}
+            title="Italiano"
+          >
+            🇮🇹
+          </button>
+          <button 
+            onClick={() => changeLanguage('fr')} 
+            className={`lang-btn ${lang === 'fr' ? 'active' : ''}`}
+            style={{ 
+              background: 'none', 
+              border: lang === 'fr' ? '1px solid #fff' : '1px solid transparent', 
+              borderRadius: '4px', 
+              cursor: 'pointer', 
+              fontSize: '18px', 
+              padding: '2px 6px',
+              display: 'flex',
+              alignItems: 'center'
+            }}
+            title="Français"
+          >
+            🇫🇷
+          </button>
+          <button 
+            onClick={() => changeLanguage('fi')} 
+            className={`lang-btn ${lang === 'fi' ? 'active' : ''}`}
+            style={{ 
+              background: 'none', 
+              border: lang === 'fi' ? '1px solid #fff' : '1px solid transparent', 
+              borderRadius: '4px', 
+              cursor: 'pointer', 
+              fontSize: '18px', 
+              padding: '2px 6px',
+              display: 'flex',
+              alignItems: 'center'
+            }}
+            title="Suomi"
+          >
+            🇫🇮
+          </button>
+          <button 
+            onClick={() => changeLanguage('sv')} 
+            className={`lang-btn ${lang === 'sv' ? 'active' : ''}`}
+            style={{ 
+              background: 'none', 
+              border: lang === 'sv' ? '1px solid #fff' : '1px solid transparent', 
+              borderRadius: '4px', 
+              cursor: 'pointer', 
+              fontSize: '18px', 
+              padding: '2px 6px',
+              display: 'flex',
+              alignItems: 'center'
+            }}
+            title="Svenska"
+          >
+            🇸🇪
+          </button>
         </div>
         <span className="version-badge">{VERSION_INFO.tag}</span>
         <span className="branch-info">{t('version_branch')} <strong>{VERSION_INFO.branch}</strong></span>

@@ -8,8 +8,14 @@ import it from '../locales/it.json';
 import fr from '../locales/fr.json';
 import fi from '../locales/fi.json';
 import sv from '../locales/sv.json';
+import ja from '../locales/ja.json';
+import uk from '../locales/uk.json';
+import zh from '../locales/zh.json';
+import ru from '../locales/ru.json';
+import pt from '../locales/pt.json';
+import ko from '../locales/ko.json';
 
-const translations = { pl, en, cs, de, es, it, fr, fi, sv };
+const translations = { pl, en, cs, de, es, it, fr, fi, sv, ja, uk, zh, ru, pt, ko };
 
 const LANGUAGE_CHANGE_EVENT = 'app_language_change';
 

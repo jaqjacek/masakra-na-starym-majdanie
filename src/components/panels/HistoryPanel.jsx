@@ -37,6 +37,36 @@ const raceMaps = {
     'vampire': 'Vampyrer', 'werewolf': 'Varulvar', 'ghost': 'Spöken', 'bardak': 'Bardaker',
     'V': 'Vampyrer', 'W': 'Varulvar', 'G': 'Spöken', 'B': 'Bardaker'
   },
+  ja: {
+    'Wampiry': '吸血鬼', 'Wilkołaki': '人狼', 'Duchy': '亡霊', 'Bardaki': 'バルダック',
+    'vampire': '吸血鬼', 'werewolf': '人狼', 'ghost': '亡霊', 'bardak': 'バルダック',
+    'V': '吸血鬼', 'W': '人狼', 'G': '亡霊', 'B': 'バルダック'
+  },
+  uk: {
+    'Wampiry': 'Вампіри', 'Wilkołaki': 'Вовкулаки', 'Duchy': 'Привиди', 'Bardaki': 'Бардаки',
+    'vampire': 'Вампіри', 'werewolf': 'Вовкулаки', 'ghost': 'Привиди', 'bardak': 'Бардаки',
+    'V': 'Вампіри', 'W': 'Вовкулаки', 'G': 'Привиди', 'B': 'Бардаки'
+  },
+  zh: {
+    'Wampiry': '吸血鬼', 'Wilkołaki': '狼人', 'Duchy': '幽灵', 'Bardaki': '巴尔达克',
+    'vampire': '吸血鬼', 'werewolf': '狼人', 'ghost': '幽灵', 'bardak': '巴尔达克',
+    'V': '吸血鬼', 'W': '狼人', 'G': '幽灵', 'B': '巴尔达克'
+  },
+  ru: {
+    'Wampiry': 'Вампиры', 'Wilkołaki': 'Оборотни', 'Duchy': 'Призраки', 'Bardaki': 'Бардаки',
+    'vampire': 'Вампиры', 'werewolf': 'Оборотни', 'ghost': 'Призраки', 'bardak': 'Бардаки',
+    'V': 'Вампиры', 'W': 'Оборотни', 'G': 'Призраки', 'B': 'Бардаки'
+  },
+  pt: {
+    'Wampiry': 'Vampiros', 'Wilkołaki': 'Lobisomens', 'Duchy': 'Fantasmas', 'Bardaki': 'Bardaks',
+    'vampire': 'Vampiros', 'werewolf': 'Lobisomens', 'ghost': 'Fantasmas', 'bardak': 'Bardaks',
+    'V': 'Vampiros', 'W': 'Lobisomens', 'G': 'Fantasmas', 'B': 'Bardaks'
+  },
+  ko: {
+    'Wampiry': '뱀파이어', 'Wilkołaki': '늑대인간', 'Duchy': '유령', 'Bardaki': '바르닥',
+    'vampire': '뱀파이어', 'werewolf': '늑대인간', 'ghost': '유령', 'bardak': '바르닥',
+    'V': '뱀파이어', 'W': '늑대인간', 'G': '유령', 'B': '바르닥'
+  },
   en: {
     'Wampiry': 'Vampires', 'Wilkołaki': 'Werewolves', 'Duchy': 'Ghosts', 'Bardaki': 'Bardaks',
     'vampire': 'Vampires', 'werewolf': 'Werewolves', 'ghost': 'Ghosts', 'bardak': 'Bardaks',

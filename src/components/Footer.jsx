@@ -1,18 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { VERSION_INFO } from '../constants/version';
 import { useTranslation } from '../hooks/useTranslation';
-
-const LANGUAGES = [
-  { code: 'pl', flag: '🇵🇱', name: 'Polski', englishName: 'Polish', keywords: 'polski polish polska pl' },
-  { code: 'en', flag: '🇬🇧', name: 'English', englishName: 'English', keywords: 'english angielski gb uk en' },
-  { code: 'de', flag: '🇩🇪', name: 'Deutsch', englishName: 'German', keywords: 'deutsch niemiecki german de niemcy' },
-  { code: 'es', flag: '🇪🇸', name: 'Español', englishName: 'Spanish', keywords: 'español hiszpański spanish es hiszpania' },
-  { code: 'cs', flag: '🇨🇿', name: 'Čeština', englishName: 'Czech', keywords: 'čeština cesky czeski czech cs czechia' },
-  { code: 'fr', flag: '🇫🇷', name: 'Français', englishName: 'French', keywords: 'français francuski french fr francja' },
-  { code: 'it', flag: '🇮🇹', name: 'Italiano', englishName: 'Italian', keywords: 'italiano włoski italian it wlochy' },
-  { code: 'sv', flag: '🇸🇪', name: 'Svenska', englishName: 'Swedish', keywords: 'svenska szwedzki swedish sv szwecja' },
-  { code: 'fi', flag: '🇫🇮', name: 'Suomi', englishName: 'Finnish', keywords: 'suomi fiński finnish fi finlandia' },
-];
+import { WORLD_LANGUAGES } from '../constants/languages';
 
 const Footer = () => {
   const { t, lang, changeLanguage } = useTranslation();
@@ -20,7 +9,7 @@ const Footer = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const searchInputRef = useRef(null);
 
-  const currentLangItem = LANGUAGES.find(l => l.code === lang) || LANGUAGES[0];
+  const currentLangItem = WORLD_LANGUAGES.find(l => l.code === lang) || WORLD_LANGUAGES[0];
 
   useEffect(() => {
     if (isLangModalOpen) {
@@ -44,12 +33,13 @@ const Footer = () => {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isLangModalOpen]);
 
-  const filteredLanguages = LANGUAGES.filter(item => {
+  const filteredLanguages = WORLD_LANGUAGES.filter(item => {
     if (!searchQuery.trim()) return true;
     const q = searchQuery.toLowerCase().trim();
     return (
       item.name.toLowerCase().includes(q) ||
       item.englishName.toLowerCase().includes(q) ||
+      (item.polishName && item.polishName.toLowerCase().includes(q)) ||
       item.code.toLowerCase().includes(q) ||
       item.keywords.toLowerCase().includes(q)
     );
@@ -107,7 +97,7 @@ const Footer = () => {
           <div className="lang-modal-card" onClick={(e) => e.stopPropagation()}>
             <div className="lang-modal-header">
               <h3 className="lang-modal-title">
-                <span>🌐</span> {t('language_modal_title', { defaultValue: 'Wybierz język' })}
+                <span>🌐</span> {t('language_modal_title', { defaultValue: 'Wybierz język' })} ({WORLD_LANGUAGES.length})
               </h3>
               <button 
                 className="lang-modal-close-btn" 
@@ -153,7 +143,9 @@ const Footer = () => {
                       <span className="lang-item-flag">{item.flag}</span>
                       <div className="lang-item-names">
                         <span className="lang-item-main">{item.name}</span>
-                        <span className="lang-item-sub">{item.englishName}</span>
+                        <span className="lang-item-sub">
+                          {item.polishName && item.polishName !== item.name ? `${item.polishName} • ` : ''}{item.englishName}
+                        </span>
                       </div>
                     </div>
                     {lang === item.code && <span className="lang-item-check">✓</span>}

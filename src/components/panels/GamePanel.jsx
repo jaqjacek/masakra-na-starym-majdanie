@@ -58,68 +58,90 @@ const GamePanel = ({
           <button className="end-game-stats-btn main-panel-btn" onClick={onOpenStats}>{t('stats')}</button>
         )}
 
-        {!isFullAutoplay && !isJakubAutoplay && (
-          <div className="manual-phase-controls">
-            {gameState.phase === 'setup' && (
-              <button className="action-button next-btn" onClick={onManualDrawSets}>{t('draw_sets')}</button>
-            )}
-            
-            {gameState.phase === 'general_phase' && (
-              gameState.players.every(p => p.generalOf) ? (
+        <div className="manual-phase-controls">
+          {gameState.phase === 'setup' && !isFullAutoplay && !isJakubAutoplay && (
+            <button className="action-button next-btn" onClick={onManualDrawSets}>{t('draw_sets')}</button>
+          )}
+          
+          {gameState.phase === 'general_phase' && (
+            gameState.players.every(p => p.generalOf) ? (
+              (!isFullAutoplay && !isJakubAutoplay) && (
                 <button className="action-button next-btn" onClick={onGoToPlayerPhase}>{t('go_to_player_phase')}</button>
-              ) : <span className="phase-hint">{t('waiting_for_all')}</span>
-            )}
+              )
+            ) : (
+              (() => {
+                const curId = gameState.playerOrder[gameState.currentPlayerIndex];
+                const isMyTurn = (currentPlayerId === null || currentPlayerId === undefined || String(currentPlayerId) === String(curId));
+                return isMyTurn ? <span className="phase-hint">{t('waiting_for_all')}</span> : null;
+              })()
+            )
+          )}
 
-            {gameState.phase === 'player_phase' && (
-              <>
-                {gameState.passedPlayers.length < gameState.players.length ? (() => {
-                  const curId = gameState.playerOrder[gameState.currentPlayerIndex];
-                  
-                  // If we have a local player ID and it's not our turn, we wait
-                  if (currentPlayerId !== null && currentPlayerId !== undefined && String(currentPlayerId) !== String(curId)) {
-                    return <span className="phase-hint">{t('waiting_for_move', { player: curId })}</span>;
-                  }
-                  
-                  const isPassed = gameState.passedPlayers.some(id => String(id) === String(curId));
-                  if (gameState.turnActionExecuted) {
-                    return (
-                      <button 
-                        className="action-button next-btn" 
-                        onClick={() => onExecuteManualTurn && onExecuteManualTurn(curId, 'next')}
-                      >
-                        {t('next')}
-                      </button>
-                    );
-                  }
+          {gameState.phase === 'player_phase' && (
+            <>
+              {gameState.passedPlayers.length < gameState.players.length ? (() => {
+                const curId = gameState.playerOrder[gameState.currentPlayerIndex];
+                
+                // If we have a local player ID and it's not our turn, we wait
+                if (currentPlayerId !== null && currentPlayerId !== undefined && String(currentPlayerId) !== String(curId)) {
+                  return <span className="phase-hint">{t('waiting_for_move', { player: curId })}</span>;
+                }
+                
+                const isPassed = gameState.passedPlayers.some(id => String(id) === String(curId));
+                if (isPassed) {
+                  return <span className="phase-hint">{t('waiting_for_all')}</span>;
+                }
+
+                const manualList = gameState.manualPlayers || [];
+                const isManual = (manualList.length > 0 && manualList.some(id => String(id) === String(curId))) || 
+                                 (currentPlayerId !== null && currentPlayerId !== undefined && String(curId) === String(currentPlayerId)) ||
+                                 (!isFullAutoplay && !isJakubAutoplay);
+
+                if (!isManual && isFullAutoplay) {
+                  return null; // AI player turn during full autoplay
+                }
+
+                if (gameState.turnActionExecuted) {
                   return (
-                    <div style={{ display: 'flex', gap: '6px' }}>
-                      <button 
-                        className="action-button next-btn" 
-                        onClick={() => onExecuteManualTurn && onExecuteManualTurn(curId, 'next')}
-                        disabled={isPassed}
-                      >
-                        {t('next')}
-                      </button>
-                      <button 
-                        className="action-button pass-btn" 
-                        onClick={() => onExecuteManualTurn && onExecuteManualTurn(curId, 'pass')}
-                        disabled={isPassed}
-                      >
-                        {t('pass')}
-                      </button>
-                    </div>
+                    <button 
+                      className="action-button next-btn" 
+                      onClick={() => onExecuteManualTurn && onExecuteManualTurn(curId, 'next')}
+                    >
+                      {t('next')}
+                    </button>
                   );
-                })() : (
+                }
+                return (
+                  <div style={{ display: 'flex', gap: '6px' }}>
+                    <button 
+                      className="action-button next-btn" 
+                      onClick={() => onExecuteManualTurn && onExecuteManualTurn(curId, 'next')}
+                      disabled={isPassed}
+                      title={t('next')}
+                    >
+                      {t('next')}
+                    </button>
+                    <button 
+                      className="action-button pass-btn" 
+                      onClick={() => onExecuteManualTurn && onExecuteManualTurn(curId, 'pass')}
+                      disabled={isPassed}
+                    >
+                      {t('pass')}
+                    </button>
+                  </div>
+                );
+              })() : (
+                (!isFullAutoplay && !isJakubAutoplay) && (
                   <button className="action-button next-btn jakub-trigger" onClick={onGoToJakubPhase}>{t('go_to_jakub_phase')}</button>
-                )}
-              </>
-            )}
+                )
+              )}
+            </>
+          )}
 
-            {gameState.phase === 'event_phase' && (
-              <button className="action-button next-btn event-trigger" onClick={onExecuteEventPhase}>{t('execute_event')}</button>
-            )}
-          </div>
-        )}
+          {gameState.phase === 'event_phase' && !isFullAutoplay && !isJakubAutoplay && (
+            <button className="action-button next-btn event-trigger" onClick={onExecuteEventPhase}>{t('execute_event')}</button>
+          )}
+        </div>
       </div>
 
       <div className="header-right-group">

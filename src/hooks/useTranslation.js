@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import pl from '../locales/pl.json';
 import en from '../locales/en.json';
 import cs from '../locales/cs.json';
@@ -11,13 +11,23 @@ import sv from '../locales/sv.json';
 
 const translations = { pl, en, cs, de, es, it, fr, fi, sv };
 
+const LANGUAGE_CHANGE_EVENT = 'app_language_change';
+
 export const useTranslation = () => {
-  const [lang, setLang] = useState(localStorage.getItem('lang') || 'en');
+  const [lang, setLang] = useState(() => localStorage.getItem('lang') || 'en');
+
+  useEffect(() => {
+    const handleLanguageChange = (e) => {
+      setLang(e.detail);
+    };
+    window.addEventListener(LANGUAGE_CHANGE_EVENT, handleLanguageChange);
+    return () => window.removeEventListener(LANGUAGE_CHANGE_EVENT, handleLanguageChange);
+  }, []);
 
   const changeLanguage = useCallback((newLang) => {
     localStorage.setItem('lang', newLang);
     setLang(newLang);
-    window.location.reload();
+    window.dispatchEvent(new CustomEvent(LANGUAGE_CHANGE_EVENT, { detail: newLang }));
   }, []);
 
   const t = useCallback((key, replacements = {}) => {

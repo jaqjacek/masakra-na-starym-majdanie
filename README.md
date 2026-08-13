@@ -5,7 +5,7 @@
 [![Express](https://img.shields.io/badge/Express-5-lightgrey.svg)](https://expressjs.com/)
 [![Socket.io](https://img.shields.io/badge/Socket.io-4.8-black.svg)](https://socket.io/)
 [![Docker](https://img.shields.io/badge/Docker%20%2F%20Podman-Ready-blue.svg)](https://www.docker.com/)
-[![Version](https://img.shields.io/badge/version-v1.19.0-orange.svg)](package.json)
+[![Version](https://img.shields.io/badge/version-v1.20.0-orange.svg)](package.json)
 
 **MASAKRA na Starym Majdanie** is a tactical digital board game simulator set in the grim, humorous universe of Jakub Wędrowycz. Players manage pawn bands across a 6x6 grid, competing for points while trying to avoid the wrath of Jakub Wędrowycz—or actively turning his rampage toward their opponents.
 
@@ -195,7 +195,7 @@ Builds both versioned and `latest` images, pushes them to the remote Docker regi
 #### Optional CLI Flags
 ```bash
 # Build with a custom version tag
-./bash/deploy.sh --tag v1.19.0
+./bash/deploy.sh --tag v1.20.0
 
 # Run on a custom local port (e.g. 8080)
 ./bash/deploy.sh --port 8080

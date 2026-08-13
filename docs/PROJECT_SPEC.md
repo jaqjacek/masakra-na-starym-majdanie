@@ -84,9 +84,11 @@
 - **Shift + Click (Points/Counters):** Increase value.
 - **Ctrl + Click (Points/Counters):** Decrease value.
 
-## 6. Project Status (Current: v1.19.0)
+## 6. Project Status (Current: v1.20.0)
 - **Implemented:**
   - Manual & Automated gameplay, Dockerization, multi-phase logic, refined scoring.
+  - Auto-advance turn after set placement/kablowanie with Options panel toggle.
+  - 2x larger placement points preview popup.
   - Cascading tie-breaker system & Niepochamowany Zwierzęcy Magnetyzm visual effects.
   - Parallel Monte Carlo Simulation Engine with Worker Threads, Socket.io telemetry, and interactive Recharts dashboard.
   - Event Cards Deck & Set Customization Admin Editors.

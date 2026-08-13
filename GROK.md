@@ -114,7 +114,7 @@ npm run simulate:parallel # Run CLI parallel Monte Carlo simulation
 ./bash/deploy.sh network  # Build, tag :latest, push to 192.168.111.25 registry, deploy via SSH
 
 # 4. Optional Deploy Flags
-./bash/deploy.sh --tag v1.19.0   # Custom tag
+./bash/deploy.sh --tag v1.20.0   # Custom tag
 ./bash/deploy.sh --port 8080     # Custom port
 ./bash/deploy.sh --skip-run      # Build only, don't run container locally
 ```

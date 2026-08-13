@@ -209,7 +209,6 @@
   "rules_faq_a3": "• Pořadí v kole/hráčů: Mají-li hráči stejný počet bodů, jejich vzájemné pořadí se nemění.\n• Cíl útoku Jakuba: Je-li úroveň zuřivosti stejná, cíl se vybírá kaskádově (podle Hierarchie Band). Při absolutní remíze rozhodne Nezkrotný Zvířecí Magnetismus.\n• Určení vítěze: Při remíze na konci hry vyhrává ten hráč, který v posledním kole ovládal vůdce bandy postavené nejvýše v Hierarchii Band.",
   "rules_faq_q4": "Jaké jsou doporučené strategie pro hráče?",
   "rules_faq_a4": "• Vyhněte se pozici prvního hráče: První hráč v kole nemá na výběr bandu, kterou bude řídit.\n• Práskejte Jakubovi: Je-li to možné, donášejte Jakubovi na vedoucího hráče (prvního hráče), abyste ho oslabili.\n• Plánujte sady dopředu: Pokud předvídáte, kterou bandu budete řídit v příštím kole, zvažte ponechání sad s figurkami této bandy do dalšího kola.",
-  "rules_faq_a5": "Stručně řečeno (TLDR)?",
   "rules_faq_a5": "Sedláckým rozumem:\n• Hrajete za Upíry: nasazujte sady s Upíry co nejblíže Jakubovi.\n• Hrajete za Vlkodlaky: nasazujte se vedle jiných vlkodlaků, nejlépe poblíž Jakuba.\n• Hrajete za Duchy: nasazujte se co nejblíže okrajům plánu, co nejdále od Jakuba.\n• Hrajete za Bardaky: nasazujte se co nejdále od Jakuba.\n• Máte sady na cizí bandy? Nenasazujte je, raději je práskněte Jakubovi – je to skvělý způsob, jak získat body.\n• Při volbě vůdce: zvažte, kolik figurek dané bandy máte v sadách a kolik má na ni Jakub zuřivosti.\n• Více bodů získává vůdce stojící výše v hierarchii band.\n• Více bodů ztrácí vůdce stojící níže v hierarchii band.",
   "rules_footer_note": "Tato pravidla tvoří základ herní logiky simulátoru MASAKRA na Starym Majdanie.",
   "event.1.title": "Karmínový Hlad",
@@ -473,5 +472,16 @@
   "choose_language": "Vyberte jazyk",
   "language_search_placeholder": "Hledat jazyk (např. čeština, english, polski)...",
   "language_no_results": "Jazyk nenalezen",
-  "language_modal_title": "Vyberte jazyk"
+  "language_modal_title": "Vyberte jazyk",
+  "phase_setup": "Fáze Přípravy",
+  "phase_general_phase": "Fáze Vůdců",
+  "phase_player_phase": "Fáze Hráčů",
+  "phase_jakub_phase": "Fáze Jakuba",
+  "phase_event_phase": "Fáze Událostí",
+  "phase_final_scoring": "Závěrečné Bodování",
+  "phase_End Game": "Konec Hry",
+  "pause_jakub_btn": "PAUZA J",
+  "jakub_auto_btn": "JAKUB AUTO",
+  "pause_full_btn": "PAUZA FULL",
+  "full_auto_btn": "FULL AUTO"
 }

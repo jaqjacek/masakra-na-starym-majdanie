@@ -473,5 +473,16 @@
   "choose_language": "Wybierz język",
   "language_search_placeholder": "Szukaj języka (np. polski, english, deutsch)...",
   "language_no_results": "Nie znaleziono języka",
-  "language_modal_title": "Wybierz język"
+  "language_modal_title": "Wybierz język",
+  "phase_setup": "Faza Przygotowania",
+  "phase_general_phase": "Faza Hersztów",
+  "phase_player_phase": "Faza Graczy",
+  "phase_jakub_phase": "Faza Jakuba",
+  "phase_event_phase": "Faza Wydarzeń",
+  "phase_final_scoring": "Punktacja Końcowa",
+  "phase_End Game": "Koniec Gry",
+  "pause_jakub_btn": "PAUZA J",
+  "jakub_auto_btn": "JAKUB AUTO",
+  "pause_full_btn": "PAUZA FULL",
+  "full_auto_btn": "FULL AUTO"
 }

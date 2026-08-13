@@ -51,7 +51,7 @@ const GamePanel = ({
         
         <div className="game-id-info">
           ID: <strong>{gameId}</strong> 
-          <span className="phase-indicator">{gameState.phase}</span>
+          <span className="phase-indicator">{t(`phase_${gameState.phase}`, { defaultValue: gameState.phase })}</span>
         </div>
 
         <button className="scoring-summary-btn main-panel-btn" onClick={onOpenScoring}>{t('scoring')}</button>
@@ -153,7 +153,7 @@ const GamePanel = ({
             onClick={() => { setIsJakubAutoplay(!isJakubAutoplay); setIsFullAutoplay(false); }}
             title="Automate only Jakub's phase"
           >
-            {isJakubAutoplay ? 'PAUSE J' : 'JAKUB AUTO'}
+            {isJakubAutoplay ? t('pause_jakub_btn', { defaultValue: 'PAUSE J' }) : t('jakub_auto_btn', { defaultValue: 'JAKUB AUTO' })}
           </button>
           
           <button 
@@ -161,7 +161,7 @@ const GamePanel = ({
             onClick={() => { setIsFullAutoplay(!isFullAutoplay); setIsJakubAutoplay(false); }}
             title="Automate everything"
           >
-            {isFullAutoplay ? 'PAUSE FULL' : 'FULL AUTO'}
+            {isFullAutoplay ? t('pause_full_btn', { defaultValue: 'PAUSE FULL' }) : t('full_auto_btn', { defaultValue: 'FULL AUTO' })}
           </button>
 
           <div className="speed-control">

@@ -209,7 +209,6 @@
   "rules_faq_a3": "• Turordning: Ändras inte vid lika poäng.\n• Jakubs mål: Gängens Hierarki; vid absolut oavgjort Djurisk Magnetism.\n• Vinnare: Den spelare som leder det högst rankade gänget i hierarkin i runda 12 vinner.",
   "rules_faq_q4": "Vilka strategier rekommenderas?",
   "rules_faq_a4": "• Undvik att vara förste spelare: Han har inget val av gäng.\n• Tjalla till Jakub: Försvaga ledaren genom att förråda set ur dennes gäng.\n• Planera dina set: Spara användbara set på handen till nästa runda.",
-  "rules_faq_a5": "Kort sammanfattat (TLDR)?",
   "rules_faq_a5": "Bondsunt förnuft:\n• Vampyrer: Placera ut så nära Jakub som möjligt.\n• Varulvar: Samla flockar nära andra vargar och Jakub.\n• Spöken: Placera ut vid kanterna, långt från Jakub.\n• Bardaker: Placera ut så långt bort från Jakub som möjligt.\n• Har du motståndarnas set? Tjalla till Jakub för säkra poäng!\n• Gäng högre upp i hierarkin ger fler poäng och bryter oavgjorda lägen.",
   "rules_footer_note": "Dessa regler utgör grunden för simulatorn MASAKRA på Stary Majdan.",
   "event.1.title": "Purpurfärgad Hunger",
@@ -473,5 +472,16 @@
   "choose_language": "Välj språk",
   "language_search_placeholder": "Sök språk (t.ex. svenska, english, polski)...",
   "language_no_results": "Inget språk hittades",
-  "language_modal_title": "Välj Språk"
+  "language_modal_title": "Välj Språk",
+  "phase_setup": "Förberedelsefas",
+  "phase_general_phase": "Ledarfas",
+  "phase_player_phase": "Spelarfas",
+  "phase_jakub_phase": "Jakub-fas",
+  "phase_event_phase": "Händelsefas",
+  "phase_final_scoring": "Sluträkning",
+  "phase_End Game": "Spelet Slut",
+  "pause_jakub_btn": "PAUS J",
+  "jakub_auto_btn": "JAKUB AUTO",
+  "pause_full_btn": "PAUS FULL",
+  "full_auto_btn": "HELAUTO"
 }

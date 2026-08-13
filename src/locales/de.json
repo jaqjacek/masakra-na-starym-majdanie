@@ -209,7 +209,6 @@
   "rules_faq_a3": "• Spielerreihenfolge: Bleibt bei Punktgleichheit unverändert.\n• Jakubs Angriffsziel: Entschieden nach Bandenhierarchie; bei absolutem Gleichstand durch Tiermagnetismus.\n• Spielsieg: Gewinnt der Spieler mit der höherrangigen Bande in Runde 12.",
   "rules_faq_q4": "Welche Strategien werden empfohlen?",
   "rules_faq_a4": "• Erster Spieler sein vermeiden: Der erste Spieler hat keine Wahl bei der Bandenwahl.\n• Verpetzen bei Jakub: Schwäche den Führenden durch Verrat an Jakub.\n• Sets vorausplanen: Behalte passende Sets für die nächste Runde auf der Hand.",
-  "rules_faq_a5": "Kurz zusammengefasst (TLDR)?",
   "rules_faq_a5": "Bauernschläue:\n• Vampire: Platziere Sets so nah wie möglich an Jakub.\n• Werwölfe: Baue Rudel in der Nähe anderer Werwölfe und Jakubs.\n• Geister: Platziere dich an den Spielfeldrändern, weit weg von Jakub.\n• Bardaken: Platziere dich so weit wie möglich weg von Jakub.\n• Sets anderer Banden? Verpetze sie bei Jakub für sichere Punkte!\n• Banden höher in der Hierarchie erzielen mehr Punkte und brechen Gleichstände.",
   "rules_footer_note": "Diese Regeln bilden das Fundament des Simulators MASAKRA auf Stary Majdan.",
   "event.1.title": "Purpurner Hunger",
@@ -473,5 +472,16 @@
   "choose_language": "Sprache wählen",
   "language_search_placeholder": "Sprache suchen (z.B. deutsch, english, polski)...",
   "language_no_results": "Keine Sprache gefunden",
-  "language_modal_title": "Sprache Wählen"
+  "language_modal_title": "Sprache Wählen",
+  "phase_setup": "Vorbereitungsphase",
+  "phase_general_phase": "Anführerphase",
+  "phase_player_phase": "Spielerphase",
+  "phase_jakub_phase": "Jakub-Phase",
+  "phase_event_phase": "Ereignisphase",
+  "phase_final_scoring": "Schlusswertung",
+  "phase_End Game": "Spielende",
+  "pause_jakub_btn": "PAUSE J",
+  "jakub_auto_btn": "JAKUB AUTO",
+  "pause_full_btn": "PAUSE VOLL",
+  "full_auto_btn": "VOLLAUTO"
 }

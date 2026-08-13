@@ -473,5 +473,16 @@
   "choose_language": "选择语言",
   "language_search_placeholder": "搜索语言（例如：中文, english, polski）...",
   "language_no_results": "未找到匹配语言",
-  "language_modal_title": "选择语言"
+  "language_modal_title": "选择语言",
+  "phase_setup": "准备阶段",
+  "phase_general_phase": "头领阶段",
+  "phase_player_phase": "玩家阶段",
+  "phase_jakub_phase": "雅库布阶段",
+  "phase_event_phase": "事件阶段",
+  "phase_final_scoring": "终局计分",
+  "phase_End Game": "游戏结束",
+  "pause_jakub_btn": "暂停 雅库布",
+  "jakub_auto_btn": "雅库布自动",
+  "pause_full_btn": "暂停 全自动",
+  "full_auto_btn": "全自动"
 }

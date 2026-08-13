@@ -209,7 +209,6 @@
   "rules_faq_a3": "• Orden de ronda/jugadores: No cambia ante empate de puntos.\n• Objetivo de Jakub: Decide la Jerarquía de Bandas; en empate absoluto actúa el Magnetismo Animal.\n• Ganador: Gana quien controle la banda superior en la jerarquía en la ronda 12.",
   "rules_faq_q4": "¿Qué estrategias se recomiendan?",
   "rules_faq_a4": "• Evita ser el primer jugador: No tendrá opción para elegir su banda.\n• Delata a Jakub: Debilita al líder delatando sets de su banda.\n• Planifica tus sets: Guarda sets útiles para la próxima ronda.",
-  "rules_faq_a5": "¿En resumen (TLDR)?",
   "rules_faq_a5": "Sentido común campesino:\n• Vampiros: Despliega sets lo más cerca posible de Jakub.\n• Hombres Lobo: Agrúpate junto a otros lobos y cerca de Jakub.\n• Fantasmas: Despliega en los bordes del tablero, lejos de Jakub.\n• Bardaks: Despliega lo más lejos posible de Jakub.\n• ¿Tienes sets ajenos? ¡Delátalos a Jakub para sumar puntos seguros!\n• Las bandas superiores en la jerarquía ganan más puntos y desempatan.",
   "rules_footer_note": "Estas reglas forman la base del simulador MASAKRA en Stary Majdan.",
   "event.1.title": "Hambre Carmesí",
@@ -473,5 +472,16 @@
   "choose_language": "Elegir idioma",
   "language_search_placeholder": "Buscar idioma (ej. español, english, polski)...",
   "language_no_results": "Idioma no encontrado",
-  "language_modal_title": "Seleccionar Idioma"
+  "language_modal_title": "Seleccionar Idioma",
+  "phase_setup": "Fase de Preparación",
+  "phase_general_phase": "Fase de Líderes",
+  "phase_player_phase": "Fase de Jugadores",
+  "phase_jakub_phase": "Fase de Jakub",
+  "phase_event_phase": "Fase de Eventos",
+  "phase_final_scoring": "Puntuación Final",
+  "phase_End Game": "Fin de Juego",
+  "pause_jakub_btn": "PAUSA J",
+  "jakub_auto_btn": "JAKUB AUTO",
+  "pause_full_btn": "PAUSA TOTAL",
+  "full_auto_btn": "AUTO TOTAL"
 }

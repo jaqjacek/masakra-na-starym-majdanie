@@ -473,5 +473,16 @@
   "choose_language": "Escolher idioma",
   "language_search_placeholder": "Buscar idioma (ex. português, english, polski)...",
   "language_no_results": "Nenhum idioma encontrado",
-  "language_modal_title": "Selecionar Idioma"
+  "language_modal_title": "Selecionar Idioma",
+  "phase_setup": "Fase de Preparação",
+  "phase_general_phase": "Fase de Líderes",
+  "phase_player_phase": "Fase dos Jogadores",
+  "phase_jakub_phase": "Fase de Jakub",
+  "phase_event_phase": "Fase de Eventos",
+  "phase_final_scoring": "Pontuação Final",
+  "phase_End Game": "Fim de Jogo",
+  "pause_jakub_btn": "PAUSA J",
+  "jakub_auto_btn": "JAKUB AUTO",
+  "pause_full_btn": "PAUSA FULL",
+  "full_auto_btn": "FULL AUTO"
 }

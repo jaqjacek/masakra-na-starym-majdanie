@@ -473,5 +473,16 @@
   "choose_language": "Choose language",
   "language_search_placeholder": "Search language (e.g. english, polski, deutsch)...",
   "language_no_results": "No language found",
-  "language_modal_title": "Select Language"
+  "language_modal_title": "Select Language",
+  "phase_setup": "Setup Phase",
+  "phase_general_phase": "Generals Phase",
+  "phase_player_phase": "Players Phase",
+  "phase_jakub_phase": "Jakub's Phase",
+  "phase_event_phase": "Event Phase",
+  "phase_final_scoring": "Final Scoring",
+  "phase_End Game": "Game Over",
+  "pause_jakub_btn": "PAUSE J",
+  "jakub_auto_btn": "JAKUB AUTO",
+  "pause_full_btn": "PAUSE FULL",
+  "full_auto_btn": "FULL AUTO"
 }

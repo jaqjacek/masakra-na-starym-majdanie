@@ -209,7 +209,6 @@
   "rules_faq_a3": "• Vuorojärjestys: Ei muutu tasapisteissä.\n• Jakubin kohde: Koplien Hierarkia; täydellisessä tasatilanteessa Eläimellinen Magnetismi.\n• Voittaja: Se pelaaja voittaa, jonka johtama kopla on hierarkiassa korkeimmalla kierroksella 12.",
   "rules_faq_q4": "Mitä strategioita suositellaan?",
   "rules_faq_a4": "• Vältä olemasta ensimmäinen pelaaja: Hänellä ei ole valinnanvaraa koplan suhteen.\n• Kantele Jakubille: Heikennä johtajaa kavaltamalla hänen koplansa settejä.\n• Suunnittele setit: Säästä sopivia settejä kädessä seuraavaa kierrosta varten.",
-  "rules_faq_a5": "Lyhyesti tiivistettynä (TLDR)?",
   "rules_faq_a5": "Maalaisjärki:\n• Vampyyrit: Aseta setit mahdollisimman lähelle Jakubia.\n• Ihmissudet: Kokoa laumoja toisten susien ja Jakubin lähelle.\n• Aaveet: Aseta laudan reunoille, kauas Jakubista.\n• Bardakit: Aseta mahdollisimman kauas Jakubista.\n• Vääriä settejä kädessä? Kantele ne Jakubille varmojen pisteiden saamiseksi!\n• Hierarkiassa ylempänä olevat koplat saavat enemmän pisteitä ja ratkaisevat tasapelit.",
   "rules_footer_note": "Nämä säännöt muodostavat MASAKRA Stary Majdanissa -simulaattorin perustan.",
   "event.1.title": "Purppurainen Nälkä",
@@ -473,5 +472,16 @@
   "choose_language": "Valitse kieli",
   "language_search_placeholder": "Hae kieltä (esim. suomi, english, polski)...",
   "language_no_results": "Kieltä ei löytynyt",
-  "language_modal_title": "Valitse Kieli"
+  "language_modal_title": "Valitse Kieli",
+  "phase_setup": "Valmisteluvaihe",
+  "phase_general_phase": "Johtajavaihe",
+  "phase_player_phase": "Pelaajavaihe",
+  "phase_jakub_phase": "Jakub-vaihe",
+  "phase_event_phase": "Tapahtumavaihe",
+  "phase_final_scoring": "Loppupisteytys",
+  "phase_End Game": "Peli Päättynyt",
+  "pause_jakub_btn": "TAUKO J",
+  "jakub_auto_btn": "JAKUB AUTO",
+  "pause_full_btn": "TAUKO FULL",
+  "full_auto_btn": "TÄYSIN AUTO"
 }

@@ -209,7 +209,6 @@
   "rules_faq_a3": "• Ordine di round/giocatori: Non cambia a parità di punti.\n• Bersaglio di Jakub: Decide la Gerarchia delle Bande; in parità assoluta il Magnetismo Animale.\n• Vincitore: Vince chi controlla la banda più alta nella gerarchia nel 12° round.",
   "rules_faq_q4": "Quali strategie sono consigliate?",
   "rules_faq_a4": "• Evita di essere il primo giocatore: Non avrà scelta sulla banda da guidare.\n• Fai la spia a Jakub: Indebolisci il primo giocatore denunciando set della sua banda.\n• Pianifica i set: Conserva set utili per il round successivo.",
-  "rules_faq_a5": "In breve (TLDR)?",
   "rules_faq_a5": "Buon senso contadino:\n• Vampiri: Schiera set il più vicino possibile a Jakub.\n• Licantropi: Raggruppati vicino ad altri lupi e nei pressi di Jakub.\n• Spettri: Schiera sui bordi del tabellone, lontano da Jakub.\n• Bardak: Schiera il più lontano possibile da Jakub.\n• Hai set di altre bande? Denunciali a Jakub per guadagnare punti sicuri!\n• Le bande più alte nella gerarchia fanno più punti e vincono gli spareggi.",
   "rules_footer_note": "Queste regole costituiscono la base del simulatore MASAKRA su Stary Majdan.",
   "event.1.title": "Fame Cremisi",
@@ -473,5 +472,16 @@
   "choose_language": "Scegli lingua",
   "language_search_placeholder": "Cerca lingua (es. italiano, english, polski)...",
   "language_no_results": "Nessuna lingua trovata",
-  "language_modal_title": "Seleziona Lingua"
+  "language_modal_title": "Seleziona Lingua",
+  "phase_setup": "Fase Preparazione",
+  "phase_general_phase": "Fase Leader",
+  "phase_player_phase": "Fase Giocatori",
+  "phase_jakub_phase": "Fase di Jakub",
+  "phase_event_phase": "Fase Eventi",
+  "phase_final_scoring": "Punteggio Finale",
+  "phase_End Game": "Fine Gioco",
+  "pause_jakub_btn": "PAUSA J",
+  "jakub_auto_btn": "JAKUB AUTO",
+  "pause_full_btn": "PAUSA FULL",
+  "full_auto_btn": "FULL AUTO"
 }

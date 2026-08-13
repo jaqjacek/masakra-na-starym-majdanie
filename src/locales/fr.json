@@ -209,7 +209,6 @@
   "rules_faq_a3": "• Ordre du tour : Ne change pas en cas d'égalité de score.\n• Cible de Jakub : Tranchée par la Hiérarchie des Bandes ; en égalité parfaite par le Magnétisme Animal.\n• Vainqueur : Le joueur contrôlant la bande la plus haute dans la hiérarchie au 12ème round gagne.",
   "rules_faq_q4": "Quelles stratégies adopter ?",
   "rules_faq_a4": "• Évitez d'être premier joueur : Il n'aura aucun choix sur sa bande.\n• Balancez à Jakub : Affaiblissez le meneur en dénonçant des sets de sa bande.\n• Anticipez vos sets : Gardez des sets utiles en main pour le round suivant.",
-  "rules_faq_a5": "En résumé (TLDR) ?",
   "rules_faq_a5": "Bon sens paysan :\n• Vampires : Déployez au plus près de Jakub.\n• Loups-Garous : Rassemblez-vous en meute près d'autres loups et de Jakub.\n• Fantômes : Déployez sur les bords du plateau, loin de Jakub.\n• Bardaks : Déployez le plus loin possible de Jakub.\n• Des sets d'autres bandes ? Balancez-les à Jakub pour des points faciles !\n• Les bandes plus hautes dans la hiérarchie marquent plus et brisent les égalités.",
   "rules_footer_note": "Ces règles constituent le socle du simulateur MASAKRA sur Stary Majdan.",
   "event.1.title": "Faim Cramoisie",
@@ -473,5 +472,16 @@
   "choose_language": "Choisir la langue",
   "language_search_placeholder": "Rechercher une langue (ex. français, english, polski)...",
   "language_no_results": "Aucune langue trouvée",
-  "language_modal_title": "Sélectionner la Langue"
+  "language_modal_title": "Sélectionner la Langue",
+  "phase_setup": "Phase de Préparation",
+  "phase_general_phase": "Phase des Chefs",
+  "phase_player_phase": "Phase des Joueurs",
+  "phase_jakub_phase": "Phase de Jakub",
+  "phase_event_phase": "Phase d'Événements",
+  "phase_final_scoring": "Décompte Final",
+  "phase_End Game": "Fin de Partie",
+  "pause_jakub_btn": "PAUSE J",
+  "jakub_auto_btn": "JAKUB AUTO",
+  "pause_full_btn": "PAUSE TOTALE",
+  "full_auto_btn": "AUTO TOTAL"
 }

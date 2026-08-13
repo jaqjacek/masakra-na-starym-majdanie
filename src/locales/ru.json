@@ -473,5 +473,16 @@
   "choose_language": "Выбрать язык",
   "language_search_placeholder": "Поиск языка (напр. русский, english, polski)...",
   "language_no_results": "Язык не найден",
-  "language_modal_title": "Выбор языка"
+  "language_modal_title": "Выбор языка",
+  "phase_setup": "Фаза Подготовки",
+  "phase_general_phase": "Фаза Главарей",
+  "phase_player_phase": "Фаза Игроков",
+  "phase_jakub_phase": "Фаза Якуба",
+  "phase_event_phase": "Фаза Событий",
+  "phase_final_scoring": "Финальный Подсчёт",
+  "phase_End Game": "Конец Игры",
+  "pause_jakub_btn": "ПАУЗА Я",
+  "jakub_auto_btn": "ЯКУБ АВТО",
+  "pause_full_btn": "ПАУЗА FULL",
+  "full_auto_btn": "ПОЛНЫЙ АВТО"
 }

@@ -473,5 +473,16 @@
   "choose_language": "言語を選択",
   "language_search_placeholder": "言語を検索（例: 日本語, english, polski）...",
   "language_no_results": "該当する言語が見つかりません",
-  "language_modal_title": "言語の選択"
+  "language_modal_title": "言語の選択",
+  "phase_setup": "準備フェーズ",
+  "phase_general_phase": "指揮官フェーズ",
+  "phase_player_phase": "プレイヤーフェーズ",
+  "phase_jakub_phase": "ヤクブフェーズ",
+  "phase_event_phase": "イベントフェーズ",
+  "phase_final_scoring": "最終得点計算",
+  "phase_End Game": "ゲーム終了",
+  "pause_jakub_btn": "一時停止 J",
+  "jakub_auto_btn": "ヤクブ自動",
+  "pause_full_btn": "一時停止 全自動",
+  "full_auto_btn": "全自動"
 }

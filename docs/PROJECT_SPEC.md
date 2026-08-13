@@ -84,7 +84,7 @@
 - **Shift + Click (Points/Counters):** Increase value.
 - **Ctrl + Click (Points/Counters):** Decrease value.
 
-## 6. Project Status (Current: v1.18.0)
+## 6. Project Status (Current: v1.19.0)
 - **Implemented:**
   - Manual & Automated gameplay, Dockerization, multi-phase logic, refined scoring.
   - Cascading tie-breaker system & Niepochamowany Zwierzęcy Magnetyzm visual effects.
@@ -122,6 +122,11 @@
 - **Styles:** `src/assets/css/` (`base.css`, `game.css`, `modals.css`, `popups.css`, `effects.css`, `events.css`, `admin.css`)
 - **Strategy & AI:** `src/strategies/jakubStrategy.js`, `server/services/aiDecisionService.js`
 
+### 7.3 Automation & Deployment (`bash/`)
+- **Unified Deploy Script:** `bash/deploy.sh` (Multi-mode: local tag build, `latest`, and `network` deploy to `192.168.111.25`)
+- **Remote Host Runner:** `bash/deploy_latest.sh` (Direct host-side image pull and runner on server)
+
+
 ## 8. Development Constraints & Standards
 - **Vanilla Only:** No external UI libraries (MUI, Tailwind, etc.). Use `src/assets/css/`.
 - **JSON Integrity:** Never modify JSON structures in `server/games/` without ensuring the frontend `useGameState.js` can parse them.
@@ -138,3 +143,5 @@
   - File: `docs/GAME_RULES.md`
   - Endpoint: `/api/docs/game`
 - **UI Integration:** Links available in the application `Footer.jsx`.
+- **AI Assistant Context & Rules:** `GEMINI.md`, `GROK.md` (Quick start, architecture navigation, and strict development rules for AI assistants).
+

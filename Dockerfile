@@ -28,9 +28,10 @@ COPY --from=build /app/dist ./dist
 # Copy documentation
 COPY docs/ ./docs/
 
-# Copy the backend code, shared logic, and server configs
+# Copy the backend code, shared logic, source strategies/constants, and server configs
 COPY server/ ./server/
 COPY shared/ ./shared/
+COPY src/ ./src/
 COPY server_config.json ./
 COPY server_config.json ./server/configs/
 

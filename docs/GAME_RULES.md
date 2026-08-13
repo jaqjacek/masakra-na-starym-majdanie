@@ -1,4 +1,4 @@
-# MASAKRA na Starym Majdanie: Oficjalne Zasady Gry v1.18.0
+# MASAKRA na Starym Majdanie: Oficjalne Zasady Gry v1.19.0
 
 ## Cel Gry
 Wędrowycz-Gemini to gra strategiczna, w której gracze (Hersztowie) dowodzą czterema bandami: Wampirami, Wilkołakami, Duchami i Bardakami. Celem jest zdobycie jak największej liczby punktów zwycięstwa w ciągu 12 rund, unikając furii Jakuba Wędrowycza.
@@ -78,7 +78,7 @@ Po zakończeniu fazy Jakuba w **12. rundzie**, następuje ostateczne podsumowani
 ## Charakterystyka Band i Punktacja Zestawów
 Punkty za wystawienie zestawu (odległość liczona według zasad zdefiniowanych w Głównych Pojęciach, punkty mogą przybierać wartości ujemne):
 *   **Wampiry (V):** Punkty = `(4 - odległość) * liczba wampirów`. W przypadku maksymalnej odległości od Jakuba równej 5, punkty za wampiry są ujemne (`-1` za każdego wampira).
-*   **Wilkołaki (W):** Punkty = 1 punkt bazowy + 1 punkt za każde 3 wilkołaki (zaokrąglając w dół) w regionie docelowym i regionach sąsiednich. Jeżeli Jakub jest w odległości **0 lub 1** od regionu docelowego, Wilkołaki otrzymują dodatkowy **+1 punkt**.
+*   **Wilkołaki (W):** Punkty = `1 punkt bazowy za każdego wilkołaka w zestawie` + `1 punkt za każde 3 wilkołaki (zaokrąglając w dół) w regionie docelowym i regionach sąsiednich`. Jeżeli Jakub jest w odległości **0 lub 1** od regionu docelowego, Wilkołaki otrzymują dodatkowy **+1 punkt za każdego wystawianego wilkołaka**.
 *   **Duchy (G):** Punkty za pionka = `2 - (odległość do najbliższej krawędzi)`.
     *   Krawędź (odległość 0): **2 punkty** za pionka.
     *   1 pole od krawędzi: **1 punkt** za pionka.

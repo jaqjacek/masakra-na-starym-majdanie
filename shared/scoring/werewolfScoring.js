@@ -20,9 +20,9 @@ export class WerewolfScoring {
       }
     });
     
-    let pts = Math.floor(totalW / 3) + 1;
+    let pts = wCount + Math.floor(totalW / 3);
     if (dist <= 1) {
-      pts += 1;
+      pts += wCount;
     }
     
     return pts;

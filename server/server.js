@@ -86,7 +86,7 @@ app.get(/^(?!\/api).+/, (req, res) => {
   }
 });
 
-server.listen(PORT, '0.0.0.0', () => {
+server.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
   if (fs.existsSync(DIST_PATH)) {
     console.log(`DIST folder contains: ${fs.readdirSync(DIST_PATH).join(', ')}`);

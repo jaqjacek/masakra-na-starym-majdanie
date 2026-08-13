@@ -469,5 +469,9 @@
   "animal_magnetism_banner": "ZWIERZĘCY MAGNETYZM!",
   "animal_magnetism_text": "Niepohamowany Zwierzęcy Magnetyzm",
   "pdf_page_break": "✂ Podział strony w PDF",
-  "admin_mercy_phase_chart_title": "😇 Faza Miłosierdzia - Skumulowane punkty na koniec rundy"
+  "admin_mercy_phase_chart_title": "😇 Faza Miłosierdzia - Skumulowane punkty na koniec rundy",
+  "choose_language": "Wybierz język",
+  "language_search_placeholder": "Szukaj języka (np. polski, english, deutsch)...",
+  "language_no_results": "Nie znaleziono języka",
+  "language_modal_title": "Wybierz język"
 }

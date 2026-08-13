@@ -469,5 +469,9 @@
   "animal_magnetism_banner": "ELÄIMELLINEN MAGNETISMI!",
   "animal_magnetism_text": "Pysäyttämätön Eläimellinen Magnetismi",
   "pdf_page_break": "✂ PDF-sivunvaihto",
-  "admin_mercy_phase_chart_title": "😇 Jakubin Armovaihe - Kertyneet pisteet kierroksen lopussa"
+  "admin_mercy_phase_chart_title": "😇 Jakubin Armovaihe - Kertyneet pisteet kierroksen lopussa",
+  "choose_language": "Valitse kieli",
+  "language_search_placeholder": "Hae kieltä (esim. suomi, english, polski)...",
+  "language_no_results": "Kieltä ei löytynyt",
+  "language_modal_title": "Valitse Kieli"
 }

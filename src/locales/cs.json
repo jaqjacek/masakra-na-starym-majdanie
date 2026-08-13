@@ -469,5 +469,9 @@
   "animal_magnetism_banner": "ZVÍŘECÍ MAGNETISMUS!",
   "animal_magnetism_text": "Nezkrotný Zvířecí Magnetismus",
   "pdf_page_break": "✂ Zlom stránky v PDF",
-  "admin_mercy_phase_chart_title": "😇 Fáze Milosrdenství - Skumulované body na konci kola"
+  "admin_mercy_phase_chart_title": "😇 Fáze Milosrdenství - Skumulované body na konci kola",
+  "choose_language": "Vyberte jazyk",
+  "language_search_placeholder": "Hledat jazyk (např. čeština, english, polski)...",
+  "language_no_results": "Jazyk nenalezen",
+  "language_modal_title": "Vyberte jazyk"
 }

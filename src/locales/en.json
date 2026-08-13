@@ -469,5 +469,9 @@
   "animal_magnetism_banner": "ANIMAL MAGNETISM!",
   "animal_magnetism_text": "Unstoppable Animal Magnetism",
   "pdf_page_break": "✂ PDF Page Break",
-  "admin_mercy_phase_chart_title": "😇 Jakub's Mercy Phase - Cumulative points at end of round"
+  "admin_mercy_phase_chart_title": "😇 Jakub's Mercy Phase - Cumulative points at end of round",
+  "choose_language": "Choose language",
+  "language_search_placeholder": "Search language (e.g. english, polski, deutsch)...",
+  "language_no_results": "No language found",
+  "language_modal_title": "Select Language"
 }

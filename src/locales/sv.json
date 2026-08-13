@@ -469,5 +469,9 @@
   "animal_magnetism_banner": "DJURISK MAGNETISM!",
   "animal_magnetism_text": "Ohejdbar Djurisk Magnetism",
   "pdf_page_break": "✂ PDF-sidbrytning",
-  "admin_mercy_phase_chart_title": "😇 Jakubs Nådefas - Ackumulerade poäng vid rundans slut"
+  "admin_mercy_phase_chart_title": "😇 Jakubs Nådefas - Ackumulerade poäng vid rundans slut",
+  "choose_language": "Välj språk",
+  "language_search_placeholder": "Sök språk (t.ex. svenska, english, polski)...",
+  "language_no_results": "Inget språk hittades",
+  "language_modal_title": "Välj Språk"
 }

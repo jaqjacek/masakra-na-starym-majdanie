@@ -469,5 +469,9 @@
   "animal_magnetism_banner": "MAGNETISMO ANIMALE!",
   "animal_magnetism_text": "Magnetismo Animale Irrefrenabile",
   "pdf_page_break": "✂ Interruzione di Pagina in PDF",
-  "admin_mercy_phase_chart_title": "😇 Fase di Misericordia di Jakub - Punti cumulati a fine round"
+  "admin_mercy_phase_chart_title": "😇 Fase di Misericordia di Jakub - Punti cumulati a fine round",
+  "choose_language": "Scegli lingua",
+  "language_search_placeholder": "Cerca lingua (es. italiano, english, polski)...",
+  "language_no_results": "Nessuna lingua trovata",
+  "language_modal_title": "Seleziona Lingua"
 }

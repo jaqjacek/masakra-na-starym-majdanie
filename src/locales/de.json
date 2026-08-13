@@ -469,5 +469,9 @@
   "animal_magnetism_banner": "TIERMAGNETISMUS!",
   "animal_magnetism_text": "Unaufhaltsamer Tiermagnetismus",
   "pdf_page_break": "✂ PDF-Seitenumbruch",
-  "admin_mercy_phase_chart_title": "😇 Jakubs Gnadenphase - Kumulierte Punkte am Rundenende"
+  "admin_mercy_phase_chart_title": "😇 Jakubs Gnadenphase - Kumulierte Punkte am Rundenende",
+  "choose_language": "Sprache wählen",
+  "language_search_placeholder": "Sprache suchen (z.B. deutsch, english, polski)...",
+  "language_no_results": "Keine Sprache gefunden",
+  "language_modal_title": "Sprache Wählen"
 }

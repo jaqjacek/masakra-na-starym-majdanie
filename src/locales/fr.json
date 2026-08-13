@@ -469,5 +469,9 @@
   "animal_magnetism_banner": "MAGNÉTISME ANIMAL !",
   "animal_magnetism_text": "Magnétisme Animal Irrépressible",
   "pdf_page_break": "✂ Saut de Page en PDF",
-  "admin_mercy_phase_chart_title": "😇 Phase de Clémence de Jakub - Points cumulés en fin de round"
+  "admin_mercy_phase_chart_title": "😇 Phase de Clémence de Jakub - Points cumulés en fin de round",
+  "choose_language": "Choisir la langue",
+  "language_search_placeholder": "Rechercher une langue (ex. français, english, polski)...",
+  "language_no_results": "Aucune langue trouvée",
+  "language_modal_title": "Sélectionner la Langue"
 }

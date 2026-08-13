@@ -56,6 +56,23 @@ const Footer = () => {
           >
             🇵🇱
           </button>
+          <button 
+            onClick={() => changeLanguage('cs')} 
+            className={`lang-btn ${lang === 'cs' ? 'active' : ''}`}
+            style={{ 
+              background: 'none', 
+              border: lang === 'cs' ? '1px solid #fff' : '1px solid transparent', 
+              borderRadius: '4px', 
+              cursor: 'pointer', 
+              fontSize: '18px', 
+              padding: '2px 6px',
+              display: 'flex',
+              alignItems: 'center'
+            }}
+            title="Čeština"
+          >
+            🇨🇿
+          </button>
         </div>
         <span className="version-badge">{VERSION_INFO.tag}</span>
         <span className="branch-info">{t('version_branch')} <strong>{VERSION_INFO.branch}</strong></span>

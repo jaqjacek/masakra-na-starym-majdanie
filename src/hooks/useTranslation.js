@@ -1,8 +1,9 @@
 import { useState, useCallback } from 'react';
 import pl from '../locales/pl.json';
 import en from '../locales/en.json';
+import cs from '../locales/cs.json';
 
-const translations = { pl, en };
+const translations = { pl, en, cs };
 
 export const useTranslation = () => {
   const [lang, setLang] = useState(localStorage.getItem('lang') || 'en');

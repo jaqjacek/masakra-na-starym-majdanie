@@ -25,7 +25,8 @@ export const useGameInteraction = ({
   addLog,
   findAndRemoveSetById,
   advanceTurn,
-  manualPlayers = []
+  manualPlayers = [],
+  autoClickNext = true
 }) => {
   const [activePawn, setActivePawn] = useState(null); 
   const [activeSet, setActiveSet] = useState(null); 
@@ -205,19 +206,23 @@ export const useGameInteraction = ({
         }
       }
 
-      // Automatically advance turn immediately
-      if (advanceTurn) advanceTurn(newState);
-      if (newState.passedPlayers.length === newState.players.length) {
-        newState.phase = 'jakub_phase';
-        addLog(newState, `--- Start Fazy Jakuba ---`);
+      // Automatically advance turn immediately if autoClickNext is enabled
+      if (autoClickNext) {
+        if (advanceTurn) advanceTurn(newState);
+        if (newState.passedPlayers.length === newState.players.length) {
+          newState.phase = 'jakub_phase';
+          addLog(newState, `--- Start Fazy Jakuba ---`);
+        }
+        newState.turnActionExecuted = false;
+      } else {
+        newState.turnActionExecuted = true;
       }
-      newState.turnActionExecuted = false;
 
       updateGameWithSync(newState);
       setActiveSet(null);
       setValidMoveTargets([]);
     }
-  }, [activePawn, activeSet, gameState, gameId, validMoveTargets, availablePool, placementPool, updateGameWithSync, addLog, findAndRemoveSetById, advanceTurn, manualPlayers, playerId]);
+  }, [activePawn, activeSet, gameState, gameId, validMoveTargets, availablePool, placementPool, updateGameWithSync, addLog, findAndRemoveSetById, advanceTurn, manualPlayers, playerId, autoClickNext]);
 
   const handlePlayerMouseUp = useCallback((targetPlayerId) => {
     if (activeSet && !playerId) { 
@@ -276,19 +281,23 @@ export const useGameInteraction = ({
           }
         }
         
-        // Automatically advance turn immediately
-        if (advanceTurn) advanceTurn(newState);
-        if (newState.passedPlayers.length === newState.players.length) {
-          newState.phase = 'jakub_phase';
-          addLog(newState, `--- Start Fazy Jakuba ---`);
+        // Automatically advance turn immediately if autoClickNext is enabled
+        if (autoClickNext) {
+          if (advanceTurn) advanceTurn(newState);
+          if (newState.passedPlayers.length === newState.players.length) {
+            newState.phase = 'jakub_phase';
+            addLog(newState, `--- Start Fazy Jakuba ---`);
+          }
+          newState.turnActionExecuted = false;
+        } else {
+          newState.turnActionExecuted = true;
         }
-        newState.turnActionExecuted = false;
         updateGameWithSync(newState);
       }
       setActiveSet(null);
       setValidMoveTargets([]);
     }
-  }, [activeSet, gameState, playerId, updateGameWithSync, addLog, findAndRemoveSetById, advanceTurn, manualPlayers]);
+  }, [activeSet, gameState, playerId, updateGameWithSync, addLog, findAndRemoveSetById, advanceTurn, manualPlayers, autoClickNext]);
 
   return {
     activePawn,

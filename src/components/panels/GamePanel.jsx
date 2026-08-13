@@ -35,7 +35,9 @@ const GamePanel = ({
   showCounters = true,
   setShowCounters,
   showAnimations = true,
-  setShowAnimations
+  setShowAnimations,
+  autoClickNext = true,
+  setAutoClickNext
 }) => {
   const { t } = useTranslation();
   const [isOptionsOpen, setIsOptionsOpen] = React.useState(false);
@@ -228,6 +230,14 @@ const GamePanel = ({
                 onChange={(e) => setShowAnimations(e.target.checked)} 
               />
               {t('options_show_animations')}
+            </label>
+            <label className="options-checkbox-label">
+              <input 
+                type="checkbox" 
+                checked={autoClickNext} 
+                onChange={(e) => setAutoClickNext && setAutoClickNext(e.target.checked)} 
+              />
+              {t('options_auto_click_next')}
             </label>
           </div>
         </>

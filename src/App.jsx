@@ -108,6 +108,7 @@ function App() {
   const [showTracks, setShowTracks] = useState(() => localStorage.getItem('showTracks') !== 'false');
   const [showCounters, setShowCounters] = useState(() => localStorage.getItem('showCounters') !== 'false');
   const [showAnimations, setShowAnimations] = useState(() => localStorage.getItem('showAnimations') !== 'false');
+  const [autoClickNext, setAutoClickNext] = useState(() => localStorage.getItem('autoClickNext') !== 'false');
   const [visualEffects, setVisualEffects] = useState([]);
   const prevRegionsRef = React.useRef();
 
@@ -122,6 +123,10 @@ function App() {
   useEffect(() => {
     localStorage.setItem('showAnimations', showAnimations);
   }, [showAnimations]);
+
+  useEffect(() => {
+    localStorage.setItem('autoClickNext', autoClickNext);
+  }, [autoClickNext]);
 
   // 1. Basic state and sync
   const {
@@ -423,7 +428,7 @@ function App() {
     handleBagMouseDown, handleJakubMouseDownFromPanel, handleSetMouseDown, handleGeneralMouseDown,
     handlePawnMouseDown, handleRegionMouseUp, handlePlayerMouseUp, handleJakubMouseUp
   } = useGameInteraction({
-    gameId, playerId, gameState, availablePool, placementPool, counters, isJakubOnBoard, updateGameWithSync, addLog, findAndRemoveSetById, advanceTurn, manualPlayers
+    gameId, playerId, gameState, availablePool, placementPool, counters, isJakubOnBoard, updateGameWithSync, addLog, findAndRemoveSetById, advanceTurn, manualPlayers, autoClickNext
   });
 
   // Reset hoveredRegionId when we stop dragging a set
@@ -835,6 +840,8 @@ function App() {
         setShowCounters={setShowCounters}
         showAnimations={showAnimations}
         setShowAnimations={setShowAnimations}
+        autoClickNext={autoClickNext}
+        setAutoClickNext={setAutoClickNext}
       />
 
       {isEventsPanelOpen && (

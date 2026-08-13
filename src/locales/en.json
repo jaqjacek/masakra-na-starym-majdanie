@@ -4,6 +4,7 @@
   "options_show_tracks": "Jakub's movement tracks (gumboots)",
   "options_show_counters": "Pawn counters in sectors",
   "options_show_animations": "Pawn kill animations",
+  "options_auto_click_next": "Auto-pass turn after set move",
   "rank_1": "1st Place",
   "rank_2": "2nd Place",
   "rank_3": "3rd Place",

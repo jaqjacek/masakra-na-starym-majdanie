@@ -205,12 +205,13 @@ export const useGameInteraction = ({
         }
       }
 
-      const isManual = (manualPlayers && manualPlayers.some(id => String(id) === String(curId))) || (playerId !== null && playerId !== undefined && String(curId) === String(playerId));
-      if (isManual) {
-        newState.turnActionExecuted = true;
-      } else {
-        if (advanceTurn) advanceTurn(newState);
+      // Automatically advance turn immediately
+      if (advanceTurn) advanceTurn(newState);
+      if (newState.passedPlayers.length === newState.players.length) {
+        newState.phase = 'jakub_phase';
+        addLog(newState, `--- Start Fazy Jakuba ---`);
       }
+      newState.turnActionExecuted = false;
 
       updateGameWithSync(newState);
       setActiveSet(null);
@@ -275,13 +276,13 @@ export const useGameInteraction = ({
           }
         }
         
-        const curId = playerId || newState.playerOrder[newState.currentPlayerIndex];
-        const isManual = (manualPlayers && manualPlayers.some(id => String(id) === String(curId))) || (playerId !== null && playerId !== undefined && String(curId) === String(playerId));
-        if (isManual) {
-          newState.turnActionExecuted = true;
-        } else {
-          if (advanceTurn) advanceTurn(newState);
+        // Automatically advance turn immediately
+        if (advanceTurn) advanceTurn(newState);
+        if (newState.passedPlayers.length === newState.players.length) {
+          newState.phase = 'jakub_phase';
+          addLog(newState, `--- Start Fazy Jakuba ---`);
         }
+        newState.turnActionExecuted = false;
         updateGameWithSync(newState);
       }
       setActiveSet(null);

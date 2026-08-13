@@ -53,7 +53,8 @@ test('ActionService - handlePlaceSet', () => {
   assert.strictEqual(state.regions[0].pawns.werewolf.length, 1);
   assert.strictEqual(state.sets.heldSets.length, 0);
   assert.strictEqual(state.sets.discardPile.length, 1);
-  assert.strictEqual(state.turnActionExecuted, true);
+  assert.strictEqual(state.currentPlayerIndex, 1);
+  assert.strictEqual(state.turnActionExecuted, false);
 });
 
 test('ActionService - handleMovePawn', () => {
@@ -74,3 +75,18 @@ test('ActionService - handlePassTurn', () => {
   assert.ok(state.passedPlayers.includes(1));
   assert.strictEqual(state.currentPlayerIndex, 1);
 });
+
+test('ActionService - handleKablowanieSet', () => {
+  const state = createMockGameState();
+  state.players[0].generalOf = 'vampire';
+  state.regions[0].pawns.jakub = [{ range: 1, anger: { vampire: 0, werewolf: 0, ghost: 0, bardak: 0 } }];
+
+  ActionService.handleKablowanieSet(state, { playerId: 1, setId: 'S1' });
+
+  assert.strictEqual(state.players[0].points, 1);
+  assert.strictEqual(state.sets.heldSets.length, 1);
+  assert.strictEqual(state.sets.heldSets[0].ownerId, 'jakub');
+  assert.strictEqual(state.currentPlayerIndex, 1);
+  assert.strictEqual(state.turnActionExecuted, false);
+});
+

@@ -136,7 +136,21 @@ export class ActionService {
       trackSetsPlayed(curPlayer, curPlayer.generalOf, 1);
     }
 
-    data.turnActionExecuted = true;
+    if (data.playerOrder && data.playerOrder.length > 0) {
+      let nextIdx = (data.currentPlayerIndex + 1) % data.playerOrder.length;
+      let safety = 0;
+      while (data.passedPlayers && data.passedPlayers.includes(data.playerOrder[nextIdx]) && safety < 10) {
+        nextIdx = (nextIdx + 1) % data.playerOrder.length;
+        safety++;
+      }
+      data.currentPlayerIndex = nextIdx;
+    }
+    if (data.passedPlayers && data.passedPlayers.length === data.players.length) {
+      data.phase = 'jakub_phase';
+      addLog(data, `--- Start Fazy Jakuba ---`);
+    }
+
+    data.turnActionExecuted = false;
     return data;
   }
 
@@ -184,7 +198,21 @@ export class ActionService {
       }
     }
 
-    data.turnActionExecuted = true;
+    if (data.playerOrder && data.playerOrder.length > 0) {
+      let nextIdx = (data.currentPlayerIndex + 1) % data.playerOrder.length;
+      let safety = 0;
+      while (data.passedPlayers && data.passedPlayers.includes(data.playerOrder[nextIdx]) && safety < 10) {
+        nextIdx = (nextIdx + 1) % data.playerOrder.length;
+        safety++;
+      }
+      data.currentPlayerIndex = nextIdx;
+    }
+    if (data.passedPlayers && data.passedPlayers.length === data.players.length) {
+      data.phase = 'jakub_phase';
+      addLog(data, `--- Start Fazy Jakuba ---`);
+    }
+
+    data.turnActionExecuted = false;
     return data;
   }
 

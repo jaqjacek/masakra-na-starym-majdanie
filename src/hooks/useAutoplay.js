@@ -205,10 +205,10 @@ export const useAutoplay = ({
             return;
           }
 
-          // Pause autoplay if this is a manual player's turn to choose a general
+          // Pause autoplay tick if this is a manual player's turn to choose a general
           const isManual = (manualPlayers && manualPlayers.some(id => String(id) === String(curId))) || (playerId !== null && playerId !== undefined && String(curId) === String(playerId));
           if (isManual) {
-            setIsFullAutoplay(false);
+            // Keep full autoplay enabled, just wait for player to pick general
             return;
           }
 
@@ -234,10 +234,10 @@ export const useAutoplay = ({
         const curId = workState.playerOrder[workState.currentPlayerIndex];
         const curPlayer = workState.players.find(p => p.id !== null && p.id !== undefined && String(p.id) === String(curId));
         
-        // Pause autoplay and wait for manual player turn
+        // Pause autoplay tick and wait for manual player turn
         const isManual = (manualPlayers && manualPlayers.some(id => String(id) === String(curId))) || (playerId !== null && playerId !== undefined && String(curId) === String(playerId));
         if (isManual && !workState.passedPlayers.some(id => String(id) === String(curId))) {
-          setIsFullAutoplay(false);
+          // Keep full autoplay enabled, just wait for player to make their move
           return;
         }
 

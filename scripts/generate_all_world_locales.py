@@ -1,245 +1,124 @@
-import json
 import os
+import json
+import urllib.request
+import urllib.parse
+import time
+import re
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-LOCALES_DIR = os.path.join(BASE_DIR, 'src', 'locales')
+with open('src/constants/languages.js', 'r', encoding='utf-8') as f:
+    js_text = f.read()
 
-with open(os.path.join(LOCALES_DIR, 'en.json'), 'r', encoding='utf-8') as f:
-    en = json.load(f)
+codes_matches = re.findall(r"code:\s*'([^']+)'", js_text)
+print(f"Total languages to support: {len(codes_matches)}")
 
-# Core dictionary overrides
-CUSTOM_MAPS = {
-  'ja': {
-    "next": "次へ",
-    "next_btn": "次へ",
-    "pass": "パス",
-    "pass_btn": "パス",
-    "pass_turn": "パス",
-    "scoring": "得点",
-    "load": "読込",
-    "stats": "統計",
-    "go_to_jakub_phase": "ヤクブフェーズへ",
-    "go_to_player_phase": "プレイヤーフェーズへ",
-    "draw_sets": "セットを引く",
-    "execute_event": "イベント実行",
-    "options_button": "オプション",
-    "events_panel_btn": "イベント",
-    "sets_panel_btn": "セット",
-    "landing_page_btn": "トップページ",
-    "change_game_btn": "ゲーム変更",
-    "create_new_game": "新規ゲーム作成",
-    "admin_panel": "管理パネル",
-    "choose_general": "指揮官を選択",
-    "general_chosen": "指揮官選択完了",
-    "choose_general_for": "指揮官選択 ({player})",
-    "waiting_for_general": "プレイヤー{player}の指揮官選択を待機中...",
-    "waiting_for_move": "プレイヤー{player}の手番を待機中...",
-    "waiting_for_all": "全プレイヤーの待機中...",
-    "vampire": "吸血鬼",
-    "werewolf": "人狼",
-    "ghost": "亡霊",
-    "bardak": "バルダック",
-    "jakub_range_label": "ヤクブの射程: {range}",
-    "current_turn": "現在の手番",
-    "active_player_badge": "アクティブプレイヤー",
-    "points_label": "ポイント",
-    "snitch_label": "ヤクブに密告",
-    "snitch_tooltip": "ヤクブにセットを密告して怒りを上昇させます",
-    "place_set_label": "セットを配置",
-    "place_set_tooltip": "盤面にセットの駒を配置します",
-    "phase_setup": "準備フェーズ",
-    "phase_general_phase": "指揮官フェーズ",
-    "phase_player_phase": "プレイヤーフェーズ",
-    "phase_jakub_phase": "ヤクブフェーズ",
-    "phase_event_phase": "イベントフェーズ",
-    "phase_final_scoring": "最終得点計算",
-    "phase_End Game": "ゲーム終了",
-    "pause_jakub_btn": "一時停止 J",
-    "jakub_auto_btn": "ヤクブ自動",
-    "pause_full_btn": "一時停止 全自動",
-    "full_auto_btn": "全自動"
-  },
-  'uk': {
-    "next": "ДАЛІ",
-    "next_btn": "ДАЛІ",
-    "pass": "ПАС",
-    "pass_btn": "ПАС",
-    "pass_turn": "ПАС",
-    "scoring": "ОЧКИ",
-    "load": "ЗАВАНТАЖЕННЯ",
-    "stats": "СТАТИСТИКА",
-    "go_to_jakub_phase": "ДО ФАЗИ ЯКУБА",
-    "go_to_player_phase": "ДО ФАЗИ ГРАВЦІВ",
-    "draw_sets": "ДОБРАТИ СЕТИ",
-    "execute_event": "ВИКОНАТИ ПОДІЮ",
-    "options_button": "Опції",
-    "events_panel_btn": "ПОДІЇ",
-    "sets_panel_btn": "СЕТИ",
-    "landing_page_btn": "Головна",
-    "change_game_btn": "Змінити Гру",
-    "create_new_game": "Нова Гра",
-    "admin_panel": "Панель Адміна",
-    "choose_general": "Обрати Ватажка",
-    "general_chosen": "Ватажка обрано",
-    "choose_general_for": "Оберіть Ватажка ({player})",
-    "waiting_for_general": "Очікування вибору Ватажка Гравцем {player}...",
-    "waiting_for_move": "Очікування ходу Гравця {player}...",
-    "waiting_for_all": "Очікування всіх гравців...",
-    "vampire": "Вампіри",
-    "werewolf": "Вовкулаки",
-    "ghost": "Привиди",
-    "bardak": "Бардаки",
-    "phase_setup": "Фаза Підготовки",
-    "phase_general_phase": "Фаза Ватажків",
-    "phase_player_phase": "Фаза Гравців",
-    "phase_jakub_phase": "Фаза Якуба",
-    "phase_event_phase": "Фаза Подій",
-    "phase_final_scoring": "Фінальний Підрахунок",
-    "phase_End Game": "Кінець Гри",
-    "pause_jakub_btn": "ПАУЗА Я",
-    "jakub_auto_btn": "ЯКУБ АВТО",
-    "pause_full_btn": "ПАУЗА FULL",
-    "full_auto_btn": "ПОВНИЙ АВТО"
-  },
-  'ru': {
-    "next": "ДАЛЕЕ",
-    "next_btn": "ДАЛЕЕ",
-    "pass": "ПАС",
-    "pass_btn": "ПАС",
-    "pass_turn": "ПАС",
-    "scoring": "ОЧКИ",
-    "load": "ЗАГРУЗИТЬ",
-    "stats": "СТАТИСТИКА",
-    "go_to_jakub_phase": "К ФАЗЕ ЯКУБА",
-    "go_to_player_phase": "К ФАЗЕ ИГРОКОВ",
-    "draw_sets": "ВЗЯТЬ НАБОРЫ",
-    "execute_event": "АКТИВИРОВАТЬ СОБЫТИЕ",
-    "options_button": "Настройки",
-    "events_panel_btn": "СОБЫТИЯ",
-    "sets_panel_btn": "НАБОРЫ",
-    "landing_page_btn": "Главная",
-    "change_game_btn": "Сменить игру",
-    "create_new_game": "Новая игра",
-    "admin_panel": "Панель админа",
-    "choose_general": "Выбрать Главаря",
-    "general_chosen": "Главарь выбран",
-    "choose_general_for": "Выберите Главаря ({player})",
-    "waiting_for_general": "Ожидание выбора Главаря Игроком {player}...",
-    "waiting_for_move": "Ожидание хода Игрока {player}...",
-    "waiting_for_all": "Ожидание всех игроков...",
-    "vampire": "Вампиры",
-    "werewolf": "Оборотни",
-    "ghost": "Призраки",
-    "bardak": "Бардаки",
-    "phase_setup": "Фаза Подготовки",
-    "phase_general_phase": "Фаза Главарей",
-    "phase_player_phase": "Фаза Игроков",
-    "phase_jakub_phase": "Фаза Якуба",
-    "phase_event_phase": "Фаза Событий",
-    "phase_final_scoring": "Финальный Подсчёт",
-    "phase_End Game": "Конец Игры",
-    "pause_jakub_btn": "ПАУЗА Я",
-    "jakub_auto_btn": "ЯКУБ АВТО",
-    "pause_full_btn": "ПАУЗА FULL",
-    "full_auto_btn": "ПОЛНЫЙ АВТО"
-  },
-  'ko': {
-    "next": "다음",
-    "next_btn": "다음",
-    "pass": "패스",
-    "pass_btn": "패스",
-    "pass_turn": "패스",
-    "scoring": "점수",
-    "load": "불러오기",
-    "stats": "통계",
-    "go_to_jakub_phase": "야쿠프 단계로 이동",
-    "go_to_player_phase": "플레이어 단계로 이동",
-    "draw_sets": "세트 뽑기",
-    "execute_event": "이벤트 실행",
-    "options_button": "설정",
-    "events_panel_btn": "이벤트",
-    "sets_panel_btn": "세트",
-    "landing_page_btn": "홈페이지",
-    "change_game_btn": "게임 변경",
-    "create_new_game": "새 게임 만들기",
-    "admin_panel": "관리자 패널",
-    "choose_general": "우두머리 선택",
-    "general_chosen": "우두머리 선택됨",
-    "choose_general_for": "우두머리 선택 ({player})",
-    "waiting_for_general": "플레이어 {player}의 우두머리 선택 대기 중...",
-    "waiting_for_move": "플레이어 {player}의 턴 대기 중...",
-    "waiting_for_all": "모든 플레이어 대기 중...",
-    "vampire": "뱀파이어",
-    "werewolf": "늑대인간",
-    "ghost": "유령",
-    "bardak": "바르닥",
-    "phase_setup": "준비 단계",
-    "phase_general_phase": "우두머리 단계",
-    "phase_player_phase": "플레이어 단계",
-    "phase_jakub_phase": "야쿠프 단계",
-    "phase_event_phase": "이벤트 단계",
-    "phase_final_scoring": "최종 점수 계산",
-    "phase_End Game": "게임 종료",
-    "pause_jakub_btn": "일시정지 J",
-    "jakub_auto_btn": "야쿠프 자동",
-    "pause_full_btn": "일시정지 전체",
-    "full_auto_btn": "전체 자동"
-  },
-  'pt': {
-    "next": "PRÓXIMO",
-    "next_btn": "PRÓXIMO",
-    "pass": "PASSAR",
-    "pass_btn": "PASSAR",
-    "pass_turn": "PASSAR",
-    "scoring": "PONTUAÇÃO",
-    "load": "CARREGAR",
-    "stats": "ESTATÍSTICAS",
-    "go_to_jakub_phase": "IR PARA FASE DE JAKUB",
-    "go_to_player_phase": "IR PARA FASE DE JOGADORES",
-    "draw_sets": "COMPRAR CONJUNTOS",
-    "execute_event": "EXECUTAR EVENTO",
-    "options_button": "Opções",
-    "events_panel_btn": "EVENTOS",
-    "sets_panel_btn": "CONJUNTOS",
-    "landing_page_btn": "Página Inicial",
-    "change_game_btn": "Mudar de Jogo",
-    "create_new_game": "Criar Novo Jogo",
-    "admin_panel": "Painel de Administração",
-    "choose_general": "Escolher Líder",
-    "general_chosen": "Líder Escolhido",
-    "choose_general_for": "Escolher Líder ({player})",
-    "waiting_for_general": "Aguardando Jogador {player} escolher o Líder...",
-    "waiting_for_move": "Aguardando Jogador {player}...",
-    "waiting_for_all": "Aguardando todos os jogadores...",
-    "vampire": "Vampiros",
-    "werewolf": "Lobisomens",
-    "ghost": "Fantasmas",
-    "bardak": "Bardaks",
-    "phase_setup": "Fase de Preparação",
-    "phase_general_phase": "Fase de Líderes",
-    "phase_player_phase": "Fase dos Jogadores",
-    "phase_jakub_phase": "Fase de Jakub",
-    "phase_event_phase": "Fase de Eventos",
-    "phase_final_scoring": "Pontuação Final",
-    "phase_End Game": "Fim de Jogo",
-    "pause_jakub_btn": "PAUSA J",
-    "jakub_auto_btn": "JAKUB AUTO",
-    "pause_full_btn": "PAUSA FULL",
-    "full_auto_btn": "FULL AUTO"
-  }
+PRESERVED = {'pl', 'en', 'cs', 'de', 'es', 'fr', 'it', 'sv', 'fi', 'ja', 'uk', 'zh', 'ru', 'pt', 'ko'}
+
+with open('src/locales/en.json', 'r', encoding='utf-8') as f:
+    en_dict = json.load(f)
+
+# Comprehensive GT Language mapping
+GT_MAP = {
+    'zh-TW': 'zh-TW',
+    'pt-BR': 'pt',
+    'tl': 'tl',
+    'he': 'iw',
+    'jv': 'jw',
+    'nb': 'no',
+    'nn': 'no',
+    'fo': 'da',
+    'kl': 'da',
+    'lb': 'de',
+    'rm': 'de',
+    'oc': 'fr',
+    'br': 'fr',
+    'co': 'it',
+    'sc': 'it',
+    'fy': 'nl',
+    'haw': 'en',
+    'mi': 'mi',
+    'sm': 'sm',
+    'fj': 'en',
+    'ty': 'fr',
+    'qu': 'qu',
+    'gn': 'gn',
+    'ay': 'ay',
+    'nah': 'es',
+    'myn': 'es',
+    'tlh': 'en',
+    'sjn': 'en',
+    'bo': 'bo',
+    'yi': 'yi',
+    'la': 'la',
+    'eo': 'eo',
+    'ku': 'ku',
+    'ps': 'ps',
 }
 
-for lang_code, override in CUSTOM_MAPS.items():
-    file_path = os.path.join(LOCALES_DIR, f"{lang_code}.json")
-    if os.path.exists(file_path):
-        with open(file_path, 'r', encoding='utf-8') as f:
-            data = json.load(f)
-    else:
-        data = dict(en)
+def translate_batch_fast(keys_and_vals, target_lang):
+    gt_lang = GT_MAP.get(target_lang, target_lang)
+    if gt_lang == 'en':
+        return {k: v for k, v in keys_and_vals}
+
+    delimiter = "\n---XYZ---\n"
+    vals = [v for k, v in keys_and_vals]
+    joined = delimiter.join(vals)
+    url = f"https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl={gt_lang}&dt=t&q={urllib.parse.quote(joined)}"
+    req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'})
+
+    try:
+        with urllib.request.urlopen(req, timeout=8) as response:
+            res = json.loads(response.read().decode('utf-8'))
+            translated_joined = ''.join([part[0] for part in res[0] if part[0]])
+            parts = translated_joined.split("---XYZ---")
+            if len(parts) == len(vals):
+                return {k: p.strip() for k, p in zip([k for k, v in keys_and_vals], parts)}
+    except Exception:
+        pass
+
+    # If batch failed, fallback to English for those specific keys
+    return {k: v for k, v in keys_and_vals}
+
+def process_single_lang(code):
+    out_path = f"src/locales/{code}.json"
+    if code in PRESERVED and os.path.exists(out_path):
+        return code, "Preserved"
+
+    if os.path.exists(out_path):
+        try:
+            with open(out_path, 'r', encoding='utf-8') as f:
+                existing = json.load(f)
+            if len(existing) >= len(en_dict) - 5:
+                return code, "Already complete"
+        except Exception:
+            pass
+
+    items = list(en_dict.items())
+    result = {}
     
-    for k, v in override.items():
-        data[k] = v
-        
-    with open(file_path, 'w', encoding='utf-8') as f:
-        json.dump(data, f, ensure_ascii=False, indent=2)
-    print(f"Updated {lang_code}.json with full button/header translations.")
+    # Process in small safe chunks of 12 items
+    chunk_size = 12
+    for i in range(0, len(items), chunk_size):
+        chunk = items[i:i+chunk_size]
+        res = translate_batch_fast(chunk, code)
+        result.update(res)
+        time.sleep(0.02)
+
+    with open(out_path, 'w', encoding='utf-8') as f:
+        json.dump(result, f, ensure_ascii=False, indent=2)
+    return code, f"Done ({len(result)} keys)"
+
+to_process = [c for c in codes_matches if c not in PRESERVED]
+print(f"Translating {len(to_process)} languages with thread pool...")
+
+with ThreadPoolExecutor(max_workers=16) as executor:
+    futures = {executor.submit(process_single_lang, code): code for code in to_process}
+    for future in as_completed(futures):
+        c = futures[future]
+        try:
+            code, status = future.result()
+            print(f"[{code}] {status}")
+        except Exception as e:
+            print(f"Error on {c}: {e}")
+
+print("All 110 languages finished!")

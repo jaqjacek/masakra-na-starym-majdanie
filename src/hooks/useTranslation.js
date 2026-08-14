@@ -1,21 +1,15 @@
 import { useState, useEffect, useCallback } from 'react';
-import pl from '../locales/pl.json';
-import en from '../locales/en.json';
-import cs from '../locales/cs.json';
-import de from '../locales/de.json';
-import es from '../locales/es.json';
-import it from '../locales/it.json';
-import fr from '../locales/fr.json';
-import fi from '../locales/fi.json';
-import sv from '../locales/sv.json';
-import ja from '../locales/ja.json';
-import uk from '../locales/uk.json';
-import zh from '../locales/zh.json';
-import ru from '../locales/ru.json';
-import pt from '../locales/pt.json';
-import ko from '../locales/ko.json';
 
-const translations = { pl, en, cs, de, es, it, fr, fi, sv, ja, uk, zh, ru, pt, ko };
+// Load all 110+ locale files dynamically using Vite's import.meta.glob
+const localeModules = import.meta.glob('../locales/*.json', { eager: true });
+const translations = {};
+
+for (const path in localeModules) {
+  const match = path.match(/\.\.\/locales\/(.+)\.json$/);
+  if (match) {
+    translations[match[1]] = localeModules[path].default || localeModules[path];
+  }
+}
 
 const LANGUAGE_CHANGE_EVENT = 'app_language_change';
 
@@ -38,9 +32,11 @@ export const useTranslation = () => {
 
   const t = useCallback((key, replacements = {}) => {
     let value = translations[lang]?.[key] || translations['en']?.[key] || key;
-    Object.entries(replacements).forEach(([k, v]) => {
-      value = value.replace(new RegExp(`{${k}}`, 'g'), v);
-    });
+    if (typeof value === 'string') {
+      Object.entries(replacements).forEach(([k, v]) => {
+        value = value.replace(new RegExp(`{${k}}`, 'g'), v);
+      });
+    }
     return value;
   }, [lang]);
 

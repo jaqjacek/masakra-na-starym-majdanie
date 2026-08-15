@@ -72,5 +72,27 @@ Ten plik zawiera opisy i prompty dla Nanobanana 2. Każda sekcja odpowiada konkr
 *   **Prompt:** `A minimalist square UI icon with a thick black border. Solid yellow background. In the center, a black silhouette of a pair of rustic wooden pitchforks crossed diagonally. Flat 2-color design, thick strokes, clean vector aesthetic, high contrast. --style modern --type ui-element`
 *   **Status:** `do generacji`
 
+## 5. Tło Planszy / Board Background
+
+### A. Mapa podwórka Starego Majdanu
+*   **Nazwa / Name:** `board_background`
+*   **Baza bez napisów / Unlabeled base:** `src/assets/img/board_background_base.jpg`
+*   **Warianty językowe / Localized files:**
+    *   `board_background_pl.jpg` — Stodoła, Kurna chata, Warzywnik, Studnia, Antałki, Kopa siana, Kompost, *Stary Majdan*; róża: Pn / E / Pd / W
+    *   `board_background_en.jpg` — Barn, Smoke cottage, Vegetable patch, Well, Kegs, Haystack, Compost, *Old Majdan*; N / E / S / W
+    *   `board_background_cs.jpg` — Stodola, Kouřová chalupa, Zahrádka, Studna, Sudy, Kupa sena, Kompost, *Starý Majdan*; S / V / J / Z
+    *   `board_background_uk.jpg` — Стодола, Курна хата, Город, Криниця, Бочки, Копа сіна, Компост, *Старий Майдан*; Пн / Сх / Пд / Зх
+    *   `board_background_tlh.jpg` — tIr qach, tlhIch juH, naH yotlh, ngeng, HIq balmey, magh yuvtlhe', veQ yuvtlhe', *majDan qan* (pIqaD); Dung / nIH / bIng / poS
+    *   `board_background.jpeg` — kopia wariantu PL (kompatybilność wsteczna)
+*   **Cel / Purpose:** Tło pod siatką 6×6. Sama grafika **nie** rysuje kratek — sektory nakłada CSS. Napisy i róża wiatrów **nie** są w modelu obrazu: baza jest pusta, etykiety i geometria róży składa `scripts/compose_board_backgrounds.py`.
+*   **Opis:** Kwadratowa mapa w stylu starego, poplamionego pergaminu. Czarny tusz, kreska jak drzeworyt. Podwórko ogrodzone płotem z żerdzi, otwarte od dołu. Góra-lewo: **stodoła** z dziurą w słomie. Góra-prawo: **kurna chata**. Środek: **studnia**. Lewo: **warzywnik**. Prawo: **kopa siana** i **antałki**. Dół-lewo: **kompost**. Dół-środek: zwalony płot. Dół-prawo: **róża wiatrów 8-kierunkowa**, północ u góry. Tytuł na dołu. Bez postaci i bez siatki sektorów.
+*   **Description:** Square farmyard map on stained parchment, black ink woodcut. Wattle fence open at the bottom. Barn, smoke cottage, well, vegetable patch, haystack, kegs, compost, collapsed fence. An 8-point compass rose with north at the top is drawn in code (not by the image model). Title at the bottom. No characters, no sector grid.
+*   **Róża wiatrów / Compass:** Kod, nie prompt. 8 ramion, dłuższe ramię północy, północ zawsze u góry. Etykiety zależą od języka (patrz lista plików).
+*   **Styl / Style:** `ink-sketch` / `parchment-map`
+*   **Prompt (tylko baza, bez liter):** `A square top-down illustrated map of a neglected rural Polish farmyard on stained aged parchment, drawn as high-contrast black ink woodcut sketch lines. A rustic wattle-and-rail fence encloses the yard on the top and sides and opens at the bottom. Top-left: a dilapidated thatched barn with a large hole in the roof, open barn doors, and a wooden trough. Top-right: a small thatched smoke-cottage with tiny windows and a damaged roof. Exact center: a round stone well with a wooden sweep. Mid-left: a tangled vegetable patch. Mid-right: a haystack and three wooden kegs, one smashed on its side. Bottom-left: a compost heap. Bottom-center: a pile of broken fence boards. Bottom-right is empty stained parchment. No letters, no numbers, no compass, no people, no grid.`
+*   **Użycie / Usage:** `src/assets/css/game.css` — `html[lang] .board`. Przebudowa: `python3 scripts/compose_board_backgrounds.py`
+*   **Status:** `wygenerowano` (baza + 5 locale)
+
 ---
 *Plik stworzony: 19.04.2026*
+*Aktualizacja: 15.08.2026 — tło planszy, poprawiona róża wiatrów, warianty PL/EN/CS/UK/TLH.*

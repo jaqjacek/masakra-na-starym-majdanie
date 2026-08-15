@@ -1,5 +1,14 @@
 @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Outfit:wght@300;400;600;700&display=swap');
 
+@font-face {
+  font-family: 'Klingon pIqaD HaSta';
+  src: url('../fonts/Klingon-pIqaD-HaSta.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+F8D0-U+F8FF;
+}
+
 :root {
   --bg-color: #1a1a1a;
   --text-color: #ffffff;
@@ -23,6 +32,26 @@ h1, h2, h3, h4, h5, h6, .landing-title, .setup-summary-header, .generals-pool-he
   font-family: 'Cinzel', serif;
   font-weight: 700;
   letter-spacing: 1px;
+}
+
+html.lang-tlh,
+html.lang-tlh body,
+html.lang-tlh button,
+html.lang-tlh input,
+html.lang-tlh textarea,
+html.lang-tlh select,
+html.lang-tlh h1,
+html.lang-tlh h2,
+html.lang-tlh h3,
+html.lang-tlh h4,
+html.lang-tlh h5,
+html.lang-tlh h6,
+html.lang-tlh .landing-title,
+html.lang-tlh .setup-summary-header,
+html.lang-tlh .generals-pool-header,
+html.lang-tlh .autoplay-event-title {
+  font-family: 'Klingon pIqaD HaSta', 'Outfit', 'Cinzel', system-ui, sans-serif;
+  letter-spacing: 0.04em;
 }
 
 html, body {
@@ -156,6 +185,74 @@ html.scrollable .app-container {
   align-items: center;
   gap: 1rem;
   font-size: 0.7rem;
+}
+
+.language-selector {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.lang-icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  background: rgba(30, 39, 46, 0.85);
+  border: 1px solid rgba(212, 175, 55, 0.35);
+  border-radius: 5px;
+  cursor: pointer;
+  line-height: 1;
+  user-select: none;
+  box-sizing: border-box;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease, transform 0.2s ease;
+}
+
+.lang-icon-btn:hover {
+  background: rgba(47, 53, 66, 0.95);
+  border-color: #ffd54f;
+  box-shadow: 0 0 10px rgba(255, 213, 79, 0.4);
+  transform: translateY(-1px);
+}
+
+.lang-icon-btn.active {
+  background: rgba(179, 143, 84, 0.28);
+  border-color: #ffd54f;
+  box-shadow: 0 0 8px rgba(255, 213, 79, 0.45);
+}
+
+.lang-icon-flag {
+  font-size: 15px;
+  line-height: 1;
+}
+
+@media (max-width: 760px) {
+  .app-footer {
+    height: auto;
+    min-height: 35px;
+    flex-wrap: wrap;
+    row-gap: 4px;
+    padding: 0.35rem 0.6rem;
+  }
+
+  .footer-content {
+    width: 100%;
+    justify-content: space-between;
+    gap: 0.45rem;
+  }
+
+  .language-selector {
+    flex-shrink: 0;
+  }
+
+  .version-badge,
+  .branch-info,
+  .build-hash,
+  .build-date {
+    display: none;
+  }
 }
 
 .version-badge {

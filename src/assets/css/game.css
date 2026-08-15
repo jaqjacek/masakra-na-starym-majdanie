@@ -258,6 +258,16 @@
   box-sizing: border-box;
 }
 
+@media (max-width: 760px) {
+  .app-footer {
+    height: auto;
+    min-height: 35px;
+    flex-wrap: wrap;
+    row-gap: 4px;
+    padding: 0.35rem 0.6rem;
+  }
+}
+
 
 .bags-container { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; width: 100px; margin: 0 auto; }
 .bag {
@@ -340,13 +350,18 @@
 .board {
   display: grid; grid-template-columns: repeat(6, 144px); grid-template-rows: repeat(6, 144px);
   gap: 4px; position: relative; z-index: 1;
-  background-image: url('/src/assets/img/board_background.jpeg');
+  background-image: url('/src/assets/img/board_background_pl.jpg');
   background-size: cover;
   background-position: center;
   background-color: #2b1810; /* Dark grid line joints */
   padding: 2px;
   border-radius: 4px;
 }
+
+html[lang="en"] .board { background-image: url('/src/assets/img/board_background_en.jpg'); }
+html[lang="cs"] .board { background-image: url('/src/assets/img/board_background_cs.jpg'); }
+html[lang="uk"] .board { background-image: url('/src/assets/img/board_background_uk.jpg'); }
+html[lang="tlh"] .board { background-image: url('/src/assets/img/board_background_tlh.jpg'); }
 
 /* Increased size by 20% from 120px to 144px */
 .region {

@@ -1,7 +1,7 @@
 {
   "name": "masakra-na-starym-majdanie",
   "private": true,
-  "version": "1.20.0",
+  "version": "1.20.1",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -14,7 +14,7 @@
     "simulate:parallel": "node tests/run_parallel_simulations.js"
   },
   "dependencies": {
-    "@scalar/express-api-reference": "^0.10.13",
+    "@scalar/express-api-reference": "^0.10.14",
     "cors": "^2.8.6",
     "express": "^5.2.1",
     "html2pdf.js": "^0.14.0",

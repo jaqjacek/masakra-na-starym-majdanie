@@ -84,7 +84,7 @@
 - **Shift + Click (Points/Counters):** Increase value.
 - **Ctrl + Click (Points/Counters):** Decrease value.
 
-## 6. Project Status (Current: v1.20.0)
+## 6. Project Status (Current: v1.20.1)
 - **Implemented:**
   - Manual & Automated gameplay, Dockerization, multi-phase logic, refined scoring.
   - Auto-advance turn after set placement/kablowanie with Options panel toggle.

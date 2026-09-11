@@ -1,10 +1,12 @@
 import React, { useState, useCallback, useMemo, useEffect } from 'react';
 import './assets/css/base.css';
-import './assets/css/game.css';
-import './assets/css/modals.css';
+import './assets/css/layout.css';
 import './assets/css/popups.css';
 import './assets/css/effects.css';
-import './assets/css/events.css';
+import './assets/css/mobile.css';
+import './assets/css/panels/setup.css';
+import './assets/css/panels/scoring.css';
+import './assets/css/panels/end-game.css';
 import { useTranslation } from './hooks/useTranslation';
 
 // Components
@@ -16,13 +18,14 @@ import GameHeader from './components/GameHeader';
 import JakubPanel from './components/panels/JakubPanel';
 import SetsPanel from './components/panels/SetsPanel';
 import PlayersPanel from './components/panels/PlayersPanel';
+import MobileTabBar from './components/panels/MobileTabBar';
+import GamePanel, { GameTabBody } from './components/panels/GamePanel';
 import AdminSets from './components/AdminSets';
 import AdminSimulate from './components/AdminSimulate';
 import AdminEvents from './components/AdminEvents';
 import AdminNav from './components/AdminNav';
 import GameRulesPage from './components/docs/GameRulesPage';
 import HistoryPanel from './components/panels/HistoryPanel';
-import GamePanel from './components/panels/GamePanel';
 import EventsPanel from './components/panels/EventsPanel';
 import LoadSavesPanel from './components/panels/LoadSavesPanel';
 import PawnStatusPopup from './components/PawnStatusPopup';
@@ -32,6 +35,7 @@ import Footer from './components/Footer';
 import { useGameState } from './hooks/useGameState';
 import { useAutoplay } from './hooks/useAutoplay';
 import { useGameInteraction } from './hooks/useGameInteraction';
+import { useMobileUi } from './hooks/useMobileUi';
 import { trackGeneralSelection } from '../shared/statsManager.js';
 
 // Constants & Utilities
@@ -40,23 +44,10 @@ import { RACES, INITIAL_STATE } from './constants/game';
 import { applySetToJakubAnger, getRegionsInRange } from './strategies/jakubStrategy';
 
 import { GeneralSelectionManager } from '../shared/generalSelectionManager.js';
-import { TOTAL_GAME_ROUNDS, INITIAL_HAND_SIZE, JAKUB_INITIAL_SETS, SERVER_URL, MAX_HAND_SIZE } from './constants/constants';
+import { TOTAL_GAME_ROUNDS, SERVER_URL, computeJakubRange } from './constants/constants';
+import { RACE_TO_ABBR } from '../shared/constants.js';
 import { ClientPlacementManager } from './logic/clientPlacementManager';
 import { Scoring } from '../shared/scoring/scoring.js';
-
-const RACE_TO_ABBR = {
-  vampire: 'V',
-  werewolf: 'W',
-  ghost: 'G',
-  bardak: 'B'
-};
-
-const RACE_TO_LABEL = {
-  vampire: 'Wampiry',
-  werewolf: 'Wilkołaki',
-  ghost: 'Duchy',
-  bardak: 'Bardaki'
-};
 
 const SetGhostPointsPopup = ({ regions, hoveredRegionId, activeSet }) => {
   if (!regions || hoveredRegionId === null || !activeSet || !activeSet.set || !activeSet.set.content) {
@@ -98,6 +89,10 @@ const SetGhostPointsPopup = ({ regions, hoveredRegionId, activeSet }) => {
 
 function App() {
   const { t } = useTranslation();
+  const { isMobileUi, uiLayout, setUiLayout } = useMobileUi();
+  const [mobileTab, setMobileTab] = useState('players');
+  const [mobileSheetOpen, setMobileSheetOpen] = useState(false);
+  const [pawnRemoveTarget, setPawnRemoveTarget] = useState(null);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isSetsPanelOpen, setIsSetsPanelOpen] = useState(false);
   const [isEventsPanelOpen, setIsEventsPanelOpen] = useState(false);
@@ -109,6 +104,7 @@ function App() {
   const [showCounters, setShowCounters] = useState(() => localStorage.getItem('showCounters') !== 'false');
   const [showAnimations, setShowAnimations] = useState(() => localStorage.getItem('showAnimations') !== 'false');
   const [autoClickNext, setAutoClickNext] = useState(() => localStorage.getItem('autoClickNext') !== 'false');
+  const [miniBoard, setMiniBoard] = useState(() => localStorage.getItem('miniBoard') === 'true');
   const [visualEffects, setVisualEffects] = useState([]);
   const prevRegionsRef = React.useRef();
 
@@ -128,9 +124,13 @@ function App() {
     localStorage.setItem('autoClickNext', autoClickNext);
   }, [autoClickNext]);
 
+  useEffect(() => {
+    localStorage.setItem('miniBoard', miniBoard);
+  }, [miniBoard]);
+
   // 1. Basic state and sync
   const {
-    gameId, setGameId, playerId, gameState, setGameState, isLoaded, currentPath, isAdminPath, updateGameWithSync, addLog
+    gameId, setGameId, playerId, gameState, setGameState, isLoaded, currentPath, isAdminPath, updateGameWithSync, addLog, dispatchAction
   } = useGameState();
 
   const manualPlayers = useMemo(() => gameState.manualPlayers || [], [gameState.manualPlayers]);
@@ -138,32 +138,24 @@ function App() {
   const handleToggleManualPlayer = useCallback((id) => {
     const workState = JSON.parse(JSON.stringify(gameState));
     if (!workState.manualPlayers) workState.manualPlayers = [];
-    
-    const numericId = parseInt(id);
-    const idToUse = isNaN(numericId) ? id : numericId;
-    
-    if (workState.manualPlayers.includes(idToUse)) {
-      workState.manualPlayers = workState.manualPlayers.filter(x => x !== idToUse);
+
+    const numericId = parseInt(id, 10);
+    const idToUse = Number.isNaN(numericId) ? id : numericId;
+    const alreadyManual = workState.manualPlayers.some((x) => String(x) === String(idToUse));
+
+    if (alreadyManual) {
+      workState.manualPlayers = workState.manualPlayers.filter((x) => String(x) !== String(idToUse));
     } else {
       workState.manualPlayers.push(idToUse);
     }
     updateGameWithSync(workState);
   }, [gameState, updateGameWithSync]);
 
-  // Auto-register playerId as a manual player if not already registered
   useEffect(() => {
-    if (isLoaded && gameId && playerId && gameState && gameState.players) {
-      const numericId = parseInt(playerId);
-      const idToUse = isNaN(numericId) ? playerId : numericId;
-      const currentManuals = gameState.manualPlayers || [];
-      if (!currentManuals.includes(idToUse)) {
-        const workState = JSON.parse(JSON.stringify(gameState));
-        if (!workState.manualPlayers) workState.manualPlayers = [];
-        workState.manualPlayers.push(idToUse);
-        updateGameWithSync(workState);
-      }
+    if (isLoaded && gameId && playerId !== null && playerId !== undefined) {
+      dispatchAction('claimPlayer');
     }
-  }, [isLoaded, gameId, playerId, gameState, updateGameWithSync]);
+  }, [isLoaded, gameId, playerId, dispatchAction]);
 
   // Toggle html class for scrolling
   useEffect(() => {
@@ -346,7 +338,7 @@ function App() {
     isFullAutoplay, setIsFullAutoplay, isJakubAutoplay, setIsJakubAutoplay,
     autoplaySpeed, setAutoplaySpeed, findAndRemoveSetById,
     autoplayEventPopup
-  } = useAutoplay({ gameId, gameState, updateGameWithSync, addLog, manualPlayers, playerId });
+  } = useAutoplay({ gameId, gameState, updateGameWithSync, addLog, manualPlayers, playerId, dispatchAction });
 
   const advanceTurn = useCallback((state) => {
     if (state.passedPlayers.length >= state.players.length) return;
@@ -404,7 +396,7 @@ function App() {
         return;
       }
     } else if (action === 'pass') {
-      const excess = ClientPlacementManager.executePass(curPlayer, workState, MAX_HAND_SIZE, applySetToJakubAnger);
+      const excess = ClientPlacementManager.executePass(curPlayer, workState, applySetToJakubAnger);
       if (excess > 0) {
         addLog(workState, `Gracz ${playerId} spasował i podkablował ${excess} nadmiarowych zestawów. Furia Jakuba zaktualizowana.`, { race: curPlayer.generalOf, points: excess });
       } else {
@@ -426,9 +418,9 @@ function App() {
   const {
     activePawn, activeSet, activeGeneral, hoveredPawn, setHoveredPawn, validMoveTargets,
     handleBagMouseDown, handleJakubMouseDownFromPanel, handleSetMouseDown, handleGeneralMouseDown,
-    handlePawnMouseDown, handleRegionMouseUp, handlePlayerMouseUp, handleJakubMouseUp
+    handlePawnMouseDown, handleRegionMouseUp, handlePlayerMouseUp, handleJakubMouseUp, cancelSelection
   } = useGameInteraction({
-    gameId, playerId, gameState, availablePool, placementPool, counters, isJakubOnBoard, updateGameWithSync, addLog, findAndRemoveSetById, advanceTurn, manualPlayers, autoClickNext
+    gameId, playerId, gameState, availablePool, placementPool, counters, isJakubOnBoard, updateGameWithSync, addLog, findAndRemoveSetById, advanceTurn, manualPlayers, autoClickNext, isMobileUi
   });
 
   // Reset hoveredRegionId when we stop dragging a set
@@ -442,10 +434,7 @@ function App() {
   
   const handleJakubMouseEnter = useCallback(() => {
     if (jakubRegion && jakubInstance && gameState.regions) {
-      let extra = 0;
-      const races = ['vampire', 'werewolf', 'ghost', 'bardak'];
-      races.forEach(race => { if ((jakubInstance.anger?.[race] || 0) >= 10) extra += 1; });
-      const range = 1 + extra;
+      const range = computeJakubRange(jakubInstance.anger);
       const targets = getRegionsInRange(gameState.regions, jakubRegion.id, range);
       setJakubHoverTargets(targets);
     }
@@ -500,80 +489,8 @@ function App() {
   }, [gameState, updateGameWithSync]);
 
   const handleManualDrawSets = useCallback(() => {
-    if (!gameState.players || !gameState.regions) {
-      console.error("Game state incomplete, cannot draw sets.");
-      return;
-    }
-    const workState = JSON.parse(JSON.stringify(gameState));
-    if (!workState.sets) workState.sets = { drawPile: [], discardPile: [], heldSets: [] };
-
-    const refillSets = (state) => {
-      if (!state.sets.drawPile) state.sets.drawPile = [];
-      if (!state.sets.discardPile) state.sets.discardPile = [];
-      if (state.sets.drawPile.length === 0 && state.sets.discardPile.length > 0) {
-        state.sets.drawPile = [...state.sets.discardPile];
-        state.sets.discardPile = [];
-        addLog(state, "Przetasowywanie stosu odrzuconego do talii dobierania.");
-      }
-    };
-    const draw = (state) => {
-      refillSets(state);
-      if (state.sets.drawPile.length === 0) return null;
-      const randomIdx = Math.floor(Math.random() * state.sets.drawPile.length);
-      return state.sets.drawPile.splice(randomIdx, 1)[0];
-    };
-
-    let distributionCount = 0;
-    workState.players.forEach(player => {
-      const myHeld = (workState.sets.heldSets || []).filter(s => s.ownerId !== null && s.ownerId !== undefined && String(s.ownerId) === String(player.id));
-      const needed = INITIAL_HAND_SIZE - myHeld.length;
-      for (let i = 0; i < needed; i++) {
-        const set = draw(workState);
-        if (set) {
-          set.ownerId = player.id;
-          if (!workState.sets.heldSets) workState.sets.heldSets = [];
-          workState.sets.heldSets.push(set);
-          distributionCount++;
-        }
-      }
-    });
-    if (distributionCount > 0) addLog(workState, `Runda ${workState.currentRound}: Uzupełniono ręce graczy do ${INITIAL_HAND_SIZE} zestawów.`);
-    
-    // Find Jakub to update his stats
-    let jakubRegionObj = workState.regions.find(r => r.pawns.jakub?.length > 0);
-    let jakub = jakubRegionObj ? jakubRegionObj.pawns.jakub[0] : null;
-
-    // Clear any existing sets belonging to Jakub before drawing new ones!
-    const existingJakubSets = (workState.sets.heldSets || []).filter(s => s.ownerId === 'jakub');
-    existingJakubSets.forEach(s => {
-      s.ownerId = null;
-      s.used = false;
-      if (!workState.sets.discardPile) workState.sets.discardPile = [];
-      workState.sets.discardPile.push(s);
-    });
-    workState.sets.heldSets = (workState.sets.heldSets || []).filter(s => s.ownerId !== 'jakub');
-
-    for (let i = 0; i < JAKUB_INITIAL_SETS; i++) {
-      const set = draw(workState);
-      if (set) {
-        set.ownerId = 'jakub';
-        if (!workState.sets.heldSets) workState.sets.heldSets = [];
-        workState.sets.heldSets.push(set);
-        
-        // AUTOMATICALLY apply anger when Jakub gets a set
-        if (jakub) {
-          const result = applySetToJakubAnger(jakub, set.content);
-          jakub.anger = result.anger;
-          jakub.range = result.range;
-          addLog(workState, `Jakub przejął Zestaw ${set.id}. Furia/Zasięg zaktualizowane natychmiast.`);
-        } else {
-          addLog(workState, `Jakub przejął Zestaw ${set.id} z puli.`);
-        }
-      }
-    }
-    workState.phase = 'general_phase';
-    updateGameWithSync(workState);
-  }, [gameState, addLog, updateGameWithSync]);
+    dispatchAction('drawSets');
+  }, [dispatchAction]);
 
   const handleGoToPlayerPhase = useCallback(() => {
     const workState = JSON.parse(JSON.stringify(gameState));
@@ -588,7 +505,7 @@ function App() {
   const handleGoToJakubPhase = useCallback(async () => {
     const workState = JSON.parse(JSON.stringify(gameState));
     workState.phase = 'jakub_phase';
-    workState.jakubAngerIncreased = false;
+
     addLog(workState, `--- Łowy Jakuba Rozpoczęte ---`);
     updateGameWithSync(workState);
     setIsJakubAutoplay(true); // Automatically run ONLY the Jakub phase
@@ -632,9 +549,8 @@ function App() {
       
       advanceTurn(workState);
       updateGameWithSync(workState);
-      setIsFullAutoplay(true);
     }
-  }, [gameState, updateGameWithSync, addLog, playerId, advanceTurn, setIsFullAutoplay]);
+  }, [gameState, updateGameWithSync, addLog, playerId, advanceTurn]);
 
   const handleDeselectGeneral = useCallback((targetPlayerId) => {
     const workState = JSON.parse(JSON.stringify(gameState));
@@ -692,6 +608,25 @@ function App() {
 
   // 6. Filtering
   const jakubsSets = gameState.sets ? (gameState.sets.heldSets || []).filter(s => String(s.ownerId) === 'jakub') : [];
+
+  const canMobilePass = useMemo(() => {
+    const curId = gameState.playerOrder?.[gameState.currentPlayerIndex];
+    const isMyTurn = playerId !== null && playerId !== undefined && String(playerId) === String(curId);
+    const isPassed = (gameState.passedPlayers || []).some((id) => String(id) === String(playerId));
+    const isManual = (manualPlayers || []).some((id) => String(id) === String(playerId));
+    return gameState.phase === 'player_phase' && isMyTurn && isManual && !isPassed;
+  }, [gameState.phase, gameState.playerOrder, gameState.currentPlayerIndex, gameState.passedPlayers, playerId, manualPlayers]);
+
+  useEffect(() => {
+    if (!isMobileUi || !hoveredPawn) return undefined;
+    const onDoc = (e) => {
+      if (e.target && e.target.closest && e.target.closest('.portal-status-popup')) return;
+      setHoveredPawn(null);
+      setPawnRemoveTarget(null);
+    };
+    document.addEventListener('pointerdown', onDoc);
+    return () => document.removeEventListener('pointerdown', onDoc);
+  }, [isMobileUi, hoveredPawn, setHoveredPawn]);
 
   // Rankings and Stats Helpers
   const sortedPlayers = useMemo(() => {
@@ -788,11 +723,13 @@ function App() {
   };
 
   // 7. Render logic
+  const adminNotice = isMobileUi ? <div className="admin-desktop-notice">{t('admin_desktop_notice')}</div> : null;
+
   if (currentPath === '/docs/game') return <GameRulesPage />;
-  if (currentPath === '/admin/sets') return <div className="app-container"><AdminNav currentPath={currentPath} /><AdminSets /><Footer /></div>;
-  if (currentPath === '/admin/events') return <div className="app-container"><AdminNav currentPath={currentPath} /><AdminEvents /><Footer /></div>;
-  if (currentPath === '/admin/simulate') return <div className="app-container"><AdminNav currentPath={currentPath} /><AdminSimulate /><Footer /></div>;
-  if (isAdminPath) return <div className="app-container"><AdminNav currentPath={currentPath} /><div className="admin-page-content"><p>Please select an Admin section.</p></div><Footer /></div>;
+  if (currentPath === '/admin/sets') return <div className="app-container">{adminNotice}<AdminNav currentPath={currentPath} /><AdminSets /><Footer /></div>;
+  if (currentPath === '/admin/events') return <div className="app-container">{adminNotice}<AdminNav currentPath={currentPath} /><AdminEvents /><Footer /></div>;
+  if (currentPath === '/admin/simulate') return <div className="app-container">{adminNotice}<AdminNav currentPath={currentPath} /><AdminSimulate /><Footer /></div>;
+  if (isAdminPath) return <div className="app-container">{adminNotice}<AdminNav currentPath={currentPath} /><div className="admin-page-content"><p>Please select an Admin section.</p></div><Footer /></div>;
   if (!gameId) return <LandingPage onGoToGame={(id) => { if (id) window.location.href = `/game/${id}`; }} />;
 
   return (
@@ -801,7 +738,6 @@ function App() {
         gameId={gameId}
         gameState={gameState}
         updateGameWithSync={updateGameWithSync}
-        totalRounds={gameState.totalRounds || TOTAL_GAME_ROUNDS}
         currentPlayerId={playerId}
         isMenuOpen={isMenuOpen}
         setIsMenuOpen={setIsMenuOpen}
@@ -825,10 +761,10 @@ function App() {
         onOpenStats={() => setIsEndGamePopupOpen(true)}
         onCreateNewGame={async () => {
           try {
-            const res = await fetch(`${SERVER_URL}/api/map/next-id`);
+            const res = await fetch(`${SERVER_URL}/api/map/new`, { method: 'POST' });
             const data = await res.json();
             if (data.id !== undefined) window.location.href = `/game/${data.id}`;
-          } catch (_err) { alert('Failed to get new game ID'); }
+          } catch (_err) { alert('Failed to create new game'); }
         }}
         onChangeGame={() => { window.history.pushState({}, '', '/'); setGameId(null); setGameState(INITIAL_STATE); window.dispatchEvent(new Event('popstate')); }}
         onAdminPanel={() => { window.history.pushState({}, '', '/admin/sets'); window.dispatchEvent(new Event('popstate')); }}
@@ -842,6 +778,12 @@ function App() {
         setShowAnimations={setShowAnimations}
         autoClickNext={autoClickNext}
         setAutoClickNext={setAutoClickNext}
+        miniBoard={miniBoard}
+        setMiniBoard={setMiniBoard}
+        isMobileUi={isMobileUi}
+        uiLayout={uiLayout}
+        setUiLayout={setUiLayout}
+        onOpenMobileGameTab={() => { setMobileTab('game'); setMobileSheetOpen(true); }}
       />
 
       {isEventsPanelOpen && (
@@ -873,37 +815,81 @@ function App() {
               setInfo={gameState.sets} 
               discardPileCount={gameState.sets?.discardPile?.length || 0} 
               placementPool={placementPool}
+              isMobileUi={isMobileUi}
+              selectedSetId={activeSet?.set?.id}
             />
           </div>
         </div>
       )}
 
       <div className="game-layout-wrapper">
+        {isMobileUi && (
+          <GameHeader
+            playerOrder={gameState.playerOrder}
+            currentPlayerIndex={gameState.currentPlayerIndex}
+            passedPlayers={gameState.passedPlayers}
+            currentRound={gameState.currentRound}
+            totalRounds={gameState.totalRounds || TOTAL_GAME_ROUNDS}
+          />
+        )}
+        {!isMobileUi && (
         <div className="left-controls">
-          <div className="bags-container">
-            {PAWN_TYPES.filter(p => !p.isUnique).map(pawn => (
-              <Bag 
-                key={pawn.id} 
-                type={pawn} 
-                onMouseDown={(e) => handleBagMouseDown(pawn.id, e)} 
-                availableCount={placementPool[pawn.id]} 
-                onBoard={counters.onBoard[pawn.id]}
-                limit={gameState.sets?.pawnsInPlayLimit?.[pawn.id] || gameState.sets?.pawns?.[pawn.id]}
+          <GameHeader
+            playerOrder={gameState.playerOrder}
+            currentPlayerIndex={gameState.currentPlayerIndex}
+            passedPlayers={gameState.passedPlayers}
+            currentRound={gameState.currentRound}
+            totalRounds={gameState.totalRounds || TOTAL_GAME_ROUNDS}
+          />
+          <PlayersPanel
+            players={gameState.players || []}
+            onUpdatePoints={handleUpdatePoints}
+            currentPlayerId={playerId}
+            onPlayerMouseUp={handlePlayerMouseUp}
+            onGeneralClick={handleDeselectGeneral}
+            sets={gameState.sets}
+            passedPlayers={gameState.passedPlayers || []}
+            manualPlayers={manualPlayers}
+            onToggleManualPlayer={handleToggleManualPlayer}
+            activeTurnPlayerId={gameState.playerOrder?.[gameState.currentPlayerIndex]}
+            phase={gameState.phase}
+          />
+          {playerId && (
+            <div className="player-hand-section always-visible">
+              <div className="player-hand-header">{t('player_hand_title', { player: playerId })}</div>
+              <SetsPanel
+                sets={(gameState.sets?.heldSets || []).filter(s => String(s.ownerId) === String(playerId))}
+                onSetMouseDown={handleSetMouseDown}
+                hideTabs={true}
+                placementPool={placementPool}
               />
-            ))}
-          </div>
+            </div>
+          )}
           <div className="jakub-management">
-            <JakubPanel 
-              jakub={jakubInstance} 
-              onUpdateCounter={handleJakubCounterUpdate} 
-              onJakubMouseDown={handleJakubMouseDownFromPanel} 
-              isJakubOnBoard={isJakubOnBoard} 
+            <JakubPanel
+              jakub={jakubInstance}
+              onUpdateCounter={handleJakubCounterUpdate}
+              onJakubMouseDown={handleJakubMouseDownFromPanel}
+              isJakubOnBoard={isJakubOnBoard}
               sets={jakubsSets}
               onMouseUp={handleJakubMouseUp}
               isDraggingSet={!!activeSet}
             />
           </div>
+          <div className="bags-container">
+            {PAWN_TYPES.filter(p => !p.isUnique).map(pawn => (
+              <Bag
+                key={pawn.id}
+                type={pawn}
+                onMouseDown={(e) => handleBagMouseDown(pawn.id, e)}
+                availableCount={placementPool[pawn.id]}
+                onBoard={counters.onBoard[pawn.id]}
+                limit={gameState.sets?.pawnsInPlayLimit?.[pawn.id] || gameState.sets?.pawns?.[pawn.id]}
+              />
+            ))}
+          </div>
         </div>
+        )}
         <div className="main-game-area">
           {gameState.phase === 'general_phase' && (() => {
             const activeId = gameState.playerOrder[gameState.currentPlayerIndex];
@@ -929,14 +915,15 @@ function App() {
                 </div>
                 <div className="generals-pool-horizontal">
                   {gameState.availableGenerals.map(race => (
-                    <div 
-                      key={race} 
-                      className={`general-icon large portrait ${race} ${hasGeneral ? 'disabled' : ''}`} 
+                    <button
+                      type="button"
+                      key={race}
+                      className={`general-icon large portrait ${race} ${hasGeneral ? 'disabled' : ''}`}
                       onMouseDown={(e) => !hasGeneral && handleGeneralMouseDown(race, e)}
                       onClick={() => !hasGeneral && handleSelectGeneral(race)}
                       title={hasGeneral ? t('general_portrait_title') : t('general_icon_title', { race: t(race) })}
                     >
-                    </div>
+                    </button>
                   ))}
                 </div>
               </div>
@@ -960,6 +947,13 @@ function App() {
               showTracks={showTracks}
               showCounters={showCounters}
               showAnimations={showAnimations}
+              miniBoard={miniBoard}
+              isMobileUi={isMobileUi}
+              placementArmed={!!(activeSet || activePawn)}
+              onLongPressPawn={(regionId, typeId, pawn, pawnType, e) => {
+                setPawnRemoveTarget({ regionId, typeId });
+                setHoveredPawn({ pawn, pawnType, x: e.clientX, y: e.clientY });
+              }}
               visualEffects={visualEffects}
               witnessGlows={gameState.witnessGlows}
               jakubInstance={jakubInstance}
@@ -1019,51 +1013,212 @@ function App() {
                     </div>
                   </div>
                   <div className="setup-hint" style={{ marginTop: '1.5rem', color: '#888', fontSize: '0.8rem' }}>
-                    {t('setup_waiting_host_draw', { defaultValue: 'Waiting for host to click "DRAW SETS" in the top bar...' })}
+                    {t(isMobileUi ? 'setup_waiting_host_draw_mobile' : 'setup_waiting_host_draw', { defaultValue: 'Waiting for host to click "DRAW SETS" in the top bar...' })}
                   </div>
                 </div>
               )}
 
             </BoardComponent>
           )}
-          <GameHeader 
-            counters={counters} 
-            maxPool={gameState.sets?.pawns || {}} 
-            pawnsInPlayLimit={gameState.sets?.pawnsInPlayLimit}
-            playerOrder={gameState.playerOrder} 
-            currentPlayerIndex={gameState.currentPlayerIndex} 
-            passedPlayers={gameState.passedPlayers} 
-            currentRound={gameState.currentRound}
-            totalRounds={gameState.totalRounds || TOTAL_GAME_ROUNDS}
-          />
-          <PlayersPanel 
-            players={gameState.players || []} 
-            onUpdatePoints={handleUpdatePoints} 
-            currentPlayerId={playerId} 
-            onPlayerMouseUp={handlePlayerMouseUp} 
-            onGeneralClick={handleDeselectGeneral}
-            sets={gameState.sets} 
-            passedPlayers={gameState.passedPlayers || []}
-            manualPlayers={manualPlayers}
-            onToggleManualPlayer={handleToggleManualPlayer}
-          />
-
         </div>
+        {isMobileUi && (activeSet || activePawn || canMobilePass || gameState.phase === 'setup' || gameState.phase === 'event_phase' || (gameState.phase === 'player_phase' && (gameState.passedPlayers || []).length === (gameState.players || []).length) || (gameState.phase === 'general_phase' && (gameState.players || []).every((p) => p.generalOf))) && (
+          <div className="mobile-action-bar">
+            {activeSet && (
+              <div className="mobile-action-preview">
+                {SUMMARY_PAWN_IDS.map(typeId => {
+                  const count = activeSet.set.content[typeId] || 0;
+                  return Array.from({ length: count }).map((_, i) => (
+                    <div key={`${typeId}-${i}`} className={`set-icon ${typeId}`}></div>
+                  ));
+                })}
+              </div>
+            )}
+            {activeSet && (
+              <button type="button" className="give-jakub" onClick={(e) => handleJakubMouseUp(e)}>
+                {t('action_give_jakub')}
+              </button>
+            )}
+            {(activeSet || activePawn) && (
+              <button type="button" onClick={cancelSelection}>{t('action_cancel')}</button>
+            )}
+            {!activeSet && !activePawn && gameState.phase === 'setup' && (
+              <button type="button" className="action-button next-btn" onClick={handleManualDrawSets}>{t('draw_sets')}</button>
+            )}
+            {!activeSet && !activePawn && gameState.phase === 'event_phase' && (
+              <button type="button" className="action-button next-btn" onClick={handleExecuteEventPhase}>{t('execute_event')}</button>
+            )}
+            {!activeSet && !activePawn && gameState.phase === 'player_phase' && (gameState.passedPlayers || []).length === (gameState.players || []).length && (
+              <button type="button" className="action-button next-btn" onClick={handleGoToJakubPhase}>{t('go_to_jakub_phase')}</button>
+            )}
+            {!activeSet && !activePawn && gameState.phase === 'general_phase' && (gameState.players || []).every((p) => p.generalOf) && (
+              <button type="button" className="action-button next-btn" onClick={handleGoToPlayerPhase}>{t('go_to_player_phase')}</button>
+            )}
+            {!activeSet && !activePawn && canMobilePass && (
+              <button
+                type="button"
+                className="pass-btn"
+                onClick={() => handleExecuteManualTurn(playerId, 'pass')}
+              >
+                {t('pass')}
+              </button>
+            )}
+          </div>
+        )}
+        {isMobileUi && playerId && (
+          <div className="mobile-hand-strip">
+            <SetsPanel
+              sets={(gameState.sets?.heldSets || []).filter(s => String(s.ownerId) === String(playerId))}
+              onSetMouseDown={handleSetMouseDown}
+              hideTabs={true}
+              placementPool={placementPool}
+              isMobileUi={true}
+              selectedSetId={activeSet?.set?.id}
+            />
+          </div>
+        )}
+        {isMobileUi && (
+          <button
+            type="button"
+            className={`mobile-players-handle${mobileSheetOpen && mobileTab === 'players' ? ' open' : ''}`}
+            onClick={() => {
+              if (mobileSheetOpen && mobileTab === 'players') {
+                setMobileSheetOpen(false);
+              } else {
+                setMobileTab('players');
+                setMobileSheetOpen(true);
+              }
+            }}
+            aria-expanded={mobileSheetOpen && mobileTab === 'players'}
+            aria-label={t('players_sheet_toggle')}
+            title={t('players_sheet_toggle')}
+          >
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path fill="currentColor" d="M7.4 15.5 12 10.9l4.6 4.6 1.4-1.4L12 8.1 6 14.1z" />
+            </svg>
+          </button>
+        )}
+        {isMobileUi && mobileSheetOpen && (
+          <button
+            type="button"
+            className="mobile-sheet-backdrop"
+            aria-label={t('action_cancel')}
+            onClick={() => setMobileSheetOpen(false)}
+          />
+        )}
+        {isMobileUi && (
+          <div className={`mobile-tab-sheet${mobileSheetOpen ? ' open' : ''}`} aria-hidden={!mobileSheetOpen}>
+            {mobileTab === 'players' && (
+              <PlayersPanel
+                players={gameState.players || []}
+                onUpdatePoints={handleUpdatePoints}
+                currentPlayerId={playerId}
+                onPlayerMouseUp={handlePlayerMouseUp}
+                onGeneralClick={handleDeselectGeneral}
+                sets={gameState.sets}
+                passedPlayers={gameState.passedPlayers || []}
+                manualPlayers={manualPlayers}
+                onToggleManualPlayer={handleToggleManualPlayer}
+                activeTurnPlayerId={gameState.playerOrder?.[gameState.currentPlayerIndex]}
+                phase={gameState.phase}
+                isMobileUi={true}
+              />
+            )}
+            {mobileTab === 'jakub' && (
+              <JakubPanel
+                jakub={jakubInstance}
+                onUpdateCounter={handleJakubCounterUpdate}
+                onJakubMouseDown={handleJakubMouseDownFromPanel}
+                isJakubOnBoard={isJakubOnBoard}
+                sets={jakubsSets}
+                onMouseUp={handleJakubMouseUp}
+                isDraggingSet={!!activeSet}
+                isMobileUi={true}
+              />
+            )}
+            {mobileTab === 'game' && (
+              <GameTabBody
+                gameId={gameId}
+                gameState={gameState}
+                updateGameWithSync={updateGameWithSync}
+                currentPlayerId={playerId}
+                isFullAutoplay={isFullAutoplay}
+                setIsFullAutoplay={setIsFullAutoplay}
+                isJakubAutoplay={isJakubAutoplay}
+                setIsJakubAutoplay={setIsJakubAutoplay}
+                autoplaySpeed={autoplaySpeed}
+                setAutoplaySpeed={setAutoplaySpeed}
+                isSetsPanelOpen={isSetsPanelOpen}
+                setIsSetsPanelOpen={setIsSetsPanelOpen}
+                isEventsPanelOpen={isEventsPanelOpen}
+                setIsEventsPanelOpen={setIsEventsPanelOpen}
+                onManualDrawSets={handleManualDrawSets}
+                onGoToPlayerPhase={handleGoToPlayerPhase}
+                onExecuteManualTurn={handleExecuteManualTurn}
+                onGoToJakubPhase={handleGoToJakubPhase}
+                onExecuteEventPhase={handleExecuteEventPhase}
+                onOpenScoring={() => setIsScoringPopupOpen(true)}
+                onOpenLoadSaves={() => setIsLoadSavesPanelOpen(true)}
+                onOpenStats={() => setIsEndGamePopupOpen(true)}
+                onCreateNewGame={async () => {
+                  try {
+                    const res = await fetch(`${SERVER_URL}/api/map/new`, { method: 'POST' });
+                    const data = await res.json();
+                    if (data.id !== undefined) window.location.href = `/game/${data.id}`;
+                  } catch (_err) { alert('Failed to create new game'); }
+                }}
+                onChangeGame={() => { window.history.pushState({}, '', '/'); setGameId(null); setGameState(INITIAL_STATE); window.dispatchEvent(new Event('popstate')); }}
+                onAdminPanel={() => { window.history.pushState({}, '', '/admin/sets'); window.dispatchEvent(new Event('popstate')); }}
+                showTracks={showTracks}
+                setShowTracks={setShowTracks}
+                showCounters={showCounters}
+                setShowCounters={setShowCounters}
+                showAnimations={showAnimations}
+                setShowAnimations={setShowAnimations}
+                autoClickNext={autoClickNext}
+                setAutoClickNext={setAutoClickNext}
+                miniBoard={miniBoard}
+                setMiniBoard={setMiniBoard}
+                uiLayout={uiLayout}
+                setUiLayout={setUiLayout}
+              >
+                <div className="bags-container">
+                  {PAWN_TYPES.filter(p => !p.isUnique).map(pawn => (
+                    <Bag
+                      key={pawn.id}
+                      type={pawn}
+                      onMouseDown={(e) => handleBagMouseDown(pawn.id, e)}
+                      availableCount={placementPool[pawn.id]}
+                      onBoard={counters.onBoard[pawn.id]}
+                      limit={gameState.sets?.pawnsInPlayLimit?.[pawn.id] || gameState.sets?.pawns?.[pawn.id]}
+                      isMobileUi={true}
+                    />
+                  ))}
+                </div>
+              </GameTabBody>
+            )}
+            {mobileTab === 'history' && (
+              <HistoryPanel logs={gameState.history || []} />
+            )}
+          </div>
+        )}
+        {isMobileUi && (
+          <MobileTabBar
+            active={mobileSheetOpen ? mobileTab : null}
+            onChange={(tab) => {
+              if (mobileSheetOpen && mobileTab === tab) {
+                setMobileSheetOpen(false);
+              } else {
+                setMobileTab(tab);
+                setMobileSheetOpen(true);
+              }
+            }}
+          />
+        )}
+        {!isMobileUi && (
         <div className="right-controls">
           <HistoryPanel logs={gameState.history || []} />
-          
-          {playerId && (
-            <div className="player-hand-section always-visible">
-              <div className="player-hand-header">{t('player_hand_title', { player: playerId })}</div>
-              <SetsPanel 
-                sets={(gameState.sets?.heldSets || []).filter(s => String(s.ownerId) === String(playerId))}
-                onSetMouseDown={handleSetMouseDown}
-                hideTabs={true}
-                placementPool={placementPool}
-              />
-            </div>
-          )}
         </div>
+        )}
       </div>
       
       {isScoringPopupOpen && (
@@ -1154,8 +1309,8 @@ function App() {
         </div>
       )}
 
-      {activePawn && <MouseElement type={PAWN_TYPES.find(p => p.id === activePawn.typeId)} x={activePawn.x} y={activePawn.y} />}
-      {activeSet && (
+      {!isMobileUi && activePawn && <MouseElement type={PAWN_TYPES.find(p => p.id === activePawn.typeId)} x={activePawn.x} y={activePawn.y} />}
+      {!isMobileUi && activeSet && (
         <div className="set-ghost" style={{ left: activeSet.x, top: activeSet.y }}>
           <div className="set-ghost-content">
             {SUMMARY_PAWN_IDS.map(typeId => {
@@ -1174,9 +1329,20 @@ function App() {
           )}
         </div>
       )}
-      {activeGeneral && <div className="general-ghost" style={{ left: activeGeneral.x, top: activeGeneral.y }}><div className={`general-icon large portrait ${activeGeneral.race}`}></div></div>}
-      {hoveredPawn && !activePawn && !activeSet && !activeGeneral && <PawnStatusPopup pawn={hoveredPawn.pawn} pawnType={hoveredPawn.pawnType} position={{ x: hoveredPawn.x, y: hoveredPawn.y }} />}
-      <Footer />
+      {!isMobileUi && activeGeneral && <div className="general-ghost" style={{ left: activeGeneral.x, top: activeGeneral.y }}><div className={`general-icon large portrait ${activeGeneral.race}`}></div></div>}
+      {hoveredPawn && !activePawn && !activeSet && !activeGeneral && (
+        <PawnStatusPopup
+          pawn={hoveredPawn.pawn}
+          pawnType={hoveredPawn.pawnType}
+          position={{ x: hoveredPawn.x, y: hoveredPawn.y }}
+          onRemove={isMobileUi && pawnRemoveTarget ? () => {
+            handleRegionRemove(pawnRemoveTarget.regionId, pawnRemoveTarget.typeId);
+            setPawnRemoveTarget(null);
+            setHoveredPawn(null);
+          } : undefined}
+        />
+      )}
+      {!isMobileUi && <Footer />}
     </div>
   );
 }

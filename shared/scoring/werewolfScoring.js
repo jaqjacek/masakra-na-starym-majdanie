@@ -1,3 +1,8 @@
+import {
+  WEREWOLF_SCORING_DIVISOR,
+  JAKUB_MELEE_DISTANCE
+} from '../constants.js';
+
 export class WerewolfScoring {
   /**
    * Calculates points for Werewolf placement based on neighbors and distance to Jakub.
@@ -20,32 +25,12 @@ export class WerewolfScoring {
       }
     });
     
-    let pts = wCount + Math.floor(totalW / 3);
-    if (dist <= 1) {
+    let pts = wCount + Math.floor(totalW / WEREWOLF_SCORING_DIVISOR);
+    if (dist <= JAKUB_MELEE_DISTANCE) {
       pts += wCount;
     }
     
     return pts;
-  }
-
-  static findBestPlacement(regions, emptyRegions, placeableSets) {
-    let best = null;
-    const jakubRegion = regions.find(r => r.pawns.jakub?.length > 0);
-    placeableSets.forEach(set => {
-      emptyRegions.forEach(region => {
-        const dist = jakubRegion 
-          ? Math.max(
-              Math.abs((region.x !== undefined ? region.x : region.id % 6) - (jakubRegion.x !== undefined ? jakubRegion.x : jakubRegion.id % 6)),
-              Math.abs((region.y !== undefined ? region.y : Math.floor(region.id / 6)) - (jakubRegion.y !== undefined ? jakubRegion.y : Math.floor(jakubRegion.id / 6)))
-            )
-          : (region.jakubDistance !== undefined ? region.jakubDistance : 3);
-        const pts = WerewolfScoring.calculate(regions, region, dist, set.content.werewolf || 0);
-        if (!best || pts > best.pts) {
-          best = { set, region, pts };
-        }
-      });
-    });
-    return best;
   }
 
   static calculateFinal(regions) {

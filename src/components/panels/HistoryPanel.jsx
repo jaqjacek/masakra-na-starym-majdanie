@@ -1,6 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import { useTranslation } from '../../hooks/useTranslation';
 import { translateLog } from '../../utils/logTranslator';
+import '../../assets/css/panels/history.css';
 
 const HistoryPanel = ({ logs = [] }) => {
   const { t, lang } = useTranslation();

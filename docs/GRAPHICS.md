@@ -90,7 +90,7 @@ Ten plik zawiera opisy i prompty dla Nanobanana 2. Każda sekcja odpowiada konkr
 *   **Róża wiatrów / Compass:** Kod, nie prompt. 8 ramion, dłuższe ramię północy, północ zawsze u góry. Etykiety zależą od języka (patrz lista plików).
 *   **Styl / Style:** `ink-sketch` / `parchment-map`
 *   **Prompt (tylko baza, bez liter):** `A square top-down illustrated map of a neglected rural Polish farmyard on stained aged parchment, drawn as high-contrast black ink woodcut sketch lines. A rustic wattle-and-rail fence encloses the yard on the top and sides and opens at the bottom. Top-left: a dilapidated thatched barn with a large hole in the roof, open barn doors, and a wooden trough. Top-right: a small thatched smoke-cottage with tiny windows and a damaged roof. Exact center: a round stone well with a wooden sweep. Mid-left: a tangled vegetable patch. Mid-right: a haystack and three wooden kegs, one smashed on its side. Bottom-left: a compost heap. Bottom-center: a pile of broken fence boards. Bottom-right is empty stained parchment. No letters, no numbers, no compass, no people, no grid.`
-*   **Użycie / Usage:** `src/assets/css/game.css` — `html[lang] .board`. Przebudowa: `python3 scripts/compose_board_backgrounds.py`
+*   **Użycie / Usage:** `src/assets/css/board.css` — `html[lang] .board`. Przebudowa: `python3 scripts/compose_board_backgrounds.py`
 *   **Status:** `wygenerowano` (baza + 5 locale)
 
 ---

@@ -26,7 +26,8 @@ export const useGameInteraction = ({
   findAndRemoveSetById,
   advanceTurn,
   manualPlayers = [],
-  autoClickNext = true
+  autoClickNext = true,
+  isMobileUi = false
 }) => {
   const [activePawn, setActivePawn] = useState(null); 
   const [activeSet, setActiveSet] = useState(null); 
@@ -38,18 +39,18 @@ export const useGameInteraction = ({
     const pawnType = PAWN_TYPES.find(p => p.id === typeId);
     if (pawnType.isUnique && (counters.breakdown[typeId] || 0) > 0) return;
     if (placementPool[typeId] <= 0) return; 
-    setActivePawn({ typeId, x: e.clientX, y: e.clientY, fromIndex: null });
+    setActivePawn({ typeId, x: e?.clientX || 0, y: e?.clientY || 0, fromIndex: null });
     setValidMoveTargets(gameState.regions.map(r => r.id));
   }, [gameState, counters.breakdown, placementPool]);
 
   const handleJakubMouseDownFromPanel = useCallback((e) => {
     if (isJakubOnBoard) return;
-    setActivePawn({ typeId: 'jakub', x: e.clientX, y: e.clientY, fromIndex: null });
+    setActivePawn({ typeId: 'jakub', x: e?.clientX || 0, y: e?.clientY || 0, fromIndex: null });
     setValidMoveTargets(gameState.regions.map(r => r.id));
   }, [isJakubOnBoard, gameState]);
 
   const handleSetMouseDown = useCallback((set, e) => {
-    setActiveSet({ set, x: e.clientX, y: e.clientY });
+    setActiveSet({ set, x: e?.clientX || 0, y: e?.clientY || 0 });
     
     // Check if enough pawns in pool for this set (available globally)
     let hasEnoughAvailable = true;
@@ -79,7 +80,7 @@ export const useGameInteraction = ({
     const pawn = instances[pawnInstanceIndex];
     if (pawn.statuses.includes(STATUSES.ENABLED)) {
       if (typeId === 'jakub' && pawn.range <= 0 && playerId) return;
-      setActivePawn({ typeId, x: e.clientX, y: e.clientY, fromIndex: regionIndex, pawnInstanceIndex });
+      setActivePawn({ typeId, x: e?.clientX || 0, y: e?.clientY || 0, fromIndex: regionIndex, pawnInstanceIndex });
       setHoveredPawn(null);
       const speed = typeId === 'jakub' ? pawn.speed : PAWN_TYPES.find(p => p.id === typeId).speed;
       const reachable = (typeId === 'jakub' && !playerId) 
@@ -89,8 +90,16 @@ export const useGameInteraction = ({
     }
   }, [gameState, playerId]);
 
+  const cancelSelection = useCallback(() => {
+    setActivePawn(null);
+    setActiveSet(null);
+    setActiveGeneral(null);
+    setValidMoveTargets([]);
+  }, []);
+
   useEffect(() => {
-    const handleMouseMove = (e) => { 
+    if (isMobileUi) return undefined;
+    const handleMouseMove = (e) => {
       if (activePawn) setActivePawn(prev => ({ ...prev, x: e.clientX, y: e.clientY }));
       if (activeSet) setActiveSet(prev => ({ ...prev, x: e.clientX, y: e.clientY }));
       if (activeGeneral) setActiveGeneral(prev => ({ ...prev, x: e.clientX, y: e.clientY }));
@@ -99,13 +108,13 @@ export const useGameInteraction = ({
     window.addEventListener('mousemove', handleMouseMove);
     window.addEventListener('mouseup', handleGlobalMouseUp);
     return () => { window.removeEventListener('mousemove', handleMouseMove); window.removeEventListener('mouseup', handleGlobalMouseUp); };
-  }, [activePawn, activeSet, activeGeneral]);
+  }, [activePawn, activeSet, activeGeneral, isMobileUi]);
 
   const handleRegionMouseUp = useCallback((toIndex, e) => {
     if (!gameId) return;
     const newState = JSON.parse(JSON.stringify(gameState));
     if (activePawn) {
-      e.stopPropagation(); const { typeId, fromIndex, pawnInstanceIndex } = activePawn;
+      e?.stopPropagation?.(); const { typeId, fromIndex, pawnInstanceIndex } = activePawn;
       if (!validMoveTargets.includes(toIndex)) { setActivePawn(null); setValidMoveTargets([]); return; }
       if (fromIndex !== null) {
         if (typeId === 'jakub') {
@@ -132,7 +141,7 @@ export const useGameInteraction = ({
       updateGameWithSync(newState); setActivePawn(null); setValidMoveTargets([]);
     }
     if (activeSet) {
-      e.stopPropagation();
+      e?.stopPropagation?.();
       if (!validMoveTargets.includes(toIndex)) { setActiveSet(null); setValidMoveTargets([]); return; }
       
       let canPlace = true;
@@ -245,7 +254,7 @@ export const useGameInteraction = ({
 
   const handleJakubMouseUp = useCallback((e) => {
     if (activeSet) {
-      e.stopPropagation();
+      e?.stopPropagation?.();
       const newState = JSON.parse(JSON.stringify(gameState));
       const ownerId = activeSet.set.ownerId;
       const playerIdx = ownerId ? newState.players.findIndex(p => String(p.id) === String(ownerId)) : -1;
@@ -313,6 +322,7 @@ export const useGameInteraction = ({
     handlePawnMouseDown,
     handleRegionMouseUp,
     handlePlayerMouseUp,
-    handleJakubMouseUp
+    handleJakubMouseUp,
+    cancelSelection
   };
 };

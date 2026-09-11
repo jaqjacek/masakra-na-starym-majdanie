@@ -1,0 +1,29 @@
+/* Race bags */
+.bags-container { display: flex; flex-direction: row; gap: 6px; width: 100%; justify-content: space-between; }
+.bag-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 1 1 0;
+  min-width: 0;
+}
+.bag {
+  width: 32px; height: 32px; background-color: var(--bag-color); border: 1px solid #ffffff;
+  border-radius: 4px; display: flex; justify-content: center; align-items: center; cursor: grab; position: relative;
+}
+
+.bag-count-badge {
+  position: absolute; bottom: -5px; right: -5px; background: #2c3e50; border: 1px solid #fff;
+  color: #fff; font-size: 0.6rem; font-weight: bold; padding: 1px 4px; border-radius: 8px;
+}
+
+.bag-limit-sub {
+  font-size: 0.6rem;
+  color: #f1c40f;
+  font-weight: bold;
+  margin-top: 4px;
+  text-align: center;
+  display: block;
+  width: 100%;
+  letter-spacing: 0.5px;
+}

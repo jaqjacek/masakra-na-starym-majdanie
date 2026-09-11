@@ -4,5 +4,7 @@
   "initialSetsPerPlayer": 2,
   "setupSetsPerPlayerPerRound": 3,
   "jakubSetsPerRound": 2,
-  "totalRounds": 12
+  "totalRounds": 12,
+  "maxPower": 6,
+  "maxUnitsPerSet": 4
 }

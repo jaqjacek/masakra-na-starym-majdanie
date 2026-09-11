@@ -1,4 +1,4 @@
-# MASAKRA na Starym Majdanie: Oficjalne Zasady Gry v1.20.1
+# MASAKRA na Starym Majdanie: Oficjalne Zasady Gry v1.20.2
 
 ## Cel Gry
 Wędrowycz-Gemini to gra strategiczna, w której gracze (Hersztowie) dowodzą czterema bandami: Wampirami, Wilkołakami, Duchami i Bardakami. Celem jest zdobycie jak największej liczby punktów zwycięstwa w ciągu 12 rund, unikając furii Jakuba Wędrowycza.

@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { PAWN_TYPES, SUMMARY_PAWN_IDS } from '../../constants/pawnTypes';
 import { useTranslation } from '../../hooks/useTranslation';
+import '../../assets/css/panels/sets.css';
 
-const SetsPanel = ({ sets, discardedSets = [], onSetMouseDown, title, setInfo, hideTabs = false, placementPool }) => {
+const SetsPanel = ({ sets, discardedSets = [], onSetMouseDown, title, setInfo, hideTabs = false, placementPool, isMobileUi = false, selectedSetId = null }) => {
   const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState('active');
 
@@ -61,8 +62,15 @@ const SetsPanel = ({ sets, discardedSets = [], onSetMouseDown, title, setInfo, h
             return (
               <div 
                 key={`${set.id}-${index}`} 
-                className={`pawn-set ${set.used || activeTab === 'discarded' ? 'used' : ''} ${cannotPlaceOnBoard ? 'cannot-place-board' : ''}`}
-                onMouseDown={(e) => !set.used && activeTab === 'active' && onSetMouseDown(set, e)}
+                className={`pawn-set ${set.used || activeTab === 'discarded' ? 'used' : ''} ${cannotPlaceOnBoard ? 'cannot-place-board' : ''} ${selectedSetId !== null && selectedSetId !== undefined && String(selectedSetId) === String(set.id) ? 'selected' : ''}`}
+                onMouseDown={(e) => {
+                  if (isMobileUi || set.used || activeTab !== 'active') return;
+                  onSetMouseDown(set, e);
+                }}
+                onClick={(e) => {
+                  if (!isMobileUi || set.used || activeTab !== 'active') return;
+                  onSetMouseDown(set, e);
+                }}
                 title={set.used || activeTab === 'discarded' ? t('drag_tooltip_used') : (cannotPlaceOnBoard ? t('drag_tooltip_blocked') : t('drag_tooltip_normal'))}
               >
                 <div className="set-content">

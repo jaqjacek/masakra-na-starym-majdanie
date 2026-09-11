@@ -1,7 +1,8 @@
 import React from 'react';
 import { useTranslation } from '../hooks/useTranslation';
+import '../assets/css/panels/bags.css';
 
-const Bag = ({ type, onMouseDown, disabled, availableCount, onBoard, limit }) => {
+const Bag = ({ type, onMouseDown, disabled, availableCount, onBoard, limit, isMobileUi = false }) => {
   const { t } = useTranslation();
   const isOutOfStock = availableCount <= 0;
   const showLimit = onBoard !== undefined && limit !== undefined;
@@ -9,7 +10,8 @@ const Bag = ({ type, onMouseDown, disabled, availableCount, onBoard, limit }) =>
   return (
     <div 
       className={`bag-wrapper ${disabled || isOutOfStock ? 'disabled-bag' : ''}`}
-      onMouseDown={(disabled || isOutOfStock) ? null : onMouseDown}
+      onMouseDown={(disabled || isOutOfStock || isMobileUi) ? null : onMouseDown}
+      onClick={(disabled || isOutOfStock || !isMobileUi) ? null : onMouseDown}
     >
       <div 
         className="bag"

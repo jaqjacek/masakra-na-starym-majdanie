@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from '../../hooks/useTranslation';
+import '../../assets/css/panels/load-saves.css';
 
 const LoadSavesPanel = ({ gameId, onClose, onLoadSnapshot, serverUrl }) => {
   const { t } = useTranslation();

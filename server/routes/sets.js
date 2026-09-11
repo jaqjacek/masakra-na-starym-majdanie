@@ -13,7 +13,8 @@ import {
 import { 
   INITIAL_PAWN_POOL, 
   PAWNS_IN_PLAY_LIMIT, 
-  DEFAULT_POWER_CONFIG 
+  DEFAULT_POWER_CONFIG,
+  MAX_POWER
 } from '../constants.js';
 
 const router = express.Router();
@@ -71,7 +72,7 @@ router.post('/generate/transient', (req, res) => {
     const finalPawns = pawns || INITIAL_PAWN_POOL;
     const finalLimits = pawnsInPlayLimit || PAWNS_IN_PLAY_LIMIT;
     const finalPower = power || DEFAULT_POWER_CONFIG;
-    const finalMaxPower = maxPower !== undefined ? maxPower : 6;
+    const finalMaxPower = maxPower !== undefined ? maxPower : MAX_POWER;
 
     // Generate filename based on parameters: TV10-TW20-TG30-TB40_LV5-LW10-LG15-LB20
     const namePart1 = `TV${finalPawns.vampire || 0}-TW${finalPawns.werewolf || 0}-TG${finalPawns.ghost || 0}-TB${finalPawns.bardak || 0}`;

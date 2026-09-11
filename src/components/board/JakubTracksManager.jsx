@@ -1,4 +1,5 @@
 import React from 'react';
+import { BOARD_SIZE } from '../../../shared/constants.js';
 
 export default function JakubTracksManager({
   jakubPath = [],
@@ -29,10 +30,10 @@ export default function JakubTracksManager({
         if (!fromRegion || !toRegion) return null;
 
         // Calculate center percentage coordinates (0-100 range in SVG)
-        const x1 = (fromRegion.x + 0.5) * (100 / 6);
-        const y1 = (fromRegion.y + 0.5) * (100 / 6);
-        const x2 = (toRegion.x + 0.5) * (100 / 6);
-        const y2 = (toRegion.y + 0.5) * (100 / 6);
+        const x1 = (fromRegion.x + 0.5) * (100 / BOARD_SIZE);
+        const y1 = (fromRegion.y + 0.5) * (100 / BOARD_SIZE);
+        const x2 = (toRegion.x + 0.5) * (100 / BOARD_SIZE);
+        const y2 = (toRegion.y + 0.5) * (100 / BOARD_SIZE);
 
         // Vector calculations
         const dx = x2 - x1;

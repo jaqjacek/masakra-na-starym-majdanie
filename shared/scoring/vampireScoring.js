@@ -1,6 +1,7 @@
-import { WerewolfScoring } from './werewolfScoring.js';
-import { GhostScoring } from './ghostScoring.js';
-import { BardakScoring } from './bardakScoring.js';
+import {
+  VAMPIRE_SCORING_RANGE,
+  VAMPIRE_FINAL_SCORING_MULTIPLIER
+} from '../constants.js';
 
 export class VampireScoring {
   /**
@@ -11,42 +12,7 @@ export class VampireScoring {
    */
   static calculate(dist, vCount) {
     if (vCount <= 0) return 0;
-    return (4 - dist) * vCount;
-  }
-
-  static findBestPlacement(regions, emptyRegions, placeableSets) {
-    let best = null;
-    const jakubRegion = regions.find(r => r.pawns.jakub?.length > 0);
-    const jakub = jakubRegion?.pawns.jakub[0];
-    const jakubRange = jakub ? (jakub.range !== undefined ? Math.max(1, jakub.range) : 1) : 0;
-
-    placeableSets.forEach(set => {
-      emptyRegions.forEach(region => {
-        const dist = jakubRegion 
-          ? Math.max(
-              Math.abs((region.x !== undefined ? region.x : region.id % 6) - (jakubRegion.x !== undefined ? jakubRegion.x : jakubRegion.id % 6)),
-              Math.abs((region.y !== undefined ? region.y : Math.floor(region.id / 6)) - (jakubRegion.y !== undefined ? jakubRegion.y : Math.floor(jakubRegion.id / 6)))
-            )
-          : (region.jakubDistance !== undefined ? region.jakubDistance : 3);
-        const vPts = VampireScoring.calculate(dist, set.content.vampire || 0);
-        const wPts = WerewolfScoring.calculate(regions, region, dist, set.content.werewolf || 0);
-        const gPts = GhostScoring.calculate(region, dist, jakubRange, set.content.ghost || 0);
-        const bPts = BardakScoring.calculate(dist, set.content.bardak || 0);
-
-        const netScore = vPts - (wPts + gPts + bPts);
-
-        if (!best) {
-          best = { set, region, pts: vPts, netScore };
-        } else {
-          if (netScore > best.netScore) {
-            best = { set, region, pts: vPts, netScore };
-          } else if (netScore === best.netScore && vPts > best.pts) {
-            best = { set, region, pts: vPts, netScore };
-          }
-        }
-      });
-    });
-    return best;
+    return (VAMPIRE_SCORING_RANGE - dist) * vCount;
   }
 
   static calculateFinal(regions) {
@@ -56,6 +22,6 @@ export class VampireScoring {
         regionsWithVampires++;
       }
     });
-    return regionsWithVampires * 2;
+    return regionsWithVampires * VAMPIRE_FINAL_SCORING_MULTIPLIER;
   }
 }

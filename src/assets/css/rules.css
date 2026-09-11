@@ -12,6 +12,14 @@
   -webkit-user-select: text;
 }
 
+/* CSUR pIqaD lives in U+F8D0–U+F8FF; Segoe UI has no those glyphs (tofu squares).
+   unicode-range on the @font-face keeps Latin fallbacks for protected names. */
+html.lang-tlh .rulebook-wrapper,
+html.lang-tlh .rulebook-wrapper * {
+  font-family: 'Klingon pIqaD HaSta', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  letter-spacing: 0.04em;
+}
+
 .rulebook-cover-container {
   position: relative;
   width: 100%;
@@ -427,6 +435,17 @@
     break-after: avoid;
     page-break-after: avoid;
   }
+}
+
+html.mobile-ui .rulebook-wrapper {
+  margin: 0 auto 2rem;
+  max-width: 100%;
+  padding-bottom: 5rem;
+}
+
+html.mobile-ui .rulebook-header .no-print {
+  min-height: 44px;
+  padding: 10px 16px !important;
 }
 
 @media (max-width: 800px) {

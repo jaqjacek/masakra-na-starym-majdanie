@@ -5,7 +5,7 @@
 [![Express](https://img.shields.io/badge/Express-5-lightgrey.svg)](https://expressjs.com/)
 [![Socket.io](https://img.shields.io/badge/Socket.io-4.8-black.svg)](https://socket.io/)
 [![Docker](https://img.shields.io/badge/Docker%20%2F%20Podman-Ready-blue.svg)](https://www.docker.com/)
-[![Version](https://img.shields.io/badge/version-v1.20.1-orange.svg)](package.json)
+[![Version](https://img.shields.io/badge/version-v1.20.2-orange.svg)](package.json)
 
 **MASAKRA na Starym Majdanie** is a tactical digital board game simulator set in the grim, humorous universe of Jakub Wędrowycz. Players manage pawn bands across a 6x6 grid, competing for points while trying to avoid the wrath of Jakub Wędrowycz—or actively turning his rampage toward their opponents.
 
@@ -109,7 +109,6 @@ masakra-na-starym-majdanie/
 ├── src/                        # React 19 Frontend application
 │   ├── assets/                 # CSS design system, images & sprites
 │   ├── components/             # Board, regions, admin panels, and modals
-│   ├── context/                # GameContext & Socket state management
 │   ├── hooks/                  # useGameState, useAutoplay, useGameInteraction
 │   └── strategies/             # Jakub AI step & rampage strategies
 ├── tests/                      # Automated unit tests & simulation scripts

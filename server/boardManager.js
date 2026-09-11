@@ -1,7 +1,10 @@
-import { RACES, DEFAULT_PLAYERS } from './constants.js';
+import { BOARD_SIZE, PAWN_SPEED, JAKUB_BASE_RANGE, emptyAnger } from './constants.js';
+import { getRegionsInRange } from '../shared/boardGeometry.js';
+
+export { getRegionsInRange };
 
 export const createEmptyRegions = () => {
-  const size = 6; const regions = [];
+  const size = BOARD_SIZE; const regions = [];
   for (let i = 0; i < size * size; i++) { regions.push({ id: i, x: i % size, y: Math.floor(i / size), neighbors: [], pawns: {} }); }
   regions.forEach(region => {
     const { x, y } = region;
@@ -13,10 +16,10 @@ export const createEmptyRegions = () => {
       }
     }
   });
-  // Jakub starts in the interior (not on the very edge)
-  const interior = regions.filter(r => r.x > 0 && r.x < 5 && r.y > 0 && r.y < 5).map(r => r.id);
+  const edge = size - 1;
+  const interior = regions.filter(r => r.x > 0 && r.x < edge && r.y > 0 && r.y < edge).map(r => r.id);
   const rIdx = interior[Math.floor(Math.random() * interior.length)];
-  regions[rIdx].pawns.jakub = [{ statuses: ['ENABLED'], speed: 1, range: 1, anger: { vampire: 0, werewolf: 0, ghost: 0, bardak: 0 } }];
+  regions[rIdx].pawns.jakub = [{ statuses: ['ENABLED'], speed: PAWN_SPEED.jakub, range: JAKUB_BASE_RANGE, anger: emptyAnger() }];
   updateJakubDistance(regions);
   return regions;
 };
@@ -33,34 +36,4 @@ export const updateJakubDistance = (regions) => {
   return regions;
 };
 
-export const getChebyshevDistance = (r1, r2) => { if (!r1 || !r2) return 999; return Math.max(Math.abs(r1.x - r2.x), Math.abs(r1.y - r2.y)); };
 
-export const getRegionsInRange = (regions, startIndex, range) => {
-  const inRange = new Set();
-  const queue = [{ index: startIndex, dist: 0 }];
-  const visited = new Set([startIndex]);
-
-  while (queue.length > 0) {
-    const { index, dist } = queue.shift();
-    inRange.add(index); // Always include the current node in the range result
-    if (dist < range) {
-      regions[index].neighbors.forEach(nIdx => {
-        if (!visited.has(nIdx)) {
-          visited.add(nIdx);
-          queue.push({ index: nIdx, dist: dist + 1 });
-        }
-      });
-    }
-  }
-  return Array.from(inRange);
-};
-
-export const getBestTargetRegion = (candidateIndices, priorityRaces, regions) => {
-  if (candidateIndices.length === 0) return null; let tied = candidateIndices;
-  for (const race of priorityRaces) {
-    let maxCount = -1; let nextTied = [];
-    tied.forEach(rIdx => { const count = regions[rIdx].pawns[race]?.length || 0; if (count > maxCount) { maxCount = count; nextTied = [rIdx]; } else if (count === maxCount) { nextTied.push(rIdx); } });
-    if (maxCount > 0) tied = nextTied; if (tied.length === 1) break;
-  }
-  const finalId = tied[0]; return priorityRaces.some(race => regions[finalId].pawns[race]?.length > 0) ? finalId : null;
-};

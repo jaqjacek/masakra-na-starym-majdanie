@@ -18,7 +18,6 @@ App (src/App.jsx)
  │    ├── SetsPanel
  │    ├── HistoryPanel
  │    ├── EventsPanel
- │    ├── AdminPanel
  │    ├── LoadSavesPanel
  │    └── GamePanel
  ├── PawnStatusPopup (src/components/PawnStatusPopup.jsx)
@@ -68,5 +67,4 @@ The right-side dashboard is modularized into collapsible panels.
 - **`SetsPanel`**: Displays the Set marketplace (Draw Pile) and the player's Hand. Handles drag-and-drop of sets onto the board.
 - **`HistoryPanel`**: Renders the `gameState.history` log array.
 - **`EventsPanel`**: Shows recent game events and auto-play logs.
-- **`GamePanel`**: Contains standard game controls (Draw Sets, Next Round, Autoplay toggles).
-- **`AdminPanel`**: Contains cheat tools and debug utilities (only visible in dev mode or admin view).
+- **`GamePanel`**: Contains standard game controls (Draw Sets, Next Round, Autoplay toggles). Admin tools live on `/admin/sets`, `/admin/events`, `/admin/simulate`.

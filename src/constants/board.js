@@ -1,5 +1,8 @@
+import { BOARD_SIZE } from '../../shared/constants.js';
+import { getRegionsInRange } from '../../shared/boardGeometry.js';
+
 export class Board {
-  constructor(size = 6) {
+  constructor(size = BOARD_SIZE) {
     this.size = size;
   }
 
@@ -34,28 +37,7 @@ export class Board {
   }
 
   static getReachableRegions(regions, startIndex, range) {
-    const reachable = new Set();
-    const queue = [{ index: startIndex, dist: 0 }];
-    const visited = new Set([startIndex]);
-    
-    while (queue.length > 0) {
-      const { index, dist } = queue.shift();
-      reachable.add(index);
-      if (dist < range) {
-        regions[index].neighbors.forEach(nIdx => {
-          if (!visited.has(nIdx)) { 
-            visited.add(nIdx); 
-            queue.push({ index: nIdx, dist: dist + 1 }); 
-          }
-        });
-      }
-    }
-    return Array.from(reachable);
-  }
-
-  static getDistance(r1, r2) {
-    if (!r1 || !r2) return 999;
-    return Math.max(Math.abs(r1.x - r2.x), Math.abs(r1.y - r2.y));
+    return getRegionsInRange(regions, startIndex, range);
   }
 
   static updateJakubDistance(regions) {

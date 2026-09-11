@@ -1,7 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { RACES, DEFAULT_PLAYERS, INITIAL_PAWN_POOL, DEFAULT_POWER_CONFIG } from './constants.js';
+import { RACES, DEFAULT_PLAYERS, INITIAL_PAWN_POOL, DEFAULT_POWER_CONFIG, DEFAULT_GAME_CONFIG, PLAYER_IDS } from './constants.js';
 import { createEmptyRegions } from './boardManager.js';
 import { loadSetFile, generateSetData } from './setManager.js';
 import { GameEventPhaseManager } from './events/gameEventPhaseManager.js';
@@ -14,7 +14,6 @@ export const SETS_DIR = path.join(__dirname, 'sets');
 export const EVENTS_DIR = path.join(__dirname, 'events');
 export const CONFIGS_DIR = path.join(__dirname, 'configs');
 export const CONFIG_FILE = path.join(CONFIGS_DIR, 'server_config.json');
-export const BOARD_DEFAULT_FILE = path.join(CONFIGS_DIR, 'board_default.json');
 export const GAME_CONFIG_FILE = path.join(CONFIGS_DIR, 'game_config.json');
 
 if (!fs.existsSync(GAMES_DIR)) fs.mkdirSync(GAMES_DIR);
@@ -30,26 +29,15 @@ export const getGlobalConfig = () => {
 };
 
 export const getGameConfig = () => {
-  const defaultGameConfig = {
-    gameTitle: "MASAKRA na Starym Majdanie",
-    startPointsAmmount: 20,
-    initialSetsPerPlayer: 5,
-    setupSetsPerPlayerPerRound: 3,
-    jakubSetsPerRound: 2,
-    totalRounds: 6,
-    maxPower: 6,
-    maxUnitsPerSet: 5,
-    mercyVariant: 1
-  };
   if (fs.existsSync(GAME_CONFIG_FILE)) {
     try {
       const fileConfig = JSON.parse(fs.readFileSync(GAME_CONFIG_FILE, 'utf8'));
-      return { ...defaultGameConfig, ...fileConfig };
+      return { ...DEFAULT_GAME_CONFIG, ...fileConfig };
     } catch (err) {
       console.error('Error reading game_config.json:', err);
     }
   }
-  return defaultGameConfig;
+  return { ...DEFAULT_GAME_CONFIG };
 };
 
 export const getNextGameId = () => {
@@ -80,14 +68,10 @@ export const getGameData = (gameId) => {
   let players = fs.existsSync(playersPath) ? JSON.parse(fs.readFileSync(playersPath, 'utf8')) : JSON.parse(JSON.stringify(DEFAULT_PLAYERS));
   let history = fs.existsSync(historyPath) ? JSON.parse(fs.readFileSync(historyPath, 'utf8')) : [];
   const gameConfig = getGameConfig();
-  let gameState = fs.existsSync(statePath) ? JSON.parse(fs.readFileSync(statePath, 'utf8')) : { phase: 'setup', currentRound: 1, totalRounds: gameConfig.totalRounds, currentPlayerIndex: 0, playerOrder: [1, 2, 3, 4], passedPlayers: [], availableGenerals: [...RACES], setName: 'default', gameStatus: 'active', manualPlayers: [], mercyVariant: gameConfig.mercyVariant || 1 };
+  let gameState = fs.existsSync(statePath) ? JSON.parse(fs.readFileSync(statePath, 'utf8')) : { phase: 'setup', currentRound: 1, totalRounds: gameConfig.totalRounds, currentPlayerIndex: 0, playerOrder: [...PLAYER_IDS], passedPlayers: [], availableGenerals: [...RACES], setName: 'default', gameStatus: 'active', manualPlayers: [] };
   
-  // Ensure totalRounds is always present
   if (gameState.totalRounds === undefined) gameState.totalRounds = gameConfig.totalRounds;
-  // Ensure manualPlayers is always an array
   if (!gameState.manualPlayers) gameState.manualPlayers = [];
-  // Ensure mercyVariant is present
-  if (gameState.mercyVariant === undefined) gameState.mercyVariant = gameConfig.mercyVariant || 1;
   
   let sets;
   if (fs.existsSync(setsPath)) {
@@ -100,11 +84,18 @@ export const getGameData = (gameId) => {
     else { 
       const globalConfig = getGlobalConfig(); 
       const gameConfig = getGameConfig();
-      sets = (globalConfig.defaultSetName ? loadSetFile(globalConfig.defaultSetName) : null) || generateSetData(INITIAL_PAWN_POOL, DEFAULT_POWER_CONFIG, gameConfig.totalRounds); 
+      sets = (globalConfig.defaultSetName ? loadSetFile(globalConfig.defaultSetName) : null) || generateSetData(INITIAL_PAWN_POOL, DEFAULT_POWER_CONFIG, gameConfig.maxPower, { maxUnitsPerSet: gameConfig.maxUnitsPerSet }); 
     }
   }
   
-  const data = { regions, players, sets, history, ...gameState };
+  const {
+    regions: _ignoredRegions,
+    players: _ignoredPlayers,
+    sets: _ignoredSets,
+    history: _ignoredHistory,
+    ...stateMeta
+  } = gameState;
+  const data = { regions, players, sets, history, ...stateMeta };
   
   // Ensure events are initialized if missing
   if (!data.events) {
@@ -133,7 +124,7 @@ export const saveFullState = (gameId, data) => {
     fs.writeFileSync(path.join(gamePath, 'history.log'), logContent);
   }
   const meta = {}; 
-  const keys = ['phase', 'currentRound', 'totalRounds', 'currentPlayerIndex', 'playerOrder', 'passedPlayers', 'availableGenerals', 'setName', 'gameStatus', 'jakubAngerIncreased', 'jakubTurnExecuted', 'events', '_lastLoggedPhase', 'turnActionExecuted', 'magnetismCount', 'manualPlayers'];
+  const keys = ['phase', 'currentRound', 'totalRounds', 'currentPlayerIndex', 'playerOrder', 'passedPlayers', 'availableGenerals', 'setName', 'gameStatus', 'events', '_lastLoggedPhase', 'turnActionExecuted', 'magnetismCount', 'manualPlayers', 'jakubPath', 'mercyActive', 'witnessGlows', 'magnetismPullRegions', 'stateVersion'];
   
   let phaseChanged = false;
   // Log phase transition if it changed
@@ -154,6 +145,8 @@ export const saveFullState = (gameId, data) => {
   }
 
   keys.forEach(k => { if (data[k] !== undefined) meta[k] = data[k]; });
+  meta.stateVersion = (Number(data.stateVersion) || 0) + 1;
+  data.stateVersion = meta.stateVersion;
   fs.writeFileSync(path.join(gamePath, 'state.json'), JSON.stringify(meta, null, 2));
 
   if (phaseChanged) {

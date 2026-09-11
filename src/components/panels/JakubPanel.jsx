@@ -1,8 +1,9 @@
 import React from 'react';
 import { PAWN_TYPES, SUMMARY_PAWN_IDS } from '../../constants/pawnTypes';
 import { useTranslation } from '../../hooks/useTranslation';
+import '../../assets/css/panels/jakub.css';
 
-const JakubPanel = ({ jakub, onUpdateCounter, onJakubMouseDown, isJakubOnBoard, sets = [], onMouseUp, isDraggingSet }) => {
+const JakubPanel = ({ jakub, onUpdateCounter, onJakubMouseDown, isJakubOnBoard, sets = [], onMouseUp, isDraggingSet, isMobileUi = false }) => {
   const { t } = useTranslation();
   if (!jakub) return null;
 
@@ -81,7 +82,8 @@ const JakubPanel = ({ jakub, onUpdateCounter, onJakubMouseDown, isJakubOnBoard, 
       {!isJakubOnBoard && (
         <button 
           className="jakub-place-btn"
-          onMouseDown={(e) => onJakubMouseDown(e)}
+          onMouseDown={(e) => { if (!isMobileUi) onJakubMouseDown(e); }}
+          onClick={(e) => { if (isMobileUi) onJakubMouseDown(e); }}
           title={t('drag_jakub_tooltip', { defaultValue: 'Drag Jakub to the map' })}
         >
           J

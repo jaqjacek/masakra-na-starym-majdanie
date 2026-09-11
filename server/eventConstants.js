@@ -1,13 +1,1 @@
-export const RACE_MAP = {
-  'V': 'vampire',
-  'W': 'werewolf',
-  'G': 'ghost',
-  'B': 'bardak'
-};
-
-export const RACE_MAP_PL = {
-  'vampire': 'Wampiry',
-  'werewolf': 'Wilkołaki',
-  'ghost': 'Duchy',
-  'bardak': 'Bardaki'
-};
+export { RACE_MAP, RACE_MAP_PL } from '../shared/constants.js';

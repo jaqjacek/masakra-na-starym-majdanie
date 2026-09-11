@@ -1,44 +1,42 @@
 import { Board } from './board.js';
-import { 
-  TOTAL_GAME_ROUNDS, 
-  INITIAL_PLAYER_POINTS, 
-  VAMPIRE_SCORING_RANGE, 
-  WEREWOLF_SCORING_DIVISOR, 
-  BOARD_SIZE, 
-  GHOST_SCORING_BASE 
-} from './constants.js';
+import {
+  RACES,
+  BOARD_SIZE,
+  INITIAL_PLAYER_POINTS,
+  TOTAL_GAME_ROUNDS,
+  INITIAL_PAWN_POOL,
+  PAWNS_IN_PLAY_LIMIT,
+  PLAYER_IDS
+} from '../../shared/constants.js';
 
-export const RACES = ['vampire', 'werewolf', 'ghost', 'bardak'];
+export { RACES };
 
-const boardService = new Board(6);
+const boardService = new Board(BOARD_SIZE);
 
 export const INITIAL_STATE = {
   regions: boardService.generateEmpty(),
-  players: [
-    { id: 1, name: '1', points: INITIAL_PLAYER_POINTS, generalOf: null },
-    { id: 2, name: '2', points: INITIAL_PLAYER_POINTS, generalOf: null },
-    { id: 3, name: '3', points: INITIAL_PLAYER_POINTS, generalOf: null },
-    { id: 4, name: '4', points: INITIAL_PLAYER_POINTS, generalOf: null }
-  ],
-  sets: { 
-    drawPile: [], 
-    discardPile: [], 
-    heldSets: [], 
-    pawns: { bardak: 80, ghost: 30, werewolf: 20, vampire: 10 },
-    pawnsInPlayLimit: { bardak: 80, ghost: 30, werewolf: 20, vampire: 10 }
+  players: PLAYER_IDS.map((id) => ({
+    id,
+    name: String(id),
+    points: INITIAL_PLAYER_POINTS,
+    generalOf: null
+  })),
+  sets: {
+    drawPile: [],
+    discardPile: [],
+    heldSets: [],
+    pawns: { ...INITIAL_PAWN_POOL },
+    pawnsInPlayLimit: { ...PAWNS_IN_PLAY_LIMIT }
   },
   phase: 'setup',
   currentRound: 1,
-  maxRounds: TOTAL_GAME_ROUNDS,
-  playerOrder: [1, 2, 3, 4],
+  totalRounds: TOTAL_GAME_ROUNDS,
+  playerOrder: [...PLAYER_IDS],
   currentPlayerIndex: 0,
   passedPlayers: [],
   availableGenerals: [...RACES],
-  jakubAngerIncreased: false,
-  jakubTurnExecuted: false,
   magnetismCount: 0,
   gameStatus: 'active',
   manualPlayers: [],
   history: []
 };
-

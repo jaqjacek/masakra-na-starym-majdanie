@@ -1,4 +1,4 @@
-import { RACES, RACE_TO_ABBR, DEFAULT_PAWN_CONFIGS } from '../constants.js';
+import { RACES, RACE_TO_ABBR, DEFAULT_PAWN_CONFIGS, SETUP_SETS_PER_PLAYER_PER_ROUND, JAKUB_SETS_PER_ROUND } from '../constants.js';
 import { Scoring } from '../scoring/scoring.js';
 import { applySetToJakubAnger } from '../../src/strategies/jakubStrategy.js';
 import { trackPointsChange, trackGeneralSelection, trackSetsPlayed } from '../statsManager.js';
@@ -285,6 +285,87 @@ export class ActionService {
       data.currentPlayerIndex = (data.currentPlayerIndex + 1) % data.playerOrder.length;
     }
 
+    return data;
+  }
+
+  /**
+   * Deal sets to players and Jakub, then enter general phase.
+   */
+  static handleDrawSets(data) {
+    if (data.phase && data.phase !== 'setup') {
+      throw new Error('Draw sets is only allowed during setup');
+    }
+    if (!data.sets) data.sets = { drawPile: [], discardPile: [], heldSets: [] };
+    if (!data.sets.drawPile) data.sets.drawPile = [];
+    if (!data.sets.discardPile) data.sets.discardPile = [];
+    if (!data.sets.heldSets) data.sets.heldSets = [];
+
+    const refillSets = (state) => {
+      if (state.sets.drawPile.length === 0 && state.sets.discardPile.length > 0) {
+        state.sets.drawPile = [...state.sets.discardPile];
+        state.sets.discardPile = [];
+        addLog(state, 'Przetasowywanie stosu odrzuconego do talii dobierania.');
+      }
+    };
+    const draw = (state) => {
+      refillSets(state);
+      if (state.sets.drawPile.length === 0) return null;
+      const randomIdx = Math.floor(Math.random() * state.sets.drawPile.length);
+      return state.sets.drawPile.splice(randomIdx, 1)[0];
+    };
+
+    let distributionCount = 0;
+    (data.players || []).forEach((player) => {
+      const myHeld = data.sets.heldSets.filter((s) => s.ownerId !== null && s.ownerId !== undefined && String(s.ownerId) === String(player.id));
+      const needed = SETUP_SETS_PER_PLAYER_PER_ROUND - myHeld.length;
+      for (let i = 0; i < needed; i++) {
+        const set = draw(data);
+        if (!set) break;
+        set.ownerId = player.id;
+        data.sets.heldSets.push(set);
+        distributionCount++;
+      }
+    });
+    if (distributionCount > 0) {
+      addLog(data, `Runda ${data.currentRound}: Uzupełniono ręce graczy do ${SETUP_SETS_PER_PLAYER_PER_ROUND} zestawów.`);
+    }
+
+    let jakub = null;
+    for (const r of data.regions || []) {
+      if (r.pawns?.jakub?.length > 0) {
+        jakub = r.pawns.jakub[0];
+        break;
+      }
+    }
+
+    const existingJakubSets = data.sets.heldSets.filter((s) => s.ownerId === 'jakub');
+    existingJakubSets.forEach((s) => {
+      s.ownerId = null;
+      s.used = false;
+      data.sets.discardPile.push(s);
+    });
+    data.sets.heldSets = data.sets.heldSets.filter((s) => s.ownerId !== 'jakub');
+
+    for (let i = 0; i < JAKUB_SETS_PER_ROUND; i++) {
+      const set = draw(data);
+      if (!set) break;
+      set.ownerId = 'jakub';
+      data.sets.heldSets.push(set);
+      if (jakub) {
+        const result = applySetToJakubAnger(jakub, set.content);
+        jakub.anger = result.anger;
+        jakub.range = result.range;
+        addLog(data, `Jakub przejął Zestaw ${set.id}. Furia/Zasięg zaktualizowane natychmiast.`);
+      } else {
+        addLog(data, `Jakub przejął Zestaw ${set.id} z puli.`);
+      }
+    }
+
+    data.phase = 'general_phase';
+    data.currentPlayerIndex = 0;
+    data.passedPlayers = [];
+    data.turnActionExecuted = false;
+    addLog(data, '--- Start Fazy Generałów ---');
     return data;
   }
 }

@@ -1,5 +1,6 @@
 import React from 'react';
 import { useTranslation } from '../../hooks/useTranslation';
+import { BOARD_SIZE } from '../../../shared/constants.js';
 
 // Renders visual effects like explosions, floating points, and animal magnetism aura shockwaves over the board.
 // Requires visualEffects array: [{ id, type: 'explosion' | 'text' | 'magnetism', regionId, race, text, timestamp, x, y }]
@@ -15,8 +16,8 @@ const VisualEffectsManager = ({ visualEffects, regions, visible = true }) => {
 
         // Base coordinates based on 6x6 grid.
         // x and y in region are 0-5.
-        const leftPercent = (region.x + 0.5) * (100 / 6);
-        const topPercent = (region.y + 0.5) * (100 / 6);
+        const leftPercent = (region.x + 0.5) * (100 / BOARD_SIZE);
+        const topPercent = (region.y + 0.5) * (100 / BOARD_SIZE);
 
         const style = {
           left: `${leftPercent}%`,

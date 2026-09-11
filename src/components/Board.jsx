@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
+import '../assets/css/board.css';
 import Region from './Region';
 import JakubTracksManager from './board/JakubTracksManager';
 import VisualEffectsManager from './board/VisualEffectsManager';
@@ -27,10 +28,33 @@ const BoardComponent = ({
   jakubRegion,
   autoplaySpeed,
   onJakubMouseEnter,
-  onJakubMouseLeave
+  onJakubMouseLeave,
+  miniBoard = false,
+  isMobileUi = false,
+  placementArmed = false,
+  onLongPressPawn
 }) => {
+  const wrapRef = useRef(null);
+
+  useEffect(() => {
+    const el = wrapRef.current;
+    if (!el) return undefined;
+    if (!isMobileUi) {
+      el.style.removeProperty('--cell');
+      return undefined;
+    }
+    const apply = () => {
+      const cell = Math.max(28, Math.min(137, Math.floor(Math.min(el.clientWidth, el.clientHeight) / 6)));
+      el.style.setProperty('--cell', `${cell}px`);
+    };
+    apply();
+    const ro = new ResizeObserver(apply);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [isMobileUi]);
+
   return (
-    <div className="board-wrapper">
+    <div ref={wrapRef} className={`board-wrapper ${miniBoard && !isMobileUi ? 'mini-board' : ''}`}>
       <div className="board-background-layer"></div>
       <div className="board">
         <JakubTracksManager 
@@ -67,6 +91,9 @@ const BoardComponent = ({
             onMouseEnter={() => onRegionMouseEnter && onRegionMouseEnter(region.id)}
             onMouseLeave={() => onRegionMouseLeave && onRegionMouseLeave(region.id)}
             showCounters={showCounters}
+            isMobileUi={isMobileUi}
+            placementArmed={placementArmed}
+            onLongPressPawn={(typeId, pawn, pawnType, e) => onLongPressPawn && onLongPressPawn(region.id, typeId, pawn, pawnType, e)}
           />
         ))}
       </div>

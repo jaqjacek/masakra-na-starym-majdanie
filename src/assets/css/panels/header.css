@@ -1,0 +1,68 @@
+/* GameHeader — round + turn order */
+.round-indicator { 
+  background: rgba(41, 128, 185, 0.3); 
+  color: #a9cce3; 
+  padding: 2px 8px; 
+  border-radius: 4px; 
+  font-size: 0.7rem; 
+  font-weight: bold; 
+  border: 1px solid rgba(41, 128, 185, 0.5);
+}
+
+.game-status-horizontal {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  background: rgba(0,0,0,0.6);
+  padding: 0.25rem 0.4rem;
+  border-radius: 8px;
+  border: 1px solid #444;
+  margin: 0;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  gap: 0.4rem;
+  flex: 0 0 auto;
+  align-self: stretch;
+}
+
+.player-order-track {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  min-width: 0;
+}
+
+.order-label {
+  font-size: 0.65rem;
+  font-weight: bold;
+  color: #888;
+  margin-right: 0.2rem;
+}
+
+.order-item {
+  font-size: 0.7rem;
+  font-weight: bold;
+  padding: 2px 6px;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid #444;
+  border-radius: 4px;
+  color: #666;
+  transition: all 0.3s;
+}
+
+.order-item.active {
+  background: #f1c40f;
+  color: #2c3e50;
+  border-color: #fff;
+  transform: scale(1.1);
+  box-shadow: 0 0-8px rgba(241, 196, 15, 0.4);
+}
+
+.order-item.passed {
+  text-decoration: line-through;
+  opacity: 0.4;
+  background: #2c3e50;
+}

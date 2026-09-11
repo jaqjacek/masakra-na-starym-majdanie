@@ -13,8 +13,8 @@ export class ClientPlacementManager {
    * @param {Object} playLimits - The pawn limits in play configuration
    * @returns {Object|null} The best placement description or null
    */
-  static findBestPlacement(regions, heldSets, playerId, generalOf, globalPawnPool, playLimits) {
-    return SharedPlacementManager.findBestPlacement(regions, heldSets, playerId, generalOf, globalPawnPool, playLimits);
+  static findBestPlacement(regions, heldSets, playerId, generalOf, globalPawnPool, playLimits, currentRound = 1) {
+    return SharedPlacementManager.findBestPlacement(regions, heldSets, playerId, generalOf, globalPawnPool, playLimits, currentRound);
   }
 
   /**
@@ -106,7 +106,7 @@ export class ClientPlacementManager {
     };
   }
 
-  static executePass(curPlayer, workState, _maxHandSize, applySetToJakubAnger) {
+  static executePass(curPlayer, workState, applySetToJakubAnger) {
     if (!workState.passedPlayers.includes(curPlayer.id)) {
       workState.passedPlayers.push(curPlayer.id);
     }

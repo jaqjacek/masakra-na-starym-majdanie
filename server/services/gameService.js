@@ -4,7 +4,8 @@ import {
   RACES, 
   DEFAULT_PLAYERS, 
   INITIAL_PAWN_POOL, 
-  DEFAULT_POWER_CONFIG 
+  DEFAULT_POWER_CONFIG,
+  PLAYER_IDS
 } from '../constants.js';
 import { 
   createEmptyRegions 
@@ -17,6 +18,9 @@ import {
   getGlobalConfig, 
   getGameConfig,
   CONFIGS_DIR,
+  GAMES_DIR,
+  getGameData,
+  getNextGameId,
   saveFullState,
   createSnapshot
 } from '../gameLogic.js';
@@ -42,7 +46,7 @@ export function initializeGame(gameId, requestedSet, io) {
   if (!setsData.discardPile) setsData.discardPile = []; if (!setsData.heldSets) setsData.heldSets = [];
   
   const setName = setsData.setName || 'generated'; 
-  const playerOrder = [1, 2, 3, 4].sort(() => Math.random() - 0.5);
+  const playerOrder = [...PLAYER_IDS].sort(() => Math.random() - 0.5);
   
   players.forEach(p => {
     for (let i = 0; i < gameConfig.initialSetsPerPlayer; i++) { 
@@ -60,7 +64,7 @@ export function initializeGame(gameId, requestedSet, io) {
       time: new Date().toLocaleTimeString(), 
       text: `Game started with config: ${JSON.stringify(gameConfig)}`
     }], 
-    gameStatus: 'active', jakubAngerIncreased: false, jakubTurnExecuted: false,
+    gameStatus: 'active',
     manualPlayers: []
   };
 
@@ -73,4 +77,24 @@ export function initializeGame(gameId, requestedSet, io) {
   createSnapshot(gameId, finalState);
   if (io) io.to(`game:${gameId}`).emit('boardUpdate', finalState); 
   return finalState;
+}
+
+export function isGameInitialized(gameId) {
+  return fs.existsSync(path.join(GAMES_DIR, String(gameId), 'state.json'));
+}
+
+export function loadOrCreateGame(gameId, io, requestedSet) {
+  const gamePath = path.join(GAMES_DIR, String(gameId));
+  const hasState = fs.existsSync(path.join(gamePath, 'state.json'));
+  const hasMap = fs.existsSync(path.join(gamePath, 'map.json'));
+  if (!hasState && !hasMap) {
+    return initializeGame(gameId, requestedSet, io);
+  }
+  return getGameData(gameId).data;
+}
+
+export function createNewGame(io, requestedSet) {
+  const id = getNextGameId();
+  const state = initializeGame(id, requestedSet, io);
+  return { id, state };
 }

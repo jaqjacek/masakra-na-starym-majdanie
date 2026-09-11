@@ -1,11 +1,11 @@
 import React from 'react';
+import { BOARD_SIZE } from '../../../shared/constants.js';
 
 const JakubOverlay = ({ jakub, region, autoplaySpeed, onMouseEnter, onMouseLeave }) => {
   if (!jakub || !region) return null;
 
-  // Center of the region in percentages
-  const leftPercent = (region.x + 0.5) * (100 / 6);
-  const topPercent = (region.y + 0.5) * (100 / 6);
+  const leftPercent = (region.x + 0.5) * (100 / BOARD_SIZE);
+  const topPercent = (region.y + 0.5) * (100 / BOARD_SIZE);
 
   return (
     <div 

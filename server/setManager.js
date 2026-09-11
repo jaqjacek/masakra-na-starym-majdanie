@@ -1,7 +1,17 @@
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { RACES, PAWN_CONSTRAINTS, INITIAL_PAWN_POOL, DEFAULT_POWER_CONFIG, PAWNS_IN_PLAY_LIMIT } from './constants.js';
+import {
+  RACES,
+  PAWN_CONSTRAINTS,
+  INITIAL_PAWN_POOL,
+  DEFAULT_POWER_CONFIG,
+  PAWNS_IN_PLAY_LIMIT,
+  MAX_UNITS_PER_SET,
+  MIN_SET_POWER,
+  MAX_RACES_PER_SET,
+  MAX_GENERATED_SETS
+} from './constants.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -56,7 +66,7 @@ export const generateSetData = (pawnsConfig, powerConfig, maxPower, meta = {}) =
   const totals = { ...pawnsConfig };
   const items = [];
   const REVERSE_RACES = [...RACES].reverse();
-  const maxUnits = 4; // Capped at 4 pawns per set for regular generation
+  const maxUnits = meta.maxUnitsPerSet ?? MAX_UNITS_PER_SET;
   
   const calcPower = (content) => Object.entries(content).reduce((sum, [r, c]) => sum + (powerConfig[r] || 0) * c, 0);
   const countUnits = (content) => Object.values(content).reduce((a, b) => a + b, 0);
@@ -81,12 +91,8 @@ export const generateSetData = (pawnsConfig, powerConfig, maxPower, meta = {}) =
     if (countUnits(content) >= maxUnits) return false;
     if ((content[race] || 0) >= PAWN_CONSTRAINTS[race]) return false;
     
-    // Max 3 races check
-    if (!content[race] && countDistinctRaces(content) >= 3) return false;
-    
-    // Max 3 bardaks check
-    if (race === 'bardak' && (content.bardak || 0) >= 3) return false;
-    
+    if (!content[race] && countDistinctRaces(content) >= MAX_RACES_PER_SET) return false;
+
     if (calcPower({ ...content, [race]: (content[race] || 0) + 1 }) > maxPower) return false;
     return true;
   };
@@ -128,12 +134,10 @@ export const generateSetData = (pawnsConfig, powerConfig, maxPower, meta = {}) =
     items.push({ id: 0, content, used: false, power: calcPower(content), ownerId: null });
   }
 
-  // 2. Generate the rest of the sets, up to a hard cap of 50 total sets
-  while (items.length < 50 && RACES.some(r => totals[r] > 0)) {
+  while (items.length < MAX_GENERATED_SETS && RACES.some(r => totals[r] > 0)) {
     let content = {};
     let foundValid = false;
     
-    // Try up to 10 times to find a unique combination with power >= 3
     for (let tryIdx = 0; tryIdx < 10; tryIdx++) {
       let tempTotals = { ...totals };
       let tempContent = {};
@@ -150,7 +154,7 @@ export const generateSetData = (pawnsConfig, powerConfig, maxPower, meta = {}) =
         for (const race of REVERSE_RACES) {
           if (canAdd(tempContent, race, tempTotals)) {
             // Force adding if power is less than 3, otherwise 50% probability
-            const prob = calcPower(tempContent) < 3 ? 1.0 : 0.5;
+            const prob = calcPower(tempContent) < MIN_SET_POWER ? 1.0 : 0.5;
             if (Math.random() < prob) { 
               tempContent[race] = (tempContent[race] || 0) + 1; 
               tempTotals[race]--; 
@@ -162,8 +166,7 @@ export const generateSetData = (pawnsConfig, powerConfig, maxPower, meta = {}) =
         if (!pawnAddedThisPass) adding = false;
       }
       
-      // Enforce power >= 3
-      if (calcPower(tempContent) >= 3) {
+      if (calcPower(tempContent) >= MIN_SET_POWER) {
         const sig = getSignature(tempContent);
         const isDuplicate = items.some(item => getSignature(item.content) === sig);
         
@@ -183,7 +186,6 @@ export const generateSetData = (pawnsConfig, powerConfig, maxPower, meta = {}) =
     if (foundValid) {
       items.push({ id: 0, content, used: false, power: calcPower(content), ownerId: null });
     } else {
-      // Break the loop if we cannot form a single set with power >= 3
       break;
     }
   }

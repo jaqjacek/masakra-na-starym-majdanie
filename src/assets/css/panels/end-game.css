@@ -1,0 +1,305 @@
+/* End-game rankings modal */
+/* End Game Rankings Modal Styles */
+.end-game-modal-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0, 0, 0, 0.85);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 6000;
+  backdrop-filter: blur(8px);
+}
+
+.end-game-modal-content {
+  background: radial-gradient(circle at top, #2d1f18 0%, #17100d 100%);
+  border: 3px solid #b38f54;
+  border-radius: 16px;
+  width: 95%;
+  max-width: 850px;
+  max-height: 90vh;
+  position: relative;
+  padding: 2rem;
+  overflow-y: auto;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.9), 0 0 30px rgba(179, 143, 84, 0.2);
+  color: #f5f5f5;
+  font-family: 'Outfit', 'Inter', sans-serif;
+}
+
+.end-game-header {
+  text-align: center;
+  margin-bottom: 2rem;
+  position: relative;
+}
+
+.trophy-glow {
+  font-size: 3.5rem;
+  animation: float-trophy 3s ease-in-out infinite;
+  text-shadow: 0 0 20px rgba(255, 215, 0, 0.6);
+}
+
+@keyframes float-trophy {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+.end-game-header h2 {
+  color: #b38f54;
+  font-size: 1.8rem;
+  font-weight: 800;
+  letter-spacing: 2px;
+  margin: 0.5rem 0 0 0;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+  text-transform: uppercase;
+}
+
+.end-game-rankings {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.rank-card {
+  position: relative;
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.4);
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.rank-badge {
+  position: absolute;
+  top: -12px;
+  left: 15px;
+  padding: 3px 12px;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+}
+
+.rank-badge.gold {
+  background: linear-gradient(135deg, #ffd700, #b8860b);
+  color: #1a0f00;
+  border: 1px solid #ffe875;
+}
+
+.rank-badge.silver {
+  background: linear-gradient(135deg, #bdc3c7, #2c3e50);
+  color: #fff;
+  border: 1px solid #eaeeef;
+}
+
+.rank-badge.bronze {
+  background: linear-gradient(135deg, #cd7f32, #8c4a16);
+  color: #fff;
+  border: 1px solid #e59866;
+}
+
+.rank-badge.fourth {
+  background: #34495e;
+  color: #bdc3c7;
+  border: 1px solid #5d6d7e;
+}
+
+.winner-card {
+  background: linear-gradient(145deg, rgba(179, 143, 84, 0.15) 0%, rgba(26, 16, 13, 0.5) 100%);
+  border: 2px solid #b38f54;
+  box-shadow: 0 10px 30px rgba(179, 143, 84, 0.25);
+}
+
+.winner-card .player-details h3 {
+  font-size: 1.6rem;
+  color: #ffd700;
+  margin: 0;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.6);
+}
+
+.winner-card .final-score {
+  font-size: 2.2rem;
+  font-weight: 900;
+  color: #ffd700;
+  text-shadow: 0 0 10px rgba(255, 215, 0, 0.3);
+}
+
+.runner-card {
+  background: rgba(30, 22, 18, 0.6);
+}
+
+.runner-card.silver {
+  border-left: 4px solid #bdc3c7;
+}
+
+.runner-card.bronze {
+  border-left: 4px solid #cd7f32;
+}
+
+.runner-card.fourth {
+  border-left: 4px solid #7f8c8d;
+}
+
+.runner-card .player-details h4 {
+  font-size: 1.1rem;
+  color: #fff;
+  margin: 0;
+}
+
+.runner-card .final-score {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: #bdc3c7;
+}
+
+.runners-up-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  gap: 1rem;
+}
+
+.player-details {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+  padding-bottom: 0.5rem;
+}
+
+.player-stats-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.player-stats-grid.small {
+  gap: 0.6rem;
+}
+
+.race-stat-row {
+  background: rgba(0, 0, 0, 0.25);
+  border-radius: 8px;
+  padding: 0.8rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  border: 1px solid rgba(255, 255, 255, 0.02);
+  transition: transform 0.2s;
+}
+
+.race-stat-row:hover {
+  transform: translateX(4px);
+  background: rgba(0, 0, 0, 0.35);
+}
+
+.race-header-info {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  border-bottom: 1px dashed rgba(255,255,255,0.05);
+  padding-bottom: 0.3rem;
+}
+
+.race-name {
+  font-weight: bold;
+  font-size: 0.95rem;
+}
+
+.player-stats-grid.small .race-name {
+  font-size: 0.85rem;
+}
+
+.race-times {
+  color: #888;
+  font-size: 0.8rem;
+}
+
+.race-metrics {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.8rem;
+}
+
+.player-stats-grid.small .race-metrics {
+  gap: 0.4rem;
+}
+
+.metric-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.8rem;
+  background: rgba(255, 255, 255, 0.04);
+  padding: 2px 8px;
+  border-radius: 4px;
+}
+
+.player-stats-grid.small .metric-item {
+  font-size: 0.72rem;
+  padding: 1px 6px;
+}
+
+.metric-label {
+  color: #aaa;
+}
+
+.metric-value {
+  font-weight: 700;
+}
+
+.score-metric .metric-value { color: #2ed573; }
+.loss-metric .metric-value { color: #ff4757; }
+.rambo-metric .metric-value { color: #1e90ff; }
+.witness-metric .metric-value { color: #ffa502; }
+.final-metric .metric-value { color: #eccc68; }
+.passing-metric .metric-value { color: #a55eea; }
+.killed-metric .metric-value { color: #eb4d4b; }
+.sets-metric .metric-value { color: #f9ca24; }
+
+.no-stats-text {
+  text-align: center;
+  color: #888;
+  font-style: italic;
+  font-size: 0.85rem;
+  padding: 0.5rem 0;
+}
+
+.end-game-footer {
+  margin-top: 2rem;
+  text-align: center;
+}
+
+.close-popup-btn {
+  background: linear-gradient(135deg, #b38f54 0%, #8c6b35 100%);
+  color: #fff;
+  border: none;
+  padding: 0.8rem 2rem;
+  border-radius: 8px;
+  font-weight: 850;
+  font-size: 0.95rem;
+  cursor: pointer;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+  transition: transform 0.2s, box-shadow 0.2s;
+  letter-spacing: 1px;
+}
+
+.close-popup-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 15px rgba(179, 143, 84, 0.4);
+}
+
+.end-game-stats-btn {
+  background: linear-gradient(135deg, #b38f54 0%, #8c6b35 100%) !important;
+  color: #fff !important;
+  border: 1px solid #ffd700 !important;
+  font-weight: bold;
+  animation: stats-pulse 2s infinite;
+}
+
+@keyframes stats-pulse {
+  0%, 100% { box-shadow: 0 0 5px rgba(255, 215, 0, 0.3); }
+  50% { box-shadow: 0 0 15px rgba(255, 215, 0, 0.7); }
+}

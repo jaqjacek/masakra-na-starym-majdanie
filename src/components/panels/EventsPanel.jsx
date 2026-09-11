@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useTranslation } from '../../hooks/useTranslation';
+import '../../assets/css/panels/events.css';
 
 const EventsPanel = ({ events, onClose, onTriggerEvent }) => {
   const { t } = useTranslation();

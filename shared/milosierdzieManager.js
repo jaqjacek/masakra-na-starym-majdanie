@@ -1,3 +1,5 @@
+import { RACES, MERCY_DIVISOR } from './constants.js';
+
 export class MilosierdzieManager {
   /**
    * Applies the "Jakub's Mercy" logic.
@@ -11,12 +13,11 @@ export class MilosierdzieManager {
    */
   static applyMercy(jakub, players) {
     const rewards = [];
-    const races = ['vampire', 'werewolf', 'ghost', 'bardak'];
 
-    races.forEach(race => {
+    RACES.forEach(race => {
       const anger = jakub.anger[race] || 0;
       if (anger > 0) {
-        const pointsToAdd = Math.ceil(anger / 2);
+        const pointsToAdd = Math.ceil(anger / MERCY_DIVISOR);
         const remainingAnger = anger - pointsToAdd;
 
         const general = players.find(p => p.generalOf === race);

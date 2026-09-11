@@ -1,0 +1,157 @@
+/* Board + regions + mini-board */
+.board-wrapper {
+  position: relative;
+  padding: 12px;
+  background-image: linear-gradient(rgba(0,0,0,0.15), rgba(0,0,0,0.15)), url('/src/assets/img/dark_wood_frame.png');
+  background-size: cover;
+  border: 3px solid #3e2723;
+  border-radius: 12px;
+  box-shadow: 0 20px 50px rgba(0,0,0,0.85), inset 0 0 15px rgba(0,0,0,0.7);
+  overflow: hidden;
+}
+
+.board-background-layer {
+  display: none;
+}
+
+/* Increased repeats by 20% from 120px to 144px */
+.board {
+  display: grid; grid-template-columns: repeat(6, 137px); grid-template-rows: repeat(6, 137px);
+  gap: 4px; position: relative; z-index: 1;
+  background-image: url('/src/assets/img/board_background_pl.jpg');
+  background-size: cover;
+  background-position: center;
+  background-color: #2b1810; /* Dark grid line joints */
+  padding: 2px;
+  border-radius: 4px;
+}
+
+html[lang="en"] .board { background-image: url('/src/assets/img/board_background_en.jpg'); }
+html[lang="cs"] .board { background-image: url('/src/assets/img/board_background_cs.jpg'); }
+html[lang="uk"] .board { background-image: url('/src/assets/img/board_background_uk.jpg'); }
+html[lang="tlh"] .board { background-image: url('/src/assets/img/board_background_tlh.jpg'); }
+
+/* Increased size by 20% from 120px to 144px */
+.region {
+  width: 137px; height: 137px;
+  background-color: transparent;
+  border: 2px solid #5d4037;
+  display: flex; flex-direction: column; box-sizing: border-box; position: relative; overflow: hidden;
+  box-shadow: inset 0 0 6px rgba(0,0,0,0.3);
+  transition: all 0.2s ease;
+  border-radius: 2px;
+}
+
+.region:hover {
+  filter: brightness(1.08);
+  box-shadow: inset 0 0 12px rgba(0,0,0,0.75);
+}
+
+.board-wrapper.mini-board {
+  padding: 0;
+  background: none;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+  outline: none;
+}
+
+.board-wrapper.mini-board .board {
+  grid-template-columns: repeat(6, calc(137px * 0.75));
+  grid-template-rows: repeat(6, calc(137px * 0.75));
+  gap: 0;
+  padding: 0;
+  border-radius: 0;
+}
+
+.board-wrapper.mini-board .region {
+  width: calc(137px * 0.75);
+  height: calc(137px * 0.75);
+  border: none;
+  border-radius: 0;
+  outline: 1px solid #5d4037;
+  outline-offset: -1px;
+}
+
+.board-wrapper.mini-board .region.valid-target {
+  outline-color: #2ecc71;
+}
+
+.board-wrapper.mini-board .region .pawn-indicator {
+  width: calc(31px * 0.75);
+  height: calc(31px * 0.75);
+}
+
+.board-wrapper.mini-board .pawns-area {
+  gap: 1px;
+  padding: 1px;
+}
+
+.board-wrapper.mini-board .region-summary {
+  height: 12px;
+}
+
+.board-wrapper.mini-board .summary-icon {
+  width: 8px;
+  height: 8px;
+}
+
+.board-wrapper.mini-board .summary-count {
+  font-size: 8px;
+}
+
+.board-wrapper.mini-board .jakub-overlay-container .pawn-indicator {
+  width: calc(40px * 0.6);
+  height: calc(40px * 0.6);
+}
+
+.region.valid-target {
+  border-color: #2ecc71;
+  box-shadow: inset 0 0 15px rgba(46, 204, 113, 0.6), 0 0 10px rgba(46, 204, 113, 0.4);
+}
+.pawns-area { flex: 1; display: flex; flex-wrap: wrap; align-content: flex-start; gap: 2px; padding: 2px; overflow-y: auto; }
+/* Increased size by 20% from 26px to 31px */
+.region .pawn-indicator {
+  width: 31px; height: 31px;
+  border-radius: 50%;
+  position: relative;
+  cursor: grab;
+  border: 1px solid rgba(0, 0, 0, 0.4);
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.65), inset 0 2px 2px rgba(255, 255, 255, 0.35), inset 0 -2px 2px rgba(0, 0, 0, 0.35);
+  transition: transform 0.2s cubic-bezier(0.18, 0.89, 0.32, 1.28), box-shadow 0.2s ease;
+  z-index: 5;
+}
+
+.region .pawn-indicator:hover {
+  transform: translateY(-4px) scale(1.15);
+  box-shadow: 0 8px 14px rgba(0, 0, 0, 0.75), inset 0 2px 2px rgba(255, 255, 255, 0.35), inset 0 -2px 2px rgba(0, 0, 0, 0.35);
+  z-index: 20;
+}
+
+.disabled-pawn {
+  filter: grayscale(100%) brightness(0.6) !important;
+  opacity: 0.55 !important;
+  cursor: not-allowed !important;
+}
+
+.disabled-pawn:hover {
+  transform: none !important;
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.65) !important;
+  z-index: 5 !important;
+}
+
+.region-summary {
+  height: 20px; background-color: rgba(62, 39, 35, 0.15); display: flex; justify-content: space-around;
+  align-items: center; border-top: 1px solid rgba(93, 64, 55, 0.4); padding: 0 2px;
+}
+
+.summary-item { display: flex; align-items: center; gap: 1px; }
+.summary-icon { width: 12px; height: 12px; opacity: 0.6; }
+.summary-icon.active { opacity: 1; }
+.summary-count { font-size: 10px; font-weight: bold; color: #1a1a1a; text-shadow: 0 0 3px #fff, 0 0 3px #fff, 0 0 2px #fff; }
+
+/* Region stacking above Jakub footsteps */
+/* Region stacking to sit on top of footstep overlay, leaving grid borders above footsteps */
+.region {
+  z-index: 2;
+}

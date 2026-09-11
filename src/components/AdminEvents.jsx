@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from '../hooks/useTranslation';
 import '../assets/css/admin.css';
+import '../assets/css/panels/scoring.css';
 import { VERSION_INFO } from '../constants/version';
 import { SERVER_URL } from '../constants/constants';
 

@@ -2,6 +2,7 @@
  * Manager responsible for applying event effects to the game state.
  */
 import { RACE_MAP, RACE_MAP_PL } from '../eventConstants.js';
+import { computeJakubRange } from '../../shared/constants.js';
 import { EventMoveEffects } from './eventMoveEffects.js';
 import { EventTransformationEffects } from './eventTransformationEffects.js';
 
@@ -43,15 +44,8 @@ export class EventEffectManager {
       }
     });
 
-    // Recalculate Range!
     const updatedAngers = jakubInterface.getAnger();
-    let extraRange = 0;
-    Object.values(updatedAngers).forEach(val => {
-      if (val >= 10) {
-        extraRange += 1;
-      }
-    });
-    const newRange = Math.min(5, 1 + extraRange);
+    const newRange = computeJakubRange(updatedAngers);
     jakubInterface.setRange(newRange);
 
     return logs.length > 0 ? `Zmiany furii: ${logs.join(', ')} (Zasięg zaktualizowany do ${newRange})` : "Brak zmian furii.";

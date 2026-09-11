@@ -3,80 +3,68 @@ import werewolfIcon from '../assets/icons/warewolf_128x128.png';
 import ghostIcon from '../assets/icons/ghost_128x128.png';
 import bardakIcon from '../assets/icons/bardak_128x128.png';
 import jakubIcon from '../assets/icons/jakub_128x128.png';
+import { RACES, PAWN_SPEED, JAKUB_BASE_RANGE, emptyAnger } from '../../shared/constants.js';
 
 export const STATUSES = {
-  DISABLED: 'DISABLED',
-  ENABLED: 'ENABLED',
-  INVINCIBLE: 'INVINCIBLE',
-  CURSED: 'CURSED',
-  BLEED: 'BLEED',
-  SLOW: 'SLOW',
-  BLESSED: 'BLESSED',
-  FAST: 'FAST'
+  ENABLED: 'ENABLED'
 };
 
 export const PAWN_TYPES = [
-  { 
-    id: 'vampire', 
-    icon: vampireIcon, 
-    label: 'V', 
-    name: 'Wampiry', 
+  {
+    id: 'vampire',
+    icon: vampireIcon,
+    label: 'V',
+    name: 'Wampiry',
     color: '#8B0000',
     health: 10,
-    speed: 999,
+    speed: PAWN_SPEED.vampire,
     defaultStatuses: [STATUSES.ENABLED]
   },
-  { 
-    id: 'werewolf', 
-    icon: werewolfIcon, 
-    label: 'W', 
-    name: 'Wilkołaki', 
+  {
+    id: 'werewolf',
+    icon: werewolfIcon,
+    label: 'W',
+    name: 'Wilkołaki',
     color: '#A0522D',
     health: 15,
-    speed: 2,
+    speed: PAWN_SPEED.werewolf,
     defaultStatuses: [STATUSES.ENABLED]
   },
-  { 
-    id: 'ghost', 
-    icon: ghostIcon, 
-    label: 'G', 
-    name: 'Duchy', 
+  {
+    id: 'ghost',
+    icon: ghostIcon,
+    label: 'G',
+    name: 'Duchy',
     color: '#F0F8FF',
     health: 5,
-    speed: 1,
+    speed: PAWN_SPEED.ghost,
     defaultStatuses: [STATUSES.ENABLED]
   },
-  { 
-    id: 'bardak', 
-    icon: bardakIcon, 
-    label: 'B', 
-    name: 'Bardaki', 
+  {
+    id: 'bardak',
+    icon: bardakIcon,
+    label: 'B',
+    name: 'Bardaki',
     color: '#696969',
     health: 20,
-    speed: 1,
+    speed: PAWN_SPEED.bardak,
     defaultStatuses: [STATUSES.ENABLED]
   },
-  { 
-    id: 'jakub', 
-    icon: jakubIcon, 
-    label: 'J', 
-    name: 'Jakub', 
+  {
+    id: 'jakub',
+    icon: jakubIcon,
+    label: 'J',
+    name: 'Jakub',
     color: '#f1c40f',
     health: 100,
     isUnique: true,
     defaultStatuses: [STATUSES.ENABLED],
-    // New defaults for special Jakub logic
     defaultParameters: {
-      speed: 1,
-      range: 1,
-      anger: {
-        vampire: 0,
-        werewolf: 0,
-        ghost: 0,
-        bardak: 0
-      }
+      speed: PAWN_SPEED.jakub,
+      range: JAKUB_BASE_RANGE,
+      anger: emptyAnger()
     }
   }
 ];
 
-export const SUMMARY_PAWN_IDS = ['vampire', 'werewolf', 'ghost', 'bardak'];
+export const SUMMARY_PAWN_IDS = [...RACES];

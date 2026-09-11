@@ -13,8 +13,8 @@ export class ServerPlacementManager {
    * @param {Object} playLimits - The pawn limits in play configuration
    * @returns {Object|null} The best placement description or null
    */
-  static findBestPlacement(regions, heldSets, playerId, generalOf, globalPawnPool, playLimits) {
-    return SharedPlacementManager.findBestPlacement(regions, heldSets, playerId, generalOf, globalPawnPool, playLimits);
+  static findBestPlacement(regions, heldSets, playerId, generalOf, globalPawnPool, playLimits, currentRound = 1) {
+    return SharedPlacementManager.findBestPlacement(regions, heldSets, playerId, generalOf, globalPawnPool, playLimits, currentRound);
   }
 
   /**
@@ -67,7 +67,6 @@ export class ServerPlacementManager {
    * Handles a player's turn pass, discarding/selling excess sets to Jakub and updating scores.
    * @param {Object} player - The active player passing
    * @param {Array} heldSets - The sets currently held in the pool
-   * @param {number} maxHandSize - Maximum hand size allowed (e.g. 3)
    * @returns {number} Count of excess sets sold
    */
   static executePass(player, heldSets, regions) {

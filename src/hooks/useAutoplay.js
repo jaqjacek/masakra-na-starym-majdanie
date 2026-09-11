@@ -1,27 +1,18 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { 
-  INITIAL_HAND_SIZE, 
-  MAX_HAND_SIZE, 
-  JAKUB_INITIAL_SETS, 
-  SURVIVOR_BONUS_MULTIPLIER, 
   TOTAL_GAME_ROUNDS, 
   DEFAULT_AUTOPLAY_SPEED,
-  VAMPIRE_FINAL_SCORING_MULTIPLIER,
-  GHOST_FINAL_SCORING_BONUS,
-  GHOST_FINAL_SCORING_MAX_OTHER_BONUS,
+  JAKUB_BASE_RANGE,
   SERVER_URL
 } from '../constants/constants';
-import { PAWN_TYPES } from '../constants/pawnTypes';
 import { RACES } from '../constants/game';
 import { Board } from '../constants/board';
-import { ClientPlacementManager } from '../logic/clientPlacementManager';
-import { applySetToJakubAnger, executeJakubStep } from '../strategies/jakubStrategy';
-import { GeneralSelectionManager } from '../../shared/generalSelectionManager.js';
+import { executeJakubStep } from '../strategies/jakubStrategy';
 import { VampireScoring } from '../../shared/scoring/vampireScoring.js';
 import { WerewolfScoring } from '../../shared/scoring/werewolfScoring.js';
 import { GhostScoring } from '../../shared/scoring/ghostScoring.js';
 import { BardakScoring } from '../../shared/scoring/bardakScoring.js';
-import { trackPointsChange, trackGeneralSelection } from '../../shared/statsManager.js';
+import { trackPointsChange } from '../../shared/statsManager.js';
 import { MilosierdzieManager } from '../../shared/milosierdzieManager.js';
 
 export const useAutoplay = ({ 
@@ -30,30 +21,14 @@ export const useAutoplay = ({
   updateGameWithSync, 
   addLog,
   manualPlayers,
-  playerId
+  playerId,
+  dispatchAction
 }) => {
   const [isFullAutoplay, setIsFullAutoplay] = useState(false);
   const [isJakubAutoplay, setIsJakubAutoplay] = useState(false);
   const [autoplaySpeed, setAutoplaySpeed] = useState(DEFAULT_AUTOPLAY_SPEED);
   const [autoplayEventPopup, setAutoplayEventPopup] = useState(null);
   const isProcessingRef = useRef(false);
-
-  const refillSetsIfNeeded = useCallback((state) => {
-    if (!state.sets.drawPile) state.sets.drawPile = [];
-    if (!state.sets.discardPile) state.sets.discardPile = [];
-    if (state.sets.drawPile.length === 0 && state.sets.discardPile.length > 0) {
-      state.sets.drawPile = [...state.sets.discardPile];
-      state.sets.discardPile = [];
-      addLog(state, "Przetasowywanie stosu odrzuconego do talii dobierania.");
-    }
-  }, [addLog]);
-
-  const drawSet = useCallback((state) => {
-    refillSetsIfNeeded(state);
-    if (state.sets.drawPile.length === 0) return null;
-    const randomIdx = Math.floor(Math.random() * state.sets.drawPile.length);
-    return state.sets.drawPile.splice(randomIdx, 1)[0];
-  }, [refillSetsIfNeeded]);
 
   const findAndRemoveSetById = useCallback((state, setId, expectedOwnerId = undefined) => {
     console.log('[findAndRemoveSetById] START', { setId, expectedOwnerId });
@@ -126,57 +101,11 @@ export const useAutoplay = ({
       let workState = JSON.parse(JSON.stringify(gameState));
       
       if (workState.phase === 'setup') {
-        let distributionCount = 0;
-        workState.players.forEach(player => {
-          const myHeld = (workState.sets.heldSets || []).filter(s => s.ownerId !== null && s.ownerId !== undefined && String(s.ownerId) === String(player.id));
-          const needed = INITIAL_HAND_SIZE - myHeld.length;
-          for (let i = 0; i < needed; i++) {
-            const set = drawSet(workState);
-            if (set) {
-              set.ownerId = player.id;
-              if (!workState.sets.heldSets) workState.sets.heldSets = [];
-              workState.sets.heldSets.push(set);
-              distributionCount++;
-            }
-          }
-        });
-        if (distributionCount > 0) addLog(workState, `Runda ${workState.currentRound}: Uzupełniono ręce graczy do ${INITIAL_HAND_SIZE} zestawów.`);
-        
-        let jakub = null;
-        for (const r of workState.regions) { if (r.pawns.jakub?.length > 0) { jakub = r.pawns.jakub[0]; break; } }
-
-        // Clear any existing sets belonging to Jakub before drawing new ones!
-        const existingJakubSets = (workState.sets.heldSets || []).filter(s => s.ownerId === 'jakub');
-        existingJakubSets.forEach(s => {
-          s.ownerId = null;
-          s.used = false;
-          if (!workState.sets.discardPile) workState.sets.discardPile = [];
-          workState.sets.discardPile.push(s);
-        });
-        workState.sets.heldSets = (workState.sets.heldSets || []).filter(s => s.ownerId !== 'jakub');
-
-        for (let i = 0; i < JAKUB_INITIAL_SETS; i++) {
-          const set = drawSet(workState);
-          if (set) {
-            set.ownerId = 'jakub';
-            if (!workState.sets.heldSets) workState.sets.heldSets = [];
-            workState.sets.heldSets.push(set);
-            
-            if (jakub) {
-              const result = applySetToJakubAnger(jakub, set.content);
-              jakub.anger = result.anger;
-              jakub.range = result.range;
-              addLog(workState, `Jakub przejął Zestaw ${set.id}. Furia zaktualizowana natychmiast.`);
-            } else {
-              addLog(workState, `Jakub przejął Zestaw ${set.id} z puli.`);
-            }
-          }
+        if (dispatchAction) {
+          dispatchAction('drawSets');
+          return;
         }
         workState.phase = 'general_phase';
-        workState.currentPlayerIndex = 0;
-        workState.passedPlayers = [];
-        workState.turnActionExecuted = false;
-        addLog(workState, `--- Start Fazy Generałów ---`);
         await updateGameWithSync(workState);
         return;
       }
@@ -205,27 +134,10 @@ export const useAutoplay = ({
             return;
           }
 
-          // Pause autoplay tick if this is a manual player's turn to choose a general
-          const isManual = (manualPlayers && manualPlayers.some(id => String(id) === String(curId))) || (playerId !== null && playerId !== undefined && String(curId) === String(playerId));
+          const isManual = manualPlayers && manualPlayers.some(id => String(id) === String(curId));
           if (isManual) {
-            // Keep full autoplay enabled, just wait for player to pick general
             return;
           }
-
-          // Otherwise, choose strategically for the AI player
-          const hand = (workState.sets.heldSets || []).filter(s => s.ownerId !== null && s.ownerId !== undefined && String(s.ownerId) === String(curId));
-          const pick = GeneralSelectionManager.chooseGeneral(
-            workState.availableGenerals,
-            hand,
-            workState.regions,
-            workState.sets.pawns
-          );
-          curPlayer.generalOf = pick;
-          workState.availableGenerals = workState.availableGenerals.filter(g => g !== pick);
-          trackGeneralSelection(curPlayer, pick);
-          addLog(workState, `Gracz ${curId} wybrał Generała bandy: ${pick === 'vampire' ? 'Wampiry' : pick === 'werewolf' ? 'Wilkołaki' : pick === 'ghost' ? 'Duchy' : 'Bardaki'}`);
-          workState.currentPlayerIndex = (workState.currentPlayerIndex + 1) % workState.playerOrder.length;
-          await updateGameWithSync(workState);
           return;
         }
       }
@@ -234,53 +146,10 @@ export const useAutoplay = ({
         const curId = workState.playerOrder[workState.currentPlayerIndex];
         const curPlayer = workState.players.find(p => p.id !== null && p.id !== undefined && String(p.id) === String(curId));
         
-        // Pause autoplay tick and wait for manual player turn
-        const isManual = (manualPlayers && manualPlayers.some(id => String(id) === String(curId))) || (playerId !== null && playerId !== undefined && String(curId) === String(playerId));
+        const isManual = manualPlayers && manualPlayers.some(id => String(id) === String(curId));
         if (isManual && !workState.passedPlayers.some(id => String(id) === String(curId))) {
-          // Keep full autoplay enabled, just wait for player to make their move
           return;
         }
-
-        if (!curPlayer.generalOf) {
-          const hand = (workState.sets.heldSets || []).filter(s => s.ownerId !== null && s.ownerId !== undefined && String(s.ownerId) === String(curId));
-          const pick = GeneralSelectionManager.chooseGeneral(
-            workState.availableGenerals,
-            hand,
-            workState.regions,
-            workState.sets.pawns
-          );
-          curPlayer.generalOf = pick;
-          workState.availableGenerals = workState.availableGenerals.filter(g => g !== pick);
-          trackGeneralSelection(curPlayer, pick);
-          addLog(workState, `Gracz ${curId} wybrał Generała bandy: ${pick === 'vampire' ? 'Wampiry' : pick === 'werewolf' ? 'Wilkołaki' : pick === 'ghost' ? 'Duchy' : 'Bardaki'}`);
-          workState.currentPlayerIndex = (workState.currentPlayerIndex + 1) % workState.playerOrder.length;
-          await updateGameWithSync(workState);
-          return;
-        }
-        if (workState.passedPlayers.some(id => String(id) === String(curId))) {
-          workState.currentPlayerIndex = (workState.currentPlayerIndex + 1) % workState.playerOrder.length;
-          await updateGameWithSync(workState);
-          return;
-        }
-        const globalPool = { ...workState.sets.pawns };
-        const playLimits = workState.sets.pawnsInPlayLimit || globalPool;
-        const best = ClientPlacementManager.findBestPlacement(workState.regions, workState.sets.heldSets, curId, curPlayer.generalOf, globalPool, playLimits, workState.currentRound);
-
-        if (best) {
-          const { logSummaryString, statusLogString } = ClientPlacementManager.executePlacement(best, workState, PAWN_TYPES, playLimits);
-           addLog(workState, `Gracz ${curId} wystawił Zestaw ${best.set.id} w sektorze [${best.region.x},${best.region.y}] [${logSummaryString}] | Plansza: ${statusLogString}`);
-        } else {
-          const excess = ClientPlacementManager.executePass(curPlayer, workState, MAX_HAND_SIZE, applySetToJakubAnger);
-          if (excess > 0) {
-            addLog(workState, `Gracz ${curId} spasował i podkablował ${excess} nadmiarowych zestawów. Furia Jakuba zaktualizowana.`, { race: curPlayer.generalOf, points: excess });
-          } else {
-            addLog(workState, `Gracz ${curId} spasował.`);
-          }
-        }
-        if (workState.passedPlayers.length === workState.players.length) {
-          workState.phase = 'jakub_phase'; addLog(workState, `--- Start Fazy Jakuba ---`);
-        } else workState.currentPlayerIndex = (workState.currentPlayerIndex + 1) % workState.playerOrder.length;
-        await updateGameWithSync(workState);
         return;
       }
 
@@ -323,8 +192,8 @@ export const useAutoplay = ({
           }
         }
         if (jakub) { 
-          jakub.range = 1; 
-          addLog(workState, `Zasięg Jakuba zresetowany do 1.`); 
+          jakub.range = JAKUB_BASE_RANGE; 
+          addLog(workState, `Zasięg Jakuba zresetowany do ${JAKUB_BASE_RANGE}.`); 
         }
           const toDiscard = (workState.sets.heldSets || []).filter(s => s.ownerId === 'jakub');
           toDiscard.forEach(s => { s.ownerId = null; s.used = false; if (!workState.sets.discardPile) workState.sets.discardPile = []; workState.sets.discardPile.push(s); });
@@ -422,7 +291,7 @@ export const useAutoplay = ({
     } finally {
       isProcessingRef.current = false;
     }
-  }, [isFullAutoplay, isJakubAutoplay, gameId, gameState, updateGameWithSync, addLog, drawSet, manualPlayers, playerId, autoplayEventPopup]);
+  }, [isFullAutoplay, isJakubAutoplay, gameId, gameState, updateGameWithSync, addLog, dispatchAction, manualPlayers, playerId, autoplayEventPopup]);
 
   useEffect(() => {
     const timer = setInterval(() => { 

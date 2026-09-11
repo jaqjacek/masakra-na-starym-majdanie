@@ -14,7 +14,7 @@ import {
 import { 
   createEmptyRegions 
 } from '../boardManager.js';
-import { initializeGame } from '../services/gameService.js';
+import { initializeGame, createNewGame, loadOrCreateGame } from '../services/gameService.js';
 import { GameEventPhaseManager } from '../events/gameEventPhaseManager.js';
 import { EventEffectManager } from '../events/eventEffectManager.js';
 import { RACES } from '../constants.js';
@@ -183,8 +183,19 @@ router.get('/next-id', (req, res) => {
   }
 });
 
+router.post('/new', (req, res) => {
+  try {
+    const requestedSet = req.body?.set || req.query.set;
+    const { id, state } = createNewGame(req.app.get('io'), requestedSet);
+    res.json({ id, state });
+  } catch (err) {
+    console.error('Failed to create game:', err);
+    res.status(500).json({ error: 'Failed to create game' });
+  }
+});
+
 router.get('/:gameId', (req, res) => { 
-  try { res.json(getGameData(req.params.gameId).data); } 
+  try { res.json(loadOrCreateGame(req.params.gameId, req.app.get('io'), req.query.set)); } 
   catch (_err) { res.status(500).json({ error: 'Failed' }); } 
 });
 

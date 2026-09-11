@@ -63,49 +63,47 @@ test('Punktacja Bardaków dla różnej liczby pionków (1, 2, 3)', () => {
 });
 
 test('Punktacja Duchów dla różnej liczby pionków (1, 2, 3)', () => {
-  // Wzór: (2 - distToEdge - (dist <= jakubRange ? 1 : 0)) * gCount
+  // Wzór: (2 - distToEdge - (dist <= 1 ? 1 : 0)) * gCount
 
   const edgeRegion = { x: 0, y: 0 };      // distToEdge = 0
   const midRegion = { x: 1, y: 1 };       // distToEdge = 1
   const centerRegion = { x: 2, y: 2 };    // distToEdge = 2
 
-  const jakubRange = 1;
-
   // 1. Krawędź (distToEdge = 0)
   // Bez kary Jakuba (dist = 3) -> 2 * gCount
-  assert.strictEqual(GhostScoring.calculate(edgeRegion, 3, jakubRange, 1), 2);
-  assert.strictEqual(GhostScoring.calculate(edgeRegion, 3, jakubRange, 2), 4);
-  assert.strictEqual(GhostScoring.calculate(edgeRegion, 3, jakubRange, 3), 6);
+  assert.strictEqual(GhostScoring.calculate(edgeRegion, 3, 1), 2);
+  assert.strictEqual(GhostScoring.calculate(edgeRegion, 3, 2), 4);
+  assert.strictEqual(GhostScoring.calculate(edgeRegion, 3, 3), 6);
 
   // Z karą Jakuba (dist = 1) -> (2 - 1) * gCount = 1 * gCount
-  assert.strictEqual(GhostScoring.calculate(edgeRegion, 1, jakubRange, 1), 1);
-  assert.strictEqual(GhostScoring.calculate(edgeRegion, 1, jakubRange, 2), 2);
-  assert.strictEqual(GhostScoring.calculate(edgeRegion, 1, jakubRange, 3), 3);
+  assert.strictEqual(GhostScoring.calculate(edgeRegion, 1, 1), 1);
+  assert.strictEqual(GhostScoring.calculate(edgeRegion, 1, 2), 2);
+  assert.strictEqual(GhostScoring.calculate(edgeRegion, 1, 3), 3);
 
   // 2. 1 krok od krawędzi (distToEdge = 1)
   // Bez kary Jakuba (dist = 3) -> (2 - 1) * gCount = 1 * gCount
-  assert.strictEqual(GhostScoring.calculate(midRegion, 3, jakubRange, 1), 1);
-  assert.strictEqual(GhostScoring.calculate(midRegion, 3, jakubRange, 2), 2);
-  assert.strictEqual(GhostScoring.calculate(midRegion, 3, jakubRange, 3), 3);
+  assert.strictEqual(GhostScoring.calculate(midRegion, 3, 1), 1);
+  assert.strictEqual(GhostScoring.calculate(midRegion, 3, 2), 2);
+  assert.strictEqual(GhostScoring.calculate(midRegion, 3, 3), 3);
 
   // Z karą Jakuba (dist = 1) -> (2 - 1 - 1) * gCount = 0
-  assert.strictEqual(GhostScoring.calculate(midRegion, 1, jakubRange, 1), 0);
-  assert.strictEqual(GhostScoring.calculate(midRegion, 1, jakubRange, 2), 0);
-  assert.strictEqual(GhostScoring.calculate(midRegion, 1, jakubRange, 3), 0);
+  assert.strictEqual(GhostScoring.calculate(midRegion, 1, 1), 0);
+  assert.strictEqual(GhostScoring.calculate(midRegion, 1, 2), 0);
+  assert.strictEqual(GhostScoring.calculate(midRegion, 1, 3), 0);
 
   // 3. Centrum planszy (distToEdge = 2)
   // Bez kary Jakuba (dist = 3) -> (2 - 2) * gCount = 0
-  assert.strictEqual(GhostScoring.calculate(centerRegion, 3, jakubRange, 1), 0);
-  assert.strictEqual(GhostScoring.calculate(centerRegion, 3, jakubRange, 2), 0);
-  assert.strictEqual(GhostScoring.calculate(centerRegion, 3, jakubRange, 3), 0);
+  assert.strictEqual(GhostScoring.calculate(centerRegion, 3, 1), 0);
+  assert.strictEqual(GhostScoring.calculate(centerRegion, 3, 2), 0);
+  assert.strictEqual(GhostScoring.calculate(centerRegion, 3, 3), 0);
 
   // Z karą Jakuba (dist = 0) -> (2 - 2 - 1) * gCount = -1 * gCount
-  assert.strictEqual(GhostScoring.calculate(centerRegion, 0, jakubRange, 1), -1);
-  assert.strictEqual(GhostScoring.calculate(centerRegion, 0, jakubRange, 2), -2);
-  assert.strictEqual(GhostScoring.calculate(centerRegion, 0, jakubRange, 3), -3);
+  assert.strictEqual(GhostScoring.calculate(centerRegion, 0, 1), -1);
+  assert.strictEqual(GhostScoring.calculate(centerRegion, 0, 2), -2);
+  assert.strictEqual(GhostScoring.calculate(centerRegion, 0, 3), -3);
 
   // 0 duchów
-  assert.strictEqual(GhostScoring.calculate(edgeRegion, 3, jakubRange, 0), 0);
+  assert.strictEqual(GhostScoring.calculate(edgeRegion, 3, 0), 0);
 });
 
 test('Punktacja Wilkołaków dla różnej liczby pionków (1, 2, 3) i watahy', () => {

@@ -1,4 +1,5 @@
 import { RACE_MAP, RACE_MAP_PL } from '../eventConstants.js';
+import { computeJakubRange } from '../../shared/constants.js';
 
 export class EventTransformationEffects {
   /**
@@ -153,14 +154,7 @@ export class EventTransformationEffects {
       const oldAnger = jakub.anger.bardak || 0;
       jakub.anger.bardak = 0;
 
-      // Recalculate Range
-      let extraRange = 0;
-      Object.values(jakub.anger).forEach(val => {
-        if (val >= 10) {
-          extraRange += 1;
-        }
-      });
-      const newRange = Math.min(5, 1 + extraRange);
+      const newRange = computeJakubRange(jakub.anger);
       jakub.range = newRange;
 
       angerResetLog = `. Jakub ulitował się nad Bardakami: Furia wobec Bardaków zresetowana z ${oldAnger} do 0 (Zasięg Jakuba zaktualizowany do ${newRange})`;
@@ -222,15 +216,8 @@ export class EventTransformationEffects {
       }
     }
 
-    // Recalculate Range helper
     const updateRange = (jakub) => {
-      let extraRange = 0;
-      Object.values(jakub.anger).forEach(val => {
-        if (val >= 10) {
-          extraRange += 1;
-        }
-      });
-      jakub.range = Math.min(5, 1 + extraRange);
+      jakub.range = computeJakubRange(jakub.anger);
     };
 
     const jakub = jakubRegion.pawns.jakub[0];
@@ -410,15 +397,8 @@ export class EventTransformationEffects {
       const jakub = jakubRegion.pawns.jakub[0];
       const oldAnger = jakub.anger.bardak || 0;
 
-      // Recalculate Range helper
       const updateRange = (j) => {
-        let extraRange = 0;
-        Object.values(j.anger).forEach(val => {
-          if (val >= 10) {
-            extraRange += 1;
-          }
-        });
-        j.range = Math.min(5, 1 + extraRange);
+        j.range = computeJakubRange(j.anger);
       };
 
       if (transformedCount > 0) {

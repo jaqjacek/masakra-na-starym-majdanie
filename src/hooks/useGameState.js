@@ -3,6 +3,7 @@ import { io } from 'socket.io-client';
 import { fetchMap } from '../services/api';
 import { INITIAL_STATE } from '../constants/game';
 import { SERVER_URL, HISTORY_LIMIT } from '../constants/constants';
+import { isIncomingStateStale } from '../../shared/stateRecency.js';
 
 const socket = io(SERVER_URL || undefined);
 
@@ -10,8 +11,16 @@ const getTime = () => new Date().toLocaleTimeString();
 
 export const useGameState = () => {
   const [currentPath, setCurrentPath] = useState(window.location.pathname);
-  const [gameId, setGameId] = useState(null);
-  const [playerId, setPlayerId] = useState(null);
+  const [gameId, setGameId] = useState(() => {
+    const match = window.location.pathname.match(/^\/game\/([^/]+)/);
+    return match ? match[1] : null;
+  });
+  const [playerId, setPlayerId] = useState(() => {
+    const raw = new URLSearchParams(window.location.search).get('player');
+    if (!raw) return null;
+    const n = parseInt(raw, 10);
+    return Number.isNaN(n) ? raw : n;
+  });
   const [gameState, setGameState] = useState(INITIAL_STATE);
   const [isLoaded, setIsLoaded] = useState(false);
 
@@ -35,7 +44,7 @@ export const useGameState = () => {
 
   useEffect(() => {
     if (!gameId || isAdminPath) return;
-    socket.emit('joinGame', gameId);
+    socket.emit('joinGame', { gameId, playerId });
 
     // Fetch game title
     fetch(`${SERVER_URL}/api/config/title`)
@@ -45,20 +54,26 @@ export const useGameState = () => {
 
     fetchMap(gameId).then(d => { 
       if (d && d.regions) {
-        setGameState(prev => ({ ...prev, ...d })); 
+        setGameState(prev => {
+          if (isIncomingStateStale(d, prev)) return prev;
+          return { ...prev, ...d };
+        }); 
         setIsLoaded(true);
       }
     }).catch(console.error);
 
     const handleUpdate = (newData) => { 
       if (newData && newData.regions) {
-        setGameState(prev => ({ ...prev, ...newData })); 
+        setGameState(prev => {
+          if (isIncomingStateStale(newData, prev)) return prev;
+          return { ...prev, ...newData };
+        }); 
         setIsLoaded(true);
       }
     };
     socket.on('boardUpdate', handleUpdate);
     return () => socket.off('boardUpdate', handleUpdate);
-  }, [gameId, isAdminPath]);
+  }, [gameId, isAdminPath, playerId]);
 
   const dispatchAction = useCallback((actionName, payload = {}) => {
     if (!gameId) return;

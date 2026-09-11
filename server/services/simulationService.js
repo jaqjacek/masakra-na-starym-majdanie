@@ -5,8 +5,9 @@ import {
   DEFAULT_PLAYERS, 
   INITIAL_PAWN_POOL, 
   DEFAULT_POWER_CONFIG,
-  JAKUB_ANGER_THRESHOLD,
-  JAKUB_BASE_RANGE
+  JAKUB_BASE_RANGE,
+  computeJakubRange,
+  PLAYER_IDS
 } from '../constants.js';
 import { 
   createEmptyRegions, 
@@ -31,65 +32,7 @@ import {
 import { GameEventPhaseManager } from '../events/gameEventPhaseManager.js';
 import { GeneralSelectionManager } from '../../shared/generalSelectionManager.js';
 import { MilosierdzieManager } from '../../shared/milosierdzieManager.js';
-
-/**
- * Groups races by anger value into descending tiers, ordered within each tier by hierarchy (V→W→G→B).
- */
-const buildAngerTiersServer = (jakub) => {
-  const angerEntries = RACES
-    .map(race => ({ race, val: jakub.anger[race] || 0 }))
-    .filter(a => a.val > 0);
-  if (angerEntries.length === 0) return [];
-  const tierMap = {};
-  angerEntries.forEach(({ race, val }) => {
-    if (!tierMap[val]) tierMap[val] = [];
-    tierMap[val].push(race);
-  });
-  return Object.entries(tierMap)
-    .sort(([a], [b]) => Number(b) - Number(a))
-    .map(([anger, races]) => ({ anger: Number(anger), races }));
-};
-
-/**
- * Cascading tie-breaker for server simulation.
- * Returns: { winner: regionIndex | null, magnetism: boolean, tiedRegions: number[] }
- */
-const cascadeTieBreakServer = (regions, candidates, angerTiers) => {
-  let remaining = [...candidates];
-  if (remaining.length === 1) return { winner: remaining[0], magnetism: false, tiedRegions: [] };
-  
-  const flatRaces = angerTiers.flatMap(tier => tier.races);
-  
-  // Narrow to candidates that have the first available target race
-  let initialTargetRace = null;
-  for (const race of flatRaces) {
-    const hasRace = remaining.filter(rIdx => (regions[rIdx].pawns[race]?.length || 0) > 0);
-    if (hasRace.length > 0) {
-      initialTargetRace = race;
-      remaining = hasRace;
-      break;
-    }
-  }
-  if (!initialTargetRace || remaining.length === 1) {
-    return { winner: remaining[0], magnetism: false, tiedRegions: [] };
-  }
-
-  // Cascade through all races in tier order
-  for (const race of flatRaces) {
-    const counts = remaining.map(rIdx => ({
-      rIdx,
-      count: regions[rIdx].pawns[race]?.length || 0
-    }));
-    const maxCount = Math.max(...counts.map(c => c.count));
-    const maxRegions = counts.filter(c => c.count === maxCount);
-    if (maxRegions.length === 1) {
-      return { winner: maxRegions[0].rIdx, magnetism: false, tiedRegions: [] };
-    }
-    remaining = maxRegions.map(c => c.rIdx);
-  }
-  // Absolute tie — magnetism!
-  return { winner: null, magnetism: true, tiedRegions: remaining };
-};
+import { buildAngerTiers, cascadeTieBreak } from '../../src/strategies/jakubStrategy.js';
 
 /**
  * Handles magnetism in server simulation — pulls all pawns from tied regions to Jakub's region.
@@ -131,7 +74,7 @@ export function runDetailedSimulation(set, uploadedSets, uploadedEvents) {
 
   if (setsData.items && !setsData.drawPile) { setsData.drawPile = setsData.items; delete setsData.items; }
   if (!setsData.discardPile) setsData.discardPile = []; if (!setsData.heldSets) setsData.heldSets = [];
-  let playerOrder = [1, 2, 3, 4].sort(() => Math.random() - 0.5);
+  let playerOrder = [...PLAYER_IDS].sort(() => Math.random() - 0.5);
   const drawSet = () => { if (setsData.drawPile.length === 0) { if (setsData.discardPile.length === 0) return null; setsData.drawPile = [...setsData.discardPile]; setsData.discardPile = []; } return setsData.drawPile.splice(Math.floor(Math.random() * setsData.drawPile.length), 1)[0]; };
   players.forEach(p => { for (let i = 0; i < gameConfig.initialSetsPerPlayer; i++) { const s = drawSet(); if (s) { s.ownerId = p.id; setsData.heldSets.push(s); } } });
   
@@ -202,7 +145,7 @@ export function runDetailedSimulation(set, uploadedSets, uploadedEvents) {
     }
     let jakR = regions.find(r => r.pawns.jakub?.length > 0); let jakub = jakR.pawns.jakub[0]; const jakubSets = setsData.heldSets.filter(s => s.ownerId === 'jakub');
     jakubSets.forEach(s => { Object.entries(s.content).forEach(([race, count]) => { if (jakub.anger[race] !== undefined) jakub.anger[race] += count; }); });
-    let extraRange = 0; Object.values(jakub.anger).forEach(val => { if (val >= JAKUB_ANGER_THRESHOLD) extraRange += 1; }); jakub.range = Math.min(5, JAKUB_BASE_RANGE + extraRange);
+    jakub.range = computeJakubRange(jakub.anger);
     let continues = true;
     while (continues) {
       continues = false;
@@ -235,7 +178,7 @@ export function runDetailedSimulation(set, uploadedSets, uploadedEvents) {
       }
 
       // 2. If no targets left to kill in the current region, proceed to move.
-      const angerTiers = buildAngerTiersServer(jakub);
+      const angerTiers = buildAngerTiers(jakub);
       
       if (angerTiers.length === 0) {
         RACES.forEach(race => {
@@ -253,9 +196,7 @@ export function runDetailedSimulation(set, uploadedSets, uploadedEvents) {
       }
 
       // Calculate dynamic movement range
-      let extraRange = 0;
-      RACES.forEach(race => { if ((jakub.anger[race] || 0) >= 10) extraRange += 1; });
-      const calculatedRange = 1 + extraRange;
+      const calculatedRange = computeJakubRange(jakub.anger);
       
       const candidates = getRegionsInRange(regions, curR.id, calculatedRange);
       const flatRaceOrder = angerTiers.flatMap(tier => tier.races);
@@ -264,7 +205,7 @@ export function runDetailedSimulation(set, uploadedSets, uploadedEvents) {
       );
       
       if (validCandidates.length > 0) {
-        const cascadeResult = cascadeTieBreakServer(regions, validCandidates, angerTiers);
+        const cascadeResult = cascadeTieBreak(regions, validCandidates, angerTiers);
         
         // Award Punkty Świadka Jakuba before moving
         RACES.forEach(race => {
@@ -305,7 +246,7 @@ export function runDetailedSimulation(set, uploadedSets, uploadedEvents) {
       }
     }
     updateJakubDistance(regions);
-    jakub.range = 1; jakubSets.forEach(s => { const idx = setsData.heldSets.findIndex(x => x.id === s.id); const recycled = setsData.heldSets.splice(idx, 1)[0]; recycled.ownerId = null; recycled.used = false; setsData.discardPile.push(recycled); });
+    jakub.range = JAKUB_BASE_RANGE; jakubSets.forEach(s => { const idx = setsData.heldSets.findIndex(x => x.id === s.id); const recycled = setsData.heldSets.splice(idx, 1)[0]; recycled.ownerId = null; recycled.used = false; setsData.discardPile.push(recycled); });
     
     // --- EVENT PHASE ---
     if (round < gameConfig.totalRounds) {
@@ -368,7 +309,7 @@ export function runBasicSimulation(set, uploadedSets, uploadedEvents) {
 
   if (setsData.items && !setsData.drawPile) { setsData.drawPile = setsData.items; delete setsData.items; }
   if (!setsData.discardPile) setsData.discardPile = []; if (!setsData.heldSets) setsData.heldSets = [];
-  let playerOrder = [1, 2, 3, 4].sort(() => Math.random() - 0.5);
+  let playerOrder = [...PLAYER_IDS].sort(() => Math.random() - 0.5);
   const drawSet = () => { 
     if (setsData.drawPile.length === 0) { 
       if (setsData.discardPile.length === 0) return null; 
@@ -432,9 +373,7 @@ export function runBasicSimulation(set, uploadedSets, uploadedEvents) {
         }
       });
     });
-    let extraRange = 0;
-    Object.values(jakub.anger).forEach(val => { if (val >= JAKUB_ANGER_THRESHOLD) extraRange += 1; });
-    jakub.range = Math.min(5, JAKUB_BASE_RANGE + extraRange);
+    jakub.range = computeJakubRange(jakub.anger);
 
     let continues = true;
     while (continues) {
@@ -468,16 +407,14 @@ export function runBasicSimulation(set, uploadedSets, uploadedEvents) {
       }
 
       // 2. If no targets left to kill in the current region, proceed to move.
-      const angerTiers = buildAngerTiersServer(jakub);
+      const angerTiers = buildAngerTiers(jakub);
       
       if (angerTiers.length === 0) {
         break;
       }
 
       // Calculate dynamic movement range
-      let extraRange = 0;
-      RACES.forEach(race => { if ((jakub.anger[race] || 0) >= 10) extraRange += 1; });
-      const calculatedRange = 1 + extraRange;
+      const calculatedRange = computeJakubRange(jakub.anger);
       
       const candidates = getRegionsInRange(regions, curR.id, calculatedRange);
       const flatRaceOrder = angerTiers.flatMap(tier => tier.races);
@@ -486,7 +423,7 @@ export function runBasicSimulation(set, uploadedSets, uploadedEvents) {
       );
       
       if (validCandidates.length > 0) {
-        const cascadeResult = cascadeTieBreakServer(regions, validCandidates, angerTiers);
+        const cascadeResult = cascadeTieBreak(regions, validCandidates, angerTiers);
         
         if (cascadeResult.magnetism) {
           // Niepochamowany Zwierzęcy Magnetyzm!
@@ -543,7 +480,7 @@ export function runBasicSimulation(set, uploadedSets, uploadedEvents) {
       });
     }
 
-    jakub.range = 1; // Reset to 1 after Jakub's phase
+    jakub.range = JAKUB_BASE_RANGE; // Reset to 1 after Jakub's phase
     jakubSets.forEach(s => { const idx = setsData.heldSets.findIndex(x => x.id === s.id); const recycled = setsData.heldSets.splice(idx, 1)[0]; recycled.ownerId = null; recycled.used = false; setsData.discardPile.push(recycled); });
 
     // --- EVENT PHASE ---
@@ -621,7 +558,7 @@ export function runFullSimulation(setsConfig, inputGameConfig, uploadedEvents) {
   if (setsData.items && !setsData.drawPile) { setsData.drawPile = setsData.items; delete setsData.items; }
   if (!setsData.discardPile) setsData.discardPile = []; if (!setsData.heldSets) setsData.heldSets = [];
   
-  let playerOrder = [1, 2, 3, 4].sort(() => Math.random() - 0.5);
+  let playerOrder = [...PLAYER_IDS].sort(() => Math.random() - 0.5);
   const drawSet = () => { 
     if (setsData.drawPile.length === 0) { 
       if (setsData.discardPile.length === 0) return null; 
@@ -696,9 +633,7 @@ export function runFullSimulation(setsConfig, inputGameConfig, uploadedEvents) {
       });
     });
 
-    let extraRange = 0;
-    Object.values(jakub.anger).forEach(val => { if (val >= JAKUB_ANGER_THRESHOLD) extraRange += 1; });
-    jakub.range = Math.min(5, JAKUB_BASE_RANGE + extraRange);
+    jakub.range = computeJakubRange(jakub.anger);
 
     let continues = true;
     while (continues) {
@@ -732,16 +667,14 @@ export function runFullSimulation(setsConfig, inputGameConfig, uploadedEvents) {
       }
 
       // 2. If no targets left to kill in the current region, proceed to move.
-      const angerTiers = buildAngerTiersServer(jakub);
+      const angerTiers = buildAngerTiers(jakub);
       
       if (angerTiers.length === 0) {
         break;
       }
 
       // Calculate dynamic movement range
-      let extraRange = 0;
-      RACES.forEach(race => { if ((jakub.anger[race] || 0) >= 10) extraRange += 1; });
-      const calculatedRange = 1 + extraRange;
+      const calculatedRange = computeJakubRange(jakub.anger);
       
       const candidates = getRegionsInRange(regions, curR.id, calculatedRange);
       const flatRaceOrder = angerTiers.flatMap(tier => tier.races);
@@ -750,7 +683,7 @@ export function runFullSimulation(setsConfig, inputGameConfig, uploadedEvents) {
       );
       
       if (validCandidates.length > 0) {
-        const cascadeResult = cascadeTieBreakServer(regions, validCandidates, angerTiers);
+        const cascadeResult = cascadeTieBreak(regions, validCandidates, angerTiers);
         
         if (cascadeResult.magnetism) {
           // Niepochamowany Zwierzęcy Magnetyzm!
@@ -807,7 +740,7 @@ export function runFullSimulation(setsConfig, inputGameConfig, uploadedEvents) {
       });
     }
 
-    jakub.range = 1;
+    jakub.range = JAKUB_BASE_RANGE;
     jakubSets.forEach(s => { const idx = setsData.heldSets.findIndex(x => x.id === s.id); const recycled = setsData.heldSets.splice(idx, 1)[0]; recycled.ownerId = null; recycled.used = false; setsData.discardPile.push(recycled); });
     
     // --- EVENT PHASE ---

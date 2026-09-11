@@ -1,8 +1,8 @@
-import { RACES } from '../constants/game.js';
-import { JAKUB_ANGER_THRESHOLD, JAKUB_BASE_RANGE } from '../constants/constants.js';
+import { RACES, RACE_MAP_PL, computeJakubRange } from '../../shared/constants.js';
+import { getRegionsInRange } from '../../shared/boardGeometry.js';
 import { trackPointsChange, trackJakubKills } from '../../shared/statsManager.js';
 
-const RACE_MAP_PL = { 'vampire': 'Wampiry', 'werewolf': 'Wilkołaki', 'ghost': 'Duchy', 'bardak': 'Bardaki' };
+export { getRegionsInRange };
 
 /**
  * Updates Jakub's anger based on set contents and handles overflow logic.
@@ -16,38 +16,8 @@ export const applySetToJakubAnger = (jakub, setContent) => {
     }
   });
 
-  // Rule: Range = Base + (number of races with anger >= threshold)
-  let extraRange = 0;
-  Object.values(newAnger).forEach(val => {
-    if (val >= JAKUB_ANGER_THRESHOLD) {
-      extraRange += 1;
-    }
-  });
-
-  return { anger: newAnger, range: Math.min(5, JAKUB_BASE_RANGE + extraRange) };
+  return { anger: newAnger, range: computeJakubRange(newAnger) };
 };
-
-export const getRegionsInRange = (regions, startIndex, range) => {
-  const inRange = new Set();
-  const queue = [{ index: startIndex, dist: 0 }];
-  const visited = new Set([startIndex]);
-
-  while (queue.length > 0) {
-    const { index, dist } = queue.shift();
-    inRange.add(index);
-    if (dist < range) {
-      regions[index].neighbors.forEach(nIdx => {
-        if (!visited.has(nIdx)) {
-          visited.add(nIdx);
-          queue.push({ index: nIdx, dist: dist + 1 });
-        }
-      });
-    }
-  }
-  return Array.from(inRange);
-};
-
-
 
 /**
  * Helper to calculate and award witness points for pawns of races where Jakub's anger is 0 in a specific region.
@@ -171,14 +141,7 @@ export const executeJakubStep = (gameState) => {
     };
   }
 
-  // Calculate dynamic movement range: Range = 1 + (number of races with anger >= 10)
-  let extraRange = 0;
-  RACES.forEach(race => {
-    if ((jakub.anger[race] || 0) >= 10) {
-      extraRange += 1;
-    }
-  });
-  const calculatedRange = 1 + extraRange;
+  const calculatedRange = computeJakubRange(jakub.anger);
   
   // Find all candidate region indices in range
   const allCandidates = getRegionsInRange(workState.regions, currentRegion.id, calculatedRange);

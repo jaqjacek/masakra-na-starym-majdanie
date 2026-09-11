@@ -1,9 +1,18 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import { PAWN_TYPES, STATUSES, SUMMARY_PAWN_IDS } from '../constants/pawnTypes';
 import { useTranslation } from '../hooks/useTranslation';
 
-const Region = ({ pawnGroups, onMouseUp, onRemovePawn, onAddPawn, onPawnMouseDown, setHoveredPawn, isValidTarget, onMouseEnter, onMouseLeave, showCounters = true, witnessGlowRaces = [] }) => {
+const Region = ({ pawnGroups, onMouseUp, onRemovePawn, onAddPawn, onPawnMouseDown, setHoveredPawn, isValidTarget, onMouseEnter, onMouseLeave, showCounters = true, witnessGlowRaces = [], isMobileUi = false, placementArmed = false, onLongPressPawn }) => {
   const { t } = useTranslation();
+  const longPressTimer = useRef(null);
+  const longPressFired = useRef(false);
+
+  const clearLongPress = () => {
+    if (longPressTimer.current) {
+      clearTimeout(longPressTimer.current);
+      longPressTimer.current = null;
+    }
+  };
   // Calculate summary counts for specific pawn types defined in SUMMARY_PAWN_IDS
   const summary = SUMMARY_PAWN_IDS.map(id => {
     const type = PAWN_TYPES.find(t => t.id === id);
@@ -16,7 +25,8 @@ const Region = ({ pawnGroups, onMouseUp, onRemovePawn, onAddPawn, onPawnMouseDow
   return (
     <div 
       className={`region ${isValidTarget ? 'valid-target' : ''}`}
-      onMouseUp={onMouseUp}
+      onMouseUp={isMobileUi ? undefined : onMouseUp}
+      onClick={isMobileUi ? onMouseUp : undefined}
       onMouseEnter={onMouseEnter}
       onMouseLeave={onMouseLeave}
     >
@@ -36,6 +46,10 @@ const Region = ({ pawnGroups, onMouseUp, onRemovePawn, onAddPawn, onPawnMouseDow
                 key={`${typeId}-${pIdx}`} 
                 className={`pawn-indicator ${typeId} ${!isEnabled ? 'disabled-pawn' : ''} ${isWitness ? 'witness-glow' : ''}`}
                 onMouseDown={(e) => {
+                  if (isMobileUi) {
+                    e.stopPropagation();
+                    return;
+                  }
                   if (e.button !== 0) return;
                   if (e.shiftKey) {
                     e.stopPropagation();
@@ -48,10 +62,40 @@ const Region = ({ pawnGroups, onMouseUp, onRemovePawn, onAddPawn, onPawnMouseDow
                     onPawnMouseDown(typeId, pIdx, e);
                   }
                 }}
+                onPointerDown={(e) => {
+                  if (!isMobileUi) return;
+                  e.stopPropagation();
+                  longPressFired.current = false;
+                  clearLongPress();
+                  longPressTimer.current = setTimeout(() => {
+                    longPressFired.current = true;
+                    setHoveredPawn({ pawn, pawnType, x: e.clientX, y: e.clientY });
+                    if (onLongPressPawn) onLongPressPawn(typeId, pawn, pawnType, e);
+                  }, 450);
+                }}
+                onPointerUp={() => {
+                  if (!isMobileUi) return;
+                  clearLongPress();
+                }}
+                onClick={(e) => {
+                  if (!isMobileUi) return;
+                  if (longPressFired.current) {
+                    e.stopPropagation();
+                    return;
+                  }
+                  if (placementArmed) return;
+                  e.stopPropagation();
+                  onPawnMouseDown(typeId, pIdx, e);
+                }}
+                onPointerCancel={clearLongPress}
                 onMouseEnter={(e) => {
+                  if (isMobileUi) return;
                   setHoveredPawn({ pawn, pawnType, x: e.clientX, y: e.clientY });
                 }}
-                onMouseLeave={() => setHoveredPawn(null)}
+                onMouseLeave={() => {
+                  if (isMobileUi) return;
+                  setHoveredPawn(null);
+                }}
                 title={isEnabled ? t('pawn_tooltip_drag') : t('pawn_tooltip_blocked')}
               />
             );

@@ -1,5 +1,6 @@
 import { RACE_MAP_PL } from '../../eventConstants.js';
 import { trackPointsChange } from '../../../shared/statsManager.js';
+import { computeJakubRange } from '../../../shared/constants.js';
 
 export class JakubMoveEffects {
   /**
@@ -270,14 +271,7 @@ export class JakubMoveEffects {
     jakubPawn.anger.ghost = oldAngers.ghost + 2;
     jakubPawn.anger.bardak = oldAngers.bardak + 2;
 
-    // Recalculate Range
-    let extraRange = 0;
-    Object.values(jakubPawn.anger).forEach(val => {
-      if (val >= 10) {
-        extraRange += 1;
-      }
-    });
-    const newRange = Math.min(5, 1 + extraRange);
+    const newRange = computeJakubRange(jakubPawn.anger);
     jakubPawn.range = newRange;
 
     const furyLogs = [

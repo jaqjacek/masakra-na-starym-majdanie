@@ -1,0 +1,52 @@
+/* In-game page layout */
+.game-layout-wrapper { 
+  display: flex; 
+  gap: 0; 
+  align-items: stretch; 
+  margin-top: 50px; /* Exactly header height */
+  margin-bottom: 0; 
+  width: 100%; 
+  justify-content: flex-start;
+  height: calc(100vh - 85px); 
+  padding: 0.25rem 0.5rem 0.25rem 0.25rem;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+.left-controls { 
+  display: flex; 
+  flex-direction: column; 
+  gap: 0.35rem; 
+  flex: 0 0 280px;
+  width: 280px;
+  max-width: 280px;
+  min-width: 0;
+  align-items: stretch; 
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+.main-game-area { 
+  flex: 0 0 auto; 
+  display: flex; 
+  flex-direction: column; 
+  align-items: flex-start; 
+  gap: 0.15rem; 
+  position: relative; 
+  height: 100%;
+}
+
+.right-controls { 
+  width: 240px; 
+  flex-shrink: 0; 
+  display: flex; 
+  flex-direction: column; 
+  gap: 0.5rem; 
+  height: 100%;
+  margin-left: auto;
+}
+
+/* Winning override (was in modals.css after game.css) */
+.main-game-area {
+  flex: 1; display: flex; flex-direction: column; align-items: center; position: relative;
+}

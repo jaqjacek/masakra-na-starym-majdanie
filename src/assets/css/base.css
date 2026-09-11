@@ -40,6 +40,13 @@ html.lang-tlh button,
 html.lang-tlh input,
 html.lang-tlh textarea,
 html.lang-tlh select,
+html.lang-tlh p,
+html.lang-tlh li,
+html.lang-tlh td,
+html.lang-tlh th,
+html.lang-tlh span,
+html.lang-tlh label,
+html.lang-tlh a,
 html.lang-tlh h1,
 html.lang-tlh h2,
 html.lang-tlh h3,
@@ -266,3 +273,20 @@ html.scrollable .app-container {
 .branch-info strong { color: #aaa; }
 .build-hash code { background-color: #222; padding: 1px 4px; border-radius: 3px; color: #e67e22; }
 .build-date { opacity: 0.7; }
+
+.modal-close-x {
+  position: absolute;
+  top: 10px;
+  right: 15px;
+  background: transparent;
+  border: none;
+  color: #888;
+  font-size: 2rem;
+  cursor: pointer;
+  line-height: 1;
+  transition: color 0.2s;
+}
+
+.modal-close-x:hover {
+  color: #fff;
+}

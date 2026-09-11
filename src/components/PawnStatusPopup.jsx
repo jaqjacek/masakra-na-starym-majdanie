@@ -2,7 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import { useTranslation } from '../hooks/useTranslation';
 
-const PawnStatusPopup = ({ pawn, pawnType, position }) => {
+const PawnStatusPopup = ({ pawn, pawnType, position, onRemove }) => {
   const { t } = useTranslation();
   if (!pawn || !pawnType || !position) return null;
 
@@ -12,14 +12,7 @@ const PawnStatusPopup = ({ pawn, pawnType, position }) => {
   };
 
   const STATUS_MAP_PL = {
-    DISABLED: 'NIEAKTYWNY',
-    ENABLED: 'AKTYWNY',
-    INVINCIBLE: 'NIEZNISZCZALNY',
-    CURSED: 'PRZEKLĘTY',
-    BLEED: 'KRWAWIENIE',
-    SLOW: 'SPOWOLNIONY',
-    BLESSED: 'BŁOGOSŁAWIONY',
-    FAST: 'SZYBKI'
+    ENABLED: 'AKTYWNY'
   };
 
   const getStatusLabel = (status) => {
@@ -41,6 +34,11 @@ const PawnStatusPopup = ({ pawn, pawnType, position }) => {
           </li>
         )) : <li className="status-item none">{t('status_none', { defaultValue: 'BRAK' })}</li>}
       </ul>
+      {onRemove && (
+        <button type="button" className="popup-remove-btn" onClick={onRemove}>
+          {t('action_remove_pawn')}
+        </button>
+      )}
     </div>,
     document.body
   );

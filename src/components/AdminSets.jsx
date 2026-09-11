@@ -3,6 +3,7 @@ import { useTranslation } from '../hooks/useTranslation';
 import '../assets/css/admin.css';
 import { VERSION_INFO } from '../constants/version';
 import { SERVER_URL } from '../constants/constants';
+import { INITIAL_PAWN_POOL, PAWNS_IN_PLAY_LIMIT, DEFAULT_POWER_CONFIG, MAX_POWER } from '../../shared/constants.js';
 
 const AdminSets = () => {
   const { t } = useTranslation();
@@ -16,10 +17,10 @@ const AdminSets = () => {
 
   const [genDisplayName, setGenDisplayName] = useState('');
   const [genDescription, setGenDescription] = useState('');
-  const [genMaxPower, setGenMaxPower] = useState(6);
-  const [genPawns, setGenPawns] = useState({ bardak: 80, ghost: 30, werewolf: 20, vampire: 10 });
-  const [genPawnsInPlayLimit, setGenPawnsInPlayLimit] = useState({ bardak: 80, ghost: 30, werewolf: 20, vampire: 10 });
-  const [genPower, setGenPower] = useState({ vampire: 3, werewolf: 2, ghost: 1, bardak: 1 });
+  const [genMaxPower, setGenMaxPower] = useState(MAX_POWER);
+  const [genPawns, setGenPawns] = useState({ ...INITIAL_PAWN_POOL });
+  const [genPawnsInPlayLimit, setGenPawnsInPlayLimit] = useState({ ...PAWNS_IN_PLAY_LIMIT });
+  const [genPower, setGenPower] = useState({ ...DEFAULT_POWER_CONFIG });
 
   const fetchSets = async () => {
     try {
@@ -134,7 +135,7 @@ const AdminSets = () => {
     const targetSet = piles.find(s => s.id === setId);
     if (targetSet) {
       targetSet.content[race] = (targetSet.content[race] || 0) + 1;
-      const powerMap = newData.power || { vampire: 3, werewolf: 2, ghost: 1, bardak: 1 };
+      const powerMap = newData.power || DEFAULT_POWER_CONFIG;
       targetSet.power = Object.entries(targetSet.content).reduce((sum, [r, c]) => sum + (powerMap[r] || 0) * c, 0);
       setLoadedSetData(newData);
     }
@@ -150,7 +151,7 @@ const AdminSets = () => {
       if (targetSet.content[race] === 0) {
         delete targetSet.content[race];
       }
-      const powerMap = newData.power || { vampire: 3, werewolf: 2, ghost: 1, bardak: 1 };
+      const powerMap = newData.power || DEFAULT_POWER_CONFIG;
       targetSet.power = Object.entries(targetSet.content).reduce((sum, [r, c]) => sum + (powerMap[r] || 0) * c, 0);
       setLoadedSetData(newData);
     }
@@ -161,15 +162,15 @@ const AdminSets = () => {
       if (loadedSetData) {
         setGenDisplayName(loadedSetData.displayName || '');
         setGenDescription(loadedSetData.description || '');
-        setGenMaxPower(loadedSetData.maxPower || 6);
-        setGenPawns(loadedSetData.pawns || { bardak: 80, ghost: 30, werewolf: 20, vampire: 10 });
-        setGenPawnsInPlayLimit(loadedSetData.pawnsInPlayLimit || loadedSetData.pawns || { bardak: 80, ghost: 30, werewolf: 20, vampire: 10 });
-        setGenPower(loadedSetData.power || { vampire: 3, werewolf: 2, ghost: 1, bardak: 1 });
+        setGenMaxPower(loadedSetData.maxPower || MAX_POWER);
+        setGenPawns(loadedSetData.pawns || { ...INITIAL_PAWN_POOL });
+        setGenPawnsInPlayLimit(loadedSetData.pawnsInPlayLimit || loadedSetData.pawns || { ...PAWNS_IN_PLAY_LIMIT });
+        setGenPower(loadedSetData.power || { ...DEFAULT_POWER_CONFIG });
       } else {
-        setGenDisplayName(''); setGenDescription(''); setGenMaxPower(6);
-        setGenPawns({ bardak: 80, ghost: 30, werewolf: 20, vampire: 10 });
-        setGenPawnsInPlayLimit({ bardak: 80, ghost: 30, werewolf: 20, vampire: 10 });
-        setGenPower({ vampire: 3, werewolf: 2, ghost: 1, bardak: 1 });
+        setGenDisplayName(''); setGenDescription(''); setGenMaxPower(MAX_POWER);
+        setGenPawns({ ...INITIAL_PAWN_POOL });
+        setGenPawnsInPlayLimit({ ...PAWNS_IN_PLAY_LIMIT });
+        setGenPower({ ...DEFAULT_POWER_CONFIG });
       }
     }
     setShowGenForm(!showGenForm);
@@ -186,7 +187,7 @@ const AdminSets = () => {
     if (sourceSet && targetSet && sourceSet.content[race] > 0) {
       sourceSet.content[race] -= 1; if (sourceSet.content[race] === 0) delete sourceSet.content[race];
       targetSet.content[race] = (targetSet.content[race] || 0) + 1;
-      const powerMap = newData.power || { vampire: 3, werewolf: 2, ghost: 1, bardak: 1 };
+      const powerMap = newData.power || DEFAULT_POWER_CONFIG;
       const calculatePower = (content) => Object.entries(content).reduce((sum, [r, count]) => sum + (powerMap[r] || 0) * count, 0);
       sourceSet.power = calculatePower(sourceSet.content);
       targetSet.power = calculatePower(targetSet.content);
@@ -241,7 +242,7 @@ const AdminSets = () => {
                   const total = [...(loadedSetData.drawPile || []), ...(loadedSetData.heldSets || []), ...(loadedSetData.discardPile || [])]
                     .reduce((sum, set) => sum + (set.content[race] || 0), 0);
                   
-                  const limits = loadedSetData.pawnsInPlayLimit || loadedSetData.pawns || { bardak: 80, ghost: 30, werewolf: 20, vampire: 10 };
+                  const limits = loadedSetData.pawnsInPlayLimit || loadedSetData.pawns || PAWNS_IN_PLAY_LIMIT;
 
                   return (
                     <div key={race} className="stat-item-group">

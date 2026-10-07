@@ -16,7 +16,7 @@ This file tracks the documentation system. Current release: **v1.21.0**. Next wo
 - **Lore:** `docs/STORY.md`
 - **Player AI:** `docs/PLAYER_AI.md`
 
-UI copy for the rules SPA lives in `src/locales/{pl,en,cs,uk,tlh}.json` (`rules_*` keys). Those locale strings may lag `GAME_RULES.md` (pass/hand WIP).
+UI copy for the rules SPA lives in `src/locales/{pl,en,cs,uk,tlh}.json` (`rules_*` keys). Those locale strings may lag `GAME_RULES.md` (pass/hand).
 
 ## Assistant / Copilot handoff
 

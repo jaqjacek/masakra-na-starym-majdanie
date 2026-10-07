@@ -52,7 +52,7 @@ Jakub step contract: `{ newState, actionTaken, log, metadata }`. Magnetism uses 
 1. Pawn-count drop → explosion + floating text, unless `magnetismPullRegions` contains the region.
 2. New history rows: `witness_points` → +1 float; `magnetismStart` → Magnetyzm banner.
 
-## 6. Dealing and pass (WIP in working tree)
+## 6. Dealing and pass (v1.21.0)
 
 | Moment | Rule |
 | :--- | :--- |

@@ -19,7 +19,7 @@ React 19 + Vite, Express 5, Socket.io, worker_threads simulations, vanilla CSS, 
 
 Current player AI is one-ply greedy (net points − Jakub threat + endgame bonus weighted by `currentRound / 12`). It compares place, kablowanie (+1 minus fury cost), and pass. Pass discard is **random keep-3**. Do not rewrite Jakub AI unless asked.
 
-## Live dealing / pass rules (WIP in tree)
+## Live dealing / pass rules (v1.21.0)
 
 - Start of game: 5 sets per player (`INITIAL_SETS_PER_PLAYER`).
 - Round 1 DRAW SETS: no extra player sets; Jakub draws 2.

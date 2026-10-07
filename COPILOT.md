@@ -73,12 +73,12 @@ Simulations (`server/services/simulationService.js`) **duplicate** the place/pas
 
 ## What to build next (priority)
 
-1. **Commit the hand/pass WIP** after `npm test`.
+1. ~~**Commit hand/pass + player AI baseline**~~ Done in v1.21.0.
 2. ~~**Give AI kablowanie as an action**~~ Done: place vs +1-minus-fury vs pass.
 3. **Strategic pass discard** (which 3 to keep), not random.
 4. ~~**Use `currentRound`** in placement~~ Done: endgame value is weighted by `currentRound / 12`.
 5. **Look-ahead / opponent leakage**: current scorer subtracts opponent placement points but does not simulate Jakub’s next hunt.
-6. **Tests** in `tests/placementHeuristics.test.js` and a dedicated player-AI test for: place vs pass, kablowanie, keep-3, general choice.
+6. **Tests** — restore/extend placement + player-AI coverage for place vs pass, kablowanie, keep-3, general choice.
 7. **Optional:** one simulation path that uses `playerAiService.runPlayerAi` so live games and Monte Carlo share a brain.
 
 Stay inside existing files first. New modules only if a strategy object would otherwise bloat `SharedPlacementManager`.

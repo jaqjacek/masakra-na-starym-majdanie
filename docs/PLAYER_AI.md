@@ -119,7 +119,7 @@ Do not re-implement player turns on the client. Keep `ClientPlacementManager` as
 
 `server/services/simulationService.js` (`runDetailedSimulation`, `runBasicSimulation`, `runFullSimulation`) and `simulationWorker.js` replay a whole game without sockets.
 
-WIP already aligns dealing (+3 from round 2) and pass (no passing points). They still **inline** place/pass instead of calling `runPlayerAi`. When the heuristic grows, either extract a shared `decidePlayerAction(data)` or run `runPlayerAi` against a cloned state so live and sim cannot drift.
+Dealing (+3 from round 2) and pass (no passing points) are aligned. Sims still **inline** place/pass instead of calling `runPlayerAi`. When the heuristic grows, either extract a shared `decidePlayerAction(data)` or run `runPlayerAi` against a cloned state so live and sim cannot drift.
 
 Admin UI: `/admin/simulate`. Job API: `POST /api/simulate/job`.
 
@@ -141,7 +141,7 @@ Missing: kablowanie-vs-place, AI pass when all placements negative, strategic ke
 
 ## 9. Suggested implementation order
 
-1. Commit current WIP; `npm test`.
+1. Keep tests green after heuristic changes (`npm test` once tests return).
 2. ~~Introduce `decidePlayerAction`~~ Done as `SharedPlacementManager.choosePlayerAction`, used by live AI and simulations.
 3. ~~Score kablowanie against place and pass.~~ Done. Hand-size value of the kept sets is still not scored.
 4. Replace random keep-3 with a keep-value (own race, next-round general, deny Jakub’s hunt).

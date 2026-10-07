@@ -16,4 +16,4 @@ The file `docs/PROJECT_SPEC.md` is the authoritative source for architecture, fi
 - **Shell & Scripting:** Always use **Bash** for scripts, automation, and testing. Avoid PowerShell scripts (`.ps1`).
 - **Player AI:** `server/services/playerAiService.js`. Placement: `shared/sharedPlacementManager.js`. Jakub: `src/strategies/jakubStrategy.js`. There is no `aiDecisionService.js`.
 - **i18n:** Five locales only (`pl`, `en`, `cs`, `uk`, `tlh`). Do not restore 110 generated languages.
-- **Hand/pass (WIP):** 5 starting sets; round 1 DRAW SETS adds no player sets; from round 2 each player gets +3; pass keeps ≤3 with 0 points.
+- **Hand/pass (v1.21.0):** 5 starting sets; round 1 DRAW SETS adds no player sets; from round 2 each player gets +3; pass keeps ≤3 with 0 points.

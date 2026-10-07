@@ -1,4 +1,4 @@
-# MASAKRA na Starym Majdanie: Oficjalne Zasady Gry v1.20.2
+# MASAKRA na Starym Majdanie: Oficjalne Zasady Gry v1.21.0
 
 ## Cel Gry
 Wędrowycz-Gemini to gra strategiczna, w której gracze (Hersztowie) dowodzą czterema bandami: Wampirami, Wilkołakami, Duchami i Bardakami. Celem jest zdobycie jak największej liczby punktów zwycięstwa w ciągu 12 rund, unikając furii Jakuba Wędrowycza.
@@ -189,6 +189,6 @@ W Fazie Jakuba jego ruch oraz ataki są w pełni zautomatyzowane i przebiegają 
 * Jeżeli uważasz iż w następnej rundzie będziesz tą jakąś nacją rozważ zostawienie sobie zestawów tej nacji na następną rundę.
 
 ---
-*Zasady te stanowią fundament logiki symulatora MASAKRA na Starym Majdanie (v1.20.2).*
+*Zasady te stanowią fundament logiki symulatora MASAKRA na Starym Majdanie (v1.21.0).*
 
 Stałe w kodzie: `shared/constants.js` (`INITIAL_SETS_PER_PLAYER = 5`, `SETUP_SETS_PER_PLAYER_PER_ROUND = 3`, `MAX_SETS_KEPT_ON_PASS = 3`). Nadmiar przy pasie idzie do Jakuba bez punktów. AI graczy (niesclaimowane miejsca): `server/services/playerAiService.js` — szczegóły w [`PLAYER_AI.md`](PLAYER_AI.md).

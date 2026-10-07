@@ -1,6 +1,6 @@
 # Maintenance: Documentation
 
-This file tracks the documentation system. Current release: **v1.20.2**. Next work: player AI (`docs/PLAYER_AI.md`, `COPILOT.md`).
+This file tracks the documentation system. Current release: **v1.21.0**. Next work: refine player AI (`docs/PLAYER_AI.md`, `COPILOT.md`).
 
 ## API Documentation (Scalar)
 
@@ -33,4 +33,4 @@ UI copy for the rules SPA lives in `src/locales/{pl,en,cs,uk,tlh}.json` (`rules_
 
 - `docs/openapi.json` and `docs/GAME_RULES.md` are copied into the Docker image.
 - Paths in `server.js` use `process.cwd()`.
-- Release workflow: `.grok/skills/deploy/SKILL.md`. Last tagged release: **v1.20.2**.
+- Release workflow: `.grok/skills/deploy/SKILL.md`. Last tagged release: **v1.21.0**.

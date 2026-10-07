@@ -2,9 +2,9 @@
 
 Canonical workflow: [`.grok/skills/deploy/SKILL.md`](../.grok/skills/deploy/SKILL.md) (`/deploy`). Do not invent a second path.
 
-**Last tagged release:** v1.20.2 (`develop` @ `128d5c6`).
+**Last tagged release:** v1.21.0 (`develop` @ ec827a3).
 
-**Before the next tag:** commit the hand/pass WIP (5 starting sets, +3 from round 2, pass keep-3 with 0 points) and any player-AI work. Working tree is currently dirty.
+**Shipped in v1.21.0:** hand/pass rules (5 start sets, +3 from round 2, pass keep-3 with 0 points), live player AI, spectator record/replay, App.jsx split and cleanup.
 
 ## 1. Version files
 

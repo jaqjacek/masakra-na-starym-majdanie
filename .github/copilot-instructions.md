@@ -2,7 +2,7 @@
 
 Read `COPILOT.md` and `docs/PLAYER_AI.md` before editing game logic. Architecture: `docs/PROJECT_SPEC.md`. Rules: `docs/GAME_RULES.md`. File map: `GROK.md`.
 
-**Status:** v1.20.2 on `develop`. Next feature: **player AI**. Working tree has uncommitted hand/pass rule updates — keep them.
+**Status:** v1.21.0 on `develop`. Player AI + spectator replay shipped; refine heuristics next.
 
 ## Stack
 

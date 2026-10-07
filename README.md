@@ -5,13 +5,13 @@
 [![Express](https://img.shields.io/badge/Express-5-lightgrey.svg)](https://expressjs.com/)
 [![Socket.io](https://img.shields.io/badge/Socket.io-4.8-black.svg)](https://socket.io/)
 [![Docker](https://img.shields.io/badge/Docker%20%2F%20Podman-Ready-blue.svg)](https://www.docker.com/)
-[![Version](https://img.shields.io/badge/version-v1.20.2-orange.svg)](package.json)
+[![Version](https://img.shields.io/badge/version-v1.21.0-orange.svg)](package.json)
 
 **MASAKRA na Starym Majdanie** is a tactical digital board game simulator set in the grim, humorous universe of Jakub Wędrowycz. Players manage pawn bands across a 6x6 grid, competing for points while trying to avoid the wrath of Jakub Wędrowycz—or actively turning his rampage toward their opponents.
 
 The platform provides a real-time multi-client game engine, phase-based automation, high-performance multi-core simulation tools, and interactive admin dashboards.
 
-**Status (v1.20.2):** Live game, Jakub AI, events, i18n (5 languages), and Monte Carlo sims are in production. **Next work is player/Herszt AI.** If you are continuing in Copilot, start at [`COPILOT.md`](COPILOT.md) and [`docs/PLAYER_AI.md`](docs/PLAYER_AI.md).
+**Status (v1.21.0):** Live game, Jakub AI, live player AI, spectator replay, events, i18n (5 languages), and Monte Carlo sims are in production. **Next work is refining player/Herszt AI.** If you are continuing in Copilot, start at [`COPILOT.md`](COPILOT.md) and [`docs/PLAYER_AI.md`](docs/PLAYER_AI.md).
 
 ---
 
@@ -267,17 +267,16 @@ When running locally or via container, documentation is served directly:
 
 | Item | Value |
 | :--- | :--- |
-| Release | **v1.20.2** on `develop` |
+| Release | **v1.21.0** on `develop` |
 | Next feature | Player AI (`server/services/playerAiService.js`) |
 | Transfer docs | [`COPILOT.md`](COPILOT.md), [`AGENTS.md`](AGENTS.md), [`docs/PLAYER_AI.md`](docs/PLAYER_AI.md) |
 | Rules | [`docs/GAME_RULES.md`](docs/GAME_RULES.md) |
 | Architecture | [`docs/PROJECT_SPEC.md`](docs/PROJECT_SPEC.md) |
 
-Working tree (not yet committed) already implements:
+Shipped hand/pass and AI baseline:
 
 - Start of game: **5** sets per player.
 - Round 1 DRAW SETS: no extra player sets (Jakub still draws 2).
 - From round 2: each player is dealt **+3** sets (append, not top-up).
 - Pass: keep at most **3** (random); excess to Jakub with **0 points**. Voluntary kablowanie still **+1**.
-
-Player AI is a greedy one-ply placer. It does not kablować. Pass discard is random. Improve that next; do not rewrite Jakub AI unless asked.
+- Player AI: greedy one-ply place / kablowanie / pass. Pass discard is random. Improve heuristics next; do not rewrite Jakub AI unless asked.

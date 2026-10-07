@@ -4,10 +4,10 @@
 
 | | |
 | :--- | :--- |
-| **Version** | **v1.20.2** (`package.json`, `src/constants/version.js`) |
-| **Branch** | `develop` @ `128d5c6` |
-| **Next work** | Player AI (heuristics, kablowanie, look-ahead, tests) |
-| **Working tree** | Dirty — hand/pass rule changes are **not committed** |
+| **Version** | **v1.21.0** (`package.json`, `src/constants/version.js`) |
+| **Branch** | `develop` |
+| **Next work** | Refine player AI (strategic keep-3, look-ahead, sim parity, tests) |
+| **Working tree** | Clean after v1.21.0 release commit (do not push if origin is down) |
 
 Talk to the user in Polish. Commits, tags, identifiers, and new docs stay in English unless they asked for Polish copy.
 
@@ -21,9 +21,7 @@ Players are **Hersztowie**. Unclaimed seats are **server-side AI**. Jakub’s ra
 
 ---
 
-## Uncommitted work (apply / keep)
-
-These edits are already in the working tree. Do **not** revert them. Finish, test, then commit before new AI features.
+## Shipped in v1.21.0 (do not revert)
 
 **Hand dealing**
 
@@ -31,15 +29,18 @@ These edits are already in the working tree. Do **not** revert them. Finish, tes
 - Round 1 **DRAW SETS** does **not** add player sets (Jakub still draws 2).
 - From round 2: each player is dealt **+3** sets (append, **not** topped up to 3). A player who kept 3 can start the round with 6.
 
-**Pass**
+**Pass / kablowanie**
 
 - On pass, randomly keep at most **3** (`MAX_SETS_KEPT_ON_PASS`).
 - Excess sets go to Jakub as **donos** (fury/range update, **0 points**).
-- Voluntary mid-turn **kablowanie** still awards **+1** point.
+- Voluntary mid-turn **kablowanie** still awards **+1** point (`KABLOWANIE_POINTS`).
+- Live AI compares place / kablowanie / pass; pass discard is still random keep-3.
 
-Touched files: `shared/constants.js`, `server/configs/game_config.json`, `shared/actions/actionService.js`, `shared/sharedPlacementManager.js`, `server/services/playerAiService.js`, `server/services/serverPlacementManager.js`, `server/services/simulationService.js`, `src/logic/clientPlacementManager.js`, `src/App.jsx`, `src/utils/logTranslator.js`, `docs/GAME_RULES.md`, `tests/actionService.test.js`, `tests/passingRestriction.test.js`.
+**Other**
 
-`src/locales/*.json` `rules_flow_p1_desc` / `rules_flow_p3_desc` still describe the **old** refill-to-3 and “pass = +2 points” rules. Update those five locale files when you next touch i18n.
+- Spectator all-AI record/replay (`spectatorReplayService`, `useSpectatorPlayback`).
+- App.jsx split under 1000 LOC; board visual effects hook; stats category `rambo` → `placement`.
+- Locale `rules_flow_*` strings may still lag rules text — fix when next touching i18n.
 
 ---
 

@@ -1,6 +1,6 @@
 # GROK Instructions & Project Context
 
-> **Welcome Grok!** This document provides the essential architecture, constraints, file map, and operational rules for the **MASAKRA na Starym Majdanie** codebase. Read this first to get full context instantly. Current release: **v1.20.2**. Next work: **player AI** — see [`COPILOT.md`](COPILOT.md) and [`docs/PLAYER_AI.md`](docs/PLAYER_AI.md).
+> **Welcome Grok!** This document provides the essential architecture, constraints, file map, and operational rules for the **MASAKRA na Starym Majdanie** codebase. Read this first to get full context instantly. Current release: **v1.21.0**. Next work: **refine player AI** — see [`COPILOT.md`](COPILOT.md) and [`docs/PLAYER_AI.md`](docs/PLAYER_AI.md).
 
 ---
 
@@ -195,5 +195,5 @@ Release workflow (version files, tag, local + network images): follow `.grok/ski
 5. **Do not search the whole codebase with broad greps** – use the Fast Navigation Map above and `docs/PROJECT_SPEC.md`.
 6. **Always update `docs/PROJECT_SPEC.md`** if adding new architectural components, schemas, or deployment paths.
 7. **Keep locale key parity** across the five JSON dictionaries; do not reintroduce 110 generated locales.
-8. **Hand/pass WIP (uncommitted):** start 5 sets; round 1 DRAW SETS adds none to players; round 2+ deals +3 each; pass keep-3 with 0 points. See `COPILOT.md`.
+8. **Hand/pass (v1.21.0):** start 5 sets; round 1 DRAW SETS adds none to players; round 2+ deals +3 each; pass keep-3 with 0 points. See `COPILOT.md`.
 9. **Player AI next:** kablowanie as an AI action, strategic keep-3, use `currentRound` in `findBestPlacement`, share decisions with simulations. Details in `docs/PLAYER_AI.md`.

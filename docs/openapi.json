@@ -3,7 +3,7 @@
   "info": {
     "title": "MASAKRA na Starym Majdanie API",
     "description": "Interactive API Documentation for the MASAKRA na Starym Majdanie Game Engine. Real-time actions use Socket.io events (action:placeSet, action:movePawn, action:selectGeneral, action:kablowanieSet, action:passTurn, action:claimPlayer, action:syncState). AI player turns run on the server whenever the current player is not in state.manualPlayers.",
-    "version": "1.20.2"
+    "version": "1.21.0"
   },
   "servers": [
     {
@@ -15,13 +15,21 @@
     "/api/ping": {
       "get": {
         "summary": "Health Check",
-        "responses": { "200": { "description": "Returns 'pong'" } }
+        "responses": {
+          "200": {
+            "description": "Returns 'pong'"
+          }
+        }
       }
     },
     "/api/config": {
       "get": {
         "summary": "Get Global Configuration",
-        "responses": { "200": { "description": "Returns global server configuration" } }
+        "responses": {
+          "200": {
+            "description": "Returns global server configuration"
+          }
+        }
       },
       "post": {
         "summary": "Update Global Configuration",
@@ -30,37 +38,53 @@
             "application/json": {
               "schema": {
                 "type": "object",
-                "properties": { "defaultSetName": { "type": "string" } }
+                "properties": {
+                  "defaultSetName": {
+                    "type": "string"
+                  }
+                }
               }
             }
           }
         },
-        "responses": { "200": { "description": "Configuration updated" } }
+        "responses": {
+          "200": {
+            "description": "Configuration updated"
+          }
+        }
       }
     },
     "/api/config/title": {
       "get": {
         "summary": "Get Dynamic Game Title",
         "description": "Returns the current game title as defined in game_config.json.",
-        "responses": { 
-          "200": { 
+        "responses": {
+          "200": {
             "description": "Game title retrieved",
             "content": {
               "application/json": {
                 "schema": {
                   "type": "object",
-                  "properties": { "title": { "type": "string" } }
+                  "properties": {
+                    "title": {
+                      "type": "string"
+                    }
+                  }
                 }
               }
             }
-          } 
+          }
         }
       }
     },
     "/api/map/next-id": {
       "get": {
         "summary": "Get Next Available Game ID",
-        "responses": { "200": { "description": "Returns the next available numeric game ID" } }
+        "responses": {
+          "200": {
+            "description": "Returns the next available numeric game ID"
+          }
+        }
       }
     },
     "/api/map/new": {
@@ -68,13 +92,28 @@
         "summary": "Create a new game",
         "description": "Allocates the next game ID and initializes its session with the requested set (or the server default).",
         "parameters": [
-          { "name": "set", "in": "query", "required": false, "schema": { "type": "string" }, "description": "Set name; may also be sent as body field `set`." }
+          {
+            "name": "set",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Set name; may also be sent as body field `set`."
+          }
         ],
         "requestBody": {
           "required": false,
           "content": {
             "application/json": {
-              "schema": { "type": "object", "properties": { "set": { "type": "string" } } }
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "set": {
+                    "type": "string"
+                  }
+                }
+              }
             }
           }
         },
@@ -86,30 +125,51 @@
                 "schema": {
                   "type": "object",
                   "properties": {
-                    "id": { "type": "integer" },
-                    "state": { "type": "object" }
+                    "id": {
+                      "type": "integer"
+                    },
+                    "state": {
+                      "type": "object"
+                    }
                   }
                 }
               }
             }
           },
-          "500": { "description": "Failed to create game" }
+          "500": {
+            "description": "Failed to create game"
+          }
         }
       }
     },
     "/api/sets": {
       "get": {
         "summary": "List Available Sets",
-        "responses": { "200": { "description": "Array of set names" } }
+        "responses": {
+          "200": {
+            "description": "Array of set names"
+          }
+        }
       }
     },
     "/api/sets/details/{setName}": {
       "get": {
         "summary": "Get Set Details",
         "parameters": [
-          { "name": "setName", "in": "path", "required": true, "schema": { "type": "string" } }
+          {
+            "name": "setName",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
         ],
-        "responses": { "200": { "description": "Full JSON structure of the requested set" } }
+        "responses": {
+          "200": {
+            "description": "Full JSON structure of the requested set"
+          }
+        }
       }
     },
     "/api/sets/generate": {
@@ -121,17 +181,31 @@
               "schema": {
                 "type": "object",
                 "properties": {
-                  "pawns": { "type": "object" },
-                  "power": { "type": "object" },
-                  "maxPower": { "type": "number" },
-                  "displayName": { "type": "string" },
-                  "description": { "type": "string" }
+                  "pawns": {
+                    "type": "object"
+                  },
+                  "power": {
+                    "type": "object"
+                  },
+                  "maxPower": {
+                    "type": "number"
+                  },
+                  "displayName": {
+                    "type": "string"
+                  },
+                  "description": {
+                    "type": "string"
+                  }
                 }
               }
             }
           }
         },
-        "responses": { "200": { "description": "Set generated" } }
+        "responses": {
+          "200": {
+            "description": "Set generated"
+          }
+        }
       }
     },
     "/api/sets/generate/transient": {
@@ -143,18 +217,36 @@
               "schema": {
                 "type": "object",
                 "properties": {
-                  "pawns": { "type": "object", "description": "Totals pool per band" },
-                  "pawnsInPlayLimit": { "type": "object", "description": "Limits per band" },
-                  "power": { "type": "object" },
-                  "maxPower": { "type": "number" },
-                  "displayName": { "type": "string" },
-                  "description": { "type": "string" }
+                  "pawns": {
+                    "type": "object",
+                    "description": "Totals pool per band"
+                  },
+                  "pawnsInPlayLimit": {
+                    "type": "object",
+                    "description": "Limits per band"
+                  },
+                  "power": {
+                    "type": "object"
+                  },
+                  "maxPower": {
+                    "type": "number"
+                  },
+                  "displayName": {
+                    "type": "string"
+                  },
+                  "description": {
+                    "type": "string"
+                  }
                 }
               }
             }
           }
         },
-        "responses": { "200": { "description": "Generated set JSON structure" } }
+        "responses": {
+          "200": {
+            "description": "Generated set JSON structure"
+          }
+        }
       }
     },
     "/api/sets/duplicate/{setName}": {
@@ -171,8 +263,12 @@
           }
         ],
         "responses": {
-          "200": { "description": "Set duplicated successfully" },
-          "404": { "description": "Source set not found" }
+          "200": {
+            "description": "Set duplicated successfully"
+          },
+          "404": {
+            "description": "Source set not found"
+          }
         }
       }
     },
@@ -180,7 +276,14 @@
       "post": {
         "summary": "Save set configuration",
         "parameters": [
-          { "name": "setName", "in": "path", "required": true, "schema": { "type": "string" } }
+          {
+            "name": "setName",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
         ],
         "requestBody": {
           "content": {
@@ -188,15 +291,22 @@
               "schema": {
                 "type": "object",
                 "properties": {
-                  "setsData": { "type": "object", "description": "Sets configuration data" }
+                  "setsData": {
+                    "type": "object",
+                    "description": "Sets configuration data"
+                  }
                 }
               }
             }
           }
         },
         "responses": {
-          "200": { "description": "Set saved and cleaned successfully" },
-          "404": { "description": "Set not found" }
+          "200": {
+            "description": "Set saved and cleaned successfully"
+          },
+          "404": {
+            "description": "Set not found"
+          }
         }
       }
     },
@@ -204,11 +314,22 @@
       "post": {
         "summary": "Sort pawns and piles in set",
         "parameters": [
-          { "name": "setName", "in": "path", "required": true, "schema": { "type": "string" } }
+          {
+            "name": "setName",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
         ],
         "responses": {
-          "200": { "description": "Set sorted successfully" },
-          "404": { "description": "Set not found" }
+          "200": {
+            "description": "Set sorted successfully"
+          },
+          "404": {
+            "description": "Set not found"
+          }
         }
       }
     },
@@ -216,7 +337,14 @@
       "post": {
         "summary": "Set set as global default for new games",
         "parameters": [
-          { "name": "setName", "in": "path", "required": true, "schema": { "type": "string" } }
+          {
+            "name": "setName",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
         ],
         "requestBody": {
           "content": {
@@ -224,22 +352,33 @@
               "schema": {
                 "type": "object",
                 "properties": {
-                  "setsData": { "type": "object", "description": "Optional set payload to save and apply" }
+                  "setsData": {
+                    "type": "object",
+                    "description": "Optional set payload to save and apply"
+                  }
                 }
               }
             }
           }
         },
         "responses": {
-          "200": { "description": "Set configured as default" },
-          "404": { "description": "Source set not found" }
+          "200": {
+            "description": "Set configured as default"
+          },
+          "404": {
+            "description": "Source set not found"
+          }
         }
       }
     },
     "/api/events": {
       "get": {
         "summary": "List Available Event Lists",
-        "responses": { "200": { "description": "Array of event list names" } }
+        "responses": {
+          "200": {
+            "description": "Array of event list names"
+          }
+        }
       }
     },
     "/api/events/all": {
@@ -247,8 +386,12 @@
         "summary": "Get Master Events List",
         "description": "Returns the complete master list of all possible game events from events_all.json.",
         "responses": {
-          "200": { "description": "Master events array" },
-          "404": { "description": "Master events file not found" }
+          "200": {
+            "description": "Master events array"
+          },
+          "404": {
+            "description": "Master events file not found"
+          }
         }
       }
     },
@@ -256,11 +399,22 @@
       "get": {
         "summary": "Get Event List Details",
         "parameters": [
-          { "name": "listName", "in": "path", "required": true, "schema": { "type": "string" } }
+          {
+            "name": "listName",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
         ],
         "responses": {
-          "200": { "description": "Event list items array" },
-          "404": { "description": "Event list not found" }
+          "200": {
+            "description": "Event list items array"
+          },
+          "404": {
+            "description": "Event list not found"
+          }
         }
       }
     },
@@ -272,17 +426,26 @@
             "application/json": {
               "schema": {
                 "type": "object",
-                "required": ["name"],
+                "required": [
+                  "name"
+                ],
                 "properties": {
-                  "name": { "type": "string", "description": "Name for the new event list" }
+                  "name": {
+                    "type": "string",
+                    "description": "Name for the new event list"
+                  }
                 }
               }
             }
           }
         },
         "responses": {
-          "200": { "description": "Event list created" },
-          "400": { "description": "Invalid name or list already exists" }
+          "200": {
+            "description": "Event list created"
+          },
+          "400": {
+            "description": "Invalid name or list already exists"
+          }
         }
       }
     },
@@ -290,7 +453,14 @@
       "post": {
         "summary": "Save Event List",
         "parameters": [
-          { "name": "listName", "in": "path", "required": true, "schema": { "type": "string" } }
+          {
+            "name": "listName",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
         ],
         "requestBody": {
           "content": {
@@ -298,15 +468,25 @@
               "schema": {
                 "type": "object",
                 "properties": {
-                  "eventsData": { "type": "array", "items": { "type": "object" }, "description": "Events array" }
+                  "eventsData": {
+                    "type": "array",
+                    "items": {
+                      "type": "object"
+                    },
+                    "description": "Events array"
+                  }
                 }
               }
             }
           }
         },
         "responses": {
-          "200": { "description": "Event list saved successfully" },
-          "404": { "description": "Event list not found" }
+          "200": {
+            "description": "Event list saved successfully"
+          },
+          "404": {
+            "description": "Event list not found"
+          }
         }
       }
     },
@@ -314,7 +494,14 @@
       "post": {
         "summary": "Set Default Event List",
         "parameters": [
-          { "name": "listName", "in": "path", "required": true, "schema": { "type": "string" } }
+          {
+            "name": "listName",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
         ],
         "requestBody": {
           "content": {
@@ -322,15 +509,25 @@
               "schema": {
                 "type": "object",
                 "properties": {
-                  "eventsData": { "type": "array", "items": { "type": "object" }, "description": "Optional events array payload" }
+                  "eventsData": {
+                    "type": "array",
+                    "items": {
+                      "type": "object"
+                    },
+                    "description": "Optional events array payload"
+                  }
                 }
               }
             }
           }
         },
         "responses": {
-          "200": { "description": "Event list set as default" },
-          "404": { "description": "Source event list not found" }
+          "200": {
+            "description": "Event list set as default"
+          },
+          "404": {
+            "description": "Source event list not found"
+          }
         }
       }
     },
@@ -338,76 +535,204 @@
       "delete": {
         "summary": "Delete All Games",
         "description": "Deletes all active game sessions and cleans the server/games directory.",
-        "responses": { "200": { "description": "All games deleted" } }
+        "responses": {
+          "200": {
+            "description": "All games deleted"
+          }
+        }
       }
     },
     "/api/map/{gameId}": {
       "get": {
         "summary": "Get Game State",
         "parameters": [
-          { "name": "gameId", "in": "path", "required": true, "schema": { "type": "string" } }
+          {
+            "name": "gameId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
         ],
-        "responses": { "200": { "description": "Current game state JSON" } }
+        "responses": {
+          "200": {
+            "description": "Current game state JSON"
+          }
+        }
       },
       "post": {
         "summary": "Save Game State (Deprecated)",
         "deprecated": true,
         "description": "DEPRECATED: Use Socket.io event actions (action:placeSet, action:movePawn, etc.) instead of HTTP POST state dumps.",
         "parameters": [
-          { "name": "gameId", "in": "path", "required": true, "schema": { "type": "string" } }
+          {
+            "name": "gameId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
         ],
         "requestBody": {
-          "content": { "application/json": { "schema": { "type": "object" } } }
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
         },
-        "responses": { "200": { "description": "State saved (Deprecated fallback)" } }
+        "responses": {
+          "200": {
+            "description": "State saved (Deprecated fallback)"
+          }
+        }
       },
       "delete": {
         "summary": "Reset Board",
         "parameters": [
-          { "name": "gameId", "in": "path", "required": true, "schema": { "type": "string" } }
+          {
+            "name": "gameId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
         ],
-        "responses": { "200": { "description": "Board reset to empty" } }
+        "responses": {
+          "200": {
+            "description": "Board reset to empty"
+          }
+        }
       }
     },
     "/api/map/status/{gameId}": {
       "get": {
         "summary": "Get simplified game status",
         "parameters": [
-          { "name": "gameId", "in": "path", "required": true, "schema": { "type": "string" } }
+          {
+            "name": "gameId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
         ],
-        "responses": { "200": { "description": "Basic player info and points" } }
+        "responses": {
+          "200": {
+            "description": "Basic player info and points"
+          }
+        }
       }
     },
     "/api/map/init/{gameId}": {
       "post": {
         "summary": "Initialize New Game",
         "parameters": [
-          { "name": "gameId", "in": "path", "required": true, "schema": { "type": "string" } },
-          { "name": "set", "in": "query", "required": false, "schema": { "type": "string" } }
+          {
+            "name": "gameId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "set",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
         ],
-        "responses": { "200": { "description": "Game initialized" } }
+        "responses": {
+          "200": {
+            "description": "Game initialized"
+          }
+        }
       }
     },
     "/api/map/{gameId}/add": {
       "get": {
         "summary": "Add Pawn to Region",
         "parameters": [
-          { "name": "gameId", "in": "path", "required": true, "schema": { "type": "string" } },
-          { "name": "region", "in": "query", "required": true, "schema": { "type": "integer" } },
-          { "name": "pawn", "in": "query", "required": true, "schema": { "type": "string" } }
+          {
+            "name": "gameId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "region",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "pawn",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
         ],
-        "responses": { "200": { "description": "Pawn added" }, "400": { "description": "Invalid region" } }
+        "responses": {
+          "200": {
+            "description": "Pawn added"
+          },
+          "400": {
+            "description": "Invalid region"
+          }
+        }
       }
     },
     "/api/map/{gameId}/remove": {
       "get": {
         "summary": "Remove Pawn from Region",
         "parameters": [
-          { "name": "gameId", "in": "path", "required": true, "schema": { "type": "string" } },
-          { "name": "region", "in": "query", "required": true, "schema": { "type": "integer" } },
-          { "name": "pawn", "in": "query", "required": true, "schema": { "type": "string" } }
+          {
+            "name": "gameId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "region",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "pawn",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
         ],
-        "responses": { "200": { "description": "Pawn removed" }, "400": { "description": "Pawn not found in region" } }
+        "responses": {
+          "200": {
+            "description": "Pawn removed"
+          },
+          "400": {
+            "description": "Pawn not found in region"
+          }
+        }
       }
     },
     "/api/map/{gameId}/event-phase": {
@@ -415,11 +740,22 @@
         "summary": "Execute Event Phase",
         "description": "Draws one event only when the game is in event_phase, then advances. A repeat call is a no-op and does not draw again. Response includes executed, event, and state.",
         "parameters": [
-          { "name": "gameId", "in": "path", "required": true, "schema": { "type": "string" } }
+          {
+            "name": "gameId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
         ],
-        "responses": { 
-          "200": { "description": "Event phase completed and state updated" },
-          "500": { "description": "Failed to execute event phase" }
+        "responses": {
+          "200": {
+            "description": "Event phase completed and state updated"
+          },
+          "500": {
+            "description": "Failed to execute event phase"
+          }
         }
       }
     },
@@ -428,12 +764,25 @@
         "summary": "Record an all-AI spectator replay",
         "description": "Allowed only at setup of round 1. Plays the full game on the server with every seat as AI, writes server/games/{gameId}/replay.json, and finishes the live state. If a replay already exists, returns it without re-rolling. While a replay exists, manual socket actions are rejected.",
         "parameters": [
-          { "name": "gameId", "in": "path", "required": true, "schema": { "type": "string" } }
+          {
+            "name": "gameId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
         ],
         "responses": {
-          "200": { "description": "Replay ready. Body includes ready, cached, and frameCount." },
-          "409": { "description": "Game is not a fresh setup" },
-          "500": { "description": "Recording failed" }
+          "200": {
+            "description": "Replay ready. Body includes ready, cached, and frameCount."
+          },
+          "409": {
+            "description": "Game is not a fresh setup"
+          },
+          "500": {
+            "description": "Recording failed"
+          }
         }
       }
     },
@@ -441,11 +790,22 @@
       "get": {
         "summary": "Read a saved spectator replay",
         "parameters": [
-          { "name": "gameId", "in": "path", "required": true, "schema": { "type": "string" } }
+          {
+            "name": "gameId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
         ],
         "responses": {
-          "200": { "description": "Replay JSON with version, gameId, and frames" },
-          "404": { "description": "Replay not found" }
+          "200": {
+            "description": "Replay JSON with version, gameId, and frames"
+          },
+          "404": {
+            "description": "Replay not found"
+          }
         }
       }
     },
@@ -454,13 +814,33 @@
         "summary": "Trigger a Specific Event Manually",
         "description": "Applies the effects of a specific event (by its ID) to the game immediately, useful for manual testing and debugging.",
         "parameters": [
-          { "name": "gameId", "in": "path", "required": true, "schema": { "type": "string" } },
-          { "name": "eventId", "in": "path", "required": true, "schema": { "type": "string" } }
+          {
+            "name": "gameId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "eventId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
         ],
         "responses": {
-          "200": { "description": "Event triggered and applied successfully" },
-          "404": { "description": "Event not found" },
-          "500": { "description": "Failed to trigger event" }
+          "200": {
+            "description": "Event triggered and applied successfully"
+          },
+          "404": {
+            "description": "Event not found"
+          },
+          "500": {
+            "description": "Failed to trigger event"
+          }
         }
       }
     },
@@ -469,7 +849,14 @@
         "summary": "List Available Snapshots",
         "description": "Returns a list of saved round snapshots for the specified game session.",
         "parameters": [
-          { "name": "gameId", "in": "path", "required": true, "schema": { "type": "string" } }
+          {
+            "name": "gameId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
         ],
         "responses": {
           "200": {
@@ -479,7 +866,12 @@
                 "schema": {
                   "type": "object",
                   "properties": {
-                    "saves": { "type": "array", "items": { "type": "string" } }
+                    "saves": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
                   }
                 }
               }
@@ -493,12 +885,30 @@
         "summary": "Restore Game Snapshot",
         "description": "Restores the game state from a specific snapshot and broadcasts to all connected players.",
         "parameters": [
-          { "name": "gameId", "in": "path", "required": true, "schema": { "type": "string" } },
-          { "name": "snapshotId", "in": "path", "required": true, "schema": { "type": "string" } }
+          {
+            "name": "gameId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "snapshotId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
         ],
         "responses": {
-          "200": { "description": "Snapshot restored successfully" },
-          "500": { "description": "Failed to load snapshot" }
+          "200": {
+            "description": "Snapshot restored successfully"
+          },
+          "500": {
+            "description": "Failed to load snapshot"
+          }
         }
       }
     },
@@ -512,15 +922,36 @@
               "schema": {
                 "type": "object",
                 "properties": {
-                  "count": { "type": "integer", "default": 1000, "description": "Number of simulations to run" },
-                  "sets": { "type": "object", "description": "Optional sets configuration" },
-                  "game": { "type": "object", "description": "Optional game configuration" },
+                  "count": {
+                    "type": "integer",
+                    "default": 1000,
+                    "description": "Number of simulations to run"
+                  },
+                  "sets": {
+                    "type": "object",
+                    "description": "Optional sets configuration"
+                  },
+                  "game": {
+                    "type": "object",
+                    "description": "Optional game configuration"
+                  },
                   "events": {
                     "description": "Optional event set: an events array, a list name, or { name }",
                     "oneOf": [
-                      { "type": "array" },
-                      { "type": "string" },
-                      { "type": "object", "properties": { "name": { "type": "string" } } }
+                      {
+                        "type": "array"
+                      },
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "object",
+                        "properties": {
+                          "name": {
+                            "type": "string"
+                          }
+                        }
+                      }
                     ]
                   }
                 }
@@ -528,24 +959,54 @@
             }
           }
         },
-        "responses": { "200": { "description": "Job created" } }
+        "responses": {
+          "200": {
+            "description": "Job created"
+          }
+        }
       }
     },
     "/api/simulate/job/{jobId}": {
       "get": {
         "summary": "Get Parallel Simulation Job Status & Progress",
         "parameters": [
-          { "name": "jobId", "in": "path", "required": true, "schema": { "type": "string" } }
+          {
+            "name": "jobId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
         ],
-        "responses": { "200": { "description": "Job status, progress percent, and final balance report when completed" } }
+        "responses": {
+          "200": {
+            "description": "Job status, progress percent, and final balance report when completed"
+          }
+        }
       }
     },
     "/api/simulate/batch": {
       "post": {
         "summary": "Run Batch Simulation",
         "parameters": [
-          { "name": "set", "in": "query", "required": false, "schema": { "type": "string" } },
-          { "name": "count", "in": "query", "required": false, "schema": { "type": "integer", "default": 100 } }
+          {
+            "name": "set",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "count",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 100
+            }
+          }
         ],
         "requestBody": {
           "content": {
@@ -553,21 +1014,38 @@
               "schema": {
                 "type": "object",
                 "properties": {
-                  "setsData": { "type": "object", "description": "Optional custom sets data" },
-                  "eventsData": { "type": "array", "description": "Optional custom events list" }
+                  "setsData": {
+                    "type": "object",
+                    "description": "Optional custom sets data"
+                  },
+                  "eventsData": {
+                    "type": "array",
+                    "description": "Optional custom events list"
+                  }
                 }
               }
             }
           }
         },
-        "responses": { "200": { "description": "Batch simulation results array" } }
+        "responses": {
+          "200": {
+            "description": "Batch simulation results array"
+          }
+        }
       }
     },
     "/api/simulate/": {
       "post": {
         "summary": "Run Quick Simulation",
         "parameters": [
-          { "name": "set", "in": "query", "required": false, "schema": { "type": "string" } }
+          {
+            "name": "set",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
         ],
         "requestBody": {
           "content": {
@@ -575,21 +1053,38 @@
               "schema": {
                 "type": "object",
                 "properties": {
-                  "setsData": { "type": "object", "description": "Optional custom sets data" },
-                  "eventsData": { "type": "array", "description": "Optional custom events list" }
+                  "setsData": {
+                    "type": "object",
+                    "description": "Optional custom sets data"
+                  },
+                  "eventsData": {
+                    "type": "array",
+                    "description": "Optional custom events list"
+                  }
                 }
               }
             }
           }
         },
-        "responses": { "200": { "description": "Simulation results" } }
+        "responses": {
+          "200": {
+            "description": "Simulation results"
+          }
+        }
       }
     },
     "/api/simulate/detailed": {
       "post": {
         "summary": "Run Comprehensive Simulation",
         "parameters": [
-          { "name": "set", "in": "query", "required": false, "schema": { "type": "string" } }
+          {
+            "name": "set",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
         ],
         "requestBody": {
           "content": {
@@ -597,14 +1092,24 @@
               "schema": {
                 "type": "object",
                 "properties": {
-                  "setsData": { "type": "object", "description": "Optional custom sets data" },
-                  "eventsData": { "type": "array", "description": "Optional custom events list" }
+                  "setsData": {
+                    "type": "object",
+                    "description": "Optional custom sets data"
+                  },
+                  "eventsData": {
+                    "type": "array",
+                    "description": "Optional custom events list"
+                  }
                 }
               }
             }
           }
         },
-        "responses": { "200": { "description": "Detailed simulation history" } }
+        "responses": {
+          "200": {
+            "description": "Detailed simulation history"
+          }
+        }
       }
     },
     "/api/simulate/full": {
@@ -612,7 +1117,15 @@
         "summary": "Run Simulation with Full Config",
         "description": "Accepts complete JSON objects for sets, game, and events parameters. Supports both JSON body and multipart/form-data file uploads. If configurations are omitted, falls back to default server configurations.",
         "parameters": [
-          { "name": "count", "in": "query", "required": false, "schema": { "type": "integer", "default": 1 } }
+          {
+            "name": "count",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 1
+            }
+          }
         ],
         "requestBody": {
           "content": {
@@ -620,16 +1133,22 @@
               "schema": {
                 "type": "object",
                 "properties": {
-                  "sets": { "type": "object", "description": "Full sets configuration object" },
-                  "game": { 
-                    "type": "object", 
+                  "sets": {
+                    "type": "object",
+                    "description": "Full sets configuration object"
+                  },
+                  "game": {
+                    "type": "object",
                     "description": "Game configuration parameters (rounds, draw amounts, etc.)"
                   },
                   "events": {
                     "type": "array",
                     "description": "Optional custom events list"
                   },
-                  "count": { "type": "integer", "description": "Number of simulations to run" }
+                  "count": {
+                    "type": "integer",
+                    "description": "Number of simulations to run"
+                  }
                 }
               }
             },
@@ -637,18 +1156,37 @@
               "schema": {
                 "type": "object",
                 "properties": {
-                  "sets": { "type": "string", "format": "binary", "description": "JSON file with sets configuration" },
-                  "game": { "type": "string", "format": "binary", "description": "JSON file with game configuration" },
-                  "events": { "type": "string", "format": "binary", "description": "JSON file with custom events list" },
-                  "count": { "type": "string", "description": "Number of simulations to run" }
+                  "sets": {
+                    "type": "string",
+                    "format": "binary",
+                    "description": "JSON file with sets configuration"
+                  },
+                  "game": {
+                    "type": "string",
+                    "format": "binary",
+                    "description": "JSON file with game configuration"
+                  },
+                  "events": {
+                    "type": "string",
+                    "format": "binary",
+                    "description": "JSON file with custom events list"
+                  },
+                  "count": {
+                    "type": "string",
+                    "description": "Number of simulations to run"
+                  }
                 }
               }
             }
           }
         },
         "responses": {
-          "200": { "description": "Simulation analytics result array" },
-          "400": { "description": "Invalid JSON in files" }
+          "200": {
+            "description": "Simulation analytics result array"
+          },
+          "400": {
+            "description": "Invalid JSON in files"
+          }
         }
       }
     }

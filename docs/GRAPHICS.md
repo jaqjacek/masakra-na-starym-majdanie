@@ -1,6 +1,6 @@
 # Baza Grafik: Nocny Szturm MASAKRA na Starym Majdanie
 
-Prompty i status assetów (Nanobanana 2 / Imagine). Gra w v1.20.2 używa plików z `src/assets/icons/` i `src/assets/img/`. Ten dokument **nie** blokuje pracy nad AI graczy.
+Prompty i status assetów (Nanobanana 2 / Imagine). Gra w v1.21.0 używa plików z `src/assets/icons/` i `src/assets/img/`. Ten dokument **nie** blokuje pracy nad AI graczy.
 
 **W grze już są:** ikony band i Jakuba (`*_128x128.png`, SVG), portrety generałów (`general_*_raw.jpg`), tło planszy (5 locale), okładka, przykłady punktacji i fazy Jakuba, panele, popupy wydarzeń.
 
@@ -100,4 +100,4 @@ Poniższe statusy `do generacji` / `do dopracowania` dotyczą wariantów i key a
 ---
 *Plik stworzony: 19.04.2026*
 *Aktualizacja: 15.08.2026 — tło planszy, poprawiona róża wiatrów, warianty PL/EN/CS/UK/TLH.*
-*Status docs 2026-10-06: v1.20.2; runtime assety w `src/assets/`; następna praca to AI graczy, nie grafika.*
+*Status docs 2026-10-06: v1.21.0; runtime assety w `src/assets/`; następna praca to AI graczy, nie grafika.*

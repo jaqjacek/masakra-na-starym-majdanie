@@ -2,7 +2,7 @@
 
 ## 1. Project Overview
 **Name:** MASAKRA na Starym Majdanie  
-**Version:** v1.20.2  
+**Version:** v1.21.0  
 **Description:** A digital tactical board game simulator where players manage pieces (pawns) and special game objects across a 6x6 grid.  
 **Goal:** A multi-client, real-time synchronized game engine with complex movement rules, resource distribution (Sets), automated worker-thread simulations, and phase-based gameplay.  
 **Active work:** Player/Herszt AI — [`PLAYER_AI.md`](PLAYER_AI.md), repo handoff [`COPILOT.md`](../COPILOT.md).
@@ -112,7 +112,7 @@
 - **Admin:** `/admin/sets`, `/admin/events`, `/admin/simulate` (not `/admin`).
 - **Footer:** Docs links, five language flags, version from `src/constants/version.js`.
 
-## 6. Project Status (Current: v1.20.2)
+## 6. Project Status (Current: v1.21.0)
 - **Implemented:**
   - Manual & automated gameplay, Dockerization, multi-phase logic, refined scoring.
   - i18n for five languages (`pl`, `en`, `cs`, `uk`, `tlh`) including localized game history; Klingon pIqaD. (110-locale experiment **reverted**.)
@@ -123,9 +123,10 @@
   - Parallel Monte Carlo Simulation Engine with Worker Threads, Socket.io telemetry, closeness/blowout charts, and interactive Recharts dashboard.
   - Event Cards Deck & Set Customization Admin Editors.
   - Vite `/api` + `/socket.io` proxy to `127.0.0.1` for universal Docker/dev connectivity.
-  - **Server-side player AI** for unclaimed seats (`playerAiService` + greedy `findBestPlacement`).
-- **In working tree (uncommitted):** start 5 sets; DRAW SETS round 1 skips player refill; round 2+ deals +3; pass keep-3 with 0 points; sims aligned.
-- **Next Steps (player AI):** kablowanie as an AI action; strategic keep-3; use `currentRound` in placement; share decisions with simulations; tests. Details: [`PLAYER_AI.md`](PLAYER_AI.md).
+  - **Server-side player AI** for unclaimed seats (`playerAiService` + greedy place/kablowanie/pass).
+  - Hand/pass: start 5 sets; DRAW SETS round 1 skips player refill; round 2+ deals +3; pass keep-3 with 0 points; sims aligned.
+  - Spectator all-AI record/replay; App.jsx split; shared `AI_*` constants.
+- **Next Steps (player AI):** strategic keep-3; look-ahead; share decisions with simulations; restore/extend tests. Details: [`PLAYER_AI.md`](PLAYER_AI.md).
 
 ## 7. Core File Map (AI Navigation)
 ### 7.1 Backend (Logic, Services & State)

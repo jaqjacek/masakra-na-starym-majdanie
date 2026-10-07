@@ -1,6 +1,6 @@
 # Fabuła Gry: Wędrowycz - Ostatni Zajazd na Stary Majdan
 
-> Lore for UI flavor. Rules and scoring: [`GAME_RULES.md`](GAME_RULES.md) (v1.20.2). Simulator status / player AI: [`../COPILOT.md`](../COPILOT.md).
+> Lore for UI flavor. Rules and scoring: [`GAME_RULES.md`](GAME_RULES.md) (v1.21.0). Simulator status / player AI: [`../COPILOT.md`](../COPILOT.md).
 
 ## Wprowadzenie
 W ciasnej, zawilgoconej krypcie grobowej lokalnego magnata na wojsławickim cmentarzu panuje niemiłosierny ścisk. Przywódcy sił ciemności: **Wampirów**, **Wilkołaków**, **Duchów** oraz klanu **Bardaków** spotykają się potajemnie o północy. Próchniejąca trumna służy im za stół konferencyjny, na którym rozłożono mapę Starego Majdanu narysowaną węglem na kartonie po butach. Podczas gdy Wilkołaki kichają od kurzu, Wampiry narzekają na zaduch, a Duchy wiszą smętnie pod sufitem ubolewając nad wilgocią psującą ektoplazmę i brakiem zasięgu LTE, Bardaki po cichu odkręcają mosiężne uchwyty od trumny i kombinują, jak ukraść Baronowi portfel oraz jego zapasowe, posrebrzane zęby. Cel tego konszachtu jest jeden: zawiązać tymczasowy sojusz i przeprowadzić ostateczny, zmasowany atak na Stary Majdan – posiadłość Jakuba Wędrowycza, który od lat bezcześci ich grobowce i pędzi z nich lecznicze nalewki.

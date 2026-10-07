@@ -1,4 +1,4 @@
-# Set Generation Specification (aligned with v1.20.2 / `shared/constants.js`)
+# Set Generation Specification (aligned with v1.21.0 / `shared/constants.js`)
 
 This document defines the rules and parameters for generating game sets in "MASAKRA na Starym Majdanie".
 

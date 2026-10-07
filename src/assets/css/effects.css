@@ -73,7 +73,7 @@
   height: 100%;
   pointer-events: none;
   z-index: 100;
-  overflow: hidden;
+  overflow: visible; /* top-row floats rise above the board edge */
 }
 
 .effect-explosion {
@@ -163,6 +163,24 @@
 .effect-floating-text.race-werewolf { color: #d2691e; }
 .effect-floating-text.race-ghost { color: #e6e6e6; }
 .effect-floating-text.race-bardak { color: #cccccc; }
+
+.effect-placement-flash {
+  position: absolute;
+  width: 16.666%;
+  height: 16.666%;
+  transform: translate(-50%, -50%);
+  border-radius: 8px;
+  pointer-events: none;
+  background: rgba(241, 196, 15, 0.45);
+  box-shadow: 0 0 28px #f1c40f, inset 0 0 18px rgba(255, 255, 255, 0.65);
+  animation: placement-flash 1.4s ease-out forwards;
+}
+
+@keyframes placement-flash {
+  0% { opacity: 0; transform: translate(-50%, -50%) scale(0.55); }
+  18% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+  100% { opacity: 0; transform: translate(-50%, -50%) scale(1.08); }
+}
 
 .effect-floating-text.positive {
   text-shadow: 0 0 8px currentColor, 1px 1px 2px #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000;

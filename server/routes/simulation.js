@@ -1,7 +1,27 @@
 import express from 'express';
+import fs from 'fs';
+import path from 'path';
 import multer from 'multer';
 import { runDetailedSimulation, runBasicSimulation, runFullSimulation } from '../services/simulationService.js';
 import { SimulationJobManager } from '../services/simulationJobManager.js';
+import { CONFIGS_DIR, EVENTS_DIR } from '../gameLogic.js';
+
+function resolveEventsConfig(events) {
+  if (!events) return null;
+  if (Array.isArray(events)) return events;
+  const name = typeof events === 'string' ? events : events.name;
+  if (!name) return null;
+  const safe = String(name).trim().replace(/[^a-zA-Z0-9_-]/g, '');
+  if (!safe) return null;
+  const candidates = [
+    path.join(EVENTS_DIR, `${safe}.json`),
+    path.join(CONFIGS_DIR, `${safe}.json`)
+  ];
+  const filePath = candidates.find((candidate) => fs.existsSync(candidate));
+  if (!filePath) return null;
+  const parsed = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+  return Array.isArray(parsed) ? parsed : null;
+}
 
 const router = express.Router();
 const upload = multer();
@@ -13,12 +33,16 @@ router.post('/job', (req, res) => {
   try {
     const { count = 1000, sets, game, events } = req.body || {};
     const io = req.app.get('io');
+    const eventsConfig = resolveEventsConfig(events);
+    if (events && !eventsConfig) {
+      return res.status(400).json({ error: 'Event set not found' });
+    }
 
     const job = SimulationJobManager.createJob({
       count: parseInt(count, 10) || 1000,
       setsConfig: sets,
       gameConfig: game,
-      eventsConfig: events,
+      eventsConfig,
       io
     });
 

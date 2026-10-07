@@ -252,7 +252,7 @@
 
 .score-metric .metric-value { color: #2ed573; }
 .loss-metric .metric-value { color: #ff4757; }
-.rambo-metric .metric-value { color: #1e90ff; }
+.placement-metric .metric-value { color: #1e90ff; }
 .witness-metric .metric-value { color: #ffa502; }
 .final-metric .metric-value { color: #eccc68; }
 .passing-metric .metric-value { color: #a55eea; }

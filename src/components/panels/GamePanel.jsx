@@ -1,6 +1,7 @@
 import React from 'react';
 import { useTranslation } from '../../hooks/useTranslation';
 import { WORLD_LANGUAGES } from '../../constants/languages';
+import { MIN_AUTOPLAY_SPEED_MS, MAX_AUTOPLAY_SPEED_MS, AUTOPLAY_SPEED_STEP_MS } from '../../constants/constants';
 import '../../assets/css/panels/game.css';
 
 const LayoutModePicker = ({ uiLayout, setUiLayout, t }) => (
@@ -205,13 +206,22 @@ export function GameTabBody(props) {
     isEventsPanelOpen, setIsEventsPanelOpen,
     onOpenScoring, onOpenLoadSaves, onOpenStats,
     onCreateNewGame, onChangeGame, onAdminPanel,
+    spectatorLocked, spectatorBusy, canStartSpectator, canReplaySpectator, spectatorError,
+    onStartSpectator, onReplaySpectator,
     gameState, children
   } = props;
 
   return (
     <div className="mobile-game-tab">
-      <PhaseControls {...props} t={t} />
+      {!spectatorLocked && <PhaseControls {...props} t={t} />}
+      {(canStartSpectator || canReplaySpectator) && (
+        <button type="button" className="spectator-mode-btn" onClick={canReplaySpectator ? onReplaySpectator : onStartSpectator}>
+          {canReplaySpectator ? t('spectator_replay') : t('spectator_watch')}
+        </button>
+      )}
+      {spectatorError && <div className="spectator-error">{spectatorError}</div>}
 
+      {!spectatorLocked && (
       <div className="mobile-game-actions">
         <button type="button" onClick={onOpenScoring}>{t('scoring')}</button>
         <button type="button" onClick={onOpenLoadSaves}>{t('load')}</button>
@@ -233,37 +243,46 @@ export function GameTabBody(props) {
           {t('sets_panel_btn')}
         </button>
       </div>
+      )}
 
       <div className="autoplay-controls">
-        <button
-          className={`autoplay-btn ${isJakubAutoplay ? 'active' : ''}`}
-          onClick={() => { setIsJakubAutoplay(!isJakubAutoplay); setIsFullAutoplay(false); }}
-        >
-          {isJakubAutoplay ? t('pause_jakub_btn', { defaultValue: 'PAUSE J' }) : t('jakub_auto_btn', { defaultValue: 'JAKUB AUTO' })}
-        </button>
-        <button
-          className={`autoplay-btn full ${isFullAutoplay ? 'active' : ''}`}
-          onClick={() => { setIsFullAutoplay(!isFullAutoplay); setIsJakubAutoplay(false); }}
-        >
-          {isFullAutoplay ? t('pause_full_btn', { defaultValue: 'PAUSE FULL' }) : t('full_auto_btn', { defaultValue: 'FULL AUTO' })}
-        </button>
+        {!spectatorLocked && (
+          <>
+            <button
+              className={`autoplay-btn ${isJakubAutoplay ? 'active' : ''}`}
+              onClick={() => { setIsJakubAutoplay(!isJakubAutoplay); setIsFullAutoplay(false); }}
+            >
+              {isJakubAutoplay ? t('pause_jakub_btn', { defaultValue: 'PAUSE J' }) : t('jakub_auto_btn', { defaultValue: 'JAKUB AUTO' })}
+            </button>
+            <button
+              className={`autoplay-btn full ${isFullAutoplay ? 'active' : ''}`}
+              onClick={() => { setIsFullAutoplay(!isFullAutoplay); setIsJakubAutoplay(false); }}
+            >
+              {isFullAutoplay ? t('pause_full_btn', { defaultValue: 'PAUSE FULL' }) : t('full_auto_btn', { defaultValue: 'FULL AUTO' })}
+            </button>
+          </>
+        )}
+        {spectatorBusy && <span className="speed-label">{t('spectator_recording')}</span>}
         <div className="speed-control">
           <span className="speed-label">{autoplaySpeed}ms</span>
-          <input type="range" min="50" max="1500" step="50" value={autoplaySpeed} onChange={(e) => setAutoplaySpeed(parseInt(e.target.value, 10))} />
+          <input type="range" min={MIN_AUTOPLAY_SPEED_MS} max={MAX_AUTOPLAY_SPEED_MS} step={AUTOPLAY_SPEED_STEP_MS} value={autoplaySpeed} onChange={(e) => setAutoplaySpeed(parseInt(e.target.value, 10))} />
         </div>
       </div>
 
-      <OptionsFields {...props} t={t} />
+      {!spectatorLocked && <OptionsFields {...props} t={t} />}
 
       {children}
 
+      {!spectatorLocked && (
       <div className="mobile-game-nav">
         <button type="button" onClick={() => { window.location.href = '/'; }}>{t('landing_page_btn')}</button>
         <button type="button" onClick={onCreateNewGame}>{t('create_new_game')}</button>
         <button type="button" onClick={onChangeGame}>{t('change_game_btn')}</button>
         <button type="button" onClick={onAdminPanel}>{t('admin_panel')}</button>
       </div>
+      )}
 
+      {!spectatorLocked && (
       <div className="mobile-game-langs" role="group" aria-label={t('choose_language')}>
         {WORLD_LANGUAGES.map((item) => (
           <button
@@ -279,6 +298,7 @@ export function GameTabBody(props) {
           </button>
         ))}
       </div>
+      )}
     </div>
   );
 }
@@ -310,6 +330,13 @@ const GamePanel = ({
   onAdminPanel,
   onOpenLoadSaves,
   onOpenStats,
+  spectatorLocked = false,
+  spectatorBusy = false,
+  canStartSpectator = false,
+  canReplaySpectator = false,
+  spectatorError = '',
+  onStartSpectator,
+  onReplaySpectator,
   currentPlayerId,
   showTracks = true,
   setShowTracks,
@@ -371,56 +398,74 @@ const GamePanel = ({
   return (
     <div className="top-header-bar">
       <div className="header-left-group">
-        <button className="menu-toggle-btn" onClick={handleMenuToggle} aria-label={t('options_button')}>
-          <div className="hamburger-icon"><span></span><span></span><span></span></div>
-        </button>
+        {!spectatorLocked && (
+          <button className="menu-toggle-btn" onClick={handleMenuToggle} aria-label={t('options_button')}>
+            <div className="hamburger-icon"><span></span><span></span><span></span></div>
+          </button>
+        )}
 
         <div className="game-id-info">
           ID: <strong>{gameId}</strong>
           <span className="phase-indicator">{t(`phase_${gameState.phase}`, { defaultValue: gameState.phase })}</span>
         </div>
 
-        <button className="scoring-summary-btn main-panel-btn" onClick={onOpenScoring}>{t('scoring')}</button>
-        <button className="load-saves-btn main-panel-btn" onClick={onOpenLoadSaves}>{t('load')}</button>
-        {gameState.phase === 'End Game' && (
-          <button className="end-game-stats-btn main-panel-btn" onClick={onOpenStats}>{t('stats')}</button>
+        {!spectatorLocked && (
+          <>
+            <button className="scoring-summary-btn main-panel-btn" onClick={onOpenScoring}>{t('scoring')}</button>
+            <button className="load-saves-btn main-panel-btn" onClick={onOpenLoadSaves}>{t('load')}</button>
+            {gameState.phase === 'End Game' && (
+              <button className="end-game-stats-btn main-panel-btn" onClick={onOpenStats}>{t('stats')}</button>
+            )}
+            <PhaseControls {...phaseProps} />
+          </>
         )}
-
-        <PhaseControls {...phaseProps} />
+        {(canStartSpectator || canReplaySpectator) && (
+          <button type="button" className="spectator-mode-btn" onClick={canReplaySpectator ? onReplaySpectator : onStartSpectator}>
+            {canReplaySpectator ? t('spectator_replay') : t('spectator_watch')}
+          </button>
+        )}
+        {spectatorError && <span className="spectator-error">{spectatorError}</span>}
       </div>
 
       <div className="header-right-group">
         <div className="autoplay-controls">
-          <button
-            className={`autoplay-btn ${isJakubAutoplay ? 'active' : ''}`}
-            onClick={() => { setIsJakubAutoplay(!isJakubAutoplay); setIsFullAutoplay(false); }}
-            title="Automate only Jakub's phase"
-          >
-            {isJakubAutoplay ? t('pause_jakub_btn', { defaultValue: 'PAUSE J' }) : t('jakub_auto_btn', { defaultValue: 'JAKUB AUTO' })}
-          </button>
+          {!spectatorLocked && (
+            <>
+              <button
+                className={`autoplay-btn ${isJakubAutoplay ? 'active' : ''}`}
+                onClick={() => { setIsJakubAutoplay(!isJakubAutoplay); setIsFullAutoplay(false); }}
+                title="Automate only Jakub's phase"
+              >
+                {isJakubAutoplay ? t('pause_jakub_btn', { defaultValue: 'PAUSE J' }) : t('jakub_auto_btn', { defaultValue: 'JAKUB AUTO' })}
+              </button>
 
-          <button
-            className={`autoplay-btn full ${isFullAutoplay ? 'active' : ''}`}
-            onClick={() => { setIsFullAutoplay(!isFullAutoplay); setIsJakubAutoplay(false); }}
-            title="Automate everything"
-          >
-            {isFullAutoplay ? t('pause_full_btn', { defaultValue: 'PAUSE FULL' }) : t('full_auto_btn', { defaultValue: 'FULL AUTO' })}
-          </button>
+              <button
+                className={`autoplay-btn full ${isFullAutoplay ? 'active' : ''}`}
+                onClick={() => { setIsFullAutoplay(!isFullAutoplay); setIsJakubAutoplay(false); }}
+                title="Automate everything"
+              >
+                {isFullAutoplay ? t('pause_full_btn', { defaultValue: 'PAUSE FULL' }) : t('full_auto_btn', { defaultValue: 'FULL AUTO' })}
+              </button>
+            </>
+          )}
+          {spectatorBusy && <span className="speed-label">{t('spectator_recording')}</span>}
 
           <div className="speed-control">
             <span className="speed-label">{autoplaySpeed}ms</span>
-            <input type="range" min="50" max="1500" step="50" value={autoplaySpeed} onChange={(e) => setAutoplaySpeed(parseInt(e.target.value, 10))} />
+            <input type="range" min={MIN_AUTOPLAY_SPEED_MS} max={MAX_AUTOPLAY_SPEED_MS} step={AUTOPLAY_SPEED_STEP_MS} value={autoplaySpeed} onChange={(e) => setAutoplaySpeed(parseInt(e.target.value, 10))} />
           </div>
         </div>
 
+        {!spectatorLocked && (
         <div className="header-actions">
           <button className={`sets-toggle-btn options-toggle-btn ${isOptionsOpen ? 'active' : ''}`} onClick={() => setIsOptionsOpen(!isOptionsOpen)} style={{ marginRight: '10px' }}>{t('options_button')}</button>
           <button className={`sets-toggle-btn ${isEventsPanelOpen ? 'active' : ''}`} onClick={() => setIsEventsPanelOpen(!isEventsPanelOpen)} style={{ marginRight: '10px' }}>{t('events_panel_btn')}</button>
           <button className={`sets-toggle-btn ${isSetsPanelOpen ? 'active' : ''}`} onClick={() => setIsSetsPanelOpen(!isSetsPanelOpen)}>{t('sets_panel_btn')}</button>
         </div>
+        )}
       </div>
 
-      {isMenuOpen && !isMobileUi && (
+      {isMenuOpen && !isMobileUi && !spectatorLocked && (
         <>
           <div className="menu-backdrop" onClick={() => setIsMenuOpen(false)}></div>
           <div className="dropdown-menu">
@@ -432,7 +477,7 @@ const GamePanel = ({
         </>
       )}
 
-      {isOptionsOpen && !isMobileUi && (
+      {isOptionsOpen && !isMobileUi && !spectatorLocked && (
         <>
           <div className="menu-backdrop" onClick={() => setIsOptionsOpen(false)}></div>
           <div className="options-dropdown-menu">

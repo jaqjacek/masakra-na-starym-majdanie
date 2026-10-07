@@ -4,7 +4,7 @@ export function ensurePlayerStats(player) {
       races: { vampire: 0, werewolf: 0, ghost: 0, bardak: 0 },
       scores: { vampire: 0, werewolf: 0, ghost: 0, bardak: 0 },
       losses: { vampire: 0, werewolf: 0, ghost: 0, bardak: 0 },
-      rambo: { vampire: 0, werewolf: 0, ghost: 0, bardak: 0 },
+      placement: { vampire: 0, werewolf: 0, ghost: 0, bardak: 0 },
       witness: { vampire: 0, werewolf: 0, ghost: 0, bardak: 0 },
       final: { vampire: 0, werewolf: 0, ghost: 0, bardak: 0 },
       passing: { vampire: 0, werewolf: 0, ghost: 0, bardak: 0 },
@@ -12,6 +12,14 @@ export function ensurePlayerStats(player) {
       killedByJakub: { vampire: 0, werewolf: 0, ghost: 0, bardak: 0 },
       setsPlayed: { vampire: 0, werewolf: 0, ghost: 0, bardak: 0 }
     };
+  }
+  // Legacy saves used `rambo` for placement points.
+  if (player.stats.rambo && !player.stats.placement) {
+    player.stats.placement = player.stats.rambo;
+  }
+  delete player.stats.rambo;
+  if (!player.stats.placement) {
+    player.stats.placement = { vampire: 0, werewolf: 0, ghost: 0, bardak: 0 };
   }
   return player.stats;
 }
@@ -32,8 +40,8 @@ export function trackPointsChange(player, race, pts, category) {
     stats.losses[race] = (stats.losses[race] || 0) + Math.abs(pts);
   }
   
-  if (category === 'rambo') {
-    stats.rambo[race] = (stats.rambo[race] || 0) + pts;
+  if (category === 'placement') {
+    stats.placement[race] = (stats.placement[race] || 0) + pts;
   } else if (category === 'witness') {
     stats.witness[race] = (stats.witness[race] || 0) + pts;
   } else if (category === 'final') {

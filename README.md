@@ -11,6 +11,8 @@
 
 The platform provides a real-time multi-client game engine, phase-based automation, high-performance multi-core simulation tools, and interactive admin dashboards.
 
+**Status (v1.20.2):** Live game, Jakub AI, events, i18n (5 languages), and Monte Carlo sims are in production. **Next work is player/Herszt AI.** If you are continuing in Copilot, start at [`COPILOT.md`](COPILOT.md) and [`docs/PLAYER_AI.md`](docs/PLAYER_AI.md).
+
 ---
 
 ## 📑 Table of Contents
@@ -29,6 +31,7 @@ The platform provides a real-time multi-client game engine, phase-based automati
   - [Manual Docker / Podman Execution](#manual-docker--podman-execution)
 - [API & Documentation](#-api--documentation)
 - [Configuration](#-configuration)
+- [Current status & Copilot handoff](#-current-status--copilot-handoff)
 
 ---
 
@@ -39,10 +42,12 @@ The platform provides a real-time multi-client game engine, phase-based automati
   - **Setup Phase:** Board initialization, pawn pool calculation, and hand distribution.
   - **General Phase:** Reverse-point order selection of Band Generals (Catch-up mechanic).
   - **Player Phase:** Strategic pawn placement from hand, bulk Set deployment, and passing logic.
-  - **Jakub Phase:** Automated AI hunting sequence with depleting movement range and fury escalation.
+  - **Jakub Phase:** Automated Jakub AI hunting sequence with depleting movement range and fury escalation.
   - **Event Phase:** Random event card drawn from deck affecting board status, pawns, and Jakub.
   - **Final Scoring:** Automated 12th-round scoring (Vampires, Werewolves, Ghosts, Bardaks).
 - **Special AI & Mechanics:**
+  - **Player AI:** Unclaimed seats played on the server (`playerAiService` + greedy placement). Humans claim via `manualPlayers`.
+  - **Jakub AI:** Automated hunt in `jakubStrategy.js`.
   - **Cascading Fury Tie-Breaker:** Hierarchical region target resolution.
   - **Niepochamowany Zwierzęcy Magnetyzm:** Shockwave pulse pulling pawns when region ties persist.
   - **Świadek Jakuba & Miłosierdzie:** Dynamic witness points and mercy mechanics.
@@ -86,6 +91,9 @@ The platform provides a real-time multi-client game engine, phase-based automati
 
 ```text
 masakra-na-starym-majdanie/
+├── COPILOT.md                  # Copilot / next-dev handoff (player AI)
+├── AGENTS.md                   # Coding-agent entry
+├── GROK.md                     # Assistant file map and constraints
 ├── bash/                       # Automation & container deployment scripts
 │   ├── deploy.sh               # Unified build & deployment script
 │   ├── deploy_latest.sh        # Remote server runner script
@@ -93,6 +101,7 @@ masakra-na-starym-majdanie/
 │   └── deploy_network.sh       # Wrapper for deploy.sh network
 ├── docs/                       # Project specifications, rules, and API docs
 │   ├── PROJECT_SPEC.md         # Authoritative technical specification
+│   ├── PLAYER_AI.md            # Player/Herszt AI — current brain and next work
 │   ├── GAME_RULES.md           # Game rules & scoring guide
 │   ├── STORY.md                # Story & thematic lore
 │   └── openapi.json            # OpenAPI 3.0 specification
@@ -101,7 +110,7 @@ masakra-na-starym-majdanie/
 │   ├── events/                 # Event deck & phase execution managers
 │   ├── routes/                 # Express REST API routes
 │   ├── scoring/                # Band scoring engines
-│   ├── services/               # Simulation worker pool & AI decision services
+│   ├── services/               # playerAiService, simulation workers, placement
 │   ├── boardManager.js         # Map & region coordinate BFS logic
 │   ├── gameLogic.js            # Phase transition & snapshot engine
 │   └── server.js               # Main Express & Socket.io server entry point
@@ -251,3 +260,24 @@ When running locally or via container, documentation is served directly:
 - **`server/configs/game_config.json`**: Dynamic game title, general settings, and theme customization.
 - **`server/configs/set_default.json`**: Default pawn distribution and set powers.
 - **`server/configs/events_all.json`**: Full event card deck definitions and triggers.
+
+---
+
+## 🧭 Current status & Copilot handoff
+
+| Item | Value |
+| :--- | :--- |
+| Release | **v1.20.2** on `develop` |
+| Next feature | Player AI (`server/services/playerAiService.js`) |
+| Transfer docs | [`COPILOT.md`](COPILOT.md), [`AGENTS.md`](AGENTS.md), [`docs/PLAYER_AI.md`](docs/PLAYER_AI.md) |
+| Rules | [`docs/GAME_RULES.md`](docs/GAME_RULES.md) |
+| Architecture | [`docs/PROJECT_SPEC.md`](docs/PROJECT_SPEC.md) |
+
+Working tree (not yet committed) already implements:
+
+- Start of game: **5** sets per player.
+- Round 1 DRAW SETS: no extra player sets (Jakub still draws 2).
+- From round 2: each player is dealt **+3** sets (append, not top-up).
+- Pass: keep at most **3** (random); excess to Jakub with **0 points**. Voluntary kablowanie still **+1**.
+
+Player AI is a greedy one-ply placer. It does not kablować. Pass discard is random. Improve that next; do not rewrite Jakub AI unless asked.

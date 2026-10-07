@@ -50,7 +50,7 @@ write the same number everywhere below.
 
 Supported languages are exactly these five. Footer is five flag buttons (`src/components/Footer.jsx`). Do not restore a world-language search picker. Do not run `scripts/` locale generators and do not re-add the 110-locale dictionaries as part of a release.
 
-Do not bump example tags in `GROK.md` or `README.md` CLI samples.
+Do not bump example tags in `GROK.md` or `README.md` CLI samples. Keep `COPILOT.md` / `docs/PLAYER_AI.md` version lines in sync with the release (vX.Y.Z only).
 
 ## Git
 

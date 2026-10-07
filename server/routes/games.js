@@ -17,7 +17,10 @@ import {
 import { initializeGame, createNewGame, loadOrCreateGame } from '../services/gameService.js';
 import { GameEventPhaseManager } from '../events/gameEventPhaseManager.js';
 import { EventEffectManager } from '../events/eventEffectManager.js';
-import { RACES } from '../constants.js';
+import { RACES, RACE_MAP_PL } from '../constants.js';
+import { enqueueGame } from '../services/playerAiService.js';
+import { recordSpectatorGame, readSpectatorReplay } from '../services/spectatorReplayService.js';
+import { bumpReplayIndex } from '../../shared/stateRecency.js';
 import { VampireScoring } from '../../shared/scoring/vampireScoring.js';
 import { WerewolfScoring } from '../../shared/scoring/werewolfScoring.js';
 import { GhostScoring } from '../../shared/scoring/ghostScoring.js';
@@ -42,18 +45,17 @@ function calculateFinalScoring(data) {
     trackPointsChange(curPlayer, pick, addedPoints, 'final');
     
     // Log history
-    const raceNamePL = pick === 'vampire' ? 'Wampiry' : pick === 'werewolf' ? 'Wilkołaki' : pick === 'ghost' ? 'Duchy' : 'Bardaki';
+    const raceNamePL = RACE_MAP_PL[pick] || pick;
     data.history.push({
       time: new Date().toLocaleTimeString(),
       text: `Punktacja Końcowa: Gracz ${curPlayer.id} (+${addedPoints} za bandę ${raceNamePL});`
     });
   });
 
-  const raceHierarchy = ['vampire', 'werewolf', 'ghost', 'bardak'];
   const sortedWinners = [...data.players].sort((a, b) => {
     if (b.points !== a.points) return b.points - a.points;
-    const aRaceIndex = raceHierarchy.indexOf(a.generalOf);
-    const bRaceIndex = raceHierarchy.indexOf(b.generalOf);
+    const aRaceIndex = RACES.indexOf(a.generalOf);
+    const bRaceIndex = RACES.indexOf(b.generalOf);
     return aRaceIndex - bRaceIndex;
   });
   
@@ -66,45 +68,77 @@ function calculateFinalScoring(data) {
 
 const router = express.Router();
 
-router.post('/:gameId/event-phase', (req, res) => {
+router.post('/:gameId/event-phase', async (req, res) => {
   try {
     const { gameId } = req.params;
-    const { data } = getGameData(gameId);
-    
-    // Ensure data has previous phase for logging
-    data._previousPhase = data.phase;
-    data.phase = 'event_phase';
-    
-    const eventManager = new GameEventPhaseManager(data);
-    eventManager.executePhase();
-    
-    // Transition to next phase
-    if (data.currentRound < data.totalRounds) {
-      data.phase = 'setup';
-      data.currentRound += 1;
-      // Reset round-specific state
-      data.availableGenerals = [...RACES];
-      data.players.forEach(p => p.generalOf = null);
-      data.passedPlayers = [];
-      data.currentPlayerIndex = 0;
-      data.playerOrder = [...data.players].sort((a, b) => a.points - b.points).map(p => p.id);
-      data.turnActionExecuted = false;
-    } else {
-      data.phase = 'final_scoring';
-      calculateFinalScoring(data);
-      data.phase = 'End Game';
-      data.gameStatus = 'finished';
-    }
-    
-    saveFullState(gameId, data);
-    if (data.phase === 'setup') {
-      createSnapshot(gameId, data);
-    }
-    req.app.get('io').to(`game:${gameId}`).emit('boardUpdate', data);
-    res.json({ message: 'Event phase completed', state: data });
+    const io = req.app.get('io');
+    const result = await enqueueGame(gameId, async () => {
+      const { data } = getGameData(gameId);
+      // Idempotent: a repeated call must not rewind the round or draw another event.
+      if (data.phase !== 'event_phase' || data.gameStatus === 'finished') {
+        return { executed: false, event: null, state: data };
+      }
+
+      data._previousPhase = data.phase;
+      const eventManager = new GameEventPhaseManager(data);
+      eventManager.executePhase();
+      const drawn = data.events?.drawn || [];
+      const event = drawn.length > 0 ? drawn[drawn.length - 1] : null;
+
+      if (data.currentRound < data.totalRounds) {
+        data.phase = 'setup';
+        data.currentRound += 1;
+        data.availableGenerals = [...RACES];
+        data.players.forEach(p => p.generalOf = null);
+        data.passedPlayers = [];
+        data.currentPlayerIndex = 0;
+        data.playerOrder = [...data.players].sort((a, b) => a.points - b.points).map(p => p.id);
+        data.turnActionExecuted = false;
+      } else {
+        data.phase = 'final_scoring';
+        calculateFinalScoring(data);
+        data.phase = 'End Game';
+        data.gameStatus = 'finished';
+      }
+
+      bumpReplayIndex(data, { type: 'event', eventId: event?.id ?? null });
+      saveFullState(gameId, data);
+      if (data.phase === 'setup') {
+        createSnapshot(gameId, data);
+      }
+      if (io) io.to(`game:${gameId}`).emit('boardUpdate', { ...data, spectatorAction: null });
+      return { executed: true, event, state: data };
+    });
+    res.json({
+      message: result.executed ? 'Event phase completed' : 'Event phase already completed',
+      executed: result.executed,
+      event: result.event,
+      state: result.state
+    });
   } catch (err) {
     console.error('Event phase execution failed:', err);
     res.status(500).json({ error: 'Failed to execute event phase' });
+  }
+});
+
+router.post('/:gameId/spectator/start', async (req, res) => {
+  try {
+    const result = await enqueueGame(req.params.gameId, async () => recordSpectatorGame(req.params.gameId));
+    res.json(result);
+  } catch (err) {
+    console.error('Spectator recording failed:', err);
+    res.status(err.status || 500).json({ error: err.message || 'Failed to record spectator replay' });
+  }
+});
+
+router.get('/:gameId/replay', (req, res) => {
+  try {
+    const replay = readSpectatorReplay(req.params.gameId);
+    if (!replay) return res.status(404).json({ error: 'Replay not found' });
+    res.json(replay);
+  } catch (err) {
+    console.error('Spectator replay read failed:', err);
+    res.status(500).json({ error: 'Failed to read replay' });
   }
 });
 

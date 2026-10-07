@@ -1,74 +1,65 @@
 # State Management & Data Flow
 
-This document outlines how game state is synchronized, managed, and consumed in the frontend application of *MASAKRA na Starym Majdanie*.
+Current release: **v1.20.2**. Player AI: [`PLAYER_AI.md`](PLAYER_AI.md).
 
-## 1. Global State Synchronization
+## 1. Global state
 
-The game state is stored centrally on the Node.js server. The frontend hooks into this state via WebSockets.
+Authoritative state lives on the Node server as JSON under `server/games/{id}/` (`map.json`, `players.json`, `sets.json`, `state.json`, `events.json`, `history.json`).
 
-### `useGameState`
-- **Location:** `src/hooks/useGameState.js`
-- **Purpose:** Acts as the primary bridge between the React frontend and the backend via Socket.io.
-- **Mechanism:**
-  - On mount, it joins a socket room specific to the `gameId`.
-  - It listens for `gameState` and `gameHistory` events from the server and updates local React state (`gameState`, `gameHistory`).
-  - It exposes a method `updateGameWithSync(newState)` which optimistically updates the local UI and emits a `updateState` event to the server.
+### `useGameState` (`src/hooks/useGameState.js`)
 
-## 2. Main Application Orchestration (`App.jsx`)
+- Joins Socket.io room `game:{id}`.
+- Listens for `boardUpdate` (and legacy `gameState` / `gameHistory` if present).
+- `updateGameWithSync` / `dispatchAction` send semantic `action:*` events. Server validates via `ActionService`, persists, runs **player AI**, broadcasts `boardUpdate`.
+- Incoming client dumps on `action:syncState` are rejected when stale (`shared/stateRecency.js`).
 
-`App.jsx` is the root container for the game board and panels. It consumes `gameState` and orchestrates various local states and sub-hooks.
+Key session fields: `phase`, `currentRound`, `playerOrder`, `currentPlayerIndex`, `passedPlayers`, `manualPlayers`, `availableGenerals`, `turnActionExecuted`, `gameStatus`.
 
-### Local State in `App.jsx`
-- **`hoveredPawn` / `hoveredSet` / `hoveredJakubIcon`:** Transient UI states for highlighting regions and ranges.
-- **`visualEffects`:** An array of active visual effects (explosions, floating texts) rendered by `VisualEffectsManager`.
-- **`isEndGamePopupOpen`:** Controls the visibility of the End Game modal.
+Player IDs may be number or string — compare with `String(id)`.
 
-### Interaction Hooks
-- **`useGameInteraction`:** Extracts all the complex drag-and-drop, pawn clicking, and map interaction logic away from `App.jsx`. It consumes the `updateGameWithSync` function to mutate state based on user actions.
+## 2. `App.jsx`
 
-## 3. The Autoplay Loop & History
+Local UI: hover, panel/modal toggles, `autoClickNext`. Overlays and modals are extracted components (`components/board/*`, `components/modals/*`, `components/panels/MobileActionBar.jsx`).
 
-When the game enters the `jakub_phase`, or when automated modes are toggled (`jakub_autoplay` / `full_autoplay`), the game is driven by `useAutoplay.js`.
+- `useGameInteraction` — clicks, drag-and-drop, place, kablowanie.
+- `useBoardVisualEffects` — owns `visualEffects` and the spectator banner (see §5).
+- `useSpectatorPlayback` — client playback of a saved all-AI replay.
+- `useAutoplay` — Jakub ticks + FULL AUTO chrome. **Yields** on `general_phase` / `player_phase` so `playerAiService` can move unclaimed seats.
+- `manualPlayers` — seats claimed as human. Toggle writes state and `action:claimPlayer`.
 
-### `useAutoplay`
-- **Location:** `src/hooks/useAutoplay.js`
-- **Mechanism:** Uses a `setInterval` loop (or `setTimeout`-like behavior) to continuously tick the game forward based on the current phase.
-- **Logging Engine:**
-  - `addLog(state, text, metadata)` pushes a new event into `state.history`.
-  - The `history` array serves as an event bus for the visual effects system.
+## 3. Server player AI tick
 
-### Visual Effects System (Event Observers)
-Instead of hardcoding visual animations into the game logic, `App.jsx` observes state changes to spawn visual effects.
+Every successful socket action:
 
-1. **Pawn Death Observer (`prevRegionsRef`):**
-   - `App.jsx` compares the current `gameState.regions` pawn counts against the previous render (`prevRegionsRef`).
-   - If a pawn count decreases, it spawns an `explosion` and negative floating `text` (e.g., "V -1 Pkt").
-   - *Exception:* If `gameState.magnetismPullRegions` contains the region ID, the explosion is suppressed (because pawns were moved by Animal Magnetism, not killed).
+```text
+ActionService.handle*
+  → saveFullState
+  → playerAiService.afterGameChange → runPlayerAi (≤MAX_PLAYER_AI_STEPS = 200)
+  → io.to(`game:{id}`).emit('boardUpdate')
+```
 
-2. **History Log Observer (`prevHistoryLengthRef`):**
-   - `App.jsx` watches for new entries in `gameState.history`.
-   - If a log contains `type === 'witness_points'`, it spawns positive floating text ("+1 Pkt").
-   - If a log contains `magnetismStart: true`, it spawns the "Niepochamowany zwierzęcy Magnetyzm" text.
+Unclaimed current player: pick general or `aiPlaceOrPass`. Manual current player: loop stops. All passed: `phase = jakub_phase`.
 
-## 4. Jakub Phase & Turn Logic
+## 4. Autoplay & Jakub
 
-The logic for Jakub's automated turn resides in `src/strategies/jakubStrategy.js`.
+`useAutoplay` still drives `jakub_phase` via `executeJakubStep` (`src/strategies/jakubStrategy.js`) and setup `drawSets`.
 
-### `executeJakubStep(gameState)`
-- Takes the current state and returns a `{ newState, actionTaken, log, metadata }` object.
-- **Tick 1:** Kills exactly 1 pawn in his current region (if anger > 0).
-- **Tick 2:** Moves to a new region based on range, anger tiers, and the cascading tie-breaker algorithm.
-- **Magnetism Logic:**
-  - If a tie is absolute, it sets `workState.jakubMagnetismPending = tiedRegions` and returns `magnetismStart: true` metadata.
-  - On the next tick, it sees `jakubMagnetismPending`, pulls pawns to Jakub's region, sets `workState.magnetismPullRegions`, and returns.
+Jakub step contract: `{ newState, actionTaken, log, metadata }`. Magnetism uses `jakubMagnetismPending` / `magnetismPullRegions`. Witness logs use `type: 'witness_points'`.
 
-## 5. Summary Flow of an Automated Action
+## 5. Visual effects observers (`src/hooks/useBoardVisualEffects.js`)
 
-1. `useAutoplay` calls `executeJakubStep`.
-2. `executeJakubStep` modifies the cloned state and returns the result.
-3. `useAutoplay` appends the `log` to `history` via `addLog(..., metadata)`.
-4. `useAutoplay` calls `updateGameWithSync(newState)`.
-5. Local state updates immediately, and the update is sent to the server.
-6. `App.jsx` re-renders.
-7. `App.jsx` observers (`prevRegionsRef` and `prevHistoryLengthRef`) notice changes and update `visualEffects` local state.
-8. `VisualEffectsManager` renders the animations over the board.
+0. `spectatorAction` (other players / AI / replay) → placement flash + score floats held for `revealMs`, or a banner for kablowanie / pass / general.
+1. Pawn-count drop → explosion + floating text, unless `magnetismPullRegions` contains the region.
+2. New history rows: `witness_points` → +1 float; `magnetismStart` → Magnetyzm banner.
+
+## 6. Dealing and pass (WIP in working tree)
+
+| Moment | Rule |
+| :--- | :--- |
+| `gameService.initializeGame` | Deal `initialSetsPerPlayer` (**5**) |
+| Round 1 `handleDrawSets` | No player sets; Jakub draws 2 |
+| Round 2+ `handleDrawSets` | Each player **+3** sets (append) |
+| Pass | Keep ≤3 at random; excess to Jakub, 0 points |
+| Kablowanie | +1 point, fury updates |
+
+Constants: `shared/constants.js`. Runtime: `server/configs/game_config.json`.

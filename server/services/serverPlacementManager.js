@@ -64,31 +64,20 @@ export class ServerPlacementManager {
   }
 
   /**
-   * Handles a player's turn pass, discarding/selling excess sets to Jakub and updating scores.
+   * Handles a player's turn pass: randomly keep at most MAX_SETS_KEPT_ON_PASS,
+   * tip excess sets to Jakub with no points.
    * @param {Object} player - The active player passing
    * @param {Array} heldSets - The sets currently held in the pool
-   * @returns {number} Count of excess sets sold
+   * @returns {number} Count of excess sets tipped to Jakub
    */
-  static executePass(player, heldSets, regions) {
-    let jakub = null;
-    for (const r of regions) {
-      if (r.pawns.jakub?.length > 0) {
-        jakub = r.pawns.jakub[0];
-        break;
-      }
-    }
-
+  static executePass(player, heldSets, _regions) {
     const myHeld = heldSets.filter(s => s.ownerId !== null && s.ownerId !== undefined && String(s.ownerId) === String(player.id));
-    const toSell = myHeld.filter(s => 
-      (s.content[player.generalOf] || 0) === 0 &&
-      SharedPlacementManager.isSetAllowedToPass(s, regions, jakub)
-    );
+    const toDiscard = SharedPlacementManager.selectExcessSetsOnPass(myHeld);
 
-    toSell.forEach(s => {
+    toDiscard.forEach(s => {
       s.ownerId = 'jakub';
     });
 
-    player.points += toSell.length;
-    return toSell.length;
+    return toDiscard.length;
   }
 }

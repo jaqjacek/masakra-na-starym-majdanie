@@ -1,27 +1,26 @@
 # React Component Architecture
 
-This document describes the hierarchical structure and responsibilities of the React components in the frontend of *MASAKRA na Starym Majdanie*.
+Frontend of *MASAKRA na Starym Majdanie* (v1.20.2). Player AI is **server-side** (`docs/PLAYER_AI.md`); these components only claim seats and render state.
 
 ## Component Tree
 
 ```text
-App (src/App.jsx)
- ├── GameHeader (src/components/GameHeader.jsx)
- ├── BoardComponent (src/components/Board.jsx)
- │    ├── VisualEffectsManager (src/components/board/VisualEffectsManager.jsx)
- │    ├── JakubTracksManager (src/components/board/JakubTracksManager.jsx)
- │    ├── Region (src/components/Region.jsx)
- │    └── JakubOverlay (src/components/board/JakubOverlay.jsx)
- ├── Panels (src/components/panels/*)
- │    ├── PlayersPanel
- │    ├── JakubPanel
- │    ├── SetsPanel
- │    ├── HistoryPanel
- │    ├── EventsPanel
- │    ├── LoadSavesPanel
- │    └── GamePanel
- ├── PawnStatusPopup (src/components/PawnStatusPopup.jsx)
- └── EndGamePopup (Modal within App)
+App.jsx (routes)
+ ├── LandingPage                  /
+ ├── GameRulesPage                /docs/game
+ ├── AdminSets / AdminEvents / AdminSimulate
+ └── Game shell                   /game/{id}
+      ├── GameHeader
+      ├── Board
+      │    ├── VisualEffectsManager
+      │    ├── JakubTracksManager
+      │    ├── Region
+      │    └── JakubOverlay
+      ├── panels/* (+ MobileTabBar)
+      ├── Bag, MouseElement
+      ├── PawnStatusPopup
+      └── EndGamePopup
+ Footer (out of game: landing, rules, admin)
 ```
 
 ## Core Components
@@ -62,9 +61,15 @@ Instead of burying complex visual rendering inside the grid layout, these are de
 
 The right-side dashboard is modularized into collapsible panels.
 
-- **`PlayersPanel`**: Lists players, scores, pass status.
-- **`JakubPanel`**: Displays Jakub's stats (Speed, Range, Anger gauges).
-- **`SetsPanel`**: Displays the Set marketplace (Draw Pile) and the player's Hand. Handles drag-and-drop of sets onto the board.
-- **`HistoryPanel`**: Renders the `gameState.history` log array.
-- **`EventsPanel`**: Shows recent game events and auto-play logs.
-- **`GamePanel`**: Contains standard game controls (Draw Sets, Next Round, Autoplay toggles). Admin tools live on `/admin/sets`, `/admin/events`, `/admin/simulate`.
+- **`PlayersPanel`**: Scores, pass status, **manual vs AI seat toggle** (`manualPlayers`).
+- **`JakubPanel`**: Speed, range, anger gauges.
+- **`SetsPanel`**: Draw pile + claimed player's hand. Drag-and-drop onto the board.
+- **`HistoryPanel`**: `gameState.history` (localized via `logTranslator.js`).
+- **`EventsPanel`**: Drawn events.
+- **`GamePanel`**: Draw Sets, Next, JAKUB AUTO / FULL AUTO, `autoClickNext`. Admin tools are separate routes.
+- **`MobileTabBar`**: Players / Jakub / Game / History when `html.mobile-ui`.
+- **`LoadSavesPanel`**: Snapshot restore.
+
+Admin (not in the game shell): `AdminSets` `/admin/sets`, `AdminEvents` `/admin/events`, `AdminSimulate` `/admin/simulate`.
+
+Unclaimed players are moved by the server; the UI must not locally simulate their turns.

@@ -1,4 +1,5 @@
-import { RACES, RACE_TO_ABBR, DEFAULT_PAWN_CONFIGS, SETUP_SETS_PER_PLAYER_PER_ROUND, JAKUB_SETS_PER_ROUND } from '../constants.js';
+import { RACES, RACE_TO_ABBR, DEFAULT_PAWN_CONFIGS, SETUP_SETS_PER_PLAYER_PER_ROUND, JAKUB_SETS_PER_ROUND, KABLOWANIE_POINTS, MAX_ACTION_HISTORY_ENTRIES } from '../constants.js';
+import { SharedPlacementManager } from '../sharedPlacementManager.js';
 import { Scoring } from '../scoring/scoring.js';
 import { applySetToJakubAnger } from '../../src/strategies/jakubStrategy.js';
 import { trackPointsChange, trackGeneralSelection, trackSetsPlayed } from '../statsManager.js';
@@ -12,8 +13,8 @@ function addLog(data, text, metadata = {}) {
     text,
     ...metadata
   });
-  if (data.history.length > 50) {
-    data.history = data.history.slice(data.history.length - 50);
+  if (data.history.length > MAX_ACTION_HISTORY_ENTRIES) {
+    data.history = data.history.slice(data.history.length - MAX_ACTION_HISTORY_ENTRIES);
   }
 }
 
@@ -87,15 +88,14 @@ export class ActionService {
         const racePts = placementScores[abbr] || 0;
         if (racePts !== 0) {
           p.points += racePts;
-          trackPointsChange(p, p.generalOf, racePts, 'rambo');
+          trackPointsChange(p, p.generalOf, racePts, 'placement');
           playerGains[p.generalOf] = racePts;
         }
       }
     });
 
-    const RACES_ORDER = ['vampire', 'werewolf', 'ghost', 'bardak'];
     const logSummary = [];
-    RACES_ORDER.forEach(race => {
+    RACES.forEach(race => {
       if (playerGains[race] !== undefined) {
         const racePts = playerGains[race];
         const abbr = RACE_TO_ABBR[race];
@@ -174,8 +174,8 @@ export class ActionService {
     if (s) {
       if (playerIdx !== -1) {
         const p = data.players[playerIdx];
-        p.points += 1;
-        trackPointsChange(p, p.generalOf, 1, 'passing');
+        p.points += KABLOWANIE_POINTS;
+        trackPointsChange(p, p.generalOf, KABLOWANIE_POINTS, 'passing');
       }
       s.ownerId = 'jakub';
       if (!data.sets.heldSets) data.sets.heldSets = [];
@@ -271,12 +271,34 @@ export class ActionService {
   }
 
   /**
-   * Pass turn in player phase.
+   * Pass turn in player phase. Excess hand (> MAX_SETS_KEPT_ON_PASS) is tipped to Jakub with no points.
    */
   static handlePassTurn(data, { playerId }) {
     if (!data.passedPlayers) data.passedPlayers = [];
     if (!data.passedPlayers.includes(playerId)) {
       data.passedPlayers.push(playerId);
+    }
+
+    const currentHand = (data.sets?.heldSets || []).filter((s) => String(s.ownerId) === String(playerId));
+    const toDiscard = SharedPlacementManager.selectExcessSetsOnPass(currentHand);
+    if (toDiscard.length > 0) {
+      let jakub = null;
+      for (const r of data.regions || []) {
+        if (r.pawns?.jakub?.length > 0) {
+          jakub = r.pawns.jakub[0];
+          break;
+        }
+      }
+      toDiscard.forEach((s) => {
+        s.ownerId = 'jakub';
+        if (jakub) {
+          const result = applySetToJakubAnger(jakub, s.content);
+          jakub.anger = result.anger;
+          jakub.range = result.range;
+        }
+      });
+      addLog(data, `Gracz ${playerId} spasował i oddał ${toDiscard.length} nadmiarowych zestawów Jakubowi (bez punktów). Furia Jakuba zaktualizowana.`);
+    } else {
       addLog(data, `Gracz ${playerId} spasował turę.`);
     }
 
@@ -290,6 +312,8 @@ export class ActionService {
 
   /**
    * Deal sets to players and Jakub, then enter general phase.
+   * Round 1: players already have initialSetsPerPlayer from game start — only Jakub draws.
+   * Later rounds: each player receives SETUP_SETS_PER_PLAYER_PER_ROUND additional sets.
    */
   static handleDrawSets(data) {
     if (data.phase && data.phase !== 'setup') {
@@ -314,20 +338,21 @@ export class ActionService {
       return state.sets.drawPile.splice(randomIdx, 1)[0];
     };
 
+    const round = data.currentRound || 1;
     let distributionCount = 0;
-    (data.players || []).forEach((player) => {
-      const myHeld = data.sets.heldSets.filter((s) => s.ownerId !== null && s.ownerId !== undefined && String(s.ownerId) === String(player.id));
-      const needed = SETUP_SETS_PER_PLAYER_PER_ROUND - myHeld.length;
-      for (let i = 0; i < needed; i++) {
-        const set = draw(data);
-        if (!set) break;
-        set.ownerId = player.id;
-        data.sets.heldSets.push(set);
-        distributionCount++;
+    if (round > 1) {
+      (data.players || []).forEach((player) => {
+        for (let i = 0; i < SETUP_SETS_PER_PLAYER_PER_ROUND; i++) {
+          const set = draw(data);
+          if (!set) break;
+          set.ownerId = player.id;
+          data.sets.heldSets.push(set);
+          distributionCount++;
+        }
+      });
+      if (distributionCount > 0) {
+        addLog(data, `Runda ${round}: Każdy gracz dobrał ${SETUP_SETS_PER_PLAYER_PER_ROUND} nowych zestawów.`);
       }
-    });
-    if (distributionCount > 0) {
-      addLog(data, `Runda ${data.currentRound}: Uzupełniono ręce graczy do ${SETUP_SETS_PER_PLAYER_PER_ROUND} zestawów.`);
     }
 
     let jakub = null;

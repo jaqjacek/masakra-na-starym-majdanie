@@ -49,15 +49,14 @@ export class ClientPlacementManager {
         const racePts = best.allScores[abbr] || 0;
         if (racePts !== 0) {
           p.points += racePts;
-          trackPointsChange(p, p.generalOf, racePts, 'rambo');
+          trackPointsChange(p, p.generalOf, racePts, 'placement');
           playerGains[p.generalOf] = racePts;
         }
       }
     });
 
-    const RACES_ORDER = ['vampire', 'werewolf', 'ghost', 'bardak'];
     const logSummary = [];
-    RACES_ORDER.forEach(race => {
+    RACES.forEach(race => {
       if (playerGains[race] !== undefined) {
         const racePts = playerGains[race];
         const abbr = RACE_TO_ABBR[race];
@@ -120,12 +119,9 @@ export class ClientPlacementManager {
     }
 
     const currentHand = (workState.sets.heldSets || []).filter(s => String(s.ownerId) === String(curPlayer.id));
-    const toSell = currentHand.filter(s => 
-      (s.content[curPlayer.generalOf] || 0) === 0 &&
-      SharedPlacementManager.isSetAllowedToPass(s, workState.regions, jakub)
-    );
+    const toDiscard = SharedPlacementManager.selectExcessSetsOnPass(currentHand);
 
-    toSell.forEach(s => {
+    toDiscard.forEach(s => {
       const idx = workState.sets.heldSets.findIndex(h => String(h.id) === String(s.id));
       if (idx !== -1) {
         workState.sets.heldSets[idx].ownerId = 'jakub';
@@ -137,10 +133,6 @@ export class ClientPlacementManager {
       }
     });
 
-    curPlayer.points += toSell.length;
-    if (toSell.length > 0) {
-      trackPointsChange(curPlayer, curPlayer.generalOf, toSell.length, 'passing');
-    }
-    return toSell.length;
+    return toDiscard.length;
   }
 }

@@ -63,6 +63,40 @@
         "responses": { "200": { "description": "Returns the next available numeric game ID" } }
       }
     },
+    "/api/map/new": {
+      "post": {
+        "summary": "Create a new game",
+        "description": "Allocates the next game ID and initializes its session with the requested set (or the server default).",
+        "parameters": [
+          { "name": "set", "in": "query", "required": false, "schema": { "type": "string" }, "description": "Set name; may also be sent as body field `set`." }
+        ],
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": { "type": "object", "properties": { "set": { "type": "string" } } }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Created game",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": { "type": "integer" },
+                    "state": { "type": "object" }
+                  }
+                }
+              }
+            }
+          },
+          "500": { "description": "Failed to create game" }
+        }
+      }
+    },
     "/api/sets": {
       "get": {
         "summary": "List Available Sets",
@@ -379,13 +413,39 @@
     "/api/map/{gameId}/event-phase": {
       "post": {
         "summary": "Execute Event Phase",
-        "description": "Draws a random event, applies its effects, and transitions the game to the next round or final scoring.",
+        "description": "Draws one event only when the game is in event_phase, then advances. A repeat call is a no-op and does not draw again. Response includes executed, event, and state.",
         "parameters": [
           { "name": "gameId", "in": "path", "required": true, "schema": { "type": "string" } }
         ],
         "responses": { 
           "200": { "description": "Event phase completed and state updated" },
           "500": { "description": "Failed to execute event phase" }
+        }
+      }
+    },
+    "/api/map/{gameId}/spectator/start": {
+      "post": {
+        "summary": "Record an all-AI spectator replay",
+        "description": "Allowed only at setup of round 1. Plays the full game on the server with every seat as AI, writes server/games/{gameId}/replay.json, and finishes the live state. If a replay already exists, returns it without re-rolling. While a replay exists, manual socket actions are rejected.",
+        "parameters": [
+          { "name": "gameId", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "responses": {
+          "200": { "description": "Replay ready. Body includes ready, cached, and frameCount." },
+          "409": { "description": "Game is not a fresh setup" },
+          "500": { "description": "Recording failed" }
+        }
+      }
+    },
+    "/api/map/{gameId}/replay": {
+      "get": {
+        "summary": "Read a saved spectator replay",
+        "parameters": [
+          { "name": "gameId", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "responses": {
+          "200": { "description": "Replay JSON with version, gameId, and frames" },
+          "404": { "description": "Replay not found" }
         }
       }
     },
@@ -455,7 +515,14 @@
                   "count": { "type": "integer", "default": 1000, "description": "Number of simulations to run" },
                   "sets": { "type": "object", "description": "Optional sets configuration" },
                   "game": { "type": "object", "description": "Optional game configuration" },
-                  "events": { "type": "array", "description": "Optional events array" }
+                  "events": {
+                    "description": "Optional event set: an events array, a list name, or { name }",
+                    "oneOf": [
+                      { "type": "array" },
+                      { "type": "string" },
+                      { "type": "object", "properties": { "name": { "type": "string" } } }
+                    ]
+                  }
                 }
               }
             }

@@ -1,3 +1,10 @@
+import {
+  AI_GENERAL_HAND_WEIGHT,
+  AI_GENERAL_BOARD_WEIGHT,
+  AI_GENERAL_ANGER_PENALTY,
+  AI_GENERAL_MAIN_TARGET_PENALTY
+} from './constants.js';
+
 /**
  * Strategic General Selection Manager for MASAKRA na Starym Majdanie.
  * Chooses a player's general dynamically based on hand sets, board state, and available pools.
@@ -58,15 +65,13 @@ export class GeneralSelectionManager {
     availableGenerals.forEach(race => {
       let fitVal = 0;
       
-      // Hand potential: how many pawns of this race do we have in hand?
-      // Weighting based on difficulty & value of each race's points:
-      const multiplier = race === 'vampire' ? 2.5 : race === 'werewolf' ? 1.5 : race === 'ghost' ? 2.0 : 1.0;
-      fitVal += handCounts[race] * multiplier;
+      // Hand potential, weighted by how valuable each race's pawns are.
+      fitVal += handCounts[race] * (AI_GENERAL_HAND_WEIGHT[race] ?? 1.0);
 
       // Jakub threat avoidance: deduct points if Jakub is angry at our race
-      fitVal -= anger[race] * 2.0;
+      fitVal -= anger[race] * AI_GENERAL_ANGER_PENALTY;
       if (race === maxAngerRace && maxAngerVal > 0) {
-        fitVal -= 5.0; // additional penalty for being main target
+        fitVal -= AI_GENERAL_MAIN_TARGET_PENALTY;
       }
 
       // Board presence: factor in existing pawns of this race already on the board
@@ -76,7 +81,7 @@ export class GeneralSelectionManager {
           onBoard += r.pawns[race]?.length || 0;
         });
       }
-      fitVal += onBoard * (race === 'vampire' ? 1.0 : race === 'werewolf' ? 1.0 : race === 'ghost' ? 0.5 : 0.5);
+      fitVal += onBoard * (AI_GENERAL_BOARD_WEIGHT[race] ?? 0.5);
 
       fitness[race] = fitVal;
     });

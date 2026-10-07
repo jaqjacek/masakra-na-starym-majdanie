@@ -2,16 +2,10 @@ import { useState, useEffect, useCallback } from 'react';
 import { PAWN_TYPES, STATUSES } from '../constants/pawnTypes';
 import { Board } from '../constants/board';
 import { RACES } from '../constants/game';
+import { RACE_TO_ABBR, KABLOWANIE_POINTS } from '../../shared/constants.js';
 import { Scoring } from '../../shared/scoring/scoring.js';
 import { applySetToJakubAnger } from '../strategies/jakubStrategy';
 import { trackPointsChange, trackGeneralSelection, trackSetsPlayed } from '../../shared/statsManager.js';
-
-const RACE_TO_ABBR = {
-  vampire: 'V',
-  werewolf: 'W',
-  ghost: 'G',
-  bardak: 'B'
-};
 
 export const useGameInteraction = ({
   gameId,
@@ -165,15 +159,14 @@ export const useGameInteraction = ({
           const racePts = placementScores[abbr] || 0;
           if (racePts !== 0) {
             p.points += racePts;
-            trackPointsChange(p, p.generalOf, racePts, 'rambo');
+            trackPointsChange(p, p.generalOf, racePts, 'placement');
             playerGains[p.generalOf] = racePts;
           }
         }
       });
 
-      const RACES_ORDER = ['vampire', 'werewolf', 'ghost', 'bardak'];
       const logSummary = [];
-      RACES_ORDER.forEach(race => {
+      RACES.forEach(race => {
         if (playerGains[race] !== undefined) {
           const racePts = playerGains[race];
           const abbr = RACE_TO_ABBR[race];
@@ -263,8 +256,8 @@ export const useGameInteraction = ({
       if (s) {
         if (playerIdx !== -1) {
           const p = newState.players[playerIdx];
-          p.points += 1;
-          trackPointsChange(p, p.generalOf, 1, 'passing');
+          p.points += KABLOWANIE_POINTS;
+          trackPointsChange(p, p.generalOf, KABLOWANIE_POINTS, 'passing');
         }
         s.ownerId = 'jakub';
         if (!newState.sets.heldSets) newState.sets.heldSets = [];

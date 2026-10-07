@@ -14,10 +14,22 @@ import { GhostScoring } from '../../shared/scoring/ghostScoring.js';
 import { BardakScoring } from '../../shared/scoring/bardakScoring.js';
 import { trackPointsChange } from '../../shared/statsManager.js';
 import { MilosierdzieManager } from '../../shared/milosierdzieManager.js';
+import { isSpectatorClientLocked } from './useGameState';
+
+export const FLOAT_ANIMATION_MS = 1500;
+const MAX_KILL_DELAY_MS = 1000;
+
+export function killStepDelay(autoplaySpeed) {
+  const tick = Number(autoplaySpeed);
+  const safe = Number.isFinite(tick) && tick > 0 ? tick : DEFAULT_AUTOPLAY_SPEED;
+  return Math.min(safe * 2, MAX_KILL_DELAY_MS);
+}
+const AHEAD_OF_EVENT = new Set(['setup', 'general_phase', 'player_phase', 'final_scoring', 'End Game']);
 
 export const useAutoplay = ({ 
   gameId, 
   gameState, 
+  setGameState,
   updateGameWithSync, 
   addLog,
   manualPlayers,
@@ -29,6 +41,39 @@ export const useAutoplay = ({
   const [autoplaySpeed, setAutoplaySpeed] = useState(DEFAULT_AUTOPLAY_SPEED);
   const [autoplayEventPopup, setAutoplayEventPopup] = useState(null);
   const isProcessingRef = useRef(false);
+  const animationHoldUntilRef = useRef(0);
+  const eventLockRef = useRef(null);
+  const setupDrawAtRef = useRef(0);
+  const tickRef = useRef(null);
+  const killTimerRef = useRef(null);
+
+  const holdForAnimations = useCallback((ms) => {
+    if (!ms || ms <= 0) return;
+    animationHoldUntilRef.current = Math.max(animationHoldUntilRef.current, Date.now() + ms);
+  }, []);
+
+  /** Hold autoplay for `delay` ms, then tick immediately instead of waiting for the next interval. */
+  const scheduleNextStep = useCallback((delay) => {
+    if (!delay || delay <= 0) return;
+    animationHoldUntilRef.current = Date.now() + delay;
+    if (killTimerRef.current) clearTimeout(killTimerRef.current);
+    killTimerRef.current = setTimeout(() => {
+      killTimerRef.current = null;
+      animationHoldUntilRef.current = 0;
+      tickRef.current?.();
+    }, delay);
+  }, []);
+
+  const visualHoldMs = useCallback((step) => {
+    const meta = step?.metadata || {};
+    if (meta.killedInfo && meta.killedInfo.length > 0) return killStepDelay(autoplaySpeed);
+    // Magnetism shows a banner that must be readable; hold for the full float.
+    if (meta.magnetismStart || meta.magnetismPull) return Math.max(autoplaySpeed, FLOAT_ANIMATION_MS);
+    // Witness "+N" floats are CSS-only and keep animating while Jakub moves on.
+    if (meta.swiadekPointsAwarded && meta.swiadekPointsAwarded.length > 0) return killStepDelay(autoplaySpeed);
+    if (step?.actionTaken) return autoplaySpeed;
+    return 0;
+  }, [autoplaySpeed]);
 
   const findAndRemoveSetById = useCallback((state, setId, expectedOwnerId = undefined) => {
     console.log('[findAndRemoveSetById] START', { setId, expectedOwnerId });
@@ -73,6 +118,10 @@ export const useAutoplay = ({
   }, []);
 
   const handleAutoplayTick = useCallback(async () => {
+    if (isSpectatorClientLocked()) return;
+    if (gameState.phase !== 'event_phase') {
+      eventLockRef.current = null;
+    }
     if (autoplayEventPopup) {
       setAutoplayEventPopup(prev => {
         if (!prev) return null;
@@ -83,6 +132,7 @@ export const useAutoplay = ({
       });
       return;
     }
+    if (Date.now() < animationHoldUntilRef.current) return;
     if (isProcessingRef.current) return;
     if (!isFullAutoplay && !isJakubAutoplay) return;
     if (!gameId || gameState.gameStatus === 'finished') return;
@@ -102,6 +152,9 @@ export const useAutoplay = ({
       
       if (workState.phase === 'setup') {
         if (dispatchAction) {
+          const sinceDraw = Date.now() - setupDrawAtRef.current;
+          if (sinceDraw < Math.max(autoplaySpeed * 5, 500)) return;
+          setupDrawAtRef.current = Date.now();
           dispatchAction('drawSets');
           return;
         }
@@ -168,7 +221,8 @@ export const useAutoplay = ({
           }
           updatedState = step.newState;
           if (step.actionTaken) {
-            await updateGameWithSync(updatedState); 
+            await updateGameWithSync(updatedState);
+            scheduleNextStep(visualHoldMs(step));
             return;
           }
         }
@@ -223,34 +277,39 @@ export const useAutoplay = ({
           }
           
           await updateGameWithSync(workState);
+          holdForAnimations(visualHoldMs(step));
         return;
       }
 
       if (workState.phase === 'event_phase') {
-        if (isFullAutoplay) {
-          // Automatically call the server to execute the event phase
-          try {
-            const res = await fetch(`${SERVER_URL}/api/map/${gameId}/event-phase`, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' }
-            });
-            const data = await res.json();
-            if (data.state) {
-              // State is already updated on server and emitted via socket, 
-              // but we update locally too for smoothness if needed.
-              // Actually, socket will handle it.
-              const drawn = data.state.events?.drawn;
-              if (drawn && drawn.length > 0) {
-                const latestEvent = drawn[drawn.length - 1];
-                setAutoplayEventPopup({
-                  event: latestEvent,
-                  ticksLeft: 6
-                });
-              }
-            }
-          } catch (err) {
-            console.error('Autoplay event phase failed:', err);
+        if (!isFullAutoplay) return;
+        const lockKey = `${workState.currentRound}`;
+        if (eventLockRef.current === lockKey) return;
+        eventLockRef.current = lockKey;
+        try {
+          const res = await fetch(`${SERVER_URL}/api/map/${gameId}/event-phase`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' }
+          });
+          const data = await res.json();
+          if (!res.ok) throw new Error(data.error || 'event phase failed');
+          const ahead = data.state && (
+            AHEAD_OF_EVENT.has(data.state.phase)
+            || Number(data.state.currentRound) > Number(workState.currentRound)
+          );
+          if ((data.executed || ahead) && data.state && setGameState) {
+            setGameState({ ...data.state, spectatorAction: null });
           }
+          if (data.executed && data.event) {
+            setAutoplayEventPopup({ event: data.event, ticksLeft: 6 });
+          } else if (!data.executed && !ahead) {
+            eventLockRef.current = null;
+            holdForAnimations(Math.max(autoplaySpeed, 300));
+          }
+        } catch (err) {
+          console.error('Autoplay event phase failed:', err);
+          eventLockRef.current = null;
+          holdForAnimations(Math.max(autoplaySpeed, 1000));
         }
         return;
       }
@@ -291,7 +350,11 @@ export const useAutoplay = ({
     } finally {
       isProcessingRef.current = false;
     }
-  }, [isFullAutoplay, isJakubAutoplay, gameId, gameState, updateGameWithSync, addLog, dispatchAction, manualPlayers, playerId, autoplayEventPopup]);
+  }, [isFullAutoplay, isJakubAutoplay, gameId, gameState, setGameState, updateGameWithSync, addLog, dispatchAction, manualPlayers, playerId, autoplayEventPopup, autoplaySpeed, holdForAnimations, visualHoldMs, scheduleNextStep]);
+
+  useEffect(() => {
+    tickRef.current = handleAutoplayTick;
+  }, [handleAutoplayTick]);
 
   useEffect(() => {
     const timer = setInterval(() => { 
@@ -303,8 +366,17 @@ export const useAutoplay = ({
   useEffect(() => {
     if (!isFullAutoplay && !isJakubAutoplay) {
       setAutoplayEventPopup(null);
+      if (killTimerRef.current) {
+        clearTimeout(killTimerRef.current);
+        killTimerRef.current = null;
+      }
+      animationHoldUntilRef.current = 0;
     }
   }, [isFullAutoplay, isJakubAutoplay]);
+
+  useEffect(() => () => {
+    if (killTimerRef.current) clearTimeout(killTimerRef.current);
+  }, []);
 
   return {
     isFullAutoplay,

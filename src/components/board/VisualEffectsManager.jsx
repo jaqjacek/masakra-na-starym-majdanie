@@ -4,25 +4,36 @@ import { BOARD_SIZE } from '../../../shared/constants.js';
 
 // Renders visual effects like explosions, floating points, and animal magnetism aura shockwaves over the board.
 // Requires visualEffects array: [{ id, type: 'explosion' | 'text' | 'magnetism', regionId, race, text, timestamp, x, y }]
-const VisualEffectsManager = ({ visualEffects, regions, visible = true }) => {
+const VisualEffectsManager = ({ visualEffects, regions, visible = true, showAnimations = true }) => {
   const { t } = useTranslation();
-  if (!visible || !visualEffects || visualEffects.length === 0) return null;
+  const animationsOn = visible && showAnimations;
+  const shown = (visualEffects || []).filter((effect) => {
+    if (effect.spectator && effect.type === 'text') return true;
+    if (effect.type === 'placement-flash') return animationsOn;
+    return animationsOn;
+  });
+  if (!visible || shown.length === 0) return null;
 
   return (
     <div className="visual-effects-overlay">
-      {visualEffects.map(effect => {
+      {shown.map(effect => {
         const region = regions.find(r => r.id === effect.regionId);
         if (!region) return null;
 
         // Base coordinates based on 6x6 grid.
-        // x and y in region are 0-5.
-        const leftPercent = (region.x + 0.5) * (100 / BOARD_SIZE);
-        const topPercent = (region.y + 0.5) * (100 / BOARD_SIZE);
+        // x and y in region are 0-5. Floating texts rise from the region's top edge
+        // so they don't cover Jakub / pawns; other effects stay centered.
+        const cell = 100 / BOARD_SIZE;
+        const isRisingText = effect.type === 'text' && !effect.isMagnetism;
+        const anchorY = isRisingText ? region.y : region.y + 0.5;
+        const leftPercent = (region.x + 0.5) * cell;
+        const topPercent = anchorY * cell - (effect.stack || 0) * 3.2;
 
         const style = {
           left: `${leftPercent}%`,
           top: `${topPercent}%`,
         };
+        if (effect.durationMs) style.animationDuration = `${effect.durationMs}ms`;
 
         if (effect.type === 'magnetism' || effect.isMagnetism) {
           return (
@@ -39,6 +50,10 @@ const VisualEffectsManager = ({ visualEffects, regions, visible = true }) => {
               </div>
             </React.Fragment>
           );
+        }
+
+        if (effect.type === 'placement-flash') {
+          return <div key={effect.id} className="effect-placement-flash" style={style} />;
         }
 
         if (effect.type === 'explosion') {

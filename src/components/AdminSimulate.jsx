@@ -92,6 +92,8 @@ const AdminSimulate = () => {
 
   const [availableSets, setAvailableSets] = useState([]);
   const [selectedSet, setSelectedSet] = useState('');
+  const [availableEventSets, setAvailableEventSets] = useState([]);
+  const [selectedEventSet, setSelectedEventSet] = useState('');
   const [gameCount, setGameCount] = useState(1000);
 
   const [isSimulating, setIsSimulating] = useState(false);
@@ -121,8 +123,19 @@ const AdminSimulate = () => {
     }
   };
 
+  const fetchEventSets = async () => {
+    try {
+      const res = await fetch(`${SERVER_URL}/api/events`);
+      const list = await res.json();
+      setAvailableEventSets(Array.isArray(list) ? list : []);
+    } catch (err) {
+      console.error('Failed to fetch event sets:', err);
+    }
+  };
+
   useEffect(() => {
     fetchSets();
+    fetchEventSets();
   }, []);
 
   useEffect(() => {
@@ -164,7 +177,8 @@ const AdminSimulate = () => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           count: gameCount,
-          sets: selectedSet ? { name: selectedSet } : null
+          sets: selectedSet ? { name: selectedSet } : null,
+          events: selectedEventSet ? { name: selectedEventSet } : null
         })
       });
       const data = await response.json();
@@ -234,6 +248,16 @@ const AdminSimulate = () => {
           <select value={selectedSet} onChange={(e) => setSelectedSet(e.target.value)}>
             <option value="">{t('admin_sets_select', { defaultValue: 'Default Set Configuration' })}</option>
             {availableSets.map(s => <option key={s} value={s}>{s}</option>)}
+          </select>
+        </div>
+
+        <div className="control-group">
+          <label className="control-label-text">
+            {t('admin_simulate_events_label', { defaultValue: 'Event set:' })}
+          </label>
+          <select value={selectedEventSet} onChange={(e) => setSelectedEventSet(e.target.value)}>
+            <option value="">{t('admin_simulate_events_default', { defaultValue: 'Default event set' })}</option>
+            {availableEventSets.map((name) => <option key={name} value={name}>{name}</option>)}
           </select>
         </div>
 

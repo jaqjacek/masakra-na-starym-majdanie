@@ -1,42 +1,125 @@
 import { Scoring } from './scoring/scoring.js';
-import { RACES, DEFAULT_JAKUB_DISTANCE, regionXY } from './constants.js';
+import {
+  RACES,
+  DEFAULT_JAKUB_DISTANCE,
+  regionXY,
+  MAX_SETS_KEPT_ON_PASS,
+  TOTAL_GAME_ROUNDS,
+  VAMPIRE_FINAL_SCORING_MULTIPLIER,
+  GHOST_FINAL_SCORING_BONUS,
+  GHOST_FINAL_SCORING_MAX_OTHER_BONUS,
+  BARDAK_FINAL_MAJORITY_BONUS,
+  KABLOWANIE_POINTS,
+  AI_KABLOWANIE_OWN_PAWN_COST,
+  AI_KABLOWANIE_RANGE_BUMP_COST,
+  AI_KABLOWANIE_OPPONENT_PAWN_BONUS,
+  AI_KABLOWANIE_OPPONENT_BONUS_CAP,
+  AI_THREAT_IN_RANGE_MULTIPLIER,
+  AI_THREAT_NEAR_RANGE_MULTIPLIER,
+  computeJakubRange
+} from './constants.js';
 import { VampireScoring } from './scoring/vampireScoring.js';
 import { WerewolfScoring } from './scoring/werewolfScoring.js';
 import { GhostScoring } from './scoring/ghostScoring.js';
 import { BardakScoring } from './scoring/bardakScoring.js';
 
+/**
+ * Marginal final-scoring value of placing this set on an empty region.
+ * Vampire: one new region, not a per-tile constant. Ghost/bardak compare
+ * own count to the largest other race, matching calculateFinal.
+ */
+function endGameValue(generalOf, set) {
+  const own = set.content?.[generalOf] || 0;
+  if (own <= 0 || !generalOf) return 0;
+
+  const others = RACES.filter((race) => race !== generalOf).map((race) => set.content[race] || 0);
+  const maxOther = others.reduce((max, count) => Math.max(max, count), 0);
+  const othersTotal = others.reduce((sum, count) => sum + count, 0);
+
+  if (generalOf === 'vampire') return VAMPIRE_FINAL_SCORING_MULTIPLIER;
+  if (generalOf === 'ghost') {
+    if (othersTotal === 0) return GHOST_FINAL_SCORING_BONUS;
+    if (own > maxOther) return GHOST_FINAL_SCORING_MAX_OTHER_BONUS;
+    return 0;
+  }
+  if (generalOf === 'bardak') {
+    return own > maxOther ? BARDAK_FINAL_MAJORITY_BONUS : 0;
+  }
+  if (generalOf === 'werewolf') return own;
+  return 0;
+}
+
+/**
+ * Value of voluntarily giving this set to Jakub (+1) minus the fury cost.
+ * Own-race pawns are expensive. A range increase is expensive. Opponent pawns
+ * are a small bonus only when the set has none of our general.
+ */
+export function kablowanieValue(set, jakub, generalOf) {
+  const content = set?.content || {};
+  const own = generalOf ? (content[generalOf] || 0) : 0;
+  let value = KABLOWANIE_POINTS - own * AI_KABLOWANIE_OWN_PAWN_COST;
+  if (!jakub) return value;
+
+  const nextAnger = { ...(jakub.anger || {}) };
+  Object.entries(content).forEach(([race, count]) => {
+    if (nextAnger[race] !== undefined) nextAnger[race] += count;
+  });
+  if (computeJakubRange(nextAnger) > computeJakubRange(jakub.anger)) {
+    value -= AI_KABLOWANIE_RANGE_BUMP_COST;
+  }
+  if (own === 0) {
+    const opp = RACES.reduce((sum, race) => sum + (race === generalOf ? 0 : (content[race] || 0)), 0);
+    value += Math.min(AI_KABLOWANIE_OPPONENT_BONUS_CAP, opp * AI_KABLOWANIE_OPPONENT_PAWN_BONUS);
+  }
+  return value;
+}
+
 export class SharedPlacementManager {
   /**
-   * Helper to check if a set can be sold/passed to Jakub based on the majority anger vs board count rule.
+   * When passing with more than maxKeep sets, randomly choose which excess sets to tip to Jakub.
+   * @returns {Array} sets that should be discarded (owner becomes jakub); kept sets stay in hand
    */
-  static isSetAllowedToPass(set, regions, jakub) {
-    if (!jakub) return true;
-    const racesInSet = Object.keys(set.content).filter(race => set.content[race] > 0);
-    if (racesInSet.length === 0) return true;
+  static selectExcessSetsOnPass(myHeld, maxKeep = MAX_SETS_KEPT_ON_PASS) {
+    if (!myHeld || myHeld.length <= maxKeep) return [];
+    const shuffled = [...myHeld];
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+    return shuffled.slice(maxKeep);
+  }
 
-    // Count pawns on board for each race
-    const pawnsOnBoard = { vampire: 0, werewolf: 0, ghost: 0, bardak: 0 };
-    regions.forEach(region => {
-      ['vampire', 'werewolf', 'ghost', 'bardak'].forEach(race => {
-        pawnsOnBoard[race] += region.pawns[race]?.length || 0;
-      });
-    });
-
-    let conditionsMet = 0;
-    racesInSet.forEach(race => {
-      const anger = jakub.anger[race] || 0;
-      const countOnBoard = pawnsOnBoard[race] || 0;
-      if (anger > countOnBoard) {
-        conditionsMet++;
+  /**
+   * Best voluntary snitch in hand, or null when none beats passing (score <= 0).
+   */
+  static bestKablowanie(hand, jakub, generalOf) {
+    let best = null;
+    let bestScore = 0;
+    (hand || []).forEach((set) => {
+      const score = kablowanieValue(set, jakub, generalOf);
+      if (score > bestScore) {
+        bestScore = score;
+        best = set;
       }
     });
+    return best ? { set: best, score: bestScore } : null;
+  }
 
-    // If strictly greater than half, it is NOT allowed
-    const threshold = racesInSet.length / 2;
-    if (conditionsMet > threshold) {
-      return false;
+  /**
+   * One player action: place, kablowanie, or pass. Same units as strategicScore.
+   * Place wins ties with kablowanie. Kablowanie must beat 0 to beat pass.
+   */
+  static choosePlayerAction(best, hand, jakub, generalOf) {
+    const placeScore = best && Number.isFinite(best.strategicScore) ? best.strategicScore : -Infinity;
+    const snitch = this.bestKablowanie(hand, jakub, generalOf);
+    const snitchScore = snitch ? snitch.score : -Infinity;
+    if (best && placeScore >= snitchScore && placeScore >= 0) {
+      return { type: 'place', placement: best, score: placeScore };
     }
-    return true;
+    if (snitch && snitchScore > placeScore) {
+      return { type: 'kablowanie', set: snitch.set, score: snitchScore };
+    }
+    return { type: 'pass', score: 0 };
   }
 
   /**
@@ -81,11 +164,13 @@ export class SharedPlacementManager {
     const jakubRegion = regions.find(r => r.pawns.jakub?.length > 0);
     const jakub = jakubRegion?.pawns.jakub[0];
     const jakubRange = jakub ? (jakub.range !== undefined ? Math.max(1, jakub.range) : 1) : 0;
+    const roundWeight = Math.min(1, Math.max(0, (Number(currentRound) || 1) / TOTAL_GAME_ROUNDS));
 
     let best = null;
     let bestStrategicScore = -Infinity;
 
     placeableSets.forEach(set => {
+      const endGameBonus = endGameValue(generalOf, set) * roundWeight;
       emptyRegions.forEach(region => {
         const dist = jakubRegion
           ? Math.max(
@@ -119,36 +204,14 @@ export class SharedPlacementManager {
 
         const netScore = ourPts - opponentsPts;
 
-        // 2. Jakub Threat Avoidance
+        // Jakub threat. Endgame value is per set (see endGameValue), scaled by round.
         let threatPenalty = 0;
         const ourPawnCountInSet = set.content[generalOf] || 0;
         if (ourPawnCountInSet > 0 && jakub && (jakub.anger[generalOf] || 0) > 0) {
           if (dist <= jakubRange) {
-            threatPenalty += (jakub.anger[generalOf] || 0) * ourPawnCountInSet * 1.5;
+            threatPenalty += (jakub.anger[generalOf] || 0) * ourPawnCountInSet * AI_THREAT_IN_RANGE_MULTIPLIER;
           } else if (dist <= jakubRange + 1) {
-            threatPenalty += (jakub.anger[generalOf] || 0) * ourPawnCountInSet * 0.5;
-          }
-        }
-
-        // 3. End-Game Alignment
-        let endGameBonus = 0;
-        if (ourPawnCountInSet > 0) {
-          if (generalOf === 'vampire') {
-            endGameBonus += 2.0; // Spreading to a new region
-          } else if (generalOf === 'ghost') {
-            const otherPawnsInSet = (set.content.vampire || 0) + (set.content.werewolf || 0) + (set.content.bardak || 0);
-            if (otherPawnsInSet === 0) {
-              endGameBonus += 2.0; // Solo region
-            } else if (ourPawnCountInSet > otherPawnsInSet) {
-              endGameBonus += 1.0; // Majority
-            }
-          } else if (generalOf === 'bardak') {
-            const otherPawnsInSet = (set.content.vampire || 0) + (set.content.werewolf || 0) + (set.content.ghost || 0);
-            if (ourPawnCountInSet > otherPawnsInSet) {
-              endGameBonus += 1.0; // Majority
-            }
-          } else if (generalOf === 'werewolf') {
-            endGameBonus += ourPawnCountInSet * 0.5; // Count volume
+            threatPenalty += (jakub.anger[generalOf] || 0) * ourPawnCountInSet * AI_THREAT_NEAR_RANGE_MULTIPLIER;
           }
         }
 
@@ -168,56 +231,10 @@ export class SharedPlacementManager {
       });
     });
 
-    if (best) {
-      best.allScores = Scoring.calculatePlacementPoints(regions, best.region, best.set.content);
+    // Same score ranks candidates and decides place vs pass. Pass is worth 0.
+    if (!best || bestStrategicScore < 0) return null;
 
-      // Check if we have any placeable sets containing our own general's pawns
-      const hasOwnPawnsInHand = placeableSets.some(s => (s.content[generalOf] || 0) > 0);
-
-      // Compare utility of placing vs passing
-      const toSell = myHeld.filter(s => 
-        (s.content[generalOf] || 0) === 0 && 
-        SharedPlacementManager.isSetAllowedToPass(s, regions, jakub)
-      );
-      const pointsFromPass = toSell.length;
-      
-      const pointsFromPlace = best.pts || 0;
-      const ownPawnsCount = best.set.content[generalOf] || 0;
-      const netScore = best.netScore || 0;
-
-      // Place utility = immediate points + end-game pawn value + penalty for helping opponents
-      const utilityPlace = pointsFromPlace + ownPawnsCount + Math.min(0, netScore) * 0.5;
-      
-      // Round adaptation: early rounds pass value is high, late rounds pass value is low
-      let passWeight = 1.0;
-      if (currentRound <= 3) {
-        passWeight = 1.3;
-      } else if (currentRound >= 9) {
-        passWeight = 0.7;
-      }
-      
-      const utilityPass = pointsFromPass * passWeight;
-
-      if (utilityPass > utilityPlace) {
-        // If we don't have sets with our own pawns in hand, check the exception:
-        // "Jeżeli za wystawienie zestawu pozostałe nacje łącznie dostaną 0 lub mniej punktów, nadal można go wystawić."
-        if (!hasOwnPawnsInHand) {
-          const opponentsPoints = Object.entries(best.allScores || {}).reduce((sum, [race, pts]) => {
-            if (race !== generalOf) {
-              sum += pts;
-            }
-            return sum;
-          }, 0);
-
-          if (opponentsPoints <= 0) {
-            return best; // Override pass, allow placement
-          }
-        }
-
-        // AI chooses to pass and sell sets to Jakub instead of placing this set
-        return null;
-      }
-    }
+    best.allScores = Scoring.calculatePlacementPoints(regions, best.region, best.set.content);
     return best;
   }
 }

@@ -1,46 +1,70 @@
-# MASAKRA na Starym Majdanie REST API Documentation
+# MASAKRA na Starym Majdanie REST API
 
-This document describes the available API endpoints for the MASAKRA na Starym Majdanie game engine.
+**Status:** v1.20.2. Authoritative contract: [`openapi.json`](openapi.json) (Scalar UI at `/api/docs/api`).
 
-## General Information
-- **Base URL:** `http://<host>:<port>/api`
-- **Content-Type:** `application/json`
+Base URL: `http://<host>:<port>/api`. Content-Type: `application/json`.
 
-## Endpoints
+Live game mutations go through **Socket.io**, not REST. After every action the server runs **player AI** (`playerAiService.afterGameChange`) for unclaimed seats, then emits `boardUpdate`.
 
-### 1. Game State
-- **GET `/map/:gameId`**
-  - Returns the current full state of a specific game.
-- **POST `/map/:gameId`**
-  - Updates the state of a game. Used for manual overrides and sync.
-- **POST `/init/:gameId`**
-  - Initializes a new game session with a randomized or specific set.
-  - Query Param: `?set=set_name` (optional)
+---
 
-### 2. Configuration & Sets
-- **GET `/config`**
-  - Returns global server configuration.
-- **GET `/sets`**
-  - Returns a list of all available pawn sets.
-- **GET `/sets/details/:setName`**
-  - Returns the JSON structure of a specific set.
-- **POST `/sets/generate`**
-  - Generates a new randomized set based on parameters in the request body.
-- **POST `/sets/generate/transient`**
-  - Generates a new randomized set transiently and returns the resulting JSON structure without saving it to disk. Naming matches parameters.
+## REST
 
-### 3. Simulation & Analytics
-- **POST `/simulate/`**
-  - Runs a fast simulation of a single game and returns band performance analytics.
-- **POST `/simulate/batch`**
-  - Runs multiple simulations in a single request and returns an array of performance analytics.
-  - Query Param: `?count=100` (optional, default 100), `?set=set_name` (optional)
-- **POST `/simulate/detailed`**
-  - Runs a detailed single game simulation and returns a comprehensive history of turns and scores.
-  - **Body Support:** Accepts `setsData` in the request body to simulate custom configurations.
+### System
+- `GET /ping` — health; returns `pong`.
 
-### 4. System
-- **GET `/ping`**
-  - Health check. Returns `pong`.
-- **DELETE `/games`**
-  - **DANGER:** Deletes all active game sessions from the server.
+### Config (`server/routes/config.js`)
+- `GET /config` — global server config.
+- `POST /config` — update (e.g. `defaultSetName`).
+- `GET /config/title` — dynamic game title.
+
+### Games / map (`server/routes/games.js`, mounted at `/api/map`)
+- `GET /map/next-id` — next free numeric game ID.
+- `POST /map/new` — create a game (optional `set` in body or query); returns `{ id, state }`.
+- `GET /map/:gameId` — full session state (creates if missing).
+- `POST /map/:gameId` — overwrite state (admin/sync).
+- `POST /map/init/:gameId` — initialize with optional `?set=`.
+- `POST /map/:gameId/spectator/start` — record an all-AI replay (setup of round 1 only); returns the existing replay if one exists. While a replay exists, manual socket actions are rejected.
+- `GET /map/:gameId/replay` — read the saved replay (`server/games/{id}/replay.json`).
+- Snapshots, event-phase, and related helpers live on the same router. See OpenAPI.
+
+### Sets (`server/routes/sets.js`)
+- `GET /sets` — list set files.
+- `GET /sets/details/:setName` — one set JSON.
+- `POST /sets/generate` — generate and persist.
+- `POST /sets/generate/transient` — generate without writing disk.
+
+### Events (`server/routes/events.js`)
+- `GET /events` — event list names.
+- `GET /events/all` — master `events_all.json`.
+- CRUD for named event decks — see OpenAPI.
+
+### Simulation (`server/routes/simulation.js`)
+- `POST /simulate/job` — parallel worker-thread job (`count`, `sets`, `game`, `events`).
+- `GET /simulate/job/:jobId` — progress / report.
+- `POST /simulate/detailed` — one detailed game history.
+- `POST /simulate/full` — multipart full sim.
+- Legacy `POST /simulate/` and `/simulate/batch` may still exist; prefer `/job` for the admin dashboard.
+
+Dangerous admin wipe: check OpenAPI before calling any `DELETE` on games.
+
+---
+
+## Socket.io (`server/socketHandler.js`)
+
+Client joins `game:{id}`. Handshake query `gameId` and/or event `joinGame({ gameId, playerId })`. Claiming a seat adds the id to `state.manualPlayers`.
+
+| Event | Purpose |
+| :--- | :--- |
+| `action:claimPlayer` | Mark seat as human |
+| `action:placeSet` | Place a held set on a region |
+| `action:movePawn` | Move / drop a pawn |
+| `action:selectGeneral` | Herszt pick |
+| `action:kablowanieSet` | Give set to Jakub (**+1** point) |
+| `action:passTurn` | Pass; keep ≤3, excess to Jakub **0 points** |
+| `action:drawSets` | Setup draw (round 1: Jakub only; round 2+: +3 per player) |
+| `action:syncState` | Optimistic client dump (rejected if stale via `stateRecency`) |
+
+Server → client: `boardUpdate` with full state. During player-AI turns the state carries `spectatorAction` (one beat per AI move: `type` = `place` / `kablowanie` / `pass` / `general`, `playerId`, `regionId` + `scores` for placements, `revealId`, `revealMs`); human viewers see it held for `PLAYER_AI_REVEAL_TICKS` × the current autoplay tick.
+
+Handlers call `shared/actions/actionService.js`, then `persistThenAi`.

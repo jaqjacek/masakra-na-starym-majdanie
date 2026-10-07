@@ -30,62 +30,32 @@ import EventsPanel from './components/panels/EventsPanel';
 import LoadSavesPanel from './components/panels/LoadSavesPanel';
 import PawnStatusPopup from './components/PawnStatusPopup';
 import Footer from './components/Footer';
+import SetGhostPointsPopup from './components/board/SetGhostPointsPopup';
+import SpectatorActionPopup from './components/board/SpectatorActionPopup';
+import AutoplayEventPopup from './components/board/AutoplayEventPopup';
+import SetupSummary from './components/board/SetupSummary';
+import GeneralsPoolPicker from './components/board/GeneralsPoolPicker';
+import MobileActionBar from './components/panels/MobileActionBar';
+import ScoringRulesModal from './components/modals/ScoringRulesModal';
+import EndGameModal from './components/modals/EndGameModal';
 
 // Hooks
-import { useGameState } from './hooks/useGameState';
+import { useGameState, reportAutoplaySpeed } from './hooks/useGameState';
 import { useAutoplay } from './hooks/useAutoplay';
+import { useBoardVisualEffects } from './hooks/useBoardVisualEffects';
+import { useSpectatorPlayback } from './hooks/useSpectatorPlayback';
 import { useGameInteraction } from './hooks/useGameInteraction';
 import { useMobileUi } from './hooks/useMobileUi';
 import { trackGeneralSelection } from '../shared/statsManager.js';
 
 // Constants & Utilities
 import { PAWN_TYPES, SUMMARY_PAWN_IDS } from './constants/pawnTypes';
-import { RACES, INITIAL_STATE } from './constants/game';
+import { INITIAL_STATE } from './constants/game';
 import { applySetToJakubAnger, getRegionsInRange } from './strategies/jakubStrategy';
 
 import { GeneralSelectionManager } from '../shared/generalSelectionManager.js';
 import { TOTAL_GAME_ROUNDS, SERVER_URL, computeJakubRange } from './constants/constants';
-import { RACE_TO_ABBR } from '../shared/constants.js';
 import { ClientPlacementManager } from './logic/clientPlacementManager';
-import { Scoring } from '../shared/scoring/scoring.js';
-
-const SetGhostPointsPopup = ({ regions, hoveredRegionId, activeSet }) => {
-  if (!regions || hoveredRegionId === null || !activeSet || !activeSet.set || !activeSet.set.content) {
-    return null;
-  }
-  const targetRegion = regions.find(r => r && r.id === hoveredRegionId);
-  if (!targetRegion) return null;
-
-  let placementScores;
-  try {
-    placementScores = Scoring.calculatePlacementPoints(regions, targetRegion, activeSet.set.content);
-  } catch (err) {
-    console.error("Error calculating placement points:", err);
-    return null;
-  }
-
-  if (!placementScores) return null;
-
-  const RACES_ORDER = ['vampire', 'werewolf', 'ghost', 'bardak'];
-
-  return (
-    <div className="set-ghost-points-popup">
-      {RACES_ORDER.map(race => {
-        const abbr = RACE_TO_ABBR[race];
-        const pts = placementScores[abbr] || 0;
-        const ptsClass = pts > 0 ? 'pts-positive' : pts < 0 ? 'pts-negative' : 'pts-zero';
-        const ptsString = pts >= 0 ? `+${pts}` : `${pts}`;
-
-        return (
-          <div key={race} className="popup-item">
-            <div className={`set-icon ${race}`} />
-            <span className={`race-pts ${ptsClass}`}>{ptsString}</span>
-          </div>
-        );
-      })}
-    </div>
-  );
-};
 
 function App() {
   const { t } = useTranslation();
@@ -105,8 +75,6 @@ function App() {
   const [showAnimations, setShowAnimations] = useState(() => localStorage.getItem('showAnimations') !== 'false');
   const [autoClickNext, setAutoClickNext] = useState(() => localStorage.getItem('autoClickNext') !== 'false');
   const [miniBoard, setMiniBoard] = useState(() => localStorage.getItem('miniBoard') === 'true');
-  const [visualEffects, setVisualEffects] = useState([]);
-  const prevRegionsRef = React.useRef();
 
   useEffect(() => {
     localStorage.setItem('showTracks', showTracks);
@@ -130,7 +98,7 @@ function App() {
 
   // 1. Basic state and sync
   const {
-    gameId, setGameId, playerId, gameState, setGameState, isLoaded, currentPath, isAdminPath, updateGameWithSync, addLog, dispatchAction
+    gameId, setGameId, playerId, gameState, setGameState, isLoaded, currentPath, isAdminPath, updateGameWithSync, addLog, dispatchAction, socket
   } = useGameState();
 
   const manualPlayers = useMemo(() => gameState.manualPlayers || [], [gameState.manualPlayers]);
@@ -175,114 +143,19 @@ function App() {
 
   // Open End Game rankings popup automatically when phase changes to 'End Game'
   useEffect(() => {
+    if (gameState.spectatorPlayback) return;
     if (gameState.phase === 'End Game') {
       setIsEndGamePopupOpen(true);
     } else {
       setIsEndGamePopupOpen(false);
     }
-  }, [gameState.phase]);
-  // Track pawn deaths and spawn visual effects
-  useEffect(() => {
-    if (gameState.regions && prevRegionsRef.current) {
-      const newEffects = [];
-      gameState.regions.forEach((region, i) => {
-        const prevRegion = prevRegionsRef.current[i];
-        if (!prevRegion) return;
-
-        ['vampire', 'werewolf', 'ghost', 'bardak'].forEach(race => {
-          const prevCount = prevRegion.pawns[race]?.length || 0;
-          const currCount = region.pawns[race]?.length || 0;
-          if (currCount < prevCount && !(gameState.magnetismPullRegions && gameState.magnetismPullRegions.includes(region.id))) {
-            const diff = prevCount - currCount;
-            for (let i = 0; i < diff; i++) {
-              const id = Date.now() + Math.random();
-              let prefix = '';
-              if (race === 'vampire') prefix = 'V';
-              if (race === 'werewolf') prefix = 'W';
-              if (race === 'ghost') prefix = 'G';
-              if (race === 'bardak') prefix = 'B';
-              
-              newEffects.push({
-                id: `exp-${id}`,
-                type: 'explosion',
-                regionId: region.id,
-                race,
-                timestamp: Date.now()
-              });
-              newEffects.push({
-                id: `txt-${id}`,
-                type: 'text',
-                regionId: region.id,
-                race,
-                text: `${prefix} -1 Pkt`,
-                timestamp: Date.now()
-              });
-            }
-          }
-        });
-      });
-
-      if (newEffects.length > 0) {
-        setVisualEffects(prev => [...prev, ...newEffects]);
-        // Auto-cleanup after 1.5 seconds
-        setTimeout(() => {
-          setVisualEffects(prev => prev.filter(e => !newEffects.find(ne => ne.id === e.id)));
-        }, 1500);
-      }
-    }
-    prevRegionsRef.current = gameState.regions;
-  }, [gameState.regions, gameState.magnetismPullRegions]);
-
-  const prevHistoryLengthRef = React.useRef(0);
-  useEffect(() => {
-    if (gameState.history) {
-      const currentLength = gameState.history.length;
-      const prevLength = prevHistoryLengthRef.current;
-      if (currentLength > prevLength) {
-        const newLogs = gameState.history.slice(prevLength);
-        const newEffects = [];
-        newLogs.forEach(log => {
-          if (log.type === 'witness_points' && log.regionId) {
-            const id = Date.now() + Math.random();
-            let prefix = '';
-            if (log.race === 'vampire') prefix = 'V';
-            if (log.race === 'werewolf') prefix = 'W';
-            if (log.race === 'ghost') prefix = 'G';
-            if (log.race === 'bardak') prefix = 'B';
-            
-            newEffects.push({
-              id: `txt-${id}`,
-              type: 'text',
-              regionId: log.regionId,
-              race: log.race,
-              text: `${prefix} +${log.points} Pkt`,
-              isPositive: true,
-              timestamp: Date.now()
-            });
-          } else if (log.magnetismStart && log.regionId) {
-            const id = Date.now() + Math.random();
-            newEffects.push({
-              id: `txt-${id}`,
-              type: 'text',
-              regionId: log.regionId,
-              race: 'vampire', // to give it a red color
-              text: t('animal_magnetism_text', { defaultValue: 'Unstoppable Animal Magnetism' }),
-              isMagnetism: true,
-              timestamp: Date.now()
-            });
-          }
-        });
-
-        if (newEffects.length > 0) {
-          setVisualEffects(prev => [...prev, ...newEffects]);
-          setTimeout(() => {
-            setVisualEffects(prev => prev.filter(e => !newEffects.find(ne => ne.id === e.id)));
-          }, 1500);
-        }
-      }
-      prevHistoryLengthRef.current = currentLength;
-    }
-  }, [gameState.history]);
+  }, [gameState.phase, gameState.spectatorPlayback]);
+  const { visualEffects, spectatorPopup } = useBoardVisualEffects({
+    gameState,
+    playerId,
+    showAnimations,
+    t
+  });
 
   // 2. Computed values
   const counters = useMemo(() => {
@@ -338,7 +211,21 @@ function App() {
     isFullAutoplay, setIsFullAutoplay, isJakubAutoplay, setIsJakubAutoplay,
     autoplaySpeed, setAutoplaySpeed, findAndRemoveSetById,
     autoplayEventPopup
-  } = useAutoplay({ gameId, gameState, updateGameWithSync, addLog, manualPlayers, playerId, dispatchAction });
+  } = useAutoplay({ gameId, gameState, setGameState, updateGameWithSync, addLog, manualPlayers, playerId, dispatchAction });
+
+  const {
+    spectatorStatus, spectatorError, spectatorLocked, startSpectator
+  } = useSpectatorPlayback({
+    gameId, setGameState, autoplaySpeed, setIsFullAutoplay, setIsJakubAutoplay, setIsEndGamePopupOpen
+  });
+  const canStartSpectator = !spectatorLocked && gameState.phase === 'setup' && (gameState.currentRound || 1) === 1 && !gameState.spectatorReplay;
+  const canReplaySpectator = !spectatorLocked && gameState.phase === 'End Game' && !!gameState.spectatorReplay;
+
+  reportAutoplaySpeed(autoplaySpeed);
+  useEffect(() => {
+    if (!gameId || !socket) return;
+    socket.emit('setAutoplaySpeed', { gameId, autoplaySpeed });
+  }, [gameId, socket, autoplaySpeed]);
 
   const advanceTurn = useCallback((state) => {
     if (state.passedPlayers.length >= state.players.length) return;
@@ -398,7 +285,7 @@ function App() {
     } else if (action === 'pass') {
       const excess = ClientPlacementManager.executePass(curPlayer, workState, applySetToJakubAnger);
       if (excess > 0) {
-        addLog(workState, `Gracz ${playerId} spasował i podkablował ${excess} nadmiarowych zestawów. Furia Jakuba zaktualizowana.`, { race: curPlayer.generalOf, points: excess });
+        addLog(workState, `Gracz ${playerId} spasował i oddał ${excess} nadmiarowych zestawów Jakubowi (bez punktów). Furia Jakuba zaktualizowana.`);
       } else {
         addLog(workState, `Gracz ${playerId} spasował.`);
       }
@@ -628,100 +515,6 @@ function App() {
     return () => document.removeEventListener('pointerdown', onDoc);
   }, [isMobileUi, hoveredPawn, setHoveredPawn]);
 
-  // Rankings and Stats Helpers
-  const sortedPlayers = useMemo(() => {
-    if (!gameState.players) return [];
-    const raceHierarchy = ['vampire', 'werewolf', 'ghost', 'bardak'];
-    return [...gameState.players].sort((a, b) => {
-      if (b.points !== a.points) {
-        return b.points - a.points;
-      }
-      // Tie-breaker: General in round 12
-      const aRaceIndex = raceHierarchy.indexOf(a.generalOf);
-      const bRaceIndex = raceHierarchy.indexOf(b.generalOf);
-      return aRaceIndex - bRaceIndex;
-    });
-  }, [gameState.players]);
-
-  const renderPlayerStats = (player, isSmall = false) => {
-    const stats = player.stats || {
-      races: {}, scores: {}, losses: {}, rambo: {}, witness: {}, final: {}, passing: {}, killedByJakub: {}, setsPlayed: {}
-    };
-    const racesList = ['vampire', 'werewolf', 'ghost', 'bardak'];
-    const raceNames = { vampire: t('vampire'), werewolf: t('werewolf'), ghost: t('ghost'), bardak: t('bardak') };
-    
-    const chosenRaces = racesList.filter(race => (stats.races[race] || 0) > 0);
-    
-    if (chosenRaces.length === 0) {
-      return <div className="no-stats-text">{t('no_stats_text')}</div>;
-    }
-    
-    return (
-      <div className={`player-stats-grid ${isSmall ? 'small' : ''}`}>
-        {chosenRaces.map(race => {
-          const times = stats.races[race] || 0;
-          const score = stats.scores[race] || 0;
-          const loss = stats.losses[race] || 0;
-          const rambo = stats.rambo[race] || 0;
-          const witness = stats.witness[race] || 0;
-          const final = stats.final[race] || 0;
-          const passing = stats.passing[race] || 0;
-          const mercy = stats.mercy?.[race] || 0;
-          const killed = stats.killedByJakub[race] || 0;
-          const setsCount = stats.setsPlayed[race] || 0;
-          
-          return (
-            <div key={race} className={`race-stat-row ${race}`}>
-              <div className="race-header-info">
-                <div className={`general-icon small ${race}`} />
-                <span className="race-name">{raceNames[race]}</span>
-                <span className="race-times">({times}x)</span>
-              </div>
-              <div className="race-metrics">
-                <div className="metric-item score-metric" title={t('stats_tooltip_scored')}>
-                  <span className="metric-label">{t('stats_scored')}</span>
-                  <span className="metric-value">+{score}</span>
-                </div>
-                <div className="metric-item loss-metric" title={t('stats_tooltip_lost')}>
-                  <span className="metric-label">{t('stats_lost')}</span>
-                  <span className="metric-value">-{loss}</span>
-                </div>
-                <div className="metric-item rambo-metric" title={t('stats_tooltip_assault')}>
-                  <span className="metric-label">{t('stats_assault')}</span>
-                  <span className="metric-value">{rambo > 0 ? `+${rambo}` : rambo}</span>
-                </div>
-                <div className="metric-item witness-metric" title={t('stats_tooltip_witness')}>
-                  <span className="metric-label">{t('stats_witness')}</span>
-                  <span className="metric-value">+{witness}</span>
-                </div>
-                <div className="metric-item final-metric" title={t('stats_tooltip_final')}>
-                  <span className="metric-label">{t('stats_final')}</span>
-                  <span className="metric-value">+{final}</span>
-                </div>
-                <div className="metric-item passing-metric" title={t('stats_tooltip_passing')}>
-                  <span className="metric-label">{t('stats_passing')}</span>
-                  <span className="metric-value">+{passing}</span>
-                </div>
-                <div className="metric-item mercy-metric" title={gameState.mercyActive === false ? t('stats_mercy_disabled_tooltip', { defaultValue: 'Mercy Phase disabled' }) : t('stats_tooltip_mercy', { defaultValue: 'Points from Jakub\'s Mercy' })}>
-                  <span className="metric-label">😇 {t('stats_mercy', { defaultValue: 'Mercy' })}</span>
-                  <span className="metric-value">{gameState.mercyActive === false ? t('stats_no_mercy', { defaultValue: 'No mercy' }) : `+${mercy}`}</span>
-                </div>
-                <div className="metric-item killed-metric" title={t('stats_tooltip_killed', { defaultValue: 'Killed by Jakub' })}>
-                  <span className="metric-label">💀 {t('stats_killed', { defaultValue: 'Killed' })}</span>
-                  <span className="metric-value">-{killed}</span>
-                </div>
-                <div className="metric-item sets-metric" title={t('stats_tooltip_played_sets', { defaultValue: 'Played sets' })}>
-                  <span className="metric-label">🃏 {t('stats_played_sets', { defaultValue: 'Sets' })}</span>
-                  <span className="metric-value">{setsCount}</span>
-                </div>
-              </div>
-            </div>
-          );
-        })}
-      </div>
-    );
-  };
-
   // 7. Render logic
   const adminNotice = isMobileUi ? <div className="admin-desktop-notice">{t('admin_desktop_notice')}</div> : null;
 
@@ -759,6 +552,13 @@ function App() {
         onOpenScoring={() => setIsScoringPopupOpen(true)}
         onOpenLoadSaves={() => setIsLoadSavesPanelOpen(true)}
         onOpenStats={() => setIsEndGamePopupOpen(true)}
+        spectatorLocked={spectatorLocked}
+        spectatorBusy={spectatorStatus === 'recording'}
+        canStartSpectator={canStartSpectator}
+        canReplaySpectator={canReplaySpectator}
+        spectatorError={spectatorError}
+        onStartSpectator={() => startSpectator()}
+        onReplaySpectator={() => startSpectator({ replayOnly: true })}
         onCreateNewGame={async () => {
           try {
             const res = await fetch(`${SERVER_URL}/api/map/new`, { method: 'POST' });
@@ -891,46 +691,18 @@ function App() {
         </div>
         )}
         <div className="main-game-area">
-          {gameState.phase === 'general_phase' && (() => {
-            const activeId = gameState.playerOrder[gameState.currentPlayerIndex];
-            
-            // If playerId is defined and it's not our turn to choose, we wait
-            if (playerId !== null && playerId !== undefined && String(playerId) !== String(activeId)) {
-              return (
-                <div className="generals-pool-wrapper" style={{ textAlign: 'center', padding: '15px' }}>
-                  <div className="generals-pool-header">
-                    {t('waiting_for_general', { player: activeId })}
-                  </div>
-                </div>
-              );
-            }
-
-            const player = gameState.players.find(p => p.id !== null && p.id !== undefined && String(p.id) === String(activeId));
-            const hasGeneral = !!player?.generalOf;
-            
-            return (
-              <div className="generals-pool-wrapper">
-                <div className="generals-pool-header">
-                  {hasGeneral ? t('general_chosen') : t('choose_general_for', { player: activeId })}
-                </div>
-                <div className="generals-pool-horizontal">
-                  {gameState.availableGenerals.map(race => (
-                    <button
-                      type="button"
-                      key={race}
-                      className={`general-icon large portrait ${race} ${hasGeneral ? 'disabled' : ''}`}
-                      onMouseDown={(e) => !hasGeneral && handleGeneralMouseDown(race, e)}
-                      onClick={() => !hasGeneral && handleSelectGeneral(race)}
-                      title={hasGeneral ? t('general_portrait_title') : t('general_icon_title', { race: t(race) })}
-                    >
-                    </button>
-                  ))}
-                </div>
-              </div>
-            );
-          })()}
+          {gameState.phase === 'general_phase' && (
+            <GeneralsPoolPicker
+              gameState={gameState}
+              playerId={playerId}
+              onGeneralMouseDown={handleGeneralMouseDown}
+              onSelectGeneral={handleSelectGeneral}
+              t={t}
+            />
+          )}
 
           {gameState.regions && (
+            <>
             <BoardComponent 
               regions={gameState.regions} 
               onRegionMouseUp={handleRegionMouseUp} 
@@ -962,107 +734,43 @@ function App() {
               onJakubMouseEnter={handleJakubMouseEnter}
               onJakubMouseLeave={handleJakubMouseLeave}
             >
-              {autoplayEventPopup && (
-                <div className="autoplay-event-popup-wrapper">
-                  <div className="autoplay-event-popup-glow"></div>
-                  <div className="autoplay-event-badge">⚠️ {t('active_event_badge_board', { defaultValue: 'BOARD EVENT ACTIVE' })}</div>
-                  <h2 className="autoplay-event-title">{t(`event.${autoplayEventPopup.event.id}.title`, { defaultValue: autoplayEventPopup.event.title })}</h2>
-                  <div className="autoplay-event-divider"></div>
-                  <p className="autoplay-event-description">{t(`event.${autoplayEventPopup.event.id}.description`, { defaultValue: autoplayEventPopup.event.description })}</p>
-                  <div className="autoplay-event-footer">
-                    <div className="autoplay-event-ticks-container">
-                      {Array.from({ length: 6 }).map((_, idx) => (
-                        <div 
-                           key={idx} 
-                           className={`autoplay-event-tick-dot ${idx < autoplayEventPopup.ticksLeft ? 'active' : ''}`}
-                        />
-                      ))}
-                    </div>
-                    <span className="autoplay-event-countdown-text">
-                      {t('resuming_autoplay_ticks', { ticks: autoplayEventPopup.ticksLeft, defaultValue: `Resuming autoplay in ${autoplayEventPopup.ticksLeft} ticks...` })}
-                    </span>
-                  </div>
-                </div>
-              )}
+              <AutoplayEventPopup popup={autoplayEventPopup} t={t} />
 
               {gameState.phase === 'setup' && (
-                <div className="setup-summary-wrapper">
-                  <div className="setup-summary-header">{t('setup_summary_header', { name: gameState.setName || t('setup_random_name', { defaultValue: 'Random' }), defaultValue: `Game Setup: ${gameState.setName || 'Random'}` })}</div>
-                  <div className="setup-limits-grid">
-                    <div className="setup-limit-section">
-                      <h4>{t('setup_total_pawn_pool', { defaultValue: 'Total Pawn Pool' })}</h4>
-                      <div className="setup-limit-list">
-                        {RACES.map(race => (
-                          <div key={race} className="setup-limit-item">
-                            <div className={`set-icon ${race}`}></div>
-                            <span>{gameState.sets?.pawns?.[race] || 0}</span>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                    <div className="setup-limit-section">
-                      <h4>{t('setup_pawn_play_limits', { defaultValue: 'Pawn Play Limits' })}</h4>
-                      <div className="setup-limit-list">
-                        {RACES.map(race => (
-                          <div key={race} className="setup-limit-item">
-                            <div className={`set-icon ${race}`}></div>
-                            <span>{gameState.sets?.pawnsInPlayLimit?.[race] || gameState.sets?.pawns?.[race] || 0}</span>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                  <div className="setup-hint" style={{ marginTop: '1.5rem', color: '#888', fontSize: '0.8rem' }}>
-                    {t(isMobileUi ? 'setup_waiting_host_draw_mobile' : 'setup_waiting_host_draw', { defaultValue: 'Waiting for host to click "DRAW SETS" in the top bar...' })}
-                  </div>
-                </div>
+                <SetupSummary
+                  gameState={gameState}
+                  isMobileUi={isMobileUi}
+                  canStartSpectator={canStartSpectator}
+                  onStartSpectator={() => startSpectator()}
+                  t={t}
+                />
               )}
 
             </BoardComponent>
-          )}
-        </div>
-        {isMobileUi && (activeSet || activePawn || canMobilePass || gameState.phase === 'setup' || gameState.phase === 'event_phase' || (gameState.phase === 'player_phase' && (gameState.passedPlayers || []).length === (gameState.players || []).length) || (gameState.phase === 'general_phase' && (gameState.players || []).every((p) => p.generalOf))) && (
-          <div className="mobile-action-bar">
-            {activeSet && (
-              <div className="mobile-action-preview">
-                {SUMMARY_PAWN_IDS.map(typeId => {
-                  const count = activeSet.set.content[typeId] || 0;
-                  return Array.from({ length: count }).map((_, i) => (
-                    <div key={`${typeId}-${i}`} className={`set-icon ${typeId}`}></div>
-                  ));
-                })}
+            {spectatorStatus === 'recording' && (
+              <div className="spectator-action-popup" role="status">
+                <div className="spectator-action-title">{t('spectator_recording')}</div>
               </div>
             )}
-            {activeSet && (
-              <button type="button" className="give-jakub" onClick={(e) => handleJakubMouseUp(e)}>
-                {t('action_give_jakub')}
-              </button>
-            )}
-            {(activeSet || activePawn) && (
-              <button type="button" onClick={cancelSelection}>{t('action_cancel')}</button>
-            )}
-            {!activeSet && !activePawn && gameState.phase === 'setup' && (
-              <button type="button" className="action-button next-btn" onClick={handleManualDrawSets}>{t('draw_sets')}</button>
-            )}
-            {!activeSet && !activePawn && gameState.phase === 'event_phase' && (
-              <button type="button" className="action-button next-btn" onClick={handleExecuteEventPhase}>{t('execute_event')}</button>
-            )}
-            {!activeSet && !activePawn && gameState.phase === 'player_phase' && (gameState.passedPlayers || []).length === (gameState.players || []).length && (
-              <button type="button" className="action-button next-btn" onClick={handleGoToJakubPhase}>{t('go_to_jakub_phase')}</button>
-            )}
-            {!activeSet && !activePawn && gameState.phase === 'general_phase' && (gameState.players || []).every((p) => p.generalOf) && (
-              <button type="button" className="action-button next-btn" onClick={handleGoToPlayerPhase}>{t('go_to_player_phase')}</button>
-            )}
-            {!activeSet && !activePawn && canMobilePass && (
-              <button
-                type="button"
-                className="pass-btn"
-                onClick={() => handleExecuteManualTurn(playerId, 'pass')}
-              >
-                {t('pass')}
-              </button>
-            )}
-          </div>
+            <SpectatorActionPopup action={spectatorPopup} t={t} />
+            </>
+          )}
+        </div>
+        {isMobileUi && !spectatorLocked && (
+          <MobileActionBar
+            gameState={gameState}
+            activeSet={activeSet}
+            activePawn={activePawn}
+            canPass={canMobilePass}
+            onGiveJakub={handleJakubMouseUp}
+            onCancel={cancelSelection}
+            onDrawSets={handleManualDrawSets}
+            onExecuteEvent={handleExecuteEventPhase}
+            onGoToJakubPhase={handleGoToJakubPhase}
+            onGoToPlayerPhase={handleGoToPlayerPhase}
+            onPass={() => handleExecuteManualTurn(playerId, 'pass')}
+            t={t}
+          />
         )}
         {isMobileUi && playerId && (
           <div className="mobile-hand-strip">
@@ -1076,7 +784,7 @@ function App() {
             />
           </div>
         )}
-        {isMobileUi && (
+        {isMobileUi && !spectatorLocked && (
           <button
             type="button"
             className={`mobile-players-handle${mobileSheetOpen && mobileTab === 'players' ? ' open' : ''}`}
@@ -1159,6 +867,13 @@ function App() {
                 onOpenScoring={() => setIsScoringPopupOpen(true)}
                 onOpenLoadSaves={() => setIsLoadSavesPanelOpen(true)}
                 onOpenStats={() => setIsEndGamePopupOpen(true)}
+                spectatorLocked={spectatorLocked}
+                spectatorBusy={spectatorStatus === 'recording'}
+                canStartSpectator={canStartSpectator}
+                canReplaySpectator={canReplaySpectator}
+                spectatorError={spectatorError}
+                onStartSpectator={() => startSpectator()}
+                onReplaySpectator={() => startSpectator({ replayOnly: true })}
                 onCreateNewGame={async () => {
                   try {
                     const res = await fetch(`${SERVER_URL}/api/map/new`, { method: 'POST' });
@@ -1201,7 +916,7 @@ function App() {
             )}
           </div>
         )}
-        {isMobileUi && (
+        {isMobileUi && !spectatorLocked && (
           <MobileTabBar
             active={mobileSheetOpen ? mobileTab : null}
             onChange={(tab) => {
@@ -1221,92 +936,17 @@ function App() {
         )}
       </div>
       
-      {isScoringPopupOpen && (
-        <div className="scoring-modal-overlay" onClick={() => setIsScoringPopupOpen(false)}>
-          <div className="scoring-modal-content" onClick={e => e.stopPropagation()}>
-            <button className="modal-close-x" onClick={() => setIsScoringPopupOpen(false)}>×</button>
-            <div className="scoring-rules-container">
-              <h2>{t('scoring_popup_title')}</h2>
-              <div className="rules-section">
-                <h3>{t('scoring_popup_immediate_title')}</h3>
-                <p><span className="rules-race-icon vampire"></span><strong>{t('vampire')}:</strong> {t('scoring_popup_vampire_desc')}</p>
-                <p><span className="rules-race-icon werewolf"></span><strong>{t('werewolf')}:</strong> {t('scoring_popup_werewolf_desc')}</p>
-                <p><span className="rules-race-icon ghost"></span><strong>{t('ghost')}:</strong> {t('scoring_popup_ghost_desc')}</p>
-                <p><span className="rules-race-icon bardak"></span><strong>{t('bardak')}:</strong> {t('scoring_popup_bardak_desc')}</p>
-              </div>
-              <div className="rules-section">
-                <h3>{t('scoring_popup_witness_title')}</h3>
-                <p>{t('scoring_popup_witness_desc')}</p>
-              </div>
-              <div className="rules-section">
-                <h3>{t('scoring_popup_endgame_title')}</h3>
-                <p><span className="rules-race-icon vampire"></span><strong>{t('vampire')}:</strong> {t('scoring_popup_endgame_vampire')}</p>
-                <p><span className="rules-race-icon werewolf"></span><strong>{t('werewolf')}:</strong> {t('scoring_popup_endgame_werewolf')}</p>
-                <p><span className="rules-race-icon ghost"></span><strong>{t('ghost')}:</strong> {t('scoring_popup_endgame_ghost')}</p>
-                <p><span className="rules-race-icon bardak"></span><strong>{t('bardak')}:</strong> {t('scoring_popup_endgame_bardak')}</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+      {isScoringPopupOpen && <ScoringRulesModal onClose={() => setIsScoringPopupOpen(false)} t={t} />}
 
       {isEndGamePopupOpen && (
-        <div className="end-game-modal-overlay" onClick={() => setIsEndGamePopupOpen(false)}>
-          <div className="end-game-modal-content" onClick={e => e.stopPropagation()}>
-            <button className="modal-close-x" onClick={() => setIsEndGamePopupOpen(false)}>×</button>
-            <div className="end-game-header">
-              <div className="trophy-glow">🏆</div>
-              <h2>{t('endgame_modal_title')}</h2>
-            </div>
-            
-            {sortedPlayers.length > 0 && (
-              <div className="end-game-rankings">
-                {/* 1st Place / Winner */}
-                {(() => {
-                  const winner = sortedPlayers[0];
-                  return (
-                    <div className="rank-card winner-card">
-                      <div className="rank-badge gold">{t('rank_1')}</div>
-                      <div className="player-details">
-                        <h3 className="winner-title">{t('endgame_winner_title', { id: winner.id, name: winner.name })}</h3>
-                        <div className="final-score">{t('endgame_points', { points: winner.points })}</div>
-                      </div>
-                      <div className="stats-breakdown">
-                        {renderPlayerStats(winner)}
-                      </div>
-                    </div>
-                  );
-                })()}
-
-                {/* 2nd, 3rd, 4th Places */}
-                <div className="runners-up-grid">
-                  {sortedPlayers.slice(1).map((player, idx) => {
-                    const rankKey = idx === 0 ? 'rank_2' : idx === 1 ? 'rank_3' : 'rank_4';
-                    const rankClass = idx === 0 ? 'silver' : idx === 1 ? 'bronze' : 'fourth';
-                    return (
-                      <div key={player.id} className={`rank-card runner-card ${rankClass}`}>
-                        <div className={`rank-badge ${rankClass}`}>{t(rankKey)}</div>
-                        <div className="player-details">
-                          <h4>{t('endgame_runner_title', { id: player.id, name: player.name })}</h4>
-                          <div className="final-score">{t('endgame_points', { points: player.points })}</div>
-                        </div>
-                        <div className="stats-breakdown">
-                          {renderPlayerStats(player, true)}
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-            
-            <div className="end-game-footer">
-              <button className="close-popup-btn" onClick={() => setIsEndGamePopupOpen(false)}>
-                {t('endgame_back_to_board')}
-              </button>
-            </div>
-          </div>
-        </div>
+        <EndGameModal
+          players={gameState.players}
+          mercyActive={gameState.mercyActive}
+          canReplaySpectator={canReplaySpectator}
+          onReplaySpectator={() => startSpectator({ replayOnly: true })}
+          onClose={() => setIsEndGamePopupOpen(false)}
+          t={t}
+        />
       )}
 
       {!isMobileUi && activePawn && <MouseElement type={PAWN_TYPES.find(p => p.id === activePawn.typeId)} x={activePawn.x} y={activePawn.y} />}

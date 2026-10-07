@@ -28,8 +28,11 @@ export const PLAYER_IDS = [1, 2, 3, 4];
 export const BOARD_SIZE = 6;
 export const TOTAL_GAME_ROUNDS = 12;
 export const INITIAL_PLAYER_POINTS = 20;
-export const INITIAL_SETS_PER_PLAYER = 2;
+export const INITIAL_SETS_PER_PLAYER = 5;
+/** Sets added to each player's hand at the start of every round after the first. */
 export const SETUP_SETS_PER_PLAYER_PER_ROUND = 3;
+/** Max sets a player may keep when passing; excess is tipped to Jakub with no points. */
+export const MAX_SETS_KEPT_ON_PASS = 3;
 export const JAKUB_SETS_PER_ROUND = 2;
 
 export const JAKUB_ANGER_THRESHOLD = 10;
@@ -90,6 +93,46 @@ export const BARDAK_FINAL_MAJORITY_BONUS = 1;
 export const DEFAULT_JAKUB_DISTANCE = 3;
 
 export const MERCY_DIVISOR = 2;
+
+/** Points for voluntarily giving a set to Jakub (kablowanie). */
+export const KABLOWANIE_POINTS = 1;
+
+/** Max entries kept in `state.history` by server-side writers. */
+export const MAX_HISTORY_ENTRIES = 100;
+/** History cap used by `ActionService.addLog` (shared client/server actions). */
+export const MAX_ACTION_HISTORY_ENTRIES = 50;
+
+// Player AI heuristic weights (see docs/PLAYER_AI.md). Tuning these changes AI play.
+export const AI_KABLOWANIE_OWN_PAWN_COST = 1.25;
+export const AI_KABLOWANIE_RANGE_BUMP_COST = 2;
+export const AI_KABLOWANIE_OPPONENT_PAWN_BONUS = 0.1;
+export const AI_KABLOWANIE_OPPONENT_BONUS_CAP = 0.4;
+export const AI_THREAT_IN_RANGE_MULTIPLIER = 1.5;
+export const AI_THREAT_NEAR_RANGE_MULTIPLIER = 0.5;
+
+export const AI_GENERAL_HAND_WEIGHT = {
+  vampire: 2.5,
+  werewolf: 1.5,
+  ghost: 2.0,
+  bardak: 1.0
+};
+export const AI_GENERAL_BOARD_WEIGHT = {
+  vampire: 1.0,
+  werewolf: 1.0,
+  ghost: 0.5,
+  bardak: 0.5
+};
+export const AI_GENERAL_ANGER_PENALTY = 2.0;
+export const AI_GENERAL_MAIN_TARGET_PENALTY = 5.0;
+
+// Server player AI loop.
+export const MAX_PLAYER_AI_STEPS = 200;
+/** Human viewers see each AI move held for this many autoplay ticks. */
+export const PLAYER_AI_REVEAL_TICKS = 5;
+export const DEFAULT_AUTOPLAY_SPEED_MS = 100;
+export const MIN_AUTOPLAY_SPEED_MS = 50;
+export const MAX_AUTOPLAY_SPEED_MS = 1500;
+export const AUTOPLAY_SPEED_STEP_MS = 50;
 
 export const DEFAULT_PLAYERS = PLAYER_IDS.map((id) => ({
   id,

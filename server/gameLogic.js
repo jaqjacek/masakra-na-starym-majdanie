@@ -1,7 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { RACES, DEFAULT_PLAYERS, INITIAL_PAWN_POOL, DEFAULT_POWER_CONFIG, DEFAULT_GAME_CONFIG, PLAYER_IDS } from './constants.js';
+import { RACES, DEFAULT_PLAYERS, INITIAL_PAWN_POOL, DEFAULT_POWER_CONFIG, DEFAULT_GAME_CONFIG, PLAYER_IDS, MAX_HISTORY_ENTRIES } from './constants.js';
 import { createEmptyRegions } from './boardManager.js';
 import { loadSetFile, generateSetData } from './setManager.js';
 import { GameEventPhaseManager } from './events/gameEventPhaseManager.js';
@@ -112,8 +112,8 @@ export const saveFullState = (gameId, data) => {
   if (data.players) fs.writeFileSync(path.join(gamePath, 'players.json'), JSON.stringify(data.players, null, 2));
   if (data.sets) fs.writeFileSync(path.join(gamePath, 'sets.json'), JSON.stringify(data.sets, null, 2));
   if (data.history) {
-    if (data.history.length > 100) {
-      data.history = data.history.slice(data.history.length - 100);
+    if (data.history.length > MAX_HISTORY_ENTRIES) {
+      data.history = data.history.slice(data.history.length - MAX_HISTORY_ENTRIES);
     }
     fs.writeFileSync(path.join(gamePath, 'history.json'), JSON.stringify(data.history, null, 2));
     const logContent = data.history.map(h => {
@@ -124,7 +124,7 @@ export const saveFullState = (gameId, data) => {
     fs.writeFileSync(path.join(gamePath, 'history.log'), logContent);
   }
   const meta = {}; 
-  const keys = ['phase', 'currentRound', 'totalRounds', 'currentPlayerIndex', 'playerOrder', 'passedPlayers', 'availableGenerals', 'setName', 'gameStatus', 'events', '_lastLoggedPhase', 'turnActionExecuted', 'magnetismCount', 'manualPlayers', 'jakubPath', 'mercyActive', 'witnessGlows', 'magnetismPullRegions', 'stateVersion'];
+  const keys = ['phase', 'currentRound', 'totalRounds', 'currentPlayerIndex', 'playerOrder', 'passedPlayers', 'availableGenerals', 'setName', 'gameStatus', 'events', '_lastLoggedPhase', 'turnActionExecuted', 'magnetismCount', 'manualPlayers', 'jakubPath', 'mercyActive', 'witnessGlows', 'magnetismPullRegions', 'stateVersion', 'replayIndex', 'replayLog', 'spectatorReplay'];
   
   let phaseChanged = false;
   // Log phase transition if it changed

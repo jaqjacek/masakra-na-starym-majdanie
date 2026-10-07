@@ -7,7 +7,8 @@ import {
   DEFAULT_POWER_CONFIG,
   JAKUB_BASE_RANGE,
   computeJakubRange,
-  PLAYER_IDS
+  PLAYER_IDS,
+  KABLOWANIE_POINTS
 } from '../constants.js';
 import { 
   createEmptyRegions, 
@@ -20,6 +21,7 @@ import { WerewolfScoring } from '../../shared/scoring/werewolfScoring.js';
 import { GhostScoring } from '../../shared/scoring/ghostScoring.js';
 import { BardakScoring } from '../../shared/scoring/bardakScoring.js';
 import { ServerPlacementManager } from './serverPlacementManager.js';
+import { SharedPlacementManager } from '../../shared/sharedPlacementManager.js';
 import { 
   loadSetFile, 
   generateSetData 
@@ -32,7 +34,26 @@ import {
 import { GameEventPhaseManager } from '../events/gameEventPhaseManager.js';
 import { GeneralSelectionManager } from '../../shared/generalSelectionManager.js';
 import { MilosierdzieManager } from '../../shared/milosierdzieManager.js';
-import { buildAngerTiers, cascadeTieBreak } from '../../src/strategies/jakubStrategy.js';
+import { applySetToJakubAnger, buildAngerTiers, cascadeTieBreak } from '../../src/strategies/jakubStrategy.js';
+
+function decideSimAction(regions, setsData, player, pool, playLimits, round) {
+  const best = ServerPlacementManager.findBestPlacement(regions, setsData.heldSets, player.id, player.generalOf, pool, playLimits, round);
+  const hand = (setsData.heldSets || []).filter((s) => String(s.ownerId) === String(player.id));
+  const jakub = regions.find((r) => r.pawns?.jakub?.length > 0)?.pawns.jakub[0] || null;
+  return SharedPlacementManager.choosePlayerAction(best, hand, jakub, player.generalOf);
+}
+
+function executeSimKablowanie(player, set, regions) {
+  player.points += KABLOWANIE_POINTS;
+  set.ownerId = 'jakub';
+  set.angerApplied = true;
+  const jakub = regions.find((r) => r.pawns?.jakub?.length > 0)?.pawns.jakub[0];
+  if (jakub && set.content) {
+    const result = applySetToJakubAnger(jakub, set.content);
+    jakub.anger = result.anger;
+    jakub.range = result.range;
+  }
+}
 
 /**
  * Handles magnetism in server simulation — pulls all pawns from tied regions to Jakub's region.
@@ -91,7 +112,14 @@ export function runDetailedSimulation(set, uploadedSets, uploadedEvents) {
 
   for (let round = 1; round <= gameConfig.totalRounds; round++) {
     const roundData = { round, generals: {}, turns: [], endPoints: {} };
-    players.forEach(p => { const myHeld = setsData.heldSets.filter(s => s.ownerId === p.id); const needed = gameConfig.setupSetsPerPlayerPerRound - myHeld.length; for (let i = 0; i < needed; i++) { const s = drawSet(); if (s) { s.ownerId = p.id; setsData.heldSets.push(s); } } });
+    if (round > 1) {
+      players.forEach(p => {
+        for (let i = 0; i < gameConfig.setupSetsPerPlayerPerRound; i++) {
+          const s = drawSet();
+          if (s) { s.ownerId = p.id; setsData.heldSets.push(s); }
+        }
+      });
+    }
     for (let i = 0; i < gameConfig.jakubSetsPerRound; i++) { const s = drawSet(); if (s) { s.ownerId = 'jakub'; setsData.heldSets.push(s); } }
     let availableGenerals = [...RACES];
     playerOrder.forEach(id => {
@@ -110,8 +138,9 @@ export function runDetailedSimulation(set, uploadedSets, uploadedEvents) {
         const p = players.find(x => x.id === id);
         const pool = { ...setsData.pawns };
         const playLimits = setsData.pawnsInPlayLimit || pool;
-        const best = ServerPlacementManager.findBestPlacement(regions, setsData.heldSets, p.id, p.generalOf, pool, playLimits, round);
-        if (best) {
+        const action = decideSimAction(regions, setsData, p, pool, playLimits, round);
+        const best = action.placement;
+        if (action.type === 'place' && best) {
           const pointGains = ServerPlacementManager.executePlacement(best, regions, players, setsData.heldSets, setsData.discardPile);
           const onBoardStatus = {};
           RACES.forEach(race => {
@@ -128,6 +157,15 @@ export function runDetailedSimulation(set, uploadedSets, uploadedEvents) {
             content: best.set.content,
             boardStatus: onBoardStatus
           });
+        } else if (action.type === 'kablowanie') {
+          executeSimKablowanie(p, action.set, regions);
+          roundData.turns.push({
+            type: 'kablowanie',
+            player: p.name,
+            race: p.generalOf,
+            setId: action.set.id,
+            pointGains: [{ player: p.name, race: p.generalOf, points: 1 }]
+          });
         } else {
           const excess = ServerPlacementManager.executePass(p, setsData.heldSets, regions);
           if (excess > 0) {
@@ -136,14 +174,14 @@ export function runDetailedSimulation(set, uploadedSets, uploadedEvents) {
               player: p.name,
               race: p.generalOf,
               setsGiven: excess,
-              pointGains: [{ player: p.name, race: p.generalOf, points: excess }]
+              pointGains: []
             });
           }
           passed.add(id);
         }
       }
     }
-    let jakR = regions.find(r => r.pawns.jakub?.length > 0); let jakub = jakR.pawns.jakub[0]; const jakubSets = setsData.heldSets.filter(s => s.ownerId === 'jakub');
+    let jakR = regions.find(r => r.pawns.jakub?.length > 0); let jakub = jakR.pawns.jakub[0]; const jakubSets = setsData.heldSets.filter(s => s.ownerId === 'jakub' && !s.angerApplied);
     jakubSets.forEach(s => { Object.entries(s.content).forEach(([race, count]) => { if (jakub.anger[race] !== undefined) jakub.anger[race] += count; }); });
     jakub.range = computeJakubRange(jakub.anger);
     let continues = true;
@@ -326,7 +364,14 @@ export function runBasicSimulation(set, uploadedSets, uploadedEvents) {
   };
   analytics.magnetismCount = 0;
   for (let round = 1; round <= gameConfig.totalRounds; round++) {
-    players.forEach(p => { const myHeld = setsData.heldSets.filter(s => s.ownerId === p.id); const needed = gameConfig.setupSetsPerPlayerPerRound - myHeld.length; for (let i = 0; i < needed; i++) { const s = drawSet(); if (s) { s.ownerId = p.id; setsData.heldSets.push(s); } } });
+    if (round > 1) {
+      players.forEach(p => {
+        for (let i = 0; i < gameConfig.setupSetsPerPlayerPerRound; i++) {
+          const s = drawSet();
+          if (s) { s.ownerId = p.id; setsData.heldSets.push(s); }
+        }
+      });
+    }
     for (let i = 0; i < gameConfig.jakubSetsPerRound; i++) { const s = drawSet(); if (s) { s.ownerId = 'jakub'; setsData.heldSets.push(s); } }
     let availableGenerals = [...RACES];
     playerOrder.forEach((id, idx) => {
@@ -347,25 +392,27 @@ export function runBasicSimulation(set, uploadedSets, uploadedEvents) {
         const p = players.find(x => x.id === id);
         const pool = { ...setsData.pawns };
         const playLimits = setsData.pawnsInPlayLimit || pool;
-        const best = ServerPlacementManager.findBestPlacement(regions, setsData.heldSets, p.id, p.generalOf, pool, playLimits, round);
-        if (best) {
-          const pointGains = ServerPlacementManager.executePlacement(best, regions, players, setsData.heldSets, setsData.discardPile);
+        const action = decideSimAction(regions, setsData, p, pool, playLimits, round);
+        if (action.type === 'place' && action.placement) {
+          const pointGains = ServerPlacementManager.executePlacement(action.placement, regions, players, setsData.heldSets, setsData.discardPile);
           pointGains.forEach(gain => {
             if (analytics[gain.race]) {
               analytics[gain.race].setPlacement += gain.points;
             }
           });
-        } else {
-          const excess = ServerPlacementManager.executePass(p, setsData.heldSets, regions);
-          if (excess > 0 && p.generalOf && analytics[p.generalOf]) {
-            analytics[p.generalOf].passing += excess;
+        } else if (action.type === 'kablowanie') {
+          executeSimKablowanie(p, action.set, regions);
+          if (analytics[p.generalOf]) {
+            analytics[p.generalOf].passing = (analytics[p.generalOf].passing || 0) + 1;
           }
+        } else {
+          ServerPlacementManager.executePass(p, setsData.heldSets, regions);
           passed.add(id);
         }
       }
     }
     let jakR = regions.find(r => r.pawns.jakub?.length > 0); let jakub = jakR.pawns.jakub[0];
-    const jakubSets = setsData.heldSets.filter(s => s.ownerId === 'jakub');
+    const jakubSets = setsData.heldSets.filter(s => s.ownerId === 'jakub' && !s.angerApplied);
     jakubSets.forEach(s => { 
       Object.entries(s.content).forEach(([race, count]) => { 
         if (jakub.anger[race] !== undefined) {
@@ -578,11 +625,14 @@ export function runFullSimulation(setsConfig, inputGameConfig, uploadedEvents) {
   analytics.magnetismCount = 0;
 
   for (let round = 1; round <= roundsToPlay; round++) {
-    players.forEach(p => { 
-      const myHeld = setsData.heldSets.filter(s => s.ownerId === p.id); 
-      const needed = roundDraw - myHeld.length; 
-      for (let i = 0; i < needed; i++) { const s = drawSet(); if (s) { s.ownerId = p.id; setsData.heldSets.push(s); } } 
-    });
+    if (round > 1) {
+      players.forEach(p => {
+        for (let i = 0; i < roundDraw; i++) {
+          const s = drawSet();
+          if (s) { s.ownerId = p.id; setsData.heldSets.push(s); }
+        }
+      });
+    }
     for (let i = 0; i < jakubDraw; i++) { const s = drawSet(); if (s) { s.ownerId = 'jakub'; setsData.heldSets.push(s); } }
     
     let availableGenerals = [...RACES];
@@ -605,26 +655,28 @@ export function runFullSimulation(setsConfig, inputGameConfig, uploadedEvents) {
         const p = players.find(x => x.id === id);
         const pool = { ...setsData.pawns };
         const playLimits = setsData.pawnsInPlayLimit || pool;
-        const best = ServerPlacementManager.findBestPlacement(regions, setsData.heldSets, p.id, p.generalOf, pool, playLimits, round);
-        if (best) {
-          const pointGains = ServerPlacementManager.executePlacement(best, regions, players, setsData.heldSets, setsData.discardPile);
+        const action = decideSimAction(regions, setsData, p, pool, playLimits, round);
+        if (action.type === 'place' && action.placement) {
+          const pointGains = ServerPlacementManager.executePlacement(action.placement, regions, players, setsData.heldSets, setsData.discardPile);
           pointGains.forEach(gain => {
             if (analytics[gain.race]) {
               analytics[gain.race].setPlacement += gain.points;
             }
           });
-        } else {
-          const excess = ServerPlacementManager.executePass(p, setsData.heldSets, regions);
-          if (excess > 0 && p.generalOf && analytics[p.generalOf]) {
-            analytics[p.generalOf].passing += excess;
+        } else if (action.type === 'kablowanie') {
+          executeSimKablowanie(p, action.set, regions);
+          if (analytics[p.generalOf]) {
+            analytics[p.generalOf].passing = (analytics[p.generalOf].passing || 0) + 1;
           }
+        } else {
+          ServerPlacementManager.executePass(p, setsData.heldSets, regions);
           passed.add(id);
         }
       }
     }
 
     let jakR = regions.find(r => r.pawns.jakub?.length > 0); let jakub = jakR.pawns.jakub[0];
-    const jakubSets = setsData.heldSets.filter(s => s.ownerId === 'jakub');
+    const jakubSets = setsData.heldSets.filter(s => s.ownerId === 'jakub' && !s.angerApplied);
     jakubSets.forEach(s => { 
       Object.entries(s.content).forEach(([race, count]) => { 
         if (jakub.anger[race] !== undefined) {

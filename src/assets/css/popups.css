@@ -55,6 +55,69 @@
 .status-item.disabled { color: #95a5a6; text-decoration: line-through; }
 
 /* Autoplay Event Popup Styles */
+.spectator-action-popup {
+  position: fixed;
+  top: 18%;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 2200;
+  min-width: 240px;
+  max-width: 90vw;
+  padding: 0.9rem 1.2rem;
+  text-align: center;
+  color: #fff;
+  background: rgba(10, 10, 15, 0.94);
+  border: 2px solid #f1c40f;
+  border-radius: 12px;
+  box-shadow: 0 0 28px rgba(241, 196, 15, 0.35);
+  pointer-events: none;
+  animation: eventPopupScaleIn 0.25s ease-out forwards;
+}
+
+.spectator-action-title {
+  font-size: 1.15rem;
+  font-weight: 800;
+}
+
+.spectator-mode-btn {
+  margin-left: 8px;
+  padding: 0.4rem 0.75rem;
+  border: none;
+  border-radius: 6px;
+  background: #f1c40f;
+  color: #1a1a1a;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.spectator-mode-btn:disabled {
+  opacity: 0.65;
+  cursor: wait;
+}
+
+.spectator-error {
+  margin-left: 8px;
+  color: #e74c3c;
+  font-size: 0.8rem;
+}
+
+.spectator-action-set,
+.spectator-action-fury {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.35rem;
+  margin-top: 0.55rem;
+  font-size: 0.85rem;
+}
+
+.spectator-chip,
+.spectator-action-fury span {
+  padding: 0.15rem 0.45rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+}
+
 .autoplay-event-popup-wrapper {
   position: absolute;
   top: 50%;

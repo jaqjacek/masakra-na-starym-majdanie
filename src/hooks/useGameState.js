@@ -2,10 +2,29 @@ import { useState, useEffect, useCallback } from 'react';
 import { io } from 'socket.io-client';
 import { fetchMap } from '../services/api';
 import { INITIAL_STATE } from '../constants/game';
-import { SERVER_URL, HISTORY_LIMIT } from '../constants/constants';
+import { SERVER_URL, HISTORY_LIMIT, DEFAULT_AUTOPLAY_SPEED } from '../constants/constants';
 import { isIncomingStateStale } from '../../shared/stateRecency.js';
 
 const socket = io(SERVER_URL || undefined);
+let reportedAutoplaySpeed = DEFAULT_AUTOPLAY_SPEED;
+let spectatorClientLock = false;
+
+export function setSpectatorClientLock(locked) {
+  spectatorClientLock = !!locked;
+}
+
+export function isSpectatorClientLocked() {
+  return spectatorClientLock;
+}
+
+export function reportAutoplaySpeed(speed) {
+  const n = Number(speed);
+  if (Number.isFinite(n) && n > 0) reportedAutoplaySpeed = n;
+}
+
+export function currentAutoplaySpeed() {
+  return reportedAutoplaySpeed;
+}
 
 const getTime = () => new Date().toLocaleTimeString();
 
@@ -44,7 +63,7 @@ export const useGameState = () => {
 
   useEffect(() => {
     if (!gameId || isAdminPath) return;
-    socket.emit('joinGame', { gameId, playerId });
+    socket.emit('joinGame', { gameId, playerId, autoplaySpeed: reportedAutoplaySpeed });
 
     // Fetch game title
     fetch(`${SERVER_URL}/api/config/title`)
@@ -55,18 +74,19 @@ export const useGameState = () => {
     fetchMap(gameId).then(d => { 
       if (d && d.regions) {
         setGameState(prev => {
-          if (isIncomingStateStale(d, prev)) return prev;
-          return { ...prev, ...d };
+          if (spectatorClientLock || isIncomingStateStale(d, prev)) return prev;
+          return { ...prev, ...d, spectatorAction: d.spectatorAction ?? null };
         }); 
         setIsLoaded(true);
       }
     }).catch(console.error);
 
     const handleUpdate = (newData) => { 
+      if (spectatorClientLock) return;
       if (newData && newData.regions) {
         setGameState(prev => {
           if (isIncomingStateStale(newData, prev)) return prev;
-          return { ...prev, ...newData };
+          return { ...prev, ...newData, spectatorAction: newData.spectatorAction ?? null };
         }); 
         setIsLoaded(true);
       }
@@ -76,14 +96,14 @@ export const useGameState = () => {
   }, [gameId, isAdminPath, playerId]);
 
   const dispatchAction = useCallback((actionName, payload = {}) => {
-    if (!gameId) return;
-    socket.emit(`action:${actionName}`, { gameId, playerId, ...payload });
+    if (!gameId || spectatorClientLock) return;
+    socket.emit(`action:${actionName}`, { gameId, playerId, autoplaySpeed: reportedAutoplaySpeed, ...payload });
   }, [gameId, playerId]);
 
   const updateGameWithSync = useCallback((newState) => {
-    if (!gameId) return;
+    if (!gameId || spectatorClientLock) return;
     setGameState(newState);
-    socket.emit('action:syncState', { gameId, state: newState });
+    socket.emit('action:syncState', { gameId, state: newState, autoplaySpeed: reportedAutoplaySpeed });
   }, [gameId]);
 
   const addLog = useCallback((state, text, metadata = {}) => {

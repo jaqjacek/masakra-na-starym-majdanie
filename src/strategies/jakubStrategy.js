@@ -1,4 +1,5 @@
 import { RACES, RACE_MAP_PL, computeJakubRange } from '../../shared/constants.js';
+import { bumpReplayIndex } from '../../shared/stateRecency.js';
 import { getRegionsInRange } from '../../shared/boardGeometry.js';
 import { trackPointsChange, trackJakubKills } from '../../shared/statsManager.js';
 
@@ -96,6 +97,7 @@ export const executeJakubStep = (gameState) => {
   if (killedInfo.length > 0) {
     const logStr = `Jakub zabija pionka w sektorze [${currentRegion.x},${currentRegion.y}]: ` +
       killedInfo.map(info => `${info.count} x ${RACE_MAP_PL[info.race] || info.race}`).join(', ') + '.';
+    bumpReplayIndex(workState, { type: 'jakub', kind: 'kill', regionId: currentRegion.id });
     return {
       newState: workState,
       actionTaken: true,
@@ -181,6 +183,7 @@ export const executeJakubStep = (gameState) => {
     const magnetismLog = `⚡ Zbliża się NIEPOCHAMOWANY ZWIERZĘCY MAGNETYZM!`;
     const finalLog = `${cascadeLogStr} ${magnetismLog}`;
     
+    bumpReplayIndex(workState, { type: 'jakub', kind: 'magnetism', regionId: currentRegion.id });
     return {
       newState: workState,
       actionTaken: true,
@@ -202,11 +205,18 @@ export const executeJakubStep = (gameState) => {
   const targetRegion = workState.regions[bestRIdx];
 
   if (!workState.jakubPath) workState.jakubPath = [];
+  const replayIndex = bumpReplayIndex(workState, {
+    type: 'jakub',
+    kind: 'move',
+    fromRegionId: currentRegion.id,
+    toRegionId: targetRegion.id
+  });
   workState.jakubPath.push({
     from: currentRegion.id,
     to: targetRegion.id,
     round: workState.currentRound,
-    phase: workState.phase
+    phase: workState.phase,
+    index: replayIndex
   });
 
   targetRegion.pawns.jakub = currentRegion.pawns.jakub;

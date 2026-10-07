@@ -67,7 +67,7 @@ const BoardComponent = ({
         <VisualEffectsManager 
           visualEffects={visualEffects}
           regions={regions}
-          visible={showAnimations}
+          showAnimations={showAnimations}
         />
         <JakubOverlay 
           jakub={jakubInstance}

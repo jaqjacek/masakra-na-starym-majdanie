@@ -1,5 +1,22 @@
+# Keep in sync with .gitignore
 node_modules
+.idea
+server/games
+server/sets
+.env
 dist
+build
+*.log
+
+bash/
+books/
+server_config.json
+tests/*
+*.pyc
+*.pyo
+__pycache__/
+
+# Docker-specific
 .git
 .gitignore
 .geminiignore

@@ -10,6 +10,18 @@ RUN npm install --legacy-peer-deps
 # Copy source and config files
 COPY . .
 
+# Fallback: vite.config.js czyta ./server_config.json z cwd (/app).
+# Jeśli prawdziwego configu nie ma (jest w .gitignore), użyj .example.
+# Jeśli nie ma ani jednego, przerwij build z jasnym komunikatem.
+RUN if [ ! -f server_config.json ]; then \
+        if [ -f server_config.json_example ]; then \
+            cp server_config.json_example server_config.json; \
+        else \
+            echo "ERROR: brak server_config.json oraz server_config.json_example w kontekście builda" >&2; \
+            exit 1; \
+        fi; \
+    fi
+
 # Build the frontend (Vite)
 RUN npm run build
 
@@ -41,10 +53,20 @@ COPY server_config.json* ./
 # Utwórz katalogi trwałe + fallback: jeśli brak configu, użyj .example
 RUN mkdir -p server/games server/sets server/configs && \
     if [ ! -f server/configs/server_config.json ]; then \
-        cp server/configs/server_config.json_example server/configs/server_config.json; \
+        if [ -f server/configs/server_config.json_example ]; then \
+            cp server/configs/server_config.json_example server/configs/server_config.json; \
+        else \
+            echo "ERROR: brak server/configs/server_config.json oraz .example" >&2; \
+            exit 1; \
+        fi; \
     fi && \
     if [ ! -f server_config.json ]; then \
-        cp server_config.json_example server_config.json; \
+        if [ -f server_config.json_example ]; then \
+            cp server_config.json_example server_config.json; \
+        else \
+            echo "ERROR: brak server_config.json oraz .example w /app" >&2; \
+            exit 1; \
+        fi; \
     fi
 
 # Expose the port (must match process.env.PORT or 3001)

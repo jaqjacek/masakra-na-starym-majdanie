@@ -32,11 +32,20 @@ COPY docs/ ./docs/
 COPY server/ ./server/
 COPY shared/ ./shared/
 COPY src/ ./src/
-COPY server_config.json ./
-COPY server_config.json ./server/configs/
 
-# Create persistent storage directories for the server
-RUN mkdir -p server/games server/sets server/configs
+# Użyj wildcarda – build nie padnie, gdy server_config.json jest w .gitignore.
+# Skopiuje się wtedy tylko server_config.json_example (oraz prawdziwy plik, jeśli istnieje).
+COPY server_config.json* ./server/configs/
+COPY server_config.json* ./
+
+# Utwórz katalogi trwałe + fallback: jeśli brak configu, użyj .example
+RUN mkdir -p server/games server/sets server/configs && \
+    if [ ! -f server/configs/server_config.json ]; then \
+        cp server/configs/server_config.json_example server/configs/server_config.json; \
+    fi && \
+    if [ ! -f server_config.json ]; then \
+        cp server_config.json_example server_config.json; \
+    fi
 
 # Expose the port (must match process.env.PORT or 3001)
 EXPOSE 3001

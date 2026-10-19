@@ -5,7 +5,7 @@
 **Version:** v1.23.0
 **Description:** A digital tactical board game simulator where players manage pieces (pawns) and special game objects across a 6x6 grid.  
 **Goal:** A multi-client, real-time synchronized game engine with complex movement rules, resource distribution (Sets), automated worker-thread simulations, and phase-based gameplay.  
-**Active work:** Player/Herszt AI — [`PLAYER_AI.md`](PLAYER_AI.md), repo handoff [`COPILOT.md`](../COPILOT.md).
+**Active work:** Player/Herszt AI — [`PLAYER_AI.md`](PLAYER_AI.md), repo handoff [`AGENTS.md`](../AGENTS.md).
 
 ## 2. Tech Stack
 - **Frontend Framework:** React 19 (Hooks, Portals, Context)
@@ -198,4 +198,4 @@ Player AI lives in `server/services/playerAiService.js`. Jakub AI lives in `src/
   - Markdown source: `docs/GAME_RULES.md` at `/api/docs/game`
   - Styled SPA: `src/components/docs/GameRulesPage.jsx` at `/docs/game` (PDF export)
 - **UI Integration:** Links available in the application `Footer.jsx`.
-- **AI Assistant Context & Rules:** `COPILOT.md` / `AGENTS.md` / `.github/copilot-instructions.md` (Copilot handoff), `GROK.md` (file map), `GEMINI.md`, `docs/PLAYER_AI.md`, deploy skill `.grok/skills/deploy/SKILL.md`.
+- **AI Assistant Context & Rules:** `AGENTS.md` (single source of truth), with `COPILOT.md`, `GROK.md`, `GEMINI.md`, `DEEPSEEK.md` and `.github/copilot-instructions.md` as pointers. Deeper docs: `docs/PLAYER_AI.md`; deploy skill `.grok/skills/deploy/SKILL.md`.

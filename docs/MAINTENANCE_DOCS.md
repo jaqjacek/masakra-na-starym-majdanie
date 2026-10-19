@@ -1,6 +1,6 @@
 # Maintenance: Documentation
 
-This file tracks the documentation system. Current release: **v1.23.0**. Next work: refine player AI (`docs/PLAYER_AI.md`, `COPILOT.md`).
+This file tracks the documentation system. Current release: **v1.23.0**. Next work: refine player AI (`docs/PLAYER_AI.md`, `AGENTS.md`).
 
 ## API Documentation (Scalar)
 
@@ -22,11 +22,8 @@ UI copy for the rules SPA lives in `src/locales/{pl,en,cs,uk,tlh}.json` (`rules_
 
 | File | Audience |
 | :--- | :--- |
-| `COPILOT.md` | Copilot / human transfer |
-| `AGENTS.md` | Coding-agent entry |
-| `.github/copilot-instructions.md` | Always-on Copilot prompt |
-| `GROK.md` | File map + constraints |
-| `GEMINI.md` | Short mandates |
+| `AGENTS.md` | Single source of truth for all agents |
+| `COPILOT.md`, `GROK.md`, `GEMINI.md`, `DEEPSEEK.md`, `.github/copilot-instructions.md` | Pointers to `AGENTS.md` |
 | `docs/PROJECT_SPEC.md` | Architecture SSOT |
 
 ## Deployment

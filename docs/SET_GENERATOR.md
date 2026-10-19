@@ -21,7 +21,7 @@ This document defines the rules and parameters for generating game sets in "MASA
 - **Bardak Limit:** 3 (`MAX_BARDAKS_PER_REGULAR_SET`).
 - **Generated deck size cap:** `MAX_GENERATED_SETS` = 50.
 
-Hand dealing (not generation): start **5** sets/player; from round 2 **+3** each; pass keeps ≤3. See `docs/PLAYER_AI.md` / `COPILOT.md`.
+Hand dealing (not generation): start **5** sets/player; from round 2 **+3** each; pass keeps ≤3. See `AGENTS.md` / `docs/PLAYER_AI.md`.
 
 ## 3. Generation Algorithm (Reverse-Hierarchy)
 The algorithm follows a strict probabilistic growth pattern for each set:

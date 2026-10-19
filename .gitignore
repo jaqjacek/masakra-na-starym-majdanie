@@ -6,26 +6,11 @@ server/sets
 dist
 build
 *.log
-server_config.json
 
- books/ 
-  
-tests/simulation_outputs 
-tests/simulations_sets
-tests/simulation_sets
-tests/simulates_game
-tests/run_local_simulation.js
-tests/plays_data
-tests/plays_data.tar.gz
-tests/run_single_combination.js
-tests/analyze_simulation_archive.js
-tests/analyze_simulation_archive.py
-tests/run_game_set_simulation.js
-tests/run_all_simulations.sh
-tests/analyze_all_archives.py
-tests/analyze_random_archive.py
-tests/list_clean_combinations.py
-tests/run_final_10k_simulations.js
+bash/
+books/ 
+server_config.json
+tests/*
 *.pyc
 *.pyo
 __pycache__/

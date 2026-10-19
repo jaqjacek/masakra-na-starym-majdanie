@@ -11,7 +11,7 @@
 
 The platform provides a real-time multi-client game engine, phase-based automation, high-performance multi-core simulation tools, and interactive admin dashboards.
 
-**Status (v1.23.0):** Live game, Jakub AI, live player AI, spectator replay, events, i18n (5 languages), and Monte Carlo sims are in production. **Next work is refining player/Herszt AI.** If you are continuing in Copilot, start at [`COPILOT.md`](COPILOT.md) and [`docs/PLAYER_AI.md`](docs/PLAYER_AI.md).
+**Status (v1.23.0):** Live game, Jakub AI, live player AI, spectator replay, events, i18n (5 languages), and Monte Carlo sims are in production. **Next work is refining player/Herszt AI.** Start at [`AGENTS.md`](AGENTS.md) and [`docs/PLAYER_AI.md`](docs/PLAYER_AI.md).
 
 ---
 
@@ -91,9 +91,9 @@ The platform provides a real-time multi-client game engine, phase-based automati
 
 ```text
 masakra-na-starym-majdanie/
-├── COPILOT.md                  # Copilot / next-dev handoff (player AI)
-├── AGENTS.md                   # Coding-agent entry
-├── GROK.md                     # Assistant file map and constraints
+├── AGENTS.md                   # Single source of truth for all agents
+├── COPILOT.md                  # Pointer to AGENTS.md
+├── GROK.md                     # Pointer to AGENTS.md
 ├── bash/                       # Automation & container deployment scripts
 │   ├── deploy.sh               # Unified build & deployment script
 │   ├── deploy_latest.sh        # Remote server runner script
@@ -269,7 +269,7 @@ When running locally or via container, documentation is served directly:
 | :--- | :--- |
 | Release | **v1.23.0** on `develop` |
 | Next feature | Player AI (`server/services/playerAiService.js`) |
-| Transfer docs | [`COPILOT.md`](COPILOT.md), [`AGENTS.md`](AGENTS.md), [`docs/PLAYER_AI.md`](docs/PLAYER_AI.md) |
+| Transfer docs | [`AGENTS.md`](AGENTS.md), [`docs/PLAYER_AI.md`](docs/PLAYER_AI.md) |
 | Rules | [`docs/GAME_RULES.md`](docs/GAME_RULES.md) |
 | Architecture | [`docs/PROJECT_SPEC.md`](docs/PROJECT_SPEC.md) |
 

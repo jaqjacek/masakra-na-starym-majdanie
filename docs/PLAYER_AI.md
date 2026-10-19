@@ -2,7 +2,7 @@
 
 Handoff for continuing work on **Herszt / player AI**. Jakub’s rampage AI is documented here only as a neighbor system.
 
-Related: [`COPILOT.md`](../COPILOT.md), [`PROJECT_SPEC.md`](PROJECT_SPEC.md), [`GAME_RULES.md`](GAME_RULES.md), [`STATE_MANAGEMENT.md`](STATE_MANAGEMENT.md).
+Related: [`AGENTS.md`](../AGENTS.md), [`PROJECT_SPEC.md`](PROJECT_SPEC.md), [`GAME_RULES.md`](GAME_RULES.md), [`STATE_MANAGEMENT.md`](STATE_MANAGEMENT.md).
 
 ---
 

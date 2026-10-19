@@ -36,7 +36,7 @@ Gra toczy się przez **12 rund**. Każda runda składa się z pięciu faz:
 
 
 ### Faza I: Przygotowanie
-1.  **Rozdysponowanie Zestawów:** Każdy gracz otrzymuje zestawy pionków z talii dobierania. Gracze dążą do posiadania optymalnych kombinacji jednostek.
+1.  **Rozdysponowanie Zestawów:** Na starcie całej gry każdy gracz otrzymuje 5 zestawów. Od rundy 2. każdy gracz dobiera 3 nowe zestawy (dokładane do ręki, bez uzupełniania do stałego limitu). Gracze dążą do posiadania optymalnych kombinacji jednostek.
 2.  **Zasoby Jakuba:** Jakub również pobiera 2 zestawy, które zwiększą jego agresję w danej rundzie.
 3.  **Punkty Początkowe:** W pierwszej rundzie każdy gracz zaczyna z 20 punktami.
 
@@ -47,7 +47,7 @@ Na początku tej fazy wszyscy dotychczasowi Hersztowie wracają do wspólnej pul
 Gracze wykonują tury naprzemiennie (wg aktualnej kolejności):
 1.  **Akcja:** Gracz może wystawić zestaw pionków w regionie, w którym nie ma pionków żadnej bandy (sektor z samym Jakubem zalicza się jako pusty region; pod warunkiem, że w puli posiłków znajduje się wystarczająca liczba pionków dla każdej z band reprezentowanych w tym zestawie, aby w pełni go skompletować – jeśli brakuje pionków chociaż jednej z tych band, wystawienie zestawu jest niedozwolone) lub podkablować nim Jakubowi. Podkablowanie zestawu odbywa się jawnie, a Furia Jakuba na poszczególne bandy oraz jego zasięg są aktualizowane na bieżąco (za każdy pionek danej bandy znajdujący się w tym zestawie).
 2.  **Punktacja Natychmiastowa (Rozproszona):** Punkty otrzymują wszyscy Hersztowie za pionki swojej bandy z wystawionego zestawu, zgodnie z logiką danej bandy. Gracz wystawiający nie musi otrzymać żadnych punktów, jeśli w zestawie nie ma pionków jego bandy.
-3.  **Pasowanie:** Gracz może spasować. Musi wtedy odrzucić nadmiarowe zestawy (zostawiając max 3). Za każdy odrzucony zestaw otrzymuje +1 pkt, podkablowując nim Jakubowi (każdy pionek w zestawie zasila furię Jakuba na odpowiednią bandę – to podkablowanie również odbywa się jawnie, a Furia i zasięg Jakuba są aktualizowane na bieżąco).
+3.  **Pasowanie:** Gracz może spasować. Nie może zostawić na ręce więcej niż 3 zestawy: jeżeli ma więcej, losowo zatrzymuje 3, a reszta idzie jako donoszenia na Jakuba bez punktów (każdy pionek w zestawie zasila furię Jakuba na odpowiednią bandę – to donoszenie odbywa się jawnie, a Furia i zasięg Jakuba są aktualizowane na bieżąco). Dobrowolne podkablowanie zestawu w trakcie tury (osobna akcja) nadal daje +1 pkt.
 
 ### Faza IV: Faza Jakuba
 Po spasowaniu wszystkich graczy, Jakub rusza do akcji:
@@ -189,4 +189,6 @@ W Fazie Jakuba jego ruch oraz ataki są w pełni zautomatyzowane i przebiegają 
 * Jeżeli uważasz iż w następnej rundzie będziesz tą jakąś nacją rozważ zostawienie sobie zestawów tej nacji na następną rundę.
 
 ---
-*Zasady te stanowią fundament logiki symulatora MASAKRA na Starym Majdanie.*
+*Zasady te stanowią fundament logiki symulatora MASAKRA na Starym Majdanie (v1.20.2).*
+
+Stałe w kodzie: `shared/constants.js` (`INITIAL_SETS_PER_PLAYER = 5`, `SETUP_SETS_PER_PLAYER_PER_ROUND = 3`, `MAX_SETS_KEPT_ON_PASS = 3`). Nadmiar przy pasie idzie do Jakuba bez punktów. AI graczy (niesclaimowane miejsca): `server/services/playerAiService.js` — szczegóły w [`PLAYER_AI.md`](PLAYER_AI.md).

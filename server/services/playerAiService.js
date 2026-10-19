@@ -153,11 +153,8 @@ function aiPlaceOrPass(data, curId, curPlayer) {
 
   let jakub = findJakub(data);
   const currentHand = (data.sets.heldSets || []).filter((s) => String(s.ownerId) === String(curPlayer.id));
-  const toSell = currentHand.filter((s) =>
-    (s.content[curPlayer.generalOf] || 0) === 0 &&
-    SharedPlacementManager.isSetAllowedToPass(s, data.regions, jakub)
-  );
-  toSell.forEach((s) => {
+  const toDiscard = SharedPlacementManager.selectExcessSetsOnPass(currentHand);
+  toDiscard.forEach((s) => {
     s.ownerId = 'jakub';
     if (jakub) {
       const result = applySetToJakubAnger(jakub, s.content);
@@ -165,16 +162,12 @@ function aiPlaceOrPass(data, curId, curPlayer) {
       jakub.range = result.range;
     }
   });
-  curPlayer.points += toSell.length;
-  if (toSell.length > 0) {
-    trackPointsChange(curPlayer, curPlayer.generalOf, toSell.length, 'passing');
-  }
   if (!data.passedPlayers) data.passedPlayers = [];
   if (!data.passedPlayers.some((id) => String(id) === String(curPlayer.id))) {
     data.passedPlayers.push(curPlayer.id);
   }
-  if (toSell.length > 0) {
-    addLog(data, `Gracz ${curId} spasował i podkablował ${toSell.length} nadmiarowych zestawów. Furia Jakuba zaktualizowana.`, { race: curPlayer.generalOf, points: toSell.length });
+  if (toDiscard.length > 0) {
+    addLog(data, `Gracz ${curId} spasował i oddał ${toDiscard.length} nadmiarowych zestawów Jakubowi (bez punktów). Furia Jakuba zaktualizowana.`);
   } else {
     addLog(data, `Gracz ${curId} spasował.`);
   }

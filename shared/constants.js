@@ -28,8 +28,11 @@ export const PLAYER_IDS = [1, 2, 3, 4];
 export const BOARD_SIZE = 6;
 export const TOTAL_GAME_ROUNDS = 12;
 export const INITIAL_PLAYER_POINTS = 20;
-export const INITIAL_SETS_PER_PLAYER = 2;
+export const INITIAL_SETS_PER_PLAYER = 5;
+/** Sets added to each player's hand at the start of every round after the first. */
 export const SETUP_SETS_PER_PLAYER_PER_ROUND = 3;
+/** Max sets a player may keep when passing; excess is tipped to Jakub with no points. */
+export const MAX_SETS_KEPT_ON_PASS = 3;
 export const JAKUB_SETS_PER_ROUND = 2;
 
 export const JAKUB_ANGER_THRESHOLD = 10;

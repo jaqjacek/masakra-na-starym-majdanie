@@ -1,4 +1,4 @@
-# Set Generation Specification (v1.3.0)
+# Set Generation Specification (aligned with v1.20.2 / `shared/constants.js`)
 
 This document defines the rules and parameters for generating game sets in "MASAKRA na Starym Majdanie".
 
@@ -10,13 +10,18 @@ This document defines the rules and parameters for generating game sets in "MASA
 | **Ghost (G)** | 30 | 1 |
 | **Bardak (B)** | 80 | 1 |
 
-## 2. Per-Set Constraints
-- **Max Units:** 5 total pawns per set.
-- **Max Power:** Usually 6 (configurable).
-- **Vampire Limit:** Max 1 per set.
-- **Werewolf Limit:** Max 1 per set.
-- **Ghost Limit:** Max 2 per set.
-- **Bardak Limit:** No specific limit (used as filler).
+## 2. Per-Set Constraints (`shared/constants.js`)
+- **Max Units:** `MAX_UNITS_PER_SET` = **4**.
+- **Max Power:** `MAX_POWER` = 6 (configurable).
+- **Min Power:** `MIN_SET_POWER` = 3.
+- **Max races per set:** `MAX_RACES_PER_SET` = 3.
+- **Vampire Limit:** 1 (`PAWN_CONSTRAINTS.vampire`).
+- **Werewolf Limit:** 1.
+- **Ghost Limit:** 2.
+- **Bardak Limit:** 3 (`MAX_BARDAKS_PER_REGULAR_SET`).
+- **Generated deck size cap:** `MAX_GENERATED_SETS` = 50.
+
+Hand dealing (not generation): start **5** sets/player; from round 2 **+3** each; pass keeps ≤3. See `docs/PLAYER_AI.md` / `COPILOT.md`.
 
 ## 3. Generation Algorithm (Reverse-Hierarchy)
 The algorithm follows a strict probabilistic growth pattern for each set:
@@ -25,7 +30,7 @@ The algorithm follows a strict probabilistic growth pattern for each set:
     - Every new set starts with exactly one pawn.
     - Each available race (V, W, G, B) has a **25% chance** to be chosen as the starting pawn.
 2.  **Iterative Expansion Loop:**
-    - The algorithm checks if the current set's power is equal to or exceeds the `maxPower` (default 6), or if the unit limit (5) is reached. If so, the set is complete.
+    - The algorithm checks if the current set's power is equal to or exceeds the `maxPower` (default 6), or if the unit limit (`MAX_UNITS_PER_SET` = 4) is reached. If so, the set is complete.
     - If there is remaining capacity, the algorithm scans races in **Reverse Hierarchy Order**:
       **Bardak (B) → Ghost (G) → Werewolf (W) → Vampire (V)**
     - For each race in this order:

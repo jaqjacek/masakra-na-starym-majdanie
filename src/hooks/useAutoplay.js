@@ -144,7 +144,6 @@ export const useAutoplay = ({
 
       if (workState.phase === 'player_phase') {
         const curId = workState.playerOrder[workState.currentPlayerIndex];
-        const curPlayer = workState.players.find(p => p.id !== null && p.id !== undefined && String(p.id) === String(curId));
         
         const isManual = manualPlayers && manualPlayers.some(id => String(id) === String(curId));
         if (isManual && !workState.passedPlayers.some(id => String(id) === String(curId))) {

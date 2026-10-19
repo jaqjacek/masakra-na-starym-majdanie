@@ -109,7 +109,7 @@ export const dicts = {
     "event_phase_title": "--- EVENT PHASE ---",
     "final_scoring_round": "--- FINAL SCORING (Round 12) ---",
     "round_header": "--- Round {0} / {1} ---",
-    "refilled_hands": "Round {0}: Refilled players' hands to {1} sets.",
+    "refilled_hands": "Round {0}: Each player drew {1} new sets.",
     "reshuffle_discard": "Reshuffling discard pile back into draw pile.",
     "event_deck_exhausted": "Event deck exhausted. Reshuffled discarded events back into the deck.",
     "no_events": "No available events in the deck.",
@@ -152,7 +152,7 @@ export const dicts = {
     "given_set_manual": "Manually: Given Set {0} to Player {1}",
     "move_log": "Move: {0} from [{1},{2}] to [{3},{4}]",
     "added_log": "Added {0} in sector [{1},{2}]",
-    "passed_snitched_excess": "Player {0} passed & snitched {1} excess sets. Jakub's fury updated.",
+    "passed_snitched_excess": "Player {0} passed and gave {1} excess sets to Jakub (no points). Jakub's fury updated.",
     "snitched_set_range": "Player {0} snitched with set {1}. Fury updated | Range: {2}",
     "snitched_set_range_auto": "Set {0} snitched to Jakub. Fury updated | Range: {1}",
     "snitched_set_pt": "Player {0} snitched with set {1} for 1 pt.",
@@ -195,7 +195,7 @@ export const dicts = {
     "event_phase_title": "--- FÁZE UDÁLOSTÍ ---",
     "final_scoring_round": "--- ZÁVĚREČNÉ BODOVÁNÍ (12. Kolo) ---",
     "round_header": "--- Kolo {0} / {1} ---",
-    "refilled_hands": "Kolo {0}: Ruce hráčů doplněny na {1} sad.",
+    "refilled_hands": "Kolo {0}: Každý hráč dobral {1} nových sad.",
     "reshuffle_discard": "Přemíchání odkládacího balíčku zpět do dobíracího balíčku.",
     "event_deck_exhausted": "Balíček událostí došel. Odhozené události byly zamíchány zpět do balíčku.",
     "no_events": "V balíčku nejsou žádné dostupné události.",
@@ -238,7 +238,7 @@ export const dicts = {
     "given_set_manual": "Ručně: Předána Sada {0} Hráči {1}",
     "move_log": "Pohyb: {0} z [{1},{2}] do [{3},{4}]",
     "added_log": "Přidán {0} v sektoru [{1},{2}]",
-    "passed_snitched_excess": "Hráč {0} pasoval a udal {1} přebytečných sad Jakubovi. Zuřivost aktualizována.",
+    "passed_snitched_excess": "Hráč {0} pasoval a odevzdal {1} přebytečných sad Jakubovi (bez bodů). Zuřivost aktualizována.",
     "snitched_set_range": "Hráč {0} udal Jakuba sadou {1}. Zuřivost aktualizována | Dosah: {2}",
     "snitched_set_range_auto": "Sada {0} udána Jakubovi. Zuřivost aktualizována | Dosah: {1}",
     "snitched_set_pt": "Hráč {0} udal Jakuba sadou {1} za 1 bod.",
@@ -281,7 +281,7 @@ export const dicts = {
     "event_phase_title": "--- ФАЗА ПОДІЙ ---",
     "final_scoring_round": "--- ФІНАЛЬНИЙ ПІДРАХУНОК (Раунд 12) ---",
     "round_header": "--- Раунд {0} / {1} ---",
-    "refilled_hands": "Раунд {0}: Руки гравців поповнено до {1} сетів.",
+    "refilled_hands": "Раунд {0}: Кожен гравець добрав {1} нових сетів.",
     "reshuffle_discard": "Скидання перемішано назад у колоду.",
     "event_deck_exhausted": "Колода подій вичерпана. Скинуті події перемішані назад.",
     "no_events": "У колоді немає доступних подій.",
@@ -324,7 +324,7 @@ export const dicts = {
     "given_set_manual": "Вручну: Видано Сет {0} Гравцю {1}",
     "move_log": "Переміщення: {0} з [{1},{2}] до [{3},{4}]",
     "added_log": "Додано {0} у секторі [{1},{2}]",
-    "passed_snitched_excess": "Гравець {0} спасував і здав {1} зайвих сетів. Лють Якуба оновлена.",
+    "passed_snitched_excess": "Гравець {0} спасував і віддав {1} зайвих сетів Якубу (без очок). Лють Якуба оновлена.",
     "snitched_set_range": "Гравець {0} здав сет {1} Якубу. Лють оновлена | Радіус: {2}",
     "snitched_set_range_auto": "Сет {0} здано Якубу. Лють оновлена | Радіус: {1}",
     "snitched_set_pt": "Гравець {0} здав сет {1} Якубу за 1 очко.",
@@ -491,6 +491,7 @@ export const translateLog = (text, lang, tFunc) => {
   if ((m = t.match(/^--- Start Fazy Graczy \(Runda (\d+)\) ---$/))) return finish(fmt(d.phase_player_round, m[1]));
   if ((m = t.match(/^--- Runda (\d+) \/ (\d+) ---$/))) return finish(fmt(d.round_header, m[1], m[2]));
   if ((m = t.match(/^Runda (\d+): Uzupełniono ręce graczy do (\d+) zestawów\.$/))) return finish(fmt(d.refilled_hands, m[1], m[2]));
+  if ((m = t.match(/^Runda (\d+): Każdy gracz dobrał (\d+) nowych zestawów\.$/))) return finish(fmt(d.refilled_hands, m[1], m[2]));
 
   // Events
   if ((m = t.match(/^WYLOSOWANO WYDARZENIE: \[([^\]]+)\] (.*)$/))) {
@@ -573,6 +574,9 @@ export const translateLog = (text, lang, tFunc) => {
 
   // Snitching & Passing
   if ((m = t.match(/^Gracz (\d+) spasował i podkablował (\d+) nadmiarowych zestawów\. Furia Jakuba zaktualizowana\.$/))) {
+    return finish(fmt(d.passed_snitched_excess, m[1], m[2]));
+  }
+  if ((m = t.match(/^Gracz (\d+) spasował i oddał (\d+) nadmiarowych zestawów Jakubowi \(bez punktów\)\. Furia Jakuba zaktualizowana\.$/))) {
     return finish(fmt(d.passed_snitched_excess, m[1], m[2]));
   }
   if ((m = t.match(/^Gracz (\d+) podkablował Jakubowi zestawem (.*?)\. Furia zaktualizowana \| Range: (\d+)$/))) {

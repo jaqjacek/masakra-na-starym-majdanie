@@ -1,12 +1,14 @@
 # GROK Instructions & Project Context
 
-> **Welcome Grok!** This document provides the essential architecture, constraints, file map, and operational rules for the **MASAKRA na Starym Majdanie** codebase. Read this first to get full context instantly. Current release: **v1.20.1**.
+> **Welcome Grok!** This document provides the essential architecture, constraints, file map, and operational rules for the **MASAKRA na Starym Majdanie** codebase. Read this first to get full context instantly. Current release: **v1.20.2**. Next work: **player AI** — see [`COPILOT.md`](COPILOT.md) and [`docs/PLAYER_AI.md`](docs/PLAYER_AI.md).
 
 ---
 
 ## 1. Single Source of Truth
-- **Authoritative Technical Spec:** [`docs/PROJECT_SPEC.md`](docs/PROJECT_SPEC.md) – contains complete architecture, file mappings, and data schemas. **Always consult this first.**
-- **Game Rules & Mechanics:** [`docs/GAME_RULES.md`](docs/GAME_RULES.md) – rulebook and scoring mechanics (markdown). Styled SPA: [`src/components/docs/GameRulesPage.jsx`](src/components/docs/GameRulesPage.jsx).
+- **Copilot / agent handoff:** [`COPILOT.md`](COPILOT.md), [`AGENTS.md`](AGENTS.md), [`.github/copilot-instructions.md`](.github/copilot-instructions.md).
+- **Player AI (active work):** [`docs/PLAYER_AI.md`](docs/PLAYER_AI.md) – server loop, heuristic, gaps.
+- **Authoritative Technical Spec:** [`docs/PROJECT_SPEC.md`](docs/PROJECT_SPEC.md) – architecture, file mappings, and data schemas.
+- **Game Rules & Mechanics:** [`docs/GAME_RULES.md`](docs/GAME_RULES.md) – rulebook (markdown). Styled SPA: [`src/components/docs/GameRulesPage.jsx`](src/components/docs/GameRulesPage.jsx).
 - **REST API Specification:** [`docs/openapi.json`](docs/openapi.json) – OpenAPI 3.0 contract. Update this whenever changing REST endpoints.
 - **Release skill:** [`.grok/skills/deploy/SKILL.md`](.grok/skills/deploy/SKILL.md) – version bump, tag, local + network container deploy.
 
@@ -110,16 +112,17 @@
 | `server/boardManager.js` | Board 6x6 coordinate math, BFS distance calculation, neighbor mapping |
 | `server/setManager.js` | Pawn sets generation and distribution logic |
 | `server/routes/` | REST routes: `games.js`, `sets.js`, `events.js`, `simulation.js`, `config.js` |
-| `server/services/gameService.js` | Game session CRUD / persistence helpers |
-| `server/services/serverPlacementManager.js` | Server-side placement validation |
-| `server/services/simulationService.js` | Simulation job API helpers |
+| `server/services/gameService.js` | Game session CRUD / persistence helpers. Deals `initialSetsPerPlayer` (5) at create. |
+| `server/services/playerAiService.js` | **Live player AI.** `runPlayerAi` / `afterGameChange` after every socket action. Unclaimed seats only (`manualPlayers`). |
+| `server/services/serverPlacementManager.js` | Thin wrapper over `SharedPlacementManager` (find/execute/pass) |
+| `server/services/simulationService.js` | Monte Carlo runners (place/pass duplicated vs live AI) |
 | `server/services/simulationJobManager.js` | Multi-core Worker Thread pool management & Socket telemetry |
 | `server/services/simulationWorker.js` | Monte Carlo game simulation worker runner |
 | `server/scoring/` & `shared/scoring/` | Band-specific scoring calculators (`Vampire`, `Werewolf`, `Ghost`, `Bardak`) |
 | `server/configs/` | Master configs: `game_config.json`, `set_default.json`, `events_all.json` |
 | `server/games/{id}/` | Per-game persistent JSON storage (`map.json`, `players.json`, `state.json`, etc.) |
 
-There is **no** `server/services/aiDecisionService.js`. Jakub decisions live in `src/strategies/jakubStrategy.js`.
+There is **no** `server/services/aiDecisionService.js`. Player AI is `playerAiService.js`. Jakub decisions live in `src/strategies/jakubStrategy.js`.
 
 ### Shared (`shared/`)
 | Directory / File | Purpose |
@@ -127,8 +130,8 @@ There is **no** `server/services/aiDecisionService.js`. Jakub decisions live in 
 | `shared/constants.js` | Single source of truth for game-rule numbers (races, rounds, hands, Jakub, scoring, pawn pools). `server/constants.js` re-exports this file. |
 | `shared/boardGeometry.js` | Shared BFS range and Chebyshev distance |
 | `shared/actions/actionService.js` | Canonical handlers for socket/REST game actions |
-| `shared/sharedPlacementManager.js` | Placement rules shared by client and server |
-| `shared/generalSelectionManager.js` | General/band catch-up selection order |
+| `shared/sharedPlacementManager.js` | Shared placement heuristic (`findBestPlacement`) and pass trim (`selectExcessSetsOnPass`) |
+| `shared/generalSelectionManager.js` | AI + autoplay general pick (`chooseGeneral`) |
 | `shared/milosierdzieManager.js` | Świadek Jakuba / Miłosierdzie |
 | `shared/statsManager.js` | End-game / simulation stats (e.g. general selection tracking) |
 | `shared/scoring/` | Scoring calculators used by UI, server, and workers |
@@ -140,7 +143,7 @@ There is **no** `server/services/aiDecisionService.js`. Jakub decisions live in 
 ### Game Cycle & Phases
 1. **Setup Phase:** Distribute sets to draw piles and players.
 2. **General Phase:** Reverse-point order selection of Band Generals (lowest points chooses first).
-3. **Player Phase:** Active pawn placement from hand / bulk Sets, passing turns. Optional `autoClickNext` (default ON) advances the turn after set placement or feeding Jakub.
+3. **Player Phase:** Place a set, kablowanie (+1), or pass. Pass randomly keeps ≤3 sets; excess to Jakub with **0 points**. Optional `autoClickNext` (default ON) advances after place / kablowanie. Unclaimed players are moved by `playerAiService`.
 4. **Jakub Phase:** Automated AI rampage. Jakub consumes Sets, depletes range, chases bands based on anger tiers.
 5. **Event Phase:** Random event drawn from deck modifying board or parameters.
 6. **Final Scoring:** Round 12 scoring bonuses calculated.
@@ -183,8 +186,10 @@ Release workflow (version files, tag, local + network images): follow `.grok/ski
 ## 7. Known Gotchas & Pitfalls for AI Assistants
 1. **Do not remove `COPY src/ ./src/` from `Dockerfile`** – backend `shared/actions/actionService.js` references `src/strategies/jakubStrategy.js`.
 2. **Do not use `server.listen(PORT, '0.0.0.0')`** – use `server.listen(PORT)` to preserve IPv6 (`localhost`) dual-stack support.
-3. **Do not invent `server/services/aiDecisionService.js`** – it does not exist. Use `src/strategies/jakubStrategy.js`.
+3. **Do not invent `server/services/aiDecisionService.js`** – it does not exist. Player AI: `server/services/playerAiService.js`. Jakub AI: `src/strategies/jakubStrategy.js`.
 4. **Do not point Vite proxy at `localhost`** – use `127.0.0.1` as in `vite.config.js`.
 5. **Do not search the whole codebase with broad greps** – use the Fast Navigation Map above and `docs/PROJECT_SPEC.md`.
 6. **Always update `docs/PROJECT_SPEC.md`** if adding new architectural components, schemas, or deployment paths.
 7. **Keep locale key parity** across the five JSON dictionaries; do not reintroduce 110 generated locales.
+8. **Hand/pass WIP (uncommitted):** start 5 sets; round 1 DRAW SETS adds none to players; round 2+ deals +3 each; pass keep-3 with 0 points. See `COPILOT.md`.
+9. **Player AI next:** kablowanie as an AI action, strategic keep-3, use `currentRound` in `findBestPlacement`, share decisions with simulations. Details in `docs/PLAYER_AI.md`.

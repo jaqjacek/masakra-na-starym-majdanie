@@ -1,11 +1,25 @@
 import { Scoring } from './scoring/scoring.js';
-import { RACES, DEFAULT_JAKUB_DISTANCE, regionXY } from './constants.js';
+import { RACES, DEFAULT_JAKUB_DISTANCE, regionXY, MAX_SETS_KEPT_ON_PASS } from './constants.js';
 import { VampireScoring } from './scoring/vampireScoring.js';
 import { WerewolfScoring } from './scoring/werewolfScoring.js';
 import { GhostScoring } from './scoring/ghostScoring.js';
 import { BardakScoring } from './scoring/bardakScoring.js';
 
 export class SharedPlacementManager {
+  /**
+   * When passing with more than maxKeep sets, randomly choose which excess sets to tip to Jakub.
+   * @returns {Array} sets that should be discarded (owner becomes jakub); kept sets stay in hand
+   */
+  static selectExcessSetsOnPass(myHeld, maxKeep = MAX_SETS_KEPT_ON_PASS) {
+    if (!myHeld || myHeld.length <= maxKeep) return [];
+    const shuffled = [...myHeld];
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+    return shuffled.slice(maxKeep);
+  }
+
   /**
    * Helper to check if a set can be sold/passed to Jakub based on the majority anger vs board count rule.
    */
@@ -47,10 +61,10 @@ export class SharedPlacementManager {
    * @param {string} generalOf - The active player's assigned General race
    * @param {Object} globalPawnPool - The total pawn pool configuration
    * @param {Object} playLimits - The pawn limits in play configuration
-   * @param {number} [currentRound=1] - The current round number
+   * @param {number} [_currentRound=1] - The current round number (reserved for future round-aware scoring)
    * @returns {Object|null} The best placement description or null
    */
-  static findBestPlacement(regions, heldSets, playerId, generalOf, globalPawnPool, playLimits, currentRound = 1) {
+  static findBestPlacement(regions, heldSets, playerId, generalOf, globalPawnPool, playLimits, _currentRound = 1) {
     const myHeld = heldSets.filter(s => s.ownerId !== null && s.ownerId !== undefined && String(s.ownerId) === String(playerId));
     const emptyRegions = regions.filter(r => !RACES.some(race => r.pawns[race]?.length > 0));
     
@@ -174,33 +188,14 @@ export class SharedPlacementManager {
       // Check if we have any placeable sets containing our own general's pawns
       const hasOwnPawnsInHand = placeableSets.some(s => (s.content[generalOf] || 0) > 0);
 
-      // Compare utility of placing vs passing
-      const toSell = myHeld.filter(s => 
-        (s.content[generalOf] || 0) === 0 && 
-        SharedPlacementManager.isSetAllowedToPass(s, regions, jakub)
-      );
-      const pointsFromPass = toSell.length;
-      
+      // Passing trims excess hand to Jakub with no points — only skip a weak placement
+      // when it is clearly worse than doing nothing (negative place utility).
       const pointsFromPlace = best.pts || 0;
       const ownPawnsCount = best.set.content[generalOf] || 0;
       const netScore = best.netScore || 0;
-
-      // Place utility = immediate points + end-game pawn value + penalty for helping opponents
       const utilityPlace = pointsFromPlace + ownPawnsCount + Math.min(0, netScore) * 0.5;
-      
-      // Round adaptation: early rounds pass value is high, late rounds pass value is low
-      let passWeight = 1.0;
-      if (currentRound <= 3) {
-        passWeight = 1.3;
-      } else if (currentRound >= 9) {
-        passWeight = 0.7;
-      }
-      
-      const utilityPass = pointsFromPass * passWeight;
 
-      if (utilityPass > utilityPlace) {
-        // If we don't have sets with our own pawns in hand, check the exception:
-        // "Jeżeli za wystawienie zestawu pozostałe nacje łącznie dostaną 0 lub mniej punktów, nadal można go wystawić."
+      if (utilityPlace < 0) {
         if (!hasOwnPawnsInHand) {
           const opponentsPoints = Object.entries(best.allScores || {}).reduce((sum, [race, pts]) => {
             if (race !== generalOf) {
@@ -210,11 +205,9 @@ export class SharedPlacementManager {
           }, 0);
 
           if (opponentsPoints <= 0) {
-            return best; // Override pass, allow placement
+            return best;
           }
         }
-
-        // AI chooses to pass and sell sets to Jakub instead of placing this set
         return null;
       }
     }

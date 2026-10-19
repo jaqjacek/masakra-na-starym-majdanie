@@ -169,7 +169,7 @@
   "rules_flow_p2_title": "Faza Hersztów (Wybór Dowództwa)",
   "rules_flow_p2_desc": "W pierwszej rundzie gracze wybierają generała (kolejno: Gracz 1, Gracz 2, Gracz 3). W kolejnych rundach jako pierwszy wybiera gracz z najmniejszą liczbą punktów (w przypadku remisu kolejność się nie zmienia).",
   "rules_flow_p3_title": "Faza Graczy",
-  "rules_flow_p3_desc": "Gracze wykonują swoje ruchy w kolejności od najmniejszej liczby punktów. W swoim ruchu gracz musi wystawić zestaw na planszę (płacąc pionkami) lub spasować. Spasowanie kończy fazę gracza w danej rundzie. Za spasowanie gracz otrzymuje 2 punkty (punkty bonusowe).",
+  "rules_flow_p3_desc": "Gracze wykonują swoje ruchy w kolejności od najmniejszej liczby punktów. W swoim ruchu gracz musi wystawić zestaw na planszę (płacąc pionkami), podkablować zestaw Jakubowi lub spasować. Spasowanie kończy fazę gracza w danej rundzie: gracz zatrzymuje maksymalnie 3 zestawy, a nadmiar oddaje Jakubowi bez punktów (furia i zasięg Jakuba aktualizują się na bieżąco). Dobrowolne podkablowanie zestawu daje +1 punkt.",
   "rules_flow_p4_title": "Faza Jakuba",
   "rules_flow_p4_desc": "Jakub porusza się i przeprowadza czystkę na planszy. Ta faza jest w pełni zautomatyzowana.",
   "rules_flow_p5_title": "Faza Wydarzeń",

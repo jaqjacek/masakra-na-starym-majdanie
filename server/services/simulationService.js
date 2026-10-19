@@ -91,7 +91,14 @@ export function runDetailedSimulation(set, uploadedSets, uploadedEvents) {
 
   for (let round = 1; round <= gameConfig.totalRounds; round++) {
     const roundData = { round, generals: {}, turns: [], endPoints: {} };
-    players.forEach(p => { const myHeld = setsData.heldSets.filter(s => s.ownerId === p.id); const needed = gameConfig.setupSetsPerPlayerPerRound - myHeld.length; for (let i = 0; i < needed; i++) { const s = drawSet(); if (s) { s.ownerId = p.id; setsData.heldSets.push(s); } } });
+    if (round > 1) {
+      players.forEach(p => {
+        for (let i = 0; i < gameConfig.setupSetsPerPlayerPerRound; i++) {
+          const s = drawSet();
+          if (s) { s.ownerId = p.id; setsData.heldSets.push(s); }
+        }
+      });
+    }
     for (let i = 0; i < gameConfig.jakubSetsPerRound; i++) { const s = drawSet(); if (s) { s.ownerId = 'jakub'; setsData.heldSets.push(s); } }
     let availableGenerals = [...RACES];
     playerOrder.forEach(id => {
@@ -136,7 +143,7 @@ export function runDetailedSimulation(set, uploadedSets, uploadedEvents) {
               player: p.name,
               race: p.generalOf,
               setsGiven: excess,
-              pointGains: [{ player: p.name, race: p.generalOf, points: excess }]
+              pointGains: []
             });
           }
           passed.add(id);
@@ -326,7 +333,14 @@ export function runBasicSimulation(set, uploadedSets, uploadedEvents) {
   };
   analytics.magnetismCount = 0;
   for (let round = 1; round <= gameConfig.totalRounds; round++) {
-    players.forEach(p => { const myHeld = setsData.heldSets.filter(s => s.ownerId === p.id); const needed = gameConfig.setupSetsPerPlayerPerRound - myHeld.length; for (let i = 0; i < needed; i++) { const s = drawSet(); if (s) { s.ownerId = p.id; setsData.heldSets.push(s); } } });
+    if (round > 1) {
+      players.forEach(p => {
+        for (let i = 0; i < gameConfig.setupSetsPerPlayerPerRound; i++) {
+          const s = drawSet();
+          if (s) { s.ownerId = p.id; setsData.heldSets.push(s); }
+        }
+      });
+    }
     for (let i = 0; i < gameConfig.jakubSetsPerRound; i++) { const s = drawSet(); if (s) { s.ownerId = 'jakub'; setsData.heldSets.push(s); } }
     let availableGenerals = [...RACES];
     playerOrder.forEach((id, idx) => {
@@ -356,10 +370,7 @@ export function runBasicSimulation(set, uploadedSets, uploadedEvents) {
             }
           });
         } else {
-          const excess = ServerPlacementManager.executePass(p, setsData.heldSets, regions);
-          if (excess > 0 && p.generalOf && analytics[p.generalOf]) {
-            analytics[p.generalOf].passing += excess;
-          }
+          ServerPlacementManager.executePass(p, setsData.heldSets, regions);
           passed.add(id);
         }
       }
@@ -578,11 +589,14 @@ export function runFullSimulation(setsConfig, inputGameConfig, uploadedEvents) {
   analytics.magnetismCount = 0;
 
   for (let round = 1; round <= roundsToPlay; round++) {
-    players.forEach(p => { 
-      const myHeld = setsData.heldSets.filter(s => s.ownerId === p.id); 
-      const needed = roundDraw - myHeld.length; 
-      for (let i = 0; i < needed; i++) { const s = drawSet(); if (s) { s.ownerId = p.id; setsData.heldSets.push(s); } } 
-    });
+    if (round > 1) {
+      players.forEach(p => {
+        for (let i = 0; i < roundDraw; i++) {
+          const s = drawSet();
+          if (s) { s.ownerId = p.id; setsData.heldSets.push(s); }
+        }
+      });
+    }
     for (let i = 0; i < jakubDraw; i++) { const s = drawSet(); if (s) { s.ownerId = 'jakub'; setsData.heldSets.push(s); } }
     
     let availableGenerals = [...RACES];
@@ -614,10 +628,7 @@ export function runFullSimulation(setsConfig, inputGameConfig, uploadedEvents) {
             }
           });
         } else {
-          const excess = ServerPlacementManager.executePass(p, setsData.heldSets, regions);
-          if (excess > 0 && p.generalOf && analytics[p.generalOf]) {
-            analytics[p.generalOf].passing += excess;
-          }
+          ServerPlacementManager.executePass(p, setsData.heldSets, regions);
           passed.add(id);
         }
       }

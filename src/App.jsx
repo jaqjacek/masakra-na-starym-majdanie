@@ -398,7 +398,7 @@ function App() {
     } else if (action === 'pass') {
       const excess = ClientPlacementManager.executePass(curPlayer, workState, applySetToJakubAnger);
       if (excess > 0) {
-        addLog(workState, `Gracz ${playerId} spasował i podkablował ${excess} nadmiarowych zestawów. Furia Jakuba zaktualizowana.`, { race: curPlayer.generalOf, points: excess });
+        addLog(workState, `Gracz ${playerId} spasował i oddał ${excess} nadmiarowych zestawów Jakubowi (bez punktów). Furia Jakuba zaktualizowana.`);
       } else {
         addLog(workState, `Gracz ${playerId} spasował.`);
       }

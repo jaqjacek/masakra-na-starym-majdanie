@@ -1,23 +1,36 @@
 # Maintenance: Documentation
 
-This file tracks the technical setup of the documentation system for future sessions.
+This file tracks the documentation system. Current release: **v1.20.2**. Next work: player AI (`docs/PLAYER_AI.md`, `COPILOT.md`).
 
 ## API Documentation (Scalar)
-The project uses **Scalar** for interactive API docs.
 
 - **Library:** `@scalar/express-api-reference`
-- **Source:** `server/openapi.json`
-- **Logic:** Integrated in `server/server.js` as an Express middleware.
-- **How to Update:** 
-  1. Modify `server/openapi.json` to reflect changes in endpoints or parameters.
-  2. The Scalar UI will automatically update on the next server restart.
+- **Spec file:** `docs/openapi.json` (not `server/openapi.json`)
+- **Mount:** `server/server.js` — `/api/docs/api`
+- **How to update:** edit `docs/openapi.json` whenever REST routes in `server/routes/` change. Scalar picks it up on server restart.
 
-## Game Documentation
-The game rules are stored in `GAME_RULES.md` at the project root.
+## Game documentation
 
-- **Logic:** Served as a plain file via the `/api/docs/game` route in `server/server.js`.
-- **Planned:** Future transition to a styled HTML page within the React application.
+- **Markdown rules:** `docs/GAME_RULES.md` served at `/api/docs/game`
+- **Styled SPA:** `src/components/docs/GameRulesPage.jsx` at `/docs/game` (PDF via `html2pdf.js`)
+- **Lore:** `docs/STORY.md`
+- **Player AI:** `docs/PLAYER_AI.md`
+
+UI copy for the rules SPA lives in `src/locales/{pl,en,cs,uk,tlh}.json` (`rules_*` keys). Those locale strings may lag `GAME_RULES.md` (pass/hand WIP).
+
+## Assistant / Copilot handoff
+
+| File | Audience |
+| :--- | :--- |
+| `COPILOT.md` | Copilot / human transfer |
+| `AGENTS.md` | Coding-agent entry |
+| `.github/copilot-instructions.md` | Always-on Copilot prompt |
+| `GROK.md` | File map + constraints |
+| `GEMINI.md` | Short mandates |
+| `docs/PROJECT_SPEC.md` | Architecture SSOT |
 
 ## Deployment
-- Both `server/openapi.json` and `GAME_RULES.md` are copied into the Docker image via the `Dockerfile`.
-- Always ensure paths in `server.js` use `process.cwd()` to remain compatible with both local development and Docker environments.
+
+- `docs/openapi.json` and `docs/GAME_RULES.md` are copied into the Docker image.
+- Paths in `server.js` use `process.cwd()`.
+- Release workflow: `.grok/skills/deploy/SKILL.md`. Last tagged release: **v1.20.2**.

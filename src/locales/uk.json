@@ -169,7 +169,7 @@
   "rules_flow_p2_title": "General Phase (Choice of Command)",
   "rules_flow_p2_desc": "In the first round, players choose a general (in the order: Player 1, Player 2, Player 3). In subsequent rounds, the player with the lowest number of points chooses first (and if there is a tie, the order does not change).",
   "rules_flow_p3_title": "Player Phase",
-  "rules_flow_p3_desc": "Players take turns in reverse order of points (lowest score goes first). On their turn, a player must either place a set on the board (paying with pawns) or pass. Passing ends the player's phase for the round. The player receives 2 points for passing (bonus points).",
+  "rules_flow_p3_desc": "Players take turns in reverse order of points (lowest score goes first). On their turn, a player must either place a set on the board (paying with pawns), snitch a set to Jakub, or pass. Passing ends the player's phase for the round: the player keeps at most 3 sets and gives any excess to Jakub for 0 points (Jakub's fury and range update immediately). Voluntarily snitching a set to Jakub awards +1 point.",
   "rules_flow_p4_title": "Jakub Phase",
   "rules_flow_p4_desc": "Jakub moves and cleanses the board. This phase is fully automated.",
   "rules_flow_p5_title": "Event Phase",

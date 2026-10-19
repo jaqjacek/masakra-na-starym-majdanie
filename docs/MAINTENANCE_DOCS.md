@@ -1,6 +1,6 @@
 # Maintenance: Documentation
 
-This file tracks the documentation system. Current release: **v1.21.0**. Next work: refine player AI (`docs/PLAYER_AI.md`, `COPILOT.md`).
+This file tracks the documentation system. Current release: **v1.23.0**. Next work: refine player AI (`docs/PLAYER_AI.md`, `COPILOT.md`).
 
 ## API Documentation (Scalar)
 

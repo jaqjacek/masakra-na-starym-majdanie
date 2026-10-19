@@ -1,6 +1,6 @@
 # MASAKRA na Starym Majdanie REST API
 
-**Status:** v1.21.0. Authoritative contract: [`openapi.json`](openapi.json) (Scalar UI at `/api/docs/api`).
+**Status:** v1.23.0. Authoritative contract: [`openapi.json`](openapi.json) (Scalar UI at `/api/docs/api`).
 
 Base URL: `http://<host>:<port>/api`. Content-Type: `application/json`.
 

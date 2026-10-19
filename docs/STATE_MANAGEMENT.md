@@ -1,6 +1,6 @@
 # State Management & Data Flow
 
-Current release: **v1.21.0**. Player AI: [`PLAYER_AI.md`](PLAYER_AI.md).
+Current release: **v1.23.0**. Player AI: [`PLAYER_AI.md`](PLAYER_AI.md).
 
 ## 1. Global state
 

@@ -3,7 +3,7 @@
   "info": {
     "title": "MASAKRA na Starym Majdanie API",
     "description": "Interactive API Documentation for the MASAKRA na Starym Majdanie Game Engine. Real-time actions use Socket.io events (action:placeSet, action:movePawn, action:selectGeneral, action:kablowanieSet, action:passTurn, action:claimPlayer, action:syncState). AI player turns run on the server whenever the current player is not in state.manualPlayers.",
-    "version": "1.21.0"
+    "version": "1.23.0"
   },
   "servers": [
     {

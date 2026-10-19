@@ -1,4 +1,4 @@
-# Player AI — current status (v1.21.0)
+# Player AI — current status (v1.23.0)
 
 Handoff for continuing work on **Herszt / player AI**. Jakub’s rampage AI is documented here only as a neighbor system.
 

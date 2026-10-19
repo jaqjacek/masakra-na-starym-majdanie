@@ -2,9 +2,7 @@ const fs = require('fs');
 const path = require('path');
 
 const enPath = path.join(__dirname, '../src/locales/en.json');
-const plPath = path.join(__dirname, '../src/locales/pl.json');
 const en = JSON.parse(fs.readFileSync(enPath, 'utf8'));
-const pl = JSON.parse(fs.readFileSync(plPath, 'utf8'));
 
 // Japanese translations (475 keys)
 const ja = {

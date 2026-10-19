@@ -130,10 +130,10 @@ export class SharedPlacementManager {
    * @param {string} generalOf - The active player's assigned General race
    * @param {Object} globalPawnPool - The total pawn pool configuration
    * @param {Object} playLimits - The pawn limits in play configuration
-   * @param {number} [currentRound=1] - The current round number
+   * @param {number} [_currentRound=1] - The current round number (reserved for future round-aware scoring)
    * @returns {Object|null} The best placement description or null
    */
-  static findBestPlacement(regions, heldSets, playerId, generalOf, globalPawnPool, playLimits, currentRound = 1) {
+  static findBestPlacement(regions, heldSets, playerId, generalOf, globalPawnPool, playLimits, _currentRound = 1) {
     const myHeld = heldSets.filter(s => s.ownerId !== null && s.ownerId !== undefined && String(s.ownerId) === String(playerId));
     const emptyRegions = regions.filter(r => !RACES.some(race => r.pawns[race]?.length > 0));
     

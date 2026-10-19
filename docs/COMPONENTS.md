@@ -1,6 +1,6 @@
 # React Component Architecture
 
-Frontend of *MASAKRA na Starym Majdanie* (v1.21.0). Player AI is **server-side** (`docs/PLAYER_AI.md`); these components only claim seats and render state.
+Frontend of *MASAKRA na Starym Majdanie* (v1.23.0). Player AI is **server-side** (`docs/PLAYER_AI.md`); these components only claim seats and render state.
 
 ## Component Tree
 

@@ -4,7 +4,7 @@
 
 | | |
 | :--- | :--- |
-| **Version** | **v1.21.0** (`package.json`, `src/constants/version.js`) |
+| **Version** | **v1.23.0** (`package.json`, `src/constants/version.js`) |
 | **Branch** | `develop` |
 | **Next work** | Refine player AI (strategic keep-3, look-ahead, sim parity, tests) |
 | **Working tree** | Clean after v1.21.0 release commit (do not push if origin is down) |

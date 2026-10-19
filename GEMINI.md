@@ -1,6 +1,6 @@
 # GEMINI Instructions
 
-Current release: **v1.21.0**. Next work: **refine player AI**. Handoff: `COPILOT.md`, `docs/PLAYER_AI.md`.
+Current release: **v1.23.0**. Next work: **refine player AI**. Handoff: `COPILOT.md`, `docs/PLAYER_AI.md`.
 
 ## 1. Single Source of Truth
 The file `docs/PROJECT_SPEC.md` is the authoritative source for architecture, file mapping, and standards. **Always read it first.** For player/Herszt AI, read `docs/PLAYER_AI.md` before editing.

@@ -1,6 +1,6 @@
 # GROK Instructions & Project Context
 
-> **Welcome Grok!** This document provides the essential architecture, constraints, file map, and operational rules for the **MASAKRA na Starym Majdanie** codebase. Read this first to get full context instantly. Current release: **v1.21.0**. Next work: **refine player AI** — see [`COPILOT.md`](COPILOT.md) and [`docs/PLAYER_AI.md`](docs/PLAYER_AI.md).
+> **Welcome Grok!** This document provides the essential architecture, constraints, file map, and operational rules for the **MASAKRA na Starym Majdanie** codebase. Read this first to get full context instantly. Current release: **v1.23.0**. Next work: **refine player AI** — see [`COPILOT.md`](COPILOT.md) and [`docs/PLAYER_AI.md`](docs/PLAYER_AI.md).
 
 ---
 

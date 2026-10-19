@@ -2,7 +2,7 @@
 
 ## 1. Project Overview
 **Name:** MASAKRA na Starym Majdanie  
-**Version:** v1.21.0  
+**Version:** v1.23.0
 **Description:** A digital tactical board game simulator where players manage pieces (pawns) and special game objects across a 6x6 grid.  
 **Goal:** A multi-client, real-time synchronized game engine with complex movement rules, resource distribution (Sets), automated worker-thread simulations, and phase-based gameplay.  
 **Active work:** Player/Herszt AI — [`PLAYER_AI.md`](PLAYER_AI.md), repo handoff [`COPILOT.md`](../COPILOT.md).
@@ -112,7 +112,7 @@
 - **Admin:** `/admin/sets`, `/admin/events`, `/admin/simulate` (not `/admin`).
 - **Footer:** Docs links, five language flags, version from `src/constants/version.js`.
 
-## 6. Project Status (Current: v1.21.0)
+## 6. Project Status (Current: v1.23.0)
 - **Implemented:**
   - Manual & automated gameplay, Dockerization, multi-phase logic, refined scoring.
   - i18n for five languages (`pl`, `en`, `cs`, `uk`, `tlh`) including localized game history; Klingon pIqaD. (110-locale experiment **reverted**.)
@@ -199,4 +199,3 @@ Player AI lives in `server/services/playerAiService.js`. Jakub AI lives in `src/
   - Styled SPA: `src/components/docs/GameRulesPage.jsx` at `/docs/game` (PDF export)
 - **UI Integration:** Links available in the application `Footer.jsx`.
 - **AI Assistant Context & Rules:** `COPILOT.md` / `AGENTS.md` / `.github/copilot-instructions.md` (Copilot handoff), `GROK.md` (file map), `GEMINI.md`, `docs/PLAYER_AI.md`, deploy skill `.grok/skills/deploy/SKILL.md`.
-

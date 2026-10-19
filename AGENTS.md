@@ -1,6 +1,6 @@
 # Agent instructions — MASAKRA na Starym Majdanie
 
-You are working on a React 19 + Express 5 board-game simulator. **Current release: v1.21.0. Next work: refine player AI.**
+You are working on a React 19 + Express 5 board-game simulator. **Current release: v1.23.0. Next work: refine player AI.**
 
 1. Read [`COPILOT.md`](COPILOT.md) first (handoff).
 2. Read [`docs/PLAYER_AI.md`](docs/PLAYER_AI.md) before changing AI, placement, pass, or simulation player turns.
